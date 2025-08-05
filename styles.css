@@ -4,7 +4,9 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f4;
+  background-color: #222222;
+  text-align: center;
+  color: whitesmoke;
 }
 
 header {
@@ -12,21 +14,6 @@ header {
   color: #ffffff;
   padding: 10px 0;
   text-align: center;
-}
-
-nav {
-  margin: 20px 0;
-}
-
-nav a {
-  margin: 0 15px;
-  color: #ffffff;
-  text-decoration: none;
-  transition: color 0.3s;
-}
-
-nav a:hover {
-  color: #f4f4f4;
 }
 
 main {
