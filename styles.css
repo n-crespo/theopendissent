@@ -1,17 +1,21 @@
-/* styles.css */
+:root {
+  --bg: #f8f2e8;
+  --text: #333333;
+}
+
+* {
+  background-color: var(--bg);
+  color: var(--text);
+}
 
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #222222;
   text-align: center;
-  color: whitesmoke;
 }
 
 header {
-  background: #35424a;
-  color: #ffffff;
   padding: 10px 0;
   text-align: center;
 }
@@ -24,8 +28,7 @@ main {
 footer {
   text-align: center;
   padding: 20px 0;
-  background: #35424a;
-  color: #ffffff;
+  /* background: #35424a; */
   position: relative;
   width: 100%;
   bottom: 0;
