@@ -1,0 +1,209 @@
+* {
+  box-sizing: border-box;
+  transition: all 0.2s ease-in-out; /* Adds a smooth hover effect */
+  overscroll-behavior: none;
+}
+
+:root {
+  --background: #f8f2e8;
+  --red: #70161e;
+  --green: #4d5e19;
+  --blue: #043f63;
+  --gray: #464646;
+  --text: #222222;
+  --postbg: #fefefe;
+  --borderfg: #ebebeb;
+  --borderrad: 5px;
+}
+
+header {
+  background-color: var(--background);
+  border-bottom: 1px solid var(--borderfg);
+  border-bottom-right-radius: var(--borderrad);
+  border-bottom-left-radius: var(--borderrad);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.btn {
+  cursor: pointer;
+}
+
+#header-content {
+  margin: 0 auto;
+  padding: 0px 0px;
+  max-width: 500px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#help-btn,
+#signin-btn {
+  padding: 10px;
+  border: none;
+  background-color: var(--background);
+  color: var(--text);
+}
+
+#header-icon {
+  margin: 0;
+  max-width: 80vw;
+}
+
+body {
+  scrollbar-width: none;
+  overscroll-behavior: none;
+  margin: 0;
+  padding: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen-Sans,
+    Ubuntu,
+    Cantarell,
+    "Helvetica Neue",
+    sans-serif;
+  background-color: var(--background);
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+#body-content {
+  padding: 20px 0;
+}
+
+#center-container {
+  padding: 0px 15px;
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#inputs-container {
+  display: flex;
+  flex-direction: row;
+  gap: 7px;
+}
+#inputs-container > * {
+  font-size: 14px;
+  border-radius: var(--borderrad);
+  padding: 10px;
+}
+
+#inputs-container input {
+  flex-grow: 8;
+  background-color: white;
+  border: 1px solid var(--borderfg);
+}
+
+#inputs-container button:hover {
+  background-color: var(--text);
+}
+
+#inputs-container button {
+  flex-grow: 2;
+  color: white;
+  border: 1px solid var(--borderfg);
+  font-weight: bold;
+
+  background: linear-gradient(to right, #043f63, #4d5e19, #70161e);
+  background-size: 300% 100%;
+  animation: shimmer 4s infinite ease-in-out alternate;
+
+  transition: transform 0.1s ease-in-out;
+}
+
+#inputs-container button:hover,
+#inputs-container button:active {
+  animation:
+    shimmer 4s infinite ease-in-out alternate,
+    bounceJiggle 0.5s infinite alternate;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes bounceJiggle {
+  0% {
+    transform: rotate(-1deg) scale(1) translateY(0);
+  }
+  50% {
+    transform: rotate(1deg) scale(1.05) translateY(-5px);
+  }
+  100% {
+    transform: rotate(-1deg) scale(1) translateY(0);
+  }
+}
+
+#post-list {
+  display: flex;
+  flex-direction: column;
+}
+
+#post {
+  margin-bottom: 0px;
+  border: 1px solid var(--borderfg);
+  background-color: var(--postbg);
+  border-radius: var(--borderrad);
+  padding: 20px 25px;
+}
+
+#user-icon-id {
+  margin-bottom: 15px;
+  font-size: 13px;
+  color: var(--gray);
+}
+
+#post-buttons {
+  display: grid;
+  max-width: 500px;
+  grid-template-columns: 1fr 1fr 1fr; /* This creates three equal-sized columns */
+  gap: 0px;
+  margin-bottom: 20px;
+}
+.post-button {
+  border: 1px solid var(--borderfg);
+  background-color: var(--postbg);
+  border-radius: var(--borderrad);
+  padding: 10px 0px;
+  font-size: 21px;
+  /* margin-bottom: 20px; */
+}
+.post-button:hover {
+  background-color: #e9e9e9;
+  cursor: pointer;
+}
+.agree-button {
+  color: #28a745; /* Green */
+}
+.interesting-button {
+  color: orange;
+}
+.disagree-button {
+  color: #dc3545; /* Red */
+}
+
+footer {
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  width: 100%;
+  text-align: center;
+  background-color: var(--background);
+  margin-bottom: 40px;
+}

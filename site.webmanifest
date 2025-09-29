@@ -1,22 +1,21 @@
 {
   "name": "The Open Dissent",
-  "short_name": "T.O.D",
+  "short_name": "Open Dissent",
   "icons": [
     {
-      "src": "/web-app-manifest-192x192.png",
+      "src": "/assets/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/web-app-manifest-512x512.png",
+      "src": "/assets/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ede7de",
-  "background_color": "#ede7de",
+  "theme_color": "#f8f2e8",
+  "background_color": "#f8f2e8",
   "display": "standalone"
 }
-
