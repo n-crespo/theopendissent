@@ -1,5 +1,6 @@
 // import firebase functions
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+// NEW IMPORTS using the 'firebase/...' bare specifiers (Vite resolves these)
+import { initializeApp } from "firebase/app";
 import {
   getDatabase,
   ref,
@@ -7,7 +8,14 @@ import {
   onValue,
   serverTimestamp,
   // remove,
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+} from "firebase/database";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+  signOut,
+} from "firebase/auth"; // <-- NEW: Import Auth services
 
 const firebaseConfig = {
   databaseURL: "https://test-app-d0afd-default-rtdb.firebaseio.com",
