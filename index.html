@@ -1,14 +1,6 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- avoid flash of unstyled content in firefox -->
-    <script type="text/javascript">
-      var elm = document.getElementsByTagName("html")[0];
-      elm.style.display = "none";
-      document.addEventListener("DOMContentLoaded", function (event) {
-        elm.style.display = "block";
-      });
-    </script>
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"
@@ -35,6 +27,9 @@
     />
   </head>
   <body>
+    <script>
+      /* avoid flash of unstyled content in firefox */
+    </script>
     <header>
       <div id="header-content">
         <a href="/pages/help.html"
