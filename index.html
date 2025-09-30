@@ -32,44 +32,48 @@
     </script>
     <header>
       <div id="header-content">
-        <a href="/pages/help.html"
-          ><button id="help-btn" class="btn">
-            <img src="src/assets/help.svg" /></button
-        ></a>
-        <img
-          src="src/assets/Flat-Logo.svg"
-          alt="App Icon"
-          id="header-icon"
-          class="btn"
-        />
+        <button id="help-btn" class="btn">
+          <img src="src/assets/help.svg" />
+        </button>
+        <a href="/">
+          <img
+            src="src/assets/Flat-Logo.svg"
+            alt="App Icon"
+            id="header-icon"
+            class="btn"
+          />
+        </a>
         <button id="signin-btn" class="btn">
-          <img src="src/assets/head.svg" />
+          <!-- <img src="src/assets/head.svg" /> -->
         </button>
       </div>
     </header>
 
-    <main id="main-content">
-      <div id="body-content">
-        <div id="center-container">
-          <div id="inputs-container">
-            <input type="text" id="input-field" placeholder="Speak your mind" />
-            <button id="post-btn" class="btn">Post</button>
-          </div>
-          <div id="post-list">
-            <div style="text-align: center">Loading posts...</div>
-          </div>
+    <!-- visible when signed in or before signing in  -->
+    <div id="body-content">
+      <div id="center-container">
+        <div id="inputs-container">
+          <input type="text" id="input-field" placeholder="Speak your mind" />
+          <button id="post-btn" class="btn">Post</button>
+        </div>
+        <div id="post-list">
+          <div style="text-align: center">Loading posts...</div>
         </div>
       </div>
-    </main>
+    </div>
 
-    <section id="sign-in-page" style="display: none">
-      <h2>Sign In with Google</h2>
-      <button id="google-sign-in-btn">
-        <img src="/src/assets/google-logo.svg" alt="Google" />
-        Sign In with Google
-      </button>
-      <button id="back-to-app-btn">Back</button>
-    </section>
+    <div id="sign-in-view" style="display: none">
+      <div id="center-container" style="text-align: center; padding: 20px">
+        <h2>Sign In</h2>
+        <p>You must sign in to post or interact.</p>
+        <button id="google-sign-in-btn" class="btn" style="margin-top: 20px">
+          <i class="fa-brands fa-google"></i> Sign In with Google
+        </button>
+        <button id="close-sign-in-btn" class="btn" style="margin-top: 10px">
+          Close
+        </button>
+      </div>
+    </div>
 
     <footer>
       <p>&copy; 2025 The Open Dissent</p>
