@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- avoid flash of unstyled content in firefox -->
+    <script type="text/javascript">
+      var elm = document.getElementsByTagName("html")[0];
+      elm.style.display = "none";
+      document.addEventListener("DOMContentLoaded", function (event) {
+        elm.style.display = "block";
+      });
+    </script>
+
     <title>The Open Dissent</title>
     <meta
       name="viewport"
