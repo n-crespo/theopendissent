@@ -14,6 +14,7 @@
   --postbg: #fefefe;
   --borderfg: #ebebeb;
   --borderrad: 5px;
+  --logo-height: 40px;
 }
 
 header {
@@ -46,10 +47,24 @@ header {
   border: none;
   background-color: var(--background);
   color: var(--text);
+  height: calc(var(--logo-height) + 10px); /* 10px top + 10px bottom padding */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#help-btn img,
+#signin-btn img {
+  /* Constrain the image to the logo's height */
+  max-height: calc(var(--logo-height) + 20px);
+  width: auto;
+  height: 90%;
 }
 
 #header-icon {
   margin: 0;
+  height: var(--logo-height) + 50px;
+  width: auto;
   max-width: 80vw;
 }
 
