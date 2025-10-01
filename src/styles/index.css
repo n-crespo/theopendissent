@@ -55,17 +55,15 @@ header {
 
 #help-btn img,
 #signin-btn img {
-  /* Constrain the image to the logo's height */
   max-height: calc(var(--logo-height) + 20px);
   width: auto;
-  height: 90%;
+  height: 80%;
 }
 
 #header-icon {
   margin: 0;
-  height: var(--logo-height) + 50px;
   width: auto;
-  max-width: 80vw;
+  max-width: 85vw;
 }
 
 body {
