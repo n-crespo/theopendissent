@@ -163,6 +163,10 @@ inputField.addEventListener("keypress", function (event) {
   }
 });
 
+headerLogo.addEventListener("click", function () {
+  showView("app");
+});
+
 // submit input field
 submitPostBtn.addEventListener("click", function () {
   const postContent = inputField.value;
