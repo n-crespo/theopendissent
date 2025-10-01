@@ -111,14 +111,14 @@ function render(posts) {
 </div>
   <div id="post-buttons">
     <button class="post-button agree-button">
-      <i class="fa-solid fa-check"></i>
+      <i class="bi bi-check-square"></i>
     </button>
     <button class="post-button interesting-button">
-      <i class="fa-solid fa-fire-flame-curved"></i>
+      <i class="bi bi-fire"></i>
     </button>
     <button class="post-button disagree-button">
-      <i class="fa-solid fa-xmark"></i>
-      </button>
+      <i class="bi bi-x-square"></i>
+    </button>
 </div>
     `;
   }
