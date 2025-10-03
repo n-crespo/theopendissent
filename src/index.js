@@ -6,7 +6,10 @@ import {
   push,
   onValue,
   serverTimestamp,
-  // remove,
+  update,
+  set,
+  remove,
+  increment,
 } from "firebase/database";
 import {
   getAuth,
@@ -14,7 +17,7 @@ import {
   signInWithPopup,
   onAuthStateChanged,
   signOut,
-} from "firebase/auth"; // <-- NEW: Import Auth services
+} from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBqrAeqFnJLS8GRVR1LJvlUJ_TYao-EPe0",
@@ -30,17 +33,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const postsRefInDB = ref(database, "posts"); // create a reference (required)
+const usersRefInDB = ref(database, "user"); // create a reference (required)
 const auth = getAuth(app); // Get Auth service
 const googleProvider = new GoogleAuthProvider(); // Google Auth provider
 
 // ui elements
 const bodyContent = document.getElementById("body-content"); // main feed
 const signInView = document.getElementById("sign-in-view"); // hidden sign in page
-
+const headerLogo = document.getElementById("header-icon");
 const inputField = document.getElementById("input-field");
 const postList = document.getElementById("post-list");
 const submitPostBtn = document.getElementById("post-btn");
-
 const signInBtn = document.getElementById("signin-btn");
 const googleSignInBtn = document.getElementById("google-sign-in-btn");
 const closeSignInBtn = document.getElementById("close-sign-in-btn");
@@ -60,14 +63,10 @@ const showView = (view) => {
 const updateUI = (user) => {
   console.log("calling update ui");
   if (user) {
-    // User is signed in (show sign out option)
-    // signInBtn.innerHTML = `icon: <i class="fa-solid fa-right-from-bracket"></i>`;
-    signInBtn.innerHTML = `Sign Out (${user.email})`;
-    console.log(user.email);
-    submitPostBtn.disabled = false; // Allow posting
-    showView("app"); // Show the main content
+    signInBtn.innerHTML = `Sign Out:<br />(${user.email.split("@")[0]}) `;
+    submitPostBtn.disabled = false;
+    showView("app");
   } else {
-    // User is signed out
     signInBtn.innerHTML = `<img src="src/assets/head.svg" />`; // The original sign-in icon
     signInBtn.title = "Sign In";
     submitPostBtn.disabled = false; // Disable posting
@@ -93,45 +92,96 @@ googleSignInBtn.addEventListener("click", () => {
 closeSignInBtn.addEventListener("click", () => showView("app"));
 
 onAuthStateChanged(auth, (user) => {
-  console.log("changing state due to auth");
+  // console.log("changing state due to auth");
   updateUI(user);
 });
 
-// somewhat stupidly render all posts
+// HACK: somewhat stupidly render all posts
 function render(posts) {
   let listItems = "";
   for (let i = 0; i < posts.length; i++) {
-    const postTime = new Date(posts[i].timestamp);
+    let post = posts[i];
+    const postTime = new Date(post.timestamp);
     const formattedTime = postTime.toLocaleString(); // Format the date and time for display
+
+    // grab the uid of the current user
+    const currentUserId = auth.currentUser ? auth.currentUser.uid : null;
+    const hasAgreed = post.interactions?.agreed?.[currentUserId];
+    const hasInteresting = post.interactions?.interesting?.[currentUserId];
+    const hasDisagreed = post.interactions?.disagreed?.[currentUserId];
+
+    const agreedCount = post.metrics?.agreedCount || 0;
+    const interestingCount = post.metrics?.interestingCount || 0;
+    const disagreedCount = post.metrics?.disagreedCount || 0;
+
     listItems += `
-<div id="post">
-  <div id="user-icon-id"> 👤 ${posts[i].userId.substring(0, 5)} </div>
+<div id="post" data-post-id="${post.id}">
+  <div id="user-icon-id">
+    <i class="bi bi-person-fill"></i> ${post.userId.substring(0, 5)}
+  </div>
   <p class="timestamp">${formattedTime}</p>
-  <p>${posts[i].content}</p>
-</div>
-  <div id="post-buttons">
-    <button class="post-button agree-button">
+  <p>${post.content}</p>
+  <div id="post-btns">
+    <button class="post-btn agree-button" ${hasAgreed ? "active" : ""}>
       <i class="bi bi-check-square"></i>
+      <span class="count">${agreedCount}</span>
     </button>
-    <button class="post-button interesting-button">
+    <button class="post-btn interesting-button" ${hasInteresting ? "active" : ""}>
       <i class="bi bi-fire"></i>
+      <span class="count">${interestingCount}</span>
     </button>
-    <button class="post-button disagree-button">
+    <button class="post-btn disagree-button" ${hasDisagreed ? "active" : ""}>
       <i class="bi bi-x-square"></i>
+      <span class="count">${disagreedCount}</span>
     </button>
+  </div>
 </div>
     `;
   }
   postList.innerHTML = listItems;
+
+  const interactButtons = document.querySelectorAll(".post-btn");
+  interactButtons.forEach((button) => {
+    button.addEventListener("click", function (event) {
+      // (toggle 'active' class)
+      // this.classList.toggle("active");
+      // if (this.classList.contains('agree-button')) {...}
+      if (!auth.currentUser) {
+        showView("sign-in");
+      } else {
+        // Determine interaction type
+        let interactionType = "";
+        if (this.classList.contains("agree-button")) {
+          interactionType = "agreed";
+        } else if (this.classList.contains("disagree-button")) {
+          interactionType = "disagreed";
+        } else if (this.classList.contains("interested-button")) {
+          interactionType = "interested";
+        }
+        // Get current post ID (assume it's available as currentPostID)
+        // FIX: link postID with interaction button
+        // const currentPostID = window.currentPostID;
+        if (!interactionType || !currentPostID) {
+          console.warn("Interaction type or post ID missing");
+          return;
+        }
+        const userRef = ref(
+          database,
+          `users/${user.uid}/interactionsHistory/${interactionType}/${currentPostID}`,
+        );
+        set(userRef, true);
+      }
+    });
+  });
 }
 
-// HACK: render database status on change
 onValue(postsRefInDB, function (snapshot) {
   if (snapshot.exists()) {
     const postsObject = snapshot.val();
     const currentPosts = [];
 
     for (let postId in postsObject) {
+      console.log(postId);
       if (postsObject.hasOwnProperty(postId)) {
         const post = postsObject[postId];
         if (
@@ -139,16 +189,18 @@ onValue(postsRefInDB, function (snapshot) {
           post.hasOwnProperty("postContent") &&
           post.hasOwnProperty("userId")
         ) {
-          currentPosts.push({
+          currentPosts.unshift({
+            id: postId,
             userId: post.userId,
             content: post.postContent,
-            likes: 0,
             timestamp: post.timestamp,
+            metrics: post.metrics,
+            interactions: post.interactions,
           });
         }
       }
     }
-    render(currentPosts.reverse());
+    render(currentPosts);
   } else {
     console.log("snapshot doesn't exist...");
     postList.innerHTML = "<p>No posts yet!</p>";
@@ -163,11 +215,12 @@ inputField.addEventListener("keypress", function (event) {
   }
 });
 
+// return to main view when logo clicker
 headerLogo.addEventListener("click", function () {
   showView("app");
 });
 
-// submit input field
+// handle posting logic/updating postlist/db
 submitPostBtn.addEventListener("click", function () {
   const postContent = inputField.value;
 
@@ -180,13 +233,34 @@ submitPostBtn.addEventListener("click", function () {
   }
 
   const newPost = {
-    likes: 0,
-    // Use the Firebase User ID instead of the local storage HACK
     userId: auth.currentUser.uid,
     postContent: postContent,
     timestamp: serverTimestamp(),
+
+    metrics: {
+      agreedCount: 0,
+      disagreeCount: 0,
+      interestedCount: 0,
+    },
+
+    interactions: {
+      agreed: {},
+      interested: {},
+      disagreed: {},
+    },
+    // Will store UIDs: { 'uid1': true, 'uid2': true }
+    //   agreed: { "placeholder-id": true },
+    //   interesting: { "placeholder-id": true },
+    //   disagreed: { "placeholder-id": true },
+    // },
   };
 
-  push(postsRefInDB, newPost);
+  // const newPostRef = push(postsRefInDB, newPost);
+  // const postId = newPostRef.key; // This is the POSTID (e.g., "-Mbq...")
+  // console.log("key: " + postId);
+  // newPostRef.update({
+  //   id: postId,
+  // });
+
   inputField.value = "";
 });
