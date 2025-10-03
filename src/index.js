@@ -255,7 +255,7 @@ submitPostBtn.addEventListener("click", function () {
     // },
   };
 
-  // const newPostRef = push(postsRefInDB, newPost);
+  const newPostRef = push(postsRefInDB, newPost);
   // const postId = newPostRef.key; // This is the POSTID (e.g., "-Mbq...")
   // console.log("key: " + postId);
   // newPostRef.update({
