@@ -1,4 +1,5 @@
 // import firebase functions
+import headIconUrl from "./assets/icons/head.svg";
 import { getElement } from "./utils.ts";
 import { initializeApp } from "firebase/app";
 import {
@@ -68,7 +69,7 @@ const updateUI = (user) => {
     submitPostBtn.disabled = false;
     showView("app");
   } else {
-    signInBtn.innerHTML = `<img src="./src/assets/icons/head.svg" />`; // The original sign-in icon
+    signInBtn.innerHTML = `<img src="${headIconUrl}" />`; // The original sign-in icon
     signInBtn.title = "Sign In";
     submitPostBtn.disabled = false; // Disable posting
     showView("app"); // Keep showing the app view, but posting is disabled (or show a public view)
