@@ -1,5 +1,5 @@
 // import firebase functions
-import { getElement } from "./utils";
+import { getElement } from "./utils.ts";
 import { initializeApp } from "firebase/app";
 import {
   getDatabase,
@@ -7,10 +7,10 @@ import {
   push,
   onValue,
   serverTimestamp,
-  update,
+  // update,
   set,
-  remove,
-  increment,
+  // remove,
+  // increment,
 } from "firebase/database";
 import {
   getAuth,
@@ -64,11 +64,11 @@ const showView = (view: View) => {
 
 const updateUI = (user) => {
   if (user) {
-    signInBtn.innerHTML = `Sign Out:<br />(${user.email.split("@")[0]})<br /> ${getAuth(app).currentUser.uid.substring(0, 10)} `;
+    signInBtn.innerHTML = `Sign Out:<br />(${user.email.split("@")[0]})<br /> ${getAuth(app)?.currentUser?.uid.substring(0, 10)} `;
     submitPostBtn.disabled = false;
     showView("app");
   } else {
-    signInBtn.innerHTML = `<img src="src/assets/head.svg" />`; // The original sign-in icon
+    signInBtn.innerHTML = `<img src="/src/assets/icons/head.svg" />`; // The original sign-in icon
     signInBtn.title = "Sign In";
     submitPostBtn.disabled = false; // Disable posting
     showView("app"); // Keep showing the app view, but posting is disabled (or show a public view)
@@ -93,7 +93,7 @@ googleSignInBtn.addEventListener("click", () => {
         email: user.email,
         displayName: user.displayName,
       };
-      const uid = auth.currentUser.uid;
+      const uid = auth.currentUser?.uid;
       const userRefInDB = ref(database, "users/" + uid); // create a reference (required)
       set(userRefInDB, newUser);
     })
@@ -111,11 +111,20 @@ onAuthStateChanged(auth, (user) => {
   updateUI(user);
 });
 
-// HACK: somewhat stupidly render all posts
-function render(posts) {
+// Define the structure of a single post object
+interface Post {
+  id: string;
+  userId: string;
+  content: string;
+  timestamp: number; // Assuming timestamp can be anything, or use Date or number
+  metrics?: any; // Assuming metrics can be anything
+  interactions?: any; // Assuming interactions can be anything
+}
+
+function render(posts: Post[]) {
   let listItems = "";
   for (let i = 0; i < posts.length; i++) {
-    let post = posts[i];
+    const post = posts[i];
     const postTime = new Date(post.timestamp);
     const formattedTime = postTime.toLocaleString(); // Format the date and time for display
 
@@ -212,9 +221,9 @@ function render(posts) {
 onValue(postsRefInDB, function (snapshot) {
   if (snapshot.exists()) {
     const postsObject = snapshot.val();
-    const currentPosts = [];
+    const currentPosts: Post[] = [];
 
-    for (let postId in postsObject) {
+    for (const postId in postsObject) {
       if (postsObject.hasOwnProperty(postId)) {
         const post = postsObject[postId];
         if (
