@@ -1,4 +1,5 @@
 // import firebase functions
+import { getElement } from "./utils";
 import { initializeApp } from "firebase/app";
 import {
   getDatabase,
@@ -33,23 +34,24 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const postsRefInDB = ref(database, "posts"); // create a reference (required)
-const usersRefInDB = ref(database, "user"); // create a reference (required)
+// const usersRefInDB = ref(database, "users"); // create a reference (required)
 const auth = getAuth(app); // Get Auth service
-const googleProvider = new GoogleAuthProvider(); // Google Auth provider
+// const googleProvider = new GoogleAuthProvider(); // Google Auth provider
 
 // ui elements
-const bodyContent = document.getElementById("body-content"); // main feed
-const signInView = document.getElementById("sign-in-view"); // hidden sign in page
-const headerLogo = document.getElementById("header-icon");
-const inputField = document.getElementById("input-field");
-const postList = document.getElementById("post-list");
-const submitPostBtn = document.getElementById("post-btn");
-const signInBtn = document.getElementById("signin-btn");
-const googleSignInBtn = document.getElementById("google-sign-in-btn");
-const closeSignInBtn = document.getElementById("close-sign-in-btn");
+const bodyContent = getElement("body-content");
+const signInView = getElement("sign-in-view");
+const headerLogo = getElement("header-icon");
+const inputField = getElement("input-field");
+const postList = getElement("post-list");
+const submitPostBtn = getElement("post-btn");
+const signInBtn = getElement("signin-btn");
+const googleSignInBtn = getElement("google-sign-in-btn");
+const closeSignInBtn = getElement("close-sign-in-btn");
 
 // UI state handler
-const showView = (view) => {
+type View = "app" | "sign-in";
+const showView = (view: View) => {
   bodyContent.style.display = "none";
   signInView.style.display = "none";
 
@@ -61,9 +63,8 @@ const showView = (view) => {
 };
 
 const updateUI = (user) => {
-  console.log("calling update ui");
   if (user) {
-    signInBtn.innerHTML = `Sign Out:<br />(${user.email.split("@")[0]}) `;
+    signInBtn.innerHTML = `Sign Out:<br />(${user.email.split("@")[0]})<br /> ${getAuth(app).currentUser.uid.substring(0, 10)} `;
     submitPostBtn.disabled = false;
     showView("app");
   } else {
@@ -84,9 +85,23 @@ signInBtn.addEventListener("click", function () {
 });
 
 googleSignInBtn.addEventListener("click", () => {
-  signInWithPopup(auth, googleProvider).catch((error) => {
-    console.error("Google Sign-In Failed:", error.message);
-  });
+  const provider = new GoogleAuthProvider();
+  signInWithPopup(auth, provider)
+    .then((result) => {
+      const user = result.user;
+      const newUser = {
+        email: user.email,
+        displayName: user.displayName,
+      };
+      const uid = auth.currentUser.uid;
+      const userRefInDB = ref(database, "users/" + uid); // create a reference (required)
+      set(userRefInDB, newUser);
+    })
+    .catch((error) => {
+      // Handle Errors here.
+      console.log(error);
+      console.error("Google Sign-In Error:", error.message);
+    });
 });
 
 closeSignInBtn.addEventListener("click", () => showView("app"));
@@ -115,22 +130,22 @@ function render(posts) {
     const disagreedCount = post.metrics?.disagreedCount || 0;
 
     listItems += `
-<div id="post" data-post-id="${post.id}">
+<div class="post" data-post-id="${post.id}">
   <div id="user-icon-id">
-    <i class="bi bi-person-fill"></i> ${post.userId.substring(0, 5)}
+    <i class="bi bi-person-fill"></i> ${post.userId.substring(0, 10)}
   </div>
   <p class="timestamp">${formattedTime}</p>
   <p>${post.content}</p>
   <div id="post-btns">
-    <button class="post-btn agree-button" ${hasAgreed ? "active" : ""}>
+    <button class="post-btn agreed-button" ${hasAgreed ? "active" : ""}>
       <i class="bi bi-check-square"></i>
       <span class="count">${agreedCount}</span>
     </button>
-    <button class="post-btn interesting-button" ${hasInteresting ? "active" : ""}>
+    <button class="post-btn interested-button" ${hasInteresting ? "active" : ""}>
       <i class="bi bi-fire"></i>
       <span class="count">${interestingCount}</span>
     </button>
-    <button class="post-btn disagree-button" ${hasDisagreed ? "active" : ""}>
+    <button class="post-btn disagreed-button" ${hasDisagreed ? "active" : ""}>
       <i class="bi bi-x-square"></i>
       <span class="count">${disagreedCount}</span>
     </button>
@@ -143,33 +158,52 @@ function render(posts) {
   const interactButtons = document.querySelectorAll(".post-btn");
   interactButtons.forEach((button) => {
     button.addEventListener("click", function (event) {
-      // (toggle 'active' class)
-      // this.classList.toggle("active");
-      // if (this.classList.contains('agree-button')) {...}
       if (!auth.currentUser) {
         showView("sign-in");
       } else {
-        // Determine interaction type
-        let interactionType = "";
-        if (this.classList.contains("agree-button")) {
-          interactionType = "agreed";
-        } else if (this.classList.contains("disagree-button")) {
-          interactionType = "disagreed";
-        } else if (this.classList.contains("interested-button")) {
-          interactionType = "interested";
-        }
-        // Get current post ID (assume it's available as currentPostID)
-        // FIX: link postID with interaction button
-        // const currentPostID = window.currentPostID;
-        if (!interactionType || !currentPostID) {
+        const postElement = this.closest(".post");
+        const currentPostID = postElement.getAttribute("data-post-id");
+        const interactionTypes = ["agreed", "disagreed", "interested"];
+        let currentInteraction = "";
+
+        // figure out which kind of button this is exactly
+        interactionTypes.forEach((interaction) => {
+          console.log("checking: " + interaction);
+          if (this.classList.contains(interaction + "-button")) {
+            currentInteraction = interaction;
+          }
+        });
+
+        // check for edge case errors
+        if (!currentInteraction || !currentPostID) {
           console.warn("Interaction type or post ID missing");
           return;
         }
-        const userRef = ref(
+
+        const uid = auth.currentUser.uid;
+        // update user's interaction history
+        const userInteractionRef = ref(
           database,
-          `users/${user.uid}/interactionsHistory/${interactionType}/${currentPostID}`,
+          `users/${uid}/postInteractions/${currentInteraction}/${currentPostID}`,
         );
-        set(userRef, true);
+        set(userInteractionRef, true);
+
+        // update post's list of interacted users
+        const postInteractionRef = ref(
+          database,
+          `posts/${currentPostID}/userInteractions/${currentInteraction}/${uid}`,
+        );
+        set(postInteractionRef, true);
+
+        // update interaction metrics counter for post
+        const postMetricRef = ref(
+          database,
+          `posts/${currentPostID}/metrics/${currentInteraction}count/${uid}`,
+        );
+        set(postMetricRef, true);
+
+        // (toggle 'active' class)
+        // this.classList.toggle("active");
       }
     });
   });
@@ -181,7 +215,6 @@ onValue(postsRefInDB, function (snapshot) {
     const currentPosts = [];
 
     for (let postId in postsObject) {
-      console.log(postId);
       if (postsObject.hasOwnProperty(postId)) {
         const post = postsObject[postId];
         if (
@@ -239,7 +272,7 @@ submitPostBtn.addEventListener("click", function () {
 
     metrics: {
       agreedCount: 0,
-      disagreeCount: 0,
+      disagreedCount: 0,
       interestedCount: 0,
     },
 
@@ -255,7 +288,7 @@ submitPostBtn.addEventListener("click", function () {
     // },
   };
 
-  const newPostRef = push(postsRefInDB, newPost);
+  push(postsRefInDB, newPost);
   // const postId = newPostRef.key; // This is the POSTID (e.g., "-Mbq...")
   // console.log("key: " + postId);
   // newPostRef.update({
@@ -264,3 +297,14 @@ submitPostBtn.addEventListener("click", function () {
 
   inputField.value = "";
 });
+
+const updateInteraction = (interactionType: string) => {
+  bodyContent.style.display = "none";
+  signInView.style.display = "none";
+
+  if (view === "app") {
+    bodyContent.style.display = "block";
+  } else if (view === "sign-in") {
+    signInView.style.display = "block";
+  }
+};

@@ -21,9 +21,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// --- Core Authentication Functions ---
-
 export function setupAuthListeners(onSignedIn, onSignedOut) {
+  console.log("setting up auth listeners");
   onAuthStateChanged(auth, (user) => {
     // User is signed in
     if (user) {
@@ -42,6 +41,13 @@ export function setupAuthListeners(onSignedIn, onSignedOut) {
     ?.addEventListener("click", () => {
       signInWithPopup(auth, provider)
         .then((result) => {
+          const user = result.user;
+          const userRef = ref(database, `users/${user.uid}`);
+          set(userRef, {
+            email: user.email,
+            displayName: user.displayName,
+            // Ensure you don't overwrite existing history if it exists
+          });
           // Successful sign-in, onAuthStateChanged will handle the UI update
         })
         .catch((error) => {

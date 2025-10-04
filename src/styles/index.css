@@ -169,7 +169,7 @@ body::-webkit-scrollbar {
   flex-direction: column;
 }
 
-#post {
+.post {
   margin-bottom: 0px;
   border: 1px solid var(--borderfg);
   background-color: var(--postbg);
@@ -202,13 +202,13 @@ body::-webkit-scrollbar {
   background-color: #e9e9e9;
   cursor: pointer;
 }
-.agree-button {
+.agreed-button {
   color: #28a745; /* Green */
 }
-.interesting-button {
+.interested-button {
   color: orange;
 }
-.disagree-button {
+.disagreed-button {
   color: #dc3545; /* Red */
 }
 
