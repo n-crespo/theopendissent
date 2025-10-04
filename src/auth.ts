@@ -23,7 +23,7 @@ const provider = new GoogleAuthProvider();
 
 export function setupAuthListeners(onSignedIn, onSignedOut) {
   console.log("setting up auth listeners");
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, (user: NextOrObserver) => {
     // User is signed in
     if (user) {
       console.log("User signed in:", user.displayName);
