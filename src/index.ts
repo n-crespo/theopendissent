@@ -17,6 +17,9 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  browserPopupRedirectResolver,
+  signInWithRedirect,
+  getRedirectResult,
   onAuthStateChanged,
   signOut,
   User,
@@ -121,9 +124,11 @@ signInBtn.addEventListener("click", function (): void {
 
 googleSignInBtn.addEventListener("click", () => {
   const provider: GoogleAuthProvider = new GoogleAuthProvider();
-  signInWithPopup(auth, provider)
+  signInWithPopup(auth, provider, browserPopupRedirectResolver)
     .then((result) => {
-      const user: User = result.user;
+      const user = result.user;
+      // const credential = GoogleAuthProvider.credentialFromResult(result);
+      // const accessToken = credential.accessToken;})
       const newUser = {
         email: user.email,
         displayName: user.displayName,
@@ -135,6 +140,10 @@ googleSignInBtn.addEventListener("click", () => {
       }
     })
     .catch((error) => {
+      // const errorCode = error.code;
+      // const errorMessage = error.message;
+      // const email = error.email;
+      // const credential = GoogleAuthProvider.credentialFromError(error);
       console.log(error);
       if (error.message) {
         console.error("Google Sign-In Error:", error.message);
@@ -146,6 +155,10 @@ closeSignInBtn.addEventListener("click", () => showView("app"));
 
 // Auth state listener
 onAuthStateChanged(auth, (user: AuthUser) => {
+  if (user) {
+    const uid: string = user.uid;
+    console.log("User UID from onAuthStateChanged:", uid);
+  }
   updateUI(user);
 });
 
