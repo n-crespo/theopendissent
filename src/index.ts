@@ -33,7 +33,7 @@ import { getElement } from "./utils.ts";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyBqrAeqFnJLS8GRVR1LJvlUJ_TYao-EPe0",
-  authDomain: "test-app-d0afd.firebaseapp.com",
+  authDomain: "theopendissent.com",
   databaseURL: "https://test-app-d0afd-default-rtdb.firebaseio.com",
   projectId: "test-app-d0afd",
   storageBucket: "test-app-d0afd.firebasestorage.app",
@@ -124,43 +124,42 @@ signInBtn.addEventListener("click", function (): void {
 
 googleSignInBtn.addEventListener("click", () => {
   const provider: GoogleAuthProvider = new GoogleAuthProvider();
-  signInWithPopup(auth, provider, browserPopupRedirectResolver)
-    .then((result) => {
-      const user = result.user;
-      // const credential = GoogleAuthProvider.credentialFromResult(result);
-      // const accessToken = credential.accessToken;})
-      const newUser = {
-        email: user.email,
-        displayName: user.displayName,
-      };
-      const uid: string | undefined = auth.currentUser?.uid;
-      if (uid) {
-        const userRefInDB: DatabaseReference = ref(database, "users/" + uid);
-        set(userRefInDB, newUser);
-      }
-    })
-    .catch((error) => {
-      // const errorCode = error.code;
-      // const errorMessage = error.message;
-      // const email = error.email;
-      // const credential = GoogleAuthProvider.credentialFromError(error);
-      console.log(error);
-      if (error.message) {
-        console.error("Google Sign-In Error:", error.message);
-      }
-    });
+  // Use signInWithRedirect for better mobile compatibility.
+  signInWithRedirect(auth, provider).catch((error) => {
+    console.error("Error initiating Google sign-in redirect:", error);
+  });
 });
+
+// Add this logic to your file's initialization section (outside of the click listener)
+getRedirectResult(auth)
+  .then((result) => {
+    console.log("DOOOOOOOOOOOOOOOOOOOOOONE");
+    console.log("result: ", result);
+    if (result && result.user) {
+      const user = result.user;
+      console.log("updating ui!");
+      console.log(user);
+      updateUI(user);
+
+      const newUser = { email: user.email, displayName: user.displayName };
+      const userRefInDB = ref(database, "users/" + user.uid);
+      set(userRefInDB, newUser);
+    }
+  })
+  .catch((error) => {
+    console.error("Redirect Sign-In Error:", error);
+  });
 
 closeSignInBtn.addEventListener("click", () => showView("app"));
 
-// Auth state listener
-onAuthStateChanged(auth, (user: AuthUser) => {
-  if (user) {
-    const uid: string = user.uid;
-    console.log("User UID from onAuthStateChanged:", uid);
-  }
-  updateUI(user);
-});
+// // Auth state listener
+// onAuthStateChanged(auth, (user: AuthUser) => {
+//   if (user) {
+//     const uid: string = user.uid;
+//     console.log("User UID from onAuthStateChanged:", uid);
+//   }
+//   updateUI(user);
+// });
 
 function render(posts: Post[]): void {
   let listItems = "";
