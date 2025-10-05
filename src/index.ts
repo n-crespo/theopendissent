@@ -1,17 +1,17 @@
 // import firebase functions
-import headIconUrl from "./assets/icons/head.svg";
-import { getElement } from "./utils.ts";
-import { initializeApp } from "firebase/app";
+import { initializeApp, FirebaseOptions, FirebaseApp } from "firebase/app";
 import {
   getDatabase,
   ref,
   push,
   onValue,
+  increment,
   serverTimestamp,
-  // update,
   set,
+  Database,
+  DatabaseReference,
+  // update,
   // remove,
-  // increment,
 } from "firebase/database";
 import {
   getAuth,
@@ -19,9 +19,16 @@ import {
   signInWithPopup,
   onAuthStateChanged,
   signOut,
+  User,
+  Auth,
+  // AuthCredential,
 } from "firebase/auth";
 
-const firebaseConfig = {
+// local imports
+import headIconUrl from "./assets/icons/head.svg";
+import { getElement } from "./utils.ts";
+
+const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyBqrAeqFnJLS8GRVR1LJvlUJ_TYao-EPe0",
   authDomain: "test-app-d0afd.firebaseapp.com",
   databaseURL: "https://test-app-d0afd-default-rtdb.firebaseio.com",
@@ -31,28 +38,51 @@ const firebaseConfig = {
   appId: "1:772131437162:web:29b3407e82adeb28942813",
 };
 
+interface PostMetrics {
+  agreedCount: number;
+  disagreedCount: number;
+  interestedCount: number;
+}
+
+interface PostInteractions {
+  agreed: { [uid: string]: boolean };
+  interested: { [uid: string]: boolean };
+  disagreed: { [uid: string]: boolean };
+}
+
+export interface Post {
+  id: string; // The key from the database (e.g., "-Mbq...")
+  userId: string;
+  content: string; // Assuming 'postContent' from DB is mapped to 'content' here
+  timestamp: number | object; // serverTimestamp returns an object initially, number after sync
+  metrics: PostMetrics;
+  interactions: PostInteractions;
+}
+
+type View = "app" | "sign-in";
+type AuthUser = User | null;
+
 // firebase things
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-const postsRefInDB = ref(database, "posts"); // create a reference (required)
+const app: FirebaseApp = initializeApp(firebaseConfig);
+const database: Database = getDatabase(app);
+const postsRefInDB: DatabaseReference = ref(database, "posts"); // create a reference (required)
+const auth: Auth = getAuth(app); // Get Auth service
 // const usersRefInDB = ref(database, "users"); // create a reference (required)
-const auth = getAuth(app); // Get Auth service
 // const googleProvider = new GoogleAuthProvider(); // Google Auth provider
 
 // ui elements
-const bodyContent = getElement("body-content");
-const signInView = getElement("sign-in-view");
-const headerLogo = getElement("header-icon");
-const inputField = getElement("input-field");
-const postList = getElement("post-list");
-const submitPostBtn = getElement("post-btn");
-const signInBtn = getElement("signin-btn");
-const googleSignInBtn = getElement("google-sign-in-btn");
-const closeSignInBtn = getElement("close-sign-in-btn");
+const bodyContent = getElement("body-content") as HTMLElement;
+const signInView = getElement("sign-in-view") as HTMLElement;
+const headerLogo = getElement("header-icon") as HTMLElement;
+const inputField = getElement("input-field") as HTMLInputElement;
+const postList = getElement("post-list") as HTMLElement;
+const submitPostBtn = getElement("post-btn") as HTMLButtonElement;
+const signInBtn = getElement("signin-btn") as HTMLButtonElement;
+const googleSignInBtn = getElement("google-sign-in-btn") as HTMLButtonElement;
+const closeSignInBtn = getElement("close-sign-in-btn") as HTMLButtonElement;
 
 // UI state handler
-type View = "app" | "sign-in";
-const showView = (view: View) => {
+const showView = (view: View): void => {
   bodyContent.style.display = "none";
   signInView.style.display = "none";
 
@@ -63,9 +93,13 @@ const showView = (view: View) => {
   }
 };
 
-const updateUI = (user) => {
+/**
+ * Updates the UI based on the user's authentication state.
+ * @param user The current Firebase User object or null if signed out.
+ */
+export const updateUI = (user: AuthUser): void => {
   if (user) {
-    signInBtn.innerHTML = `Sign Out:<br />(${user.email.split("@")[0]})<br /> ${getAuth(app)?.currentUser?.uid.substring(0, 10)} `;
+    signInBtn.innerHTML = `Sign Out:<br />(${user.email?.split("@")[0]})<br /> ${getAuth(app)?.currentUser?.uid.substring(0, 10)} `;
     submitPostBtn.disabled = false;
     showView("app");
   } else {
@@ -77,7 +111,7 @@ const updateUI = (user) => {
 };
 
 // toggles sign-in view or signs out
-signInBtn.addEventListener("click", function () {
+signInBtn.addEventListener("click", function (): void {
   if (auth.currentUser) {
     signOut(auth);
   } else {
@@ -86,58 +120,63 @@ signInBtn.addEventListener("click", function () {
 });
 
 googleSignInBtn.addEventListener("click", () => {
-  const provider = new GoogleAuthProvider();
+  const provider: GoogleAuthProvider = new GoogleAuthProvider();
   signInWithPopup(auth, provider)
     .then((result) => {
-      const user = result.user;
+      const user: User = result.user;
       const newUser = {
         email: user.email,
         displayName: user.displayName,
       };
-      const uid = auth.currentUser?.uid;
-      const userRefInDB = ref(database, "users/" + uid); // create a reference (required)
-      set(userRefInDB, newUser);
+      const uid: string | undefined = auth.currentUser?.uid;
+      if (uid) {
+        const userRefInDB: DatabaseReference = ref(database, "users/" + uid);
+        set(userRefInDB, newUser);
+      }
     })
     .catch((error) => {
-      // Handle Errors here.
       console.log(error);
-      console.error("Google Sign-In Error:", error.message);
+      if (error.message) {
+        console.error("Google Sign-In Error:", error.message);
+      }
     });
 });
 
 closeSignInBtn.addEventListener("click", () => showView("app"));
 
-onAuthStateChanged(auth, (user) => {
-  // console.log("changing state due to auth");
+// Auth state listener
+onAuthStateChanged(auth, (user: AuthUser) => {
   updateUI(user);
 });
 
-// Define the structure of a single post object
-interface Post {
-  id: string;
-  userId: string;
-  content: string;
-  timestamp: number; // Assuming timestamp can be anything, or use Date or number
-  metrics?: any; // Assuming metrics can be anything
-  interactions?: any; // Assuming interactions can be anything
-}
-
-function render(posts: Post[]) {
+function render(posts: Post[]): void {
   let listItems = "";
-  for (let i = 0; i < posts.length; i++) {
-    const post = posts[i];
-    const postTime = new Date(post.timestamp);
-    const formattedTime = postTime.toLocaleString(); // Format the date and time for display
+
+  for (const post of posts) {
+    const postTime: Date = new Date(
+      typeof post.timestamp === "number" ? post.timestamp : 0,
+    );
+    const formattedTime: string = postTime.toLocaleString(); // Format the date and time for display
 
     // grab the uid of the current user
-    const currentUserId = auth.currentUser ? auth.currentUser.uid : null;
-    const hasAgreed = post.interactions?.agreed?.[currentUserId];
-    const hasInteresting = post.interactions?.interesting?.[currentUserId];
-    const hasDisagreed = post.interactions?.disagreed?.[currentUserId];
+    const currentUserId: string | null = auth.currentUser
+      ? auth.currentUser.uid
+      : null;
 
-    const agreedCount = post.metrics?.agreedCount || 0;
-    const interestingCount = post.metrics?.interestingCount || 0;
-    const disagreedCount = post.metrics?.disagreedCount || 0;
+    // check if user has interacted
+    const hasAgreed: boolean = Boolean(
+      post.interactions?.agreed?.[currentUserId!],
+    );
+    const hasInteresting = Boolean(
+      post.interactions?.interested?.[currentUserId!],
+    );
+    const hasDisagreed = Boolean(
+      post.interactions?.disagreed?.[currentUserId!],
+    );
+
+    const agreedCount: number = post.metrics?.agreedCount || 0;
+    const interestingCount: number = post.metrics?.interestedCount || 0;
+    const disagreedCount: number = post.metrics?.disagreedCount || 0;
 
     listItems += `
 <div class="post" data-post-id="${post.id}">
@@ -165,56 +204,59 @@ function render(posts: Post[]) {
   }
   postList.innerHTML = listItems;
 
-  const interactButtons = document.querySelectorAll(".post-btn");
-  interactButtons.forEach((button) => {
-    button.addEventListener("click", function (event) {
+  const interactButtons: NodeListOf<Element> =
+    document.querySelectorAll(".post-btn");
+  interactButtons.forEach((button: Element) => {
+    button.addEventListener("click", function (this: HTMLButtonElement): void {
       if (!auth.currentUser) {
         showView("sign-in");
-      } else {
-        const postElement = this.closest(".post");
-        const currentPostID = postElement.getAttribute("data-post-id");
-        const interactionTypes = ["agreed", "disagreed", "interested"];
-        let currentInteraction = "";
-
-        // figure out which kind of button this is exactly
-        interactionTypes.forEach((interaction) => {
-          console.log("checking: " + interaction);
-          if (this.classList.contains(interaction + "-button")) {
-            currentInteraction = interaction;
-          }
-        });
-
-        // check for edge case errors
-        if (!currentInteraction || !currentPostID) {
-          console.warn("Interaction type or post ID missing");
-          return;
-        }
-
-        const uid = auth.currentUser.uid;
-        // update user's interaction history
-        const userInteractionRef = ref(
-          database,
-          `users/${uid}/postInteractions/${currentInteraction}/${currentPostID}`,
-        );
-        set(userInteractionRef, true);
-
-        // update post's list of interacted users
-        const postInteractionRef = ref(
-          database,
-          `posts/${currentPostID}/userInteractions/${currentInteraction}/${uid}`,
-        );
-        set(postInteractionRef, true);
-
-        // update interaction metrics counter for post
-        const postMetricRef = ref(
-          database,
-          `posts/${currentPostID}/metrics/${currentInteraction}count/${uid}`,
-        );
-        set(postMetricRef, true);
-
-        // (toggle 'active' class)
-        // this.classList.toggle("active");
+        return;
       }
+
+      const postElement: Element | null = this.closest(".post");
+      const currentPostID = postElement?.getAttribute("data-post-id");
+      const interactionTypes = ["agreed", "disagreed", "interested"];
+      let currentInteraction = "";
+
+      // figure out which kind of button this is exactly
+      interactionTypes.forEach((interaction) => {
+        console.log("checking: " + interaction);
+        if (this.classList.contains(interaction + "-button")) {
+          currentInteraction = interaction;
+        }
+      });
+
+      // check for edge case errors
+      if (!currentInteraction || !currentPostID || !auth.currentUser) {
+        console.warn("Interaction type or post ID missing");
+        return;
+      }
+
+      const uid: string = auth.currentUser.uid;
+
+      // update user's interaction history
+      const userInteractionRef = ref(
+        database,
+        `users/${uid}/postInteractions/${currentInteraction}/${currentPostID}`,
+      );
+      set(userInteractionRef, true);
+
+      // update post's list of interacted users
+      const postInteractionRef = ref(
+        database,
+        `posts/${currentPostID}/userInteractions/${currentInteraction}/${uid}`,
+      );
+      set(postInteractionRef, true);
+
+      // update interaction metrics counter for post
+      const postMetricRef = ref(
+        database,
+        `posts/${currentPostID}/metrics/${currentInteraction}Count`,
+      );
+      set(postMetricRef, increment(1));
+
+      // (toggle 'active' class)
+      // this.classList.toggle("active");
     });
   });
 }
@@ -225,20 +267,28 @@ onValue(postsRefInDB, function (snapshot) {
     const currentPosts: Post[] = [];
 
     for (const postId in postsObject) {
-      if (postsObject.hasOwnProperty(postId)) {
-        const post = postsObject[postId];
+      if (Object.prototype.hasOwnProperty.call(postsObject, postId)) {
+        const postData = postsObject[postId];
         if (
-          post &&
-          post.hasOwnProperty("postContent") &&
-          post.hasOwnProperty("userId")
+          postData &&
+          typeof postData.postContent === "string" &&
+          typeof postData.userId === "string"
         ) {
           currentPosts.unshift({
             id: postId,
-            userId: post.userId,
-            content: post.postContent,
-            timestamp: post.timestamp,
-            metrics: post.metrics,
-            interactions: post.interactions,
+            userId: postData.userId,
+            content: postData.postContent,
+            timestamp: postData.timestamp,
+            metrics: postData.metrics || {
+              agreedCount: 0,
+              disagreedCount: 0,
+              interestedCount: 0,
+            },
+            interactions: postData.interactions || {
+              agreed: {},
+              interested: {},
+              disagreed: {},
+            },
           });
         }
       }
@@ -279,42 +329,19 @@ submitPostBtn.addEventListener("click", function () {
     userId: auth.currentUser.uid,
     postContent: postContent,
     timestamp: serverTimestamp(),
-
     metrics: {
       agreedCount: 0,
       disagreedCount: 0,
       interestedCount: 0,
-    },
-
+    } as PostMetrics,
     interactions: {
       agreed: {},
       interested: {},
       disagreed: {},
-    },
-    // Will store UIDs: { 'uid1': true, 'uid2': true }
-    //   agreed: { "placeholder-id": true },
-    //   interesting: { "placeholder-id": true },
-    //   disagreed: { "placeholder-id": true },
-    // },
+    } as PostInteractions,
+    //   agreed: { "uid": true },
   };
 
   push(postsRefInDB, newPost);
-  // const postId = newPostRef.key; // This is the POSTID (e.g., "-Mbq...")
-  // console.log("key: " + postId);
-  // newPostRef.update({
-  //   id: postId,
-  // });
-
   inputField.value = "";
 });
-
-const updateInteraction = (interactionType: string) => {
-  bodyContent.style.display = "none";
-  signInView.style.display = "none";
-
-  if (view === "app") {
-    bodyContent.style.display = "block";
-  } else if (view === "sign-in") {
-    signInView.style.display = "block";
-  }
-};
