@@ -33,7 +33,7 @@ import { getElement } from "./utils.ts";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyBqrAeqFnJLS8GRVR1LJvlUJ_TYao-EPe0",
-  authDomain: "theopendissent.com",
+  authDomain: "test-app-d0afd.firebaseapp.com",
   databaseURL: "https://test-app-d0afd-default-rtdb.firebaseio.com",
   projectId: "test-app-d0afd",
   storageBucket: "test-app-d0afd.firebasestorage.app",
@@ -133,8 +133,7 @@ googleSignInBtn.addEventListener("click", () => {
 // Add this logic to your file's initialization section (outside of the click listener)
 getRedirectResult(auth)
   .then((result) => {
-    console.log("DOOOOOOOOOOOOOOOOOOOOOONE");
-    console.log("result: ", result);
+    console.log("result: ", result); // BUG: this is null...
     if (result && result.user) {
       const user = result.user;
       console.log("updating ui!");
