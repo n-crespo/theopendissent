@@ -191,8 +191,13 @@ function render(posts: Post[]): void {
 
     listItems += `
 <div class="post" data-post-id="${post.id}">
-  <div id="user-icon-id">
-    <i class="bi bi-person-fill"></i> ${post.userId.substring(0, 10)}
+  <div id="post-header">
+    <div>
+      <i class="bi bi-person-fill"></i>${post.userId.substring(0, 10)}
+    </div>
+    <div>
+      Posted ${formattedTime}
+    </div>
   </div>
   <p class="timestamp">${formattedTime}</p>
   <p>${post.content}</p>
