@@ -11,9 +11,9 @@
   --blue: #043f63;
   --gray: #464646;
   --text: #222222;
-  --postbg: #fefefe;
-  --borderfg: #ebebeb;
-  --borderrad: 5px;
+  --postbg: #fff;
+  --borderfg: rgb(218, 220, 224);
+  --borderrad: 8px;
   --logo-height: 40px;
 }
 
