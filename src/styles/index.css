@@ -129,7 +129,7 @@ body::-webkit-scrollbar {
   border: 1px solid var(--borderfg);
   font-weight: bold;
 
-  background: linear-gradient(to right, #043f63, #4d5e19, #70161e);
+  background: linear-gradient(to right, var(--blue), var(--green), var(--red));
   background-size: 300% 100%;
   animation: shimmer 4s infinite ease-in-out alternate;
 
@@ -175,26 +175,29 @@ body::-webkit-scrollbar {
   background-color: var(--postbg);
   border-radius: var(--borderrad);
   padding: 20px 25px;
-  margin-bottom: 20px;
 }
 
-#user-icon-id {
-  margin-bottom: 15px;
+#post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
   font-size: 13px;
   color: var(--gray);
 }
 
 #post-btns {
+  margin-top: 20px;
   display: grid;
   max-width: 500px;
   grid-template-columns: 1fr 1fr 1fr; /* This creates three equal-sized columns */
-  gap: 0px;
+  gap: 70px;
 }
 .post-btn {
   border: 1px solid var(--borderfg);
   background-color: var(--postbg);
   border-radius: var(--borderrad);
-  padding: 10px 0px;
+  padding: 8px 0px;
   font-size: 21px;
   /* margin-bottom: 20px; */
 }

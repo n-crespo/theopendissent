@@ -16,11 +16,11 @@ import {
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithPopup,
-  browserPopupRedirectResolver,
+  // signInWithPopup,
+  // browserPopupRedirectResolver,
   signInWithRedirect,
   getRedirectResult,
-  onAuthStateChanged,
+  // onAuthStateChanged,
   signOut,
   User,
   Auth,
@@ -29,7 +29,7 @@ import {
 
 // local imports
 import headIconUrl from "./assets/icons/head.svg";
-import { getElement } from "./utils.ts";
+import { getElement, timeAgo } from "./utils.ts";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyBqrAeqFnJLS8GRVR1LJvlUJ_TYao-EPe0",
@@ -167,7 +167,7 @@ function render(posts: Post[]): void {
     const postTime: Date = new Date(
       typeof post.timestamp === "number" ? post.timestamp : 0,
     );
-    const formattedTime: string = postTime.toLocaleString(); // Format the date and time for display
+    const formattedTime: string = timeAgo(postTime, "en");
 
     // grab the uid of the current user
     const currentUserId: string | null = auth.currentUser
@@ -199,7 +199,6 @@ function render(posts: Post[]): void {
       Posted ${formattedTime}
     </div>
   </div>
-  <p class="timestamp">${formattedTime}</p>
   <p>${post.content}</p>
   <div id="post-btns">
     <button class="post-btn agreed-button" ${hasAgreed ? "active" : ""}>
