@@ -204,10 +204,6 @@ body::-webkit-scrollbar {
 .post-btn.active {
   background-color: var(--gray);
 }
-.post-btn:hover {
-  background-color: #e9e9e9;
-  cursor: pointer;
-}
 .agreed-button {
   color: #28a745; /* Green */
 }
@@ -225,4 +221,20 @@ footer {
   text-align: center;
   background-color: var(--background);
   margin-bottom: 40px;
+}
+
+#google-sign-in-btn,
+#close-sign-in-btn {
+  padding: 10px;
+  background-color: #fff;
+  border-radius: var(--borderrad);
+  border: 1px solid var(--borderfg);
+  box-shadow: none;
+}
+.post-btn:hover,
+#google-sign-in-btn:hover,
+#close-sign-in-btn:hover {
+  cursor: pointer;
+  background-color: var(--borderfg);
+  background-color: #e9e9e9;
 }
