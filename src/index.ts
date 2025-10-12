@@ -1,29 +1,31 @@
 // import firebase functions
-import { initializeApp, FirebaseOptions, FirebaseApp } from "firebase/app";
+import { FirebaseApp, FirebaseOptions, initializeApp } from "firebase/app";
 import {
-  getDatabase,
-  ref,
-  push,
-  onValue,
-  increment,
-  serverTimestamp,
-  set,
   Database,
   DatabaseReference,
+  get,
+  getDatabase,
+  increment,
+  onValue,
+  push,
+  ref,
+  runTransaction,
+  serverTimestamp,
+  set,
   // update,
   // remove,
 } from "firebase/database";
 import {
+  Auth,
   getAuth,
   GoogleAuthProvider,
-  signInWithPopup,
   // browserPopupRedirectResolver,
   // signInWithRedirect,
   // getRedirectResult,
   onAuthStateChanged,
+  signInWithPopup,
   signOut,
   User,
-  Auth,
   // AuthCredential,
 } from "firebase/auth";
 
@@ -73,8 +75,8 @@ type AuthUser = User | null;
 
 // firebase things
 const app: FirebaseApp = initializeApp(firebaseConfig);
-const database: Database = getDatabase(app);
-const postsRefInDB: DatabaseReference = ref(database, "posts"); // create a reference (required)
+const db: Database = getDatabase(app);
+const postsRefInDB: DatabaseReference = ref(db, "posts"); // create a reference (required)
 const auth: Auth = getAuth(app); // Get Auth service
 // const usersRefInDB = ref(database, "users"); // create a reference (required)
 // const googleProvider = new GoogleAuthProvider(); // Google Auth provider
@@ -108,7 +110,9 @@ const showView = (view: View): void => {
  */
 export const updateUI = (user: AuthUser): void => {
   if (user) {
-    signInBtn.innerHTML = `Sign Out:<br />(${user.email?.split("@")[0]})<br /> ${getAuth(app)?.currentUser?.uid.substring(0, 10)} `;
+    signInBtn.innerHTML = `Sign Out:<br />(${
+      user.email?.split("@")[0]
+    })<br /> ${getAuth(app)?.currentUser?.uid.substring(0, 10)} `;
     submitPostBtn.disabled = false;
     showView("app");
   } else {
@@ -140,7 +144,7 @@ googleSignInBtn.addEventListener("click", () => {
         updateUI(user);
 
         const newUser = { email: user.email, displayName: user.displayName };
-        const userRefInDB = ref(database, "users/" + user.uid);
+        const userRefInDB = ref(db, "users/" + user.uid);
         set(userRefInDB, newUser);
       }
     })
@@ -181,9 +185,7 @@ function render(posts: Post[]): void {
       hasDisagreed: post.userInteractions?.disagreed?.[currentUserId!],
     };
 
-    const agreedCount: number = post.metrics?.agreedCount || 0;
-    const interestingCount: number = post.metrics?.interestedCount || 0;
-    const disagreedCount: number = post.metrics?.disagreedCount || 0;
+    const metrics = post.metrics;
 
     listItems += `
 <div class="post" data-post-id="${post.id}">
@@ -197,17 +199,23 @@ function render(posts: Post[]): void {
   </div>
   <p>${post.content}</p>
   <div id="post-btns">
-    <button class="post-btn agreed-button" ${hasAgreed ? "active" : ""}>
+    <button class="post-btn agreed-button ${
+      currentUserInteractions.hasAgreed ? "active" : ""
+    }">
       <i class="bi bi-check-square"></i>
-      <span class="count">${agreedCount}</span>
+      <span class="count">${metrics.agreedCount}</span>
     </button>
-    <button class="post-btn interested-button" ${hasInteresting ? "active" : ""}>
+    <button class="post-btn interested-button ${
+      currentUserInteractions.hasInterested ? "active" : ""
+    }">
       <i class="bi bi-fire"></i>
-      <span class="count">${interestingCount}</span>
+      <span class="count">${metrics.interestedCount}</span>
     </button>
-    <button class="post-btn disagreed-button" ${hasDisagreed ? "active" : ""}>
+    <button class="post-btn disagreed-button ${
+      currentUserInteractions.hasDisagreed ? "active" : ""
+    }">
       <i class="bi bi-x-square"></i>
-      <span class="count">${disagreedCount}</span>
+      <span class="count">${metrics.disagreedCount}</span>
     </button>
   </div>
 </div>
@@ -225,48 +233,37 @@ function render(posts: Post[]): void {
       }
 
       const postElement: Element | null = this.closest(".post");
-      const currentPostID = postElement?.getAttribute("data-post-id");
+      const postID = postElement?.getAttribute("data-post-id");
       const interactionTypes = ["agreed", "disagreed", "interested"];
-      let currentInteraction = "";
+      const uid: string = auth.currentUser.uid;
 
       // figure out which kind of button this is exactly
+      let buttonInteractionType: string = "";
       interactionTypes.forEach((interaction) => {
         if (this.classList.contains(interaction + "-button")) {
-          currentInteraction = interaction;
+          buttonInteractionType = interaction;
         }
       });
 
       // check for edge case errors
-      if (!currentInteraction || !currentPostID || !auth.currentUser) {
+      if (!buttonInteractionType || !postID || !auth.currentUser) {
         console.warn("Interaction type or post ID missing");
         return;
       }
 
-      const uid: string = auth.currentUser.uid;
-
-      // update user's interaction history
-      const userInteractionRef = ref(
-        database,
-        `users/${uid}/postInteractions/${currentInteraction}/${currentPostID}`,
-      );
-      set(userInteractionRef, true);
-
-      // update post's list of interacted users
-      const postInteractionRef = ref(
-        database,
-        `posts/${currentPostID}/userInteractions/${currentInteraction}/${uid}`,
-      );
-      set(postInteractionRef, true);
-
-      // update interaction metrics counter for post
-      const postMetricRef = ref(
-        database,
-        `posts/${currentPostID}/metrics/${currentInteraction}Count`,
-      );
-      set(postMetricRef, increment(1));
-
-      // (toggle 'active' class)
-      // this.classList.toggle("active");
+      if (this.classList.contains("active")) {
+        removeInteraction(postID, uid, buttonInteractionType);
+        console.log("removing interaction: ", buttonInteractionType);
+      } else {
+        addInteraction(postID, uid, buttonInteractionType);
+        console.log("addign interaction: ", buttonInteractionType);
+        interactionTypes.forEach((interaction) => {
+          if (interaction != buttonInteractionType) {
+            removeInteraction(postID, uid, interaction);
+            console.log("removing interaction: ", interaction);
+          }
+        });
+      }
     });
   });
 }
@@ -355,3 +352,33 @@ submitPostBtn.addEventListener("click", function () {
   push(postsRefInDB, newPost);
   inputField.value = "";
 });
+
+function getInteractionPaths(postID: string, uid: string, interaction: string) {
+  return {
+    user: `users/${uid}/postInteractions/${interaction}/${postID}`,
+    post: `posts/${postID}/userInteractions/${interaction}/${uid}`,
+    metrics: `posts/${postID}/metrics/${interaction}Count`,
+  };
+}
+
+// Generic interaction handler
+function updateInteraction(
+  postID: string,
+  uid: string,
+  interaction: string,
+  value: boolean | null,
+  // incrementBy: number,
+) {
+  const paths = getInteractionPaths(postID, uid, interaction);
+  set(ref(db, paths.user), value);
+  set(ref(db, paths.post), value);
+  // set(ref(db, paths.metrics), increment(incrementBy));
+}
+
+function addInteraction(postID: string, uid: string, interaction: string) {
+  updateInteraction(postID, uid, interaction, true /* , 1 */);
+}
+
+function removeInteraction(postID: string, uid: string, interaction: string) {
+  updateInteraction(postID, uid, interaction, null /* , -1 */);
+}

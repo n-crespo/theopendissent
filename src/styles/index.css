@@ -202,15 +202,18 @@ body::-webkit-scrollbar {
   /* margin-bottom: 20px; */
 }
 .post-btn.active {
-  background-color: var(--gray);
+  /* background-color: var(--gray); */
+  transform: scale(0.98); /* Example: slightly shrink the button on click */
+  border: 1px solid red;
+  /* background-color: var(--text); /* A different color for the press */
 }
-.agreed-button {
+.post-btn.agreed-button {
   color: #28a745; /* Green */
 }
-.interested-button {
+.post-btn.interested-button {
   color: orange;
 }
-.disagreed-button {
+.post-btn.disagreed-button {
   color: #dc3545; /* Red */
 }
 
