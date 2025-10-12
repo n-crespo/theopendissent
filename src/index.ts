@@ -174,16 +174,12 @@ function render(posts: Post[]): void {
       ? auth.currentUser.uid
       : null;
 
-    // check if user has interacted
-    const hasAgreed: boolean = Boolean(
-      post.interactions?.agreed?.[currentUserId!],
-    );
-    const hasInteresting = Boolean(
-      post.interactions?.interested?.[currentUserId!],
-    );
-    const hasDisagreed = Boolean(
-      post.interactions?.disagreed?.[currentUserId!],
-    );
+    // check if current user has interacted
+    const currentUserInteractions: CurrentUserInteractions = {
+      hasAgreed: post.userInteractions?.agreed?.[currentUserId!],
+      hasInterested: post.userInteractions?.interested?.[currentUserId!],
+      hasDisagreed: post.userInteractions?.disagreed?.[currentUserId!],
+    };
 
     const agreedCount: number = post.metrics?.agreedCount || 0;
     const interestingCount: number = post.metrics?.interestedCount || 0;
