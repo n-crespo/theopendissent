@@ -19,8 +19,8 @@ import {
   signInWithPopup,
   // browserPopupRedirectResolver,
   // signInWithRedirect,
-  getRedirectResult,
-  // onAuthStateChanged,
+  // getRedirectResult,
+  onAuthStateChanged,
   signOut,
   User,
   Auth,
@@ -146,15 +146,6 @@ googleSignInBtn.addEventListener("click", () => {
       console.log(error);
     });
 });
-
-// Add this logic to your file's initialization section (outside of the click listener)
-getRedirectResult(auth)
-  .then((result) => {
-    console.log("result: ", result); // BUG: this is null...
-  })
-  .catch((error) => {
-    console.error("Redirect Sign-In Error:", error);
-  });
 
 closeSignInBtn.addEventListener("click", () => showView("app"));
 
