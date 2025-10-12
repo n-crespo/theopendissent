@@ -158,14 +158,10 @@ getRedirectResult(auth)
 
 closeSignInBtn.addEventListener("click", () => showView("app"));
 
-// // Auth state listener
-// onAuthStateChanged(auth, (user: AuthUser) => {
-//   if (user) {
-//     const uid: string = user.uid;
-//     console.log("User UID from onAuthStateChanged:", uid);
-//   }
-//   updateUI(user);
-// });
+// preserve log in between session
+onAuthStateChanged(auth, (user) => {
+  updateUI(user);
+});
 
 function render(posts: Post[]): void {
   let listItems = "";
