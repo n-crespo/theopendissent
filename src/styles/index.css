@@ -170,7 +170,7 @@ body::-webkit-scrollbar {
 }
 
 .post {
-  margin-bottom: 0px;
+  margin-bottom: 15px;
   border: 1px solid var(--borderfg);
   background-color: var(--postbg);
   border-radius: var(--borderrad);
