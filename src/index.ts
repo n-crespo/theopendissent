@@ -47,7 +47,13 @@ interface PostMetrics {
   interestedCount: number;
 }
 
-interface PostInteractions {
+interface CurrentUserInteractions {
+  hasAgreed: boolean;
+  hasInterested: boolean;
+  hasDisagreed: boolean;
+}
+
+interface PostUserInteractions {
   agreed: { [uid: string]: boolean };
   interested: { [uid: string]: boolean };
   disagreed: { [uid: string]: boolean };
@@ -59,7 +65,7 @@ export interface Post {
   content: string; // Assuming 'postContent' from DB is mapped to 'content' here
   timestamp: number | object; // serverTimestamp returns an object initially, number after sync
   metrics: PostMetrics;
-  interactions: PostInteractions;
+  userInteractions: PostUserInteractions;
 }
 
 type View = "app" | "sign-in";
@@ -292,7 +298,7 @@ onValue(postsRefInDB, function (snapshot) {
               disagreedCount: 0,
               interestedCount: 0,
             },
-            interactions: postData.interactions || {
+            userInteractions: postData.userInteractions || {
               agreed: {},
               interested: {},
               disagreed: {},
@@ -346,7 +352,7 @@ submitPostBtn.addEventListener("click", function () {
       agreed: {},
       interested: {},
       disagreed: {},
-    } as PostInteractions,
+    } as PostUserInteractions,
     //   agreed: { "uid": true },
   };
 
