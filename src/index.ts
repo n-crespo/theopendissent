@@ -16,9 +16,9 @@ import {
 import {
   getAuth,
   GoogleAuthProvider,
-  // signInWithPopup,
+  signInWithPopup,
   // browserPopupRedirectResolver,
-  signInWithRedirect,
+  // signInWithRedirect,
   getRedirectResult,
   // onAuthStateChanged,
   signOut,
@@ -124,26 +124,33 @@ signInBtn.addEventListener("click", function (): void {
 
 googleSignInBtn.addEventListener("click", () => {
   const provider: GoogleAuthProvider = new GoogleAuthProvider();
-  // Use signInWithRedirect for better mobile compatibility.
-  signInWithRedirect(auth, provider).catch((error) => {
-    console.error("Error initiating Google sign-in redirect:", error);
-  });
+  signInWithPopup(auth, provider)
+    .then((result) => {
+      if (result && result.user) {
+        // const credential = GoogleAuthProvider.credentialFromResult(result);
+        // const token = credential?.accessToken;
+        const user = result.user;
+        console.log(user);
+        updateUI(user);
+
+        const newUser = { email: user.email, displayName: user.displayName };
+        const userRefInDB = ref(database, "users/" + user.uid);
+        set(userRefInDB, newUser);
+      }
+    })
+    .catch((error) => {
+      // const errorCode = error.code;
+      // const errorMessage = error.message;
+      // const email = error.customData.email;
+      // const credential = GoogleAuthProvider.credentialFromError(error);
+      console.log(error);
+    });
 });
 
 // Add this logic to your file's initialization section (outside of the click listener)
 getRedirectResult(auth)
   .then((result) => {
     console.log("result: ", result); // BUG: this is null...
-    if (result && result.user) {
-      const user = result.user;
-      console.log("updating ui!");
-      console.log(user);
-      updateUI(user);
-
-      const newUser = { email: user.email, displayName: user.displayName };
-      const userRefInDB = ref(database, "users/" + user.uid);
-      set(userRefInDB, newUser);
-    }
   })
   .catch((error) => {
     console.error("Redirect Sign-In Error:", error);
@@ -235,7 +242,6 @@ function render(posts: Post[]): void {
 
       // figure out which kind of button this is exactly
       interactionTypes.forEach((interaction) => {
-        console.log("checking: " + interaction);
         if (this.classList.contains(interaction + "-button")) {
           currentInteraction = interaction;
         }
