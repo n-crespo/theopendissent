@@ -63,6 +63,11 @@ header {
   height: 100%;
 }
 
+#help-btn:hover,
+#signin-btn:hover {
+  cursor: pointer;
+}
+
 /* generic styles  */
 body {
   scrollbar-width: none;
