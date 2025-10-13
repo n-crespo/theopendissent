@@ -9,9 +9,12 @@ admin.initializeApp();
  * exists for all posts.
  */
 export const updateInteractionCounts = onValueWritten(
-  "/posts/{postId}/userInteractions/{interaction}/{userId}", // use wildcard for postID, interaction, userID (allow any child)
+  // use wildcard for postID, interaction, userID (allow any child)
+  "/posts/{postId}/userInteractions/{interaction}/{userId}",
   (event) => {
-    const { postId, interaction } = event.params; // extract actual postID and interaction
+    //
+    // extract actual postID and interaction
+    const { postId, interaction } = event.params;
 
     // ensure we only do this for valid interactions
     const validInteractions = ["agreed", "disagreed", "interested"];
