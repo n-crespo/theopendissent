@@ -60,7 +60,7 @@ const uclaOnlyAuth = (user: any): void => {
   if (!email || !email.endsWith("@g.ucla.edu")) {
     throw new HttpsError(
       "invalid-argument",
-      "Only @ucla.edu emails are allowed to sign up.",
+      "Sorry, only @ucla.edu emails are allowed to sign up.",
     );
   }
 };
