@@ -77,7 +77,6 @@ export const beforecreated = beforeUserCreated(async (event) => {
   const newUserProfile = {
     email: user?.email,
     displayName: user?.displayName,
-    createdAt: admin.database.ServerValue.TIMESTAMP,
   };
   const userRef = admin.database().ref(`users/${user?.uid}`);
   console.log(`Validation passed. Creating profile for new user: ${user?.uid}`);
