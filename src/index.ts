@@ -50,25 +50,25 @@ interface PostMetrics {
   interestedCount: number;
 }
 
-interface CurrentUserInteractions {
+interface UserInteractions {
   hasAgreed: boolean;
   hasInterested: boolean;
   hasDisagreed: boolean;
 }
 
-interface PostUserInteractions {
+interface PostInteractions {
   agreed: { [uid: string]: boolean };
   interested: { [uid: string]: boolean };
   disagreed: { [uid: string]: boolean };
 }
 
 export interface Post {
-  id: string; // The key from the database (e.g., "-Mbq...")
+  id: string;
   userId: string;
-  content: string; // Assuming 'postContent' from DB is mapped to 'content' here
-  timestamp: number | object; // serverTimestamp returns an object initially, number after sync
+  content: string;
+  timestamp: number | object;
   metrics: PostMetrics;
-  userInteractions: PostUserInteractions;
+  userInteractions: PostInteractions;
 }
 
 type View = "app" | "sign-in";
@@ -77,10 +77,8 @@ type AuthUser = User | null;
 // firebase things
 const app: FirebaseApp = initializeApp(firebaseConfig);
 const db: Database = getDatabase(app);
-const pathToPosts: DatabaseReference = ref(db, "posts"); // create a reference (required)
-const auth: Auth = getAuth(app); // Get Auth service
-// const usersRefInDB = ref(database, "users"); // create a reference (required)
-// const googleProvider = new GoogleAuthProvider(); // Google Auth provider
+const pathToPosts: DatabaseReference = ref(db, "posts");
+const auth: Auth = getAuth(app);
 
 // ui elements
 const bodyContent = getElement("body-content") as HTMLElement;
@@ -119,10 +117,10 @@ export const updateUI = (user: AuthUser): void => {
     submitPostBtn.disabled = false;
     showView("app");
   } else {
-    signInBtn.innerHTML = `<img src="${headIconUrl}" />`; // The original sign-in icon
+    signInBtn.innerHTML = `<img src="${headIconUrl}" />`; // the original signin icon
     signInBtn.title = "Sign In";
     submitPostBtn.disabled = false; // Disable posting
-    showView("app"); // Keep showing the app view, but posting is disabled (or show a public view)
+    showView("app"); // Keep showing the app view, but posting is disabled
   }
 };
 
@@ -175,6 +173,8 @@ onAuthStateChanged(auth, (user) => {
 });
 
 function render(posts: Post[]): void {
+  console.log("rendering a buncha things!");
+
   let listItems = "";
 
   for (const post of posts) {
@@ -189,12 +189,11 @@ function render(posts: Post[]): void {
       : null;
 
     // check if current user has interacted
-    const currentUserInteractions: CurrentUserInteractions = {
+    const currentUserInteractions: UserInteractions = {
       hasAgreed: post.userInteractions?.agreed?.[currentUserId!],
       hasInterested: post.userInteractions?.interested?.[currentUserId!],
       hasDisagreed: post.userInteractions?.disagreed?.[currentUserId!],
     };
-
     const metrics = post.metrics;
 
     listItems += `
@@ -232,49 +231,51 @@ function render(posts: Post[]): void {
     `;
   }
   postList.innerHTML = listItems;
+}
 
-  const interactButtons: NodeListOf<Element> =
-    document.querySelectorAll(".post-btn");
-  interactButtons.forEach((button: Element) => {
-    button.addEventListener("click", function (this: HTMLButtonElement): void {
-      if (!auth.currentUser) {
-        showView("sign-in");
-        return;
-      }
+// This listener is set up ONCE and handles clicks for all current and future posts.
+postList.addEventListener("click", (event: MouseEvent) => {
+  // find the button that was clicked
+  const button = (event.target as Element).closest(".post-btn");
 
-      const postElement: Element | null = this.closest(".post");
-      const postID = postElement?.getAttribute("data-post-id");
-      const interactionTypes = ["agreed", "disagreed", "interested"];
-      const uid: string = auth.currentUser.uid;
+  if (!button) {
+    return;
+  }
+  if (!auth.currentUser) {
+    showView("sign-in");
+    return;
+  }
 
-      // figure out which kind of button this is exactly
-      let buttonInteractionType: string = "";
-      interactionTypes.forEach((interaction) => {
-        if (this.classList.contains(interaction + "-button")) {
-          buttonInteractionType = interaction;
-        }
-      });
+  const postElement = button.closest(".post");
+  const postID = postElement?.getAttribute("data-post-id");
+  const interactionTypes = ["agreed", "disagreed", "interested"];
+  const uid = auth.currentUser.uid;
 
-      // check for edge case errors
-      if (!buttonInteractionType || !postID || !auth.currentUser) {
-        console.warn("Interaction type or post ID missing");
-        return;
-      }
+  let buttonInteractionType = "";
+  interactionTypes.forEach((interaction) => {
+    if (button.classList.contains(interaction + "-button")) {
+      buttonInteractionType = interaction;
+    }
+  });
 
-      // HACK: this should probably happen on server side
-      if (this.classList.contains("active")) {
-        removeInteraction(postID, uid, buttonInteractionType);
-      } else {
-        addInteraction(postID, uid, buttonInteractionType);
-        interactionTypes.forEach((interaction) => {
-          if (interaction != buttonInteractionType) {
-            removeInteraction(postID, uid, interaction);
-          }
-        });
+  if (!buttonInteractionType || !postID) {
+    console.warn("Interaction type or post ID missing");
+    return;
+  }
+
+  // handle the interaction
+  if (button.classList.contains("active")) {
+    removeInteraction(postID, uid, buttonInteractionType);
+  } else {
+    addInteraction(postID, uid, buttonInteractionType);
+    // ensure user can only have one interaction type active at a time
+    interactionTypes.forEach((interaction) => {
+      if (interaction !== buttonInteractionType) {
+        removeInteraction(postID, uid, interaction);
       }
     });
-  });
-}
+  }
+});
 
 /**
  * Processes a Firebase DataSnapshot and returns a sorted array of Post objects.
@@ -374,7 +375,7 @@ submitPostBtn.addEventListener("click", function () {
       agreed: {},
       interested: {},
       disagreed: {},
-    } as PostUserInteractions,
+    } as PostInteractions,
     //   agreed: { "uid": true },
   };
 

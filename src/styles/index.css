@@ -204,17 +204,26 @@ body::-webkit-scrollbar {
 .post-btn.active {
   /* background-color: var(--gray); */
   transform: scale(0.98); /* Example: slightly shrink the button on click */
-  border: 1px solid red;
+  border: 1px solid black;
   /* background-color: var(--text); /* A different color for the press */
 }
 .post-btn.agreed-button {
   color: #28a745; /* Green */
 }
+.post-btn.agreed-button.active {
+  border: 1px solid #28a745; /* Green */
+}
 .post-btn.interested-button {
   color: orange;
 }
+.post-btn.interested-button.active {
+  border: 1px solid orange;
+}
 .post-btn.disagreed-button {
-  color: #dc3545; /* Red */
+  color: #dc3545;
+}
+.post-btn.disagreed-button.active {
+  border: 1px solid #dc3545;
 }
 
 footer {
