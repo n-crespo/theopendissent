@@ -160,10 +160,6 @@ googleSignInBtn.addEventListener("click", () => {
           "Signed in! User: " + user.displayName + " Email: " + user.email,
         );
         updateUI(user);
-
-        // const newUser = { email: user.email, displayName: user.displayName };
-        // const userRefInDB = ref(db, "users/" + user.uid);
-        // set(userRefInDB, newUser);
       }
     })
     .catch((error) => {

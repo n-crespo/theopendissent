@@ -1,6 +1,7 @@
 import { onValueWritten } from "firebase-functions/v2/database";
 import { HttpsError } from "firebase-functions/v2/https";
 import {
+  AuthBlockingEvent,
   beforeUserCreated,
   beforeUserSignedIn,
 } from "firebase-functions/v2/identity";
@@ -55,10 +56,11 @@ export const updateInteractionCounts = onValueWritten(
   },
 );
 
-const uclaOnlyAuth = (event: any): void => {
+// restrict users to @g.ucla.edu emails
+const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
   const user = event.data;
-  // example from docs
-  if (!user?.email?.includes("@g.ucla.edu")) {
+  // example from docs https://firebase.google.com/docs/auth/extend-with-blocking-functions?authuser=0#only_allowing_registration_from_a_specific_domain
+  if (!user?.email?.endsWith("@g.ucla.edu")) {
     throw new HttpsError(
       "invalid-argument",
       "Sorry, only @ucla.edu emails are allowed to sign up.",
@@ -66,10 +68,24 @@ const uclaOnlyAuth = (event: any): void => {
   }
 };
 
-export const beforecreated = beforeUserCreated((event) => {
-  return uclaOnlyAuth(event);
+// run on user creation
+export const beforecreated = beforeUserCreated(async (event) => {
+  uclaOnlyAuth(event);
+  const user = event.data;
+
+  // add new user to db
+  const newUserProfile = {
+    email: user?.email,
+    displayName: user?.displayName,
+    createdAt: admin.database.ServerValue.TIMESTAMP,
+  };
+  const userRef = admin.database().ref(`users/${user?.uid}`);
+  console.log(`Validation passed. Creating profile for new user: ${user?.uid}`);
+
+  await userRef.set(newUserProfile);
 });
 
+// run on user sign-in
 export const beforesignedin = beforeUserSignedIn((event) => {
   return uclaOnlyAuth(event);
 });
