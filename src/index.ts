@@ -95,32 +95,42 @@ let currentPosts: Post[] = []; // list of posts that are later rendered
 
 // UI state handler
 const showView = (view: View): void => {
-  bodyContent.style.display = "none";
-  signInView.style.display = "none";
-
-  if (view === "app") {
-    bodyContent.style.display = "block";
-  } else if (view === "sign-in") {
-    signInView.style.display = "block";
+  const signInView = document.getElementById("sign-in-view");
+  if (!signInView) {
+    return;
   }
+  if (view === "sign-in") {
+    signInView.style.display = "flex";
+    setTimeout(() => {
+      signInView.classList.add("visible");
+    }, 10);
+  } else {
+    signInView.classList.remove("visible");
+    setTimeout(() => {
+      signInView.style.display = "none";
+    }, 300); // only hide the element after it fades out
+  }
+
+  document
+    .getElementById("close-sign-in-btn-icon")
+    ?.addEventListener("click", () => {
+      showView("app");
+    });
 };
 
-/**
- * Updates the UI based on the user's authentication state.
- * @param user The current Firebase User object or null if signed out.
- */
 export const updateUI = (user: AuthUser): void => {
   if (user) {
-    signInBtn.innerHTML = `Sign Out:<br />(${
-      user.email?.split("@")[0]
-    })<br /> ${getAuth(app)?.currentUser?.uid.substring(0, 10)} `;
+    signInBtn.innerHTML = `<i class="bi bi-box-arrow-right"></i>`;
+    signInBtn.title = `Signed in as ${user.email?.split("@")[0]}`;
+    signInBtn.classList.add("signed-in");
     submitPostBtn.disabled = false;
     showView("app");
   } else {
-    signInBtn.innerHTML = `<img src="${headIconUrl}" />`; // the original signin icon
+    signInBtn.innerHTML = `<img src="${headIconUrl}" />`;
     signInBtn.title = "Sign In";
-    submitPostBtn.disabled = false; // Disable posting
-    showView("app"); // Keep showing the app view, but posting is disabled
+    signInBtn.classList.remove("signed-in");
+    submitPostBtn.disabled = true; // disable posting when logged out
+    showView("app");
   }
 };
 
@@ -198,42 +208,50 @@ function render(posts: Post[]): void {
 
     listItems += `
 <div class="post" data-post-id="${post.id}">
-  <div id="post-header">
-    <div>
-      <i class="bi bi-person-fill"></i>${post.userId.substring(0, 10)}
+  <div class="post-header">
+    <div class="post-avatar">
+      <!-- Placeholder for a real avatar image -->
+      <i class="bi bi-person-fill"></i>
     </div>
-    <div>
-      Posted ${formattedTime}
+    <div class="post-user-info">
+      <span class="username">${post.userId.substring(0, 10)}</span>
+      <span class="timestamp">${formattedTime}</span>
     </div>
   </div>
-  <p>${post.content}</p>
-  <div id="post-btns">
+  <p class="post-content">${post.content}</p>
+  <div class="post-actions">
     <button class="post-btn agreed-button ${
       currentUserInteractions.hasAgreed ? "active" : ""
     }">
-      <i class="bi bi-check-square"></i>
-      <span class="count">${metrics.agreedCount}</span>
+      <div class="btn-content">
+        <i class="bi bi-check-square"></i>
+        <span class="count">${metrics.agreedCount}</span>
+      </div>
     </button>
     <button class="post-btn interested-button ${
       currentUserInteractions.hasInterested ? "active" : ""
     }">
-      <i class="bi bi-fire"></i>
-      <span class="count">${metrics.interestedCount}</span>
+      <div class="btn-content">
+        <i class="bi bi-fire"></i>
+        <span class="count">${metrics.interestedCount}</span>
+      </div>
     </button>
     <button class="post-btn disagreed-button ${
       currentUserInteractions.hasDisagreed ? "active" : ""
     }">
-      <i class="bi bi-x-square"></i>
-      <span class="count">${metrics.disagreedCount}</span>
+      <div class="btn-content">
+        <i class="bi bi-x-square"></i>
+        <span class="count">${metrics.disagreedCount}</span>
+      </div>
     </button>
   </div>
 </div>
-    `;
+`;
   }
   postList.innerHTML = listItems;
 }
 
-// This listener is set up ONCE and handles clicks for all current and future posts.
+// this listener is set up ONCE and handles clicks for all current and future posts
 postList.addEventListener("click", (event: MouseEvent) => {
   // find the button that was clicked
   const button = (event.target as Element).closest(".post-btn");
@@ -301,7 +319,6 @@ function processPostsSnapshot(snapshot: DataSnapshot): Post[] {
         return null;
       }
 
-      // 4. Construct a clean Post object with default fallbacks.
       return {
         id: postId,
         userId: postData.userId,

@@ -21,7 +21,6 @@
       href="favicons/apple-touch-icon.png"
     />
     <link rel="manifest" href="site.webmanifest" />
-    <!-- for icons-->
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
@@ -48,7 +47,6 @@
       </div>
     </header>
 
-    <!-- visible when signed in or before signing in  -->
     <div id="body-content">
       <div id="center-container">
         <div id="inputs-container">
@@ -59,19 +57,34 @@
       </div>
     </div>
 
-    <div id="sign-in-view" style="display: none">
-      <div id="center-container" style="text-align: center; padding: 20px">
-        <h2>Sign In</h2>
-        <p>You must sign in to post or interact.</p>
-        <button id="google-sign-in-btn">
-          <i class="bi bi-google"></i> Sign In with Google
+    <div id="sign-in-view" class="sign-in-overlay" style="display: none">
+      <div class="sign-in-modal">
+        <button
+          id="close-sign-in-btn-icon"
+          class="btn-close-icon"
+          aria-label="Close"
+        >
+          <i class="bi bi-x-lg"></i>
         </button>
-        <button id="close-sign-in-btn">Close</button>
+
+        <h2>Sign In Required</h2>
+        <p class="sign-in-subtitle">
+          You must sign in with Google to post or interact with content.
+        </p>
+
+        <button id="google-sign-in-btn" class="btn btn-google">
+          <i class="bi bi-google"></i>
+          <span>Sign In with Google</span>
+        </button>
+
+        <button id="close-sign-in-btn" class="btn-close-text">
+          Maybe later
+        </button>
       </div>
     </div>
 
     <footer>
-      <p>&copy; 2025 The Open Dissent</p>
+      <p style="text-align: center">&copy; 2025 The Open Dissent</p>
     </footer>
     <script type="module" src="src/index.ts"></script>
   </body>
