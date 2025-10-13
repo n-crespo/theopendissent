@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    // "target": "ESNext",
+    // "module": "ESNext",
+    // "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true, // allow importing from utils.ts
+    "noEmit": true,
+    "strict": true
+  },
+  "include": ["src"]
+}
