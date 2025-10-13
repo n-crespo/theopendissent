@@ -35,12 +35,7 @@
         <button id="help-btn" class="btn">
           <img src="./src/assets/icons/help.svg" />
         </button>
-        <img
-          src="src/assets/Flat-Logo.svg"
-          alt="App Icon"
-          id="header-icon"
-          class="btn"
-        />
+        <img src="src/assets/Flat-Logo.svg" alt="App Icon" id="header-icon" />
         <button id="signin-btn" class="btn">
           <img src="./src/assets/icons/head.svg" />
         </button>
@@ -57,29 +52,55 @@
       </div>
     </div>
 
-    <div id="sign-in-view" class="sign-in-overlay" style="display: none">
-      <div class="sign-in-modal">
+    <div id="sign-in-view" class="modal-overlay" style="display: none">
+      <div class="modal-card">
         <button
-          id="close-sign-in-btn-icon"
-          class="btn-close-icon"
+          id="close-signin-btn"
+          class="close-modal-btn"
           aria-label="Close"
         >
           <i class="bi bi-x-lg"></i>
         </button>
-
         <h2>Sign In Required</h2>
-        <p class="sign-in-subtitle">
-          You must sign in with Google to post or interact with content.
-        </p>
+        <div class="modal-content">
+          <p>Sign in with Google to post or interact with content.</p>
+          <p>
+            You must have a valid <strong>@g.ucla.edu</strong> email address to
+            sign in and participate.
+          </p>
+        </div>
 
         <button id="google-sign-in-btn" class="btn btn-google">
           <i class="bi bi-google"></i>
           <span>Sign In with Google</span>
         </button>
 
-        <button id="close-sign-in-btn" class="btn-close-text">
-          Maybe later
+        <button id="close-sign-in-btn">Maybe later</button>
+      </div>
+    </div>
+
+    <div id="help-view" class="modal-overlay" style="display: none">
+      <div class="modal-card">
+        <button id="close-help-btn" class="close-modal-btn" aria-label="Close">
+          <i class="bi bi-x-lg"></i>
         </button>
+        <h2>How It Works</h2>
+        <div class="modal-content">
+          <p>
+            The Open Dissent is an open platform for anonymous political
+            discussion. Share your thoughts and see what others think.
+          </p>
+          <h4>Interacting with Posts:</h4>
+          <ul>
+            <li><i class="bi bi-check-square"></i> I agree with this post!</li>
+            <li><i class="bi bi-fire"></i> This is quite the take...</li>
+            <li><i class="bi bi-x-square"></i> I disagree with this post!</li>
+          </ul>
+          <p>
+            You must have a valid <strong>@g.ucla.edu</strong> email address to
+            sign in and participate.
+          </p>
+        </div>
       </div>
     </div>
 

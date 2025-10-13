@@ -1,34 +1,25 @@
 // import firebase functions
 import { FirebaseApp, FirebaseOptions, initializeApp } from "firebase/app";
 import {
-  Database,
-  DatabaseReference,
-  DataSnapshot,
-  // get,
-  getDatabase,
-  // increment,
-  onValue,
-  push,
-  ref,
-  // runTransaction,
-  serverTimestamp,
-  set,
-  update,
-  // remove,
-} from "firebase/database";
-import {
   Auth,
   getAuth,
   GoogleAuthProvider,
-  // browserPopupRedirectResolver,
-  // signInWithRedirect,
-  // getRedirectResult,
   onAuthStateChanged,
   signInWithPopup,
   signOut,
   User,
-  // AuthCredential,
 } from "firebase/auth";
+import {
+  Database,
+  DatabaseReference,
+  DataSnapshot,
+  getDatabase,
+  onValue,
+  push,
+  ref,
+  serverTimestamp,
+  update,
+} from "firebase/database";
 
 // local imports
 import headIconUrl from "./assets/icons/head.svg";
@@ -62,7 +53,7 @@ interface PostInteractions {
   disagreed: { [uid: string]: boolean };
 }
 
-export interface Post {
+interface Post {
   id: string;
   userId: string;
   content: string;
@@ -71,13 +62,8 @@ export interface Post {
   userInteractions: PostInteractions;
 }
 
-type View = "app" | "sign-in";
 type AuthUser = User | null;
-const provider = new GoogleAuthProvider();
-// only allow @ucla.edu
-provider.setCustomParameters({
-  hd: "ucla.edu",
-});
+let currentPosts: Post[] = []; // list of posts that are later rendered
 
 // firebase things
 const app: FirebaseApp = initializeApp(firebaseConfig);
@@ -86,61 +72,21 @@ const pathToPosts: DatabaseReference = ref(db, "posts");
 const auth: Auth = getAuth(app);
 
 // ui elements
-const bodyContent = getElement("body-content") as HTMLElement;
-const signInView = getElement("sign-in-view") as HTMLElement;
-const headerLogo = getElement("header-icon") as HTMLElement;
+// const bodyContent = getElement("body-content") as HTMLElement;
+// const signInView = getElement("sign-in-view") as HTMLElement;
+// const headerContent = getElement("header-content") as HTMLElement;
+const headerIcon = getElement("header-icon") as HTMLElement;
 const inputField = getElement("input-field") as HTMLInputElement;
 const postList = getElement("post-list") as HTMLElement;
 const submitPostBtn = getElement("post-btn") as HTMLButtonElement;
-const signInBtn = getElement("signin-btn") as HTMLButtonElement;
 const googleSignInBtn = getElement("google-sign-in-btn") as HTMLButtonElement;
-const closeSignInBtn = getElement("close-sign-in-btn") as HTMLButtonElement;
-
-let currentPosts: Post[] = []; // list of posts that are later rendered
-
-// UI state handler
-const showView = (view: View): void => {
-  const signInView = document.getElementById("sign-in-view");
-  if (!signInView) {
-    return;
-  }
-  if (view === "sign-in") {
-    signInView.style.display = "flex";
-    setTimeout(() => {
-      signInView.classList.add("visible");
-    }, 10);
-  } else {
-    signInView.classList.remove("visible");
-    setTimeout(() => {
-      signInView.style.display = "none";
-    }, 300); // only hide the element after it fades out
-  }
-
-  document
-    .getElementById("close-sign-in-btn-icon")
-    ?.addEventListener("click", () => {
-      showView("app");
-    });
-};
-
-export const updateUI = (user: AuthUser): void => {
-  if (user) {
-    signInBtn.innerHTML = `<i class="bi bi-box-arrow-right"></i>`;
-    signInBtn.title = `Signed in as ${user.email?.split("@")[0]}`;
-    signInBtn.classList.add("signed-in");
-    submitPostBtn.disabled = false;
-    showView("app");
-  } else {
-    signInBtn.innerHTML = `<img src="${headIconUrl}" />`;
-    signInBtn.title = "Sign In";
-    signInBtn.classList.remove("signed-in");
-    submitPostBtn.disabled = true; // disable posting when logged out
-    showView("app");
-  }
-};
+const signInBtn = getElement("signin-btn") as HTMLElement;
+const helpBtn = getElement("help-btn") as HTMLElement;
+const closeSignInButton = getElement("close-sign-in-btn") as HTMLButtonElement;
+const closeModalButtons = document.querySelectorAll(".close-modal-btn");
 
 // toggles sign-in view or signs out
-signInBtn.addEventListener("click", function (): void {
+signInBtn.addEventListener("click", () => {
   if (auth.currentUser) {
     signOut(auth);
   } else {
@@ -159,7 +105,7 @@ googleSignInBtn.addEventListener("click", () => {
         console.log(
           "Signed in! User: " + user.displayName + " Email: " + user.email,
         );
-        updateUI(user);
+        updateUIForAuth(user);
       }
     })
     .catch((error) => {
@@ -172,25 +118,141 @@ googleSignInBtn.addEventListener("click", () => {
       if (error.code === "auth/internal-error") {
         alert("Only @ucla.edu emails are allowed to sign up."); // "Only @ucla.edu emails are allowed to sign up." (../functions/index.ts:63)
       }
-      // console.log(error);
     });
 });
 
-closeSignInBtn.addEventListener("click", () => showView("app"));
+closeModalButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    showView("app");
+  });
+});
 
-// preserve log in between session
-onAuthStateChanged(auth, (user) => {
-  updateUI(user);
-  if (currentPosts.length > 0) {
-    render(currentPosts);
+// return to main view when logo clicker
+headerIcon.addEventListener("click", () => showView("app"));
+closeSignInButton.addEventListener("click", () => showView("app"));
+helpBtn.addEventListener("click", () => showView("help"));
+helpBtn.addEventListener("click", () => showView("help"));
+
+// handles posting button
+postList.addEventListener("click", (event: MouseEvent) => {
+  // find the button that was clicked
+  const button = (event.target as Element).closest(".post-btn");
+
+  if (!button) {
+    return;
+  }
+  if (!auth.currentUser) {
+    showView("sign-in");
+    return;
+  }
+
+  const postElement = button.closest(".post");
+  const postID = postElement?.getAttribute("data-post-id");
+  const interactionTypes = ["agreed", "disagreed", "interested"];
+  const uid = auth.currentUser.uid;
+
+  let buttonInteractionType = "";
+  interactionTypes.forEach((interaction) => {
+    if (button.classList.contains(interaction + "-button")) {
+      buttonInteractionType = interaction;
+    }
+  });
+
+  if (!buttonInteractionType || !postID) {
+    console.warn("Interaction type or post ID missing");
+    return;
+  }
+
+  // handle the interaction
+  if (button.classList.contains("active")) {
+    removeInteraction(postID, uid, buttonInteractionType);
   } else {
-    postList.innerHTML = `<div style="text-align: center">Loading posts...</div>`;
+    addInteraction(postID, uid, buttonInteractionType);
+    // ensure user can only have one interaction type active at a time
+    interactionTypes.forEach((interaction) => {
+      if (interaction !== buttonInteractionType) {
+        removeInteraction(postID, uid, interaction);
+      }
+    });
   }
 });
 
-function render(posts: Post[]): void {
-  console.log("rendering a buncha things!");
+// add <CR> to submit input field
+inputField.addEventListener("keypress", function (event) {
+  if (event.key === "Enter") {
+    event.preventDefault(); // prevent the default action
+    submitPostBtn.click();
+  }
+});
 
+// handle posting logic/updating postlist/db
+submitPostBtn.addEventListener("click", function () {
+  if (!auth.currentUser) {
+    showView("sign-in"); // redirect to sign-in page
+    return;
+  }
+
+  const postContent = inputField.value;
+  if (postContent.trim() === "") {
+    return;
+  }
+  const newPost = {
+    userId: auth.currentUser.uid,
+    postContent: postContent,
+    timestamp: serverTimestamp(),
+    metrics: {
+      agreedCount: 0,
+      disagreedCount: 0,
+      interestedCount: 0,
+    } as PostMetrics,
+    interactions: {
+      agreed: {},
+      interested: {},
+      disagreed: {},
+    } as PostInteractions,
+    //   agreed: { "uid": true },
+  };
+
+  push(pathToPosts, newPost);
+  inputField.value = "";
+});
+
+// UI state handler
+// A more robust UI state handler for all modals
+const showView = (view: "app" | "sign-in" | "help"): void => {
+  const targetId = view === "app" ? null : `${view}-view`;
+  const modals = document.querySelectorAll<HTMLElement>(".modal-overlay");
+
+  modals.forEach((modal) => {
+    if (modal.id === targetId) {
+      modal.style.display = "flex";
+      setTimeout(() => {
+        modal.classList.add("visible");
+      }, 10);
+    } else {
+      modal.classList.remove("visible");
+      setTimeout(() => {
+        modal.style.display = "none";
+      }, 300);
+    }
+  });
+};
+
+function updateUIForAuth(user: AuthUser): void {
+  if (user) {
+    signInBtn.innerHTML = `<i class="bi bi-box-arrow-right"></i>`;
+    signInBtn.title = `Signed in as ${user.email?.split("@")[0]}`;
+    signInBtn.classList.add("signed-in");
+    showView("app");
+  } else {
+    signInBtn.innerHTML = `<img src="${headIconUrl}" />`;
+    signInBtn.title = "Sign In";
+    signInBtn.classList.remove("signed-in");
+    showView("app");
+  }
+}
+
+function render(posts: Post[]): void {
   let listItems = "";
 
   for (const post of posts) {
@@ -257,50 +319,6 @@ function render(posts: Post[]): void {
   postList.innerHTML = listItems;
 }
 
-// this listener is set up ONCE and handles clicks for all current and future posts
-postList.addEventListener("click", (event: MouseEvent) => {
-  // find the button that was clicked
-  const button = (event.target as Element).closest(".post-btn");
-
-  if (!button) {
-    return;
-  }
-  if (!auth.currentUser) {
-    showView("sign-in");
-    return;
-  }
-
-  const postElement = button.closest(".post");
-  const postID = postElement?.getAttribute("data-post-id");
-  const interactionTypes = ["agreed", "disagreed", "interested"];
-  const uid = auth.currentUser.uid;
-
-  let buttonInteractionType = "";
-  interactionTypes.forEach((interaction) => {
-    if (button.classList.contains(interaction + "-button")) {
-      buttonInteractionType = interaction;
-    }
-  });
-
-  if (!buttonInteractionType || !postID) {
-    console.warn("Interaction type or post ID missing");
-    return;
-  }
-
-  // handle the interaction
-  if (button.classList.contains("active")) {
-    removeInteraction(postID, uid, buttonInteractionType);
-  } else {
-    addInteraction(postID, uid, buttonInteractionType);
-    // ensure user can only have one interaction type active at a time
-    interactionTypes.forEach((interaction) => {
-      if (interaction !== buttonInteractionType) {
-        removeInteraction(postID, uid, interaction);
-      }
-    });
-  }
-});
-
 /**
  * Processes a Firebase DataSnapshot and returns a sorted array of Post objects.
  *
@@ -349,63 +367,6 @@ function processPostsSnapshot(snapshot: DataSnapshot): Post[] {
   return validPosts;
 }
 
-onValue(pathToPosts, function (snapshot) {
-  const newPostsArray = processPostsSnapshot(snapshot);
-  currentPosts = newPostsArray; // replace old posts with new ones
-
-  if (currentPosts.length > 0) {
-    render(currentPosts);
-  } else {
-    postList.innerHTML = "<p>No posts yet!</p>";
-  }
-});
-
-// add <CR> to submit input field
-inputField.addEventListener("keypress", function (event) {
-  if (event.key === "Enter") {
-    event.preventDefault(); // prevent the default action
-    submitPostBtn.click();
-  }
-});
-
-// return to main view when logo clicker
-headerLogo.addEventListener("click", function () {
-  showView("app");
-});
-
-// handle posting logic/updating postlist/db
-submitPostBtn.addEventListener("click", function () {
-  const postContent = inputField.value;
-
-  // don't allow users that are not signed in to posst
-  if (!auth.currentUser || postContent.trim() === "") {
-    if (!auth.currentUser) {
-      showView("sign-in"); // redirect to sign-in page
-    }
-    return;
-  }
-
-  const newPost = {
-    userId: auth.currentUser.uid,
-    postContent: postContent,
-    timestamp: serverTimestamp(),
-    metrics: {
-      agreedCount: 0,
-      disagreedCount: 0,
-      interestedCount: 0,
-    } as PostMetrics,
-    interactions: {
-      agreed: {},
-      interested: {},
-      disagreed: {},
-    } as PostInteractions,
-    //   agreed: { "uid": true },
-  };
-
-  push(pathToPosts, newPost);
-  inputField.value = "";
-});
-
 function getInteractionPaths(postID: string, uid: string, interaction: string) {
   return {
     user: `users/${uid}/postInteractions/${interaction}/${postID}`,
@@ -436,3 +397,24 @@ function addInteraction(postID: string, uid: string, interaction: string) {
 function removeInteraction(postID: string, uid: string, interaction: string) {
   updateInteraction(postID, uid, interaction, null);
 }
+
+onValue(pathToPosts, function (snapshot) {
+  const newPostsArray = processPostsSnapshot(snapshot);
+  currentPosts = newPostsArray; // replace old posts with new ones
+
+  if (currentPosts.length > 0) {
+    render(currentPosts);
+  } else {
+    postList.innerHTML = "<p>No posts yet!</p>";
+  }
+});
+
+// preserve log in between session
+onAuthStateChanged(auth, (user) => {
+  updateUIForAuth(user);
+  if (currentPosts.length > 0) {
+    render(currentPosts);
+  } else {
+    postList.innerHTML = `<div style="text-align: center">Loading posts...</div>`;
+  }
+});

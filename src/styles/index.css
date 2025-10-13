@@ -17,6 +17,11 @@
   --logo-height: 40px;
 }
 
+.btn {
+  cursor: pointer;
+}
+
+/* header things  */
 header {
   background-color: var(--background);
   border-bottom: 1px solid var(--borderfg);
@@ -26,11 +31,6 @@ header {
   top: 0;
   z-index: 50;
 }
-
-.btn {
-  cursor: pointer;
-}
-
 #header-content {
   margin: 0 auto;
   padding: 0px 0px;
@@ -40,10 +40,9 @@ header {
   align-items: center;
   justify-content: space-between;
 }
-
-#help-btn,
-#signin-btn {
+#header-content .btn {
   padding: 10px;
+  cursor: pointer;
   border: none;
   background-color: var(--background);
   color: var(--text);
@@ -52,20 +51,19 @@ header {
   align-items: center;
   justify-content: center;
 }
-
-#help-btn img,
-#signin-btn img {
+#header-content .btn img {
   max-height: calc(var(--logo-height) + 20px);
   width: auto;
-  height: 80%;
+  height: 90%;
 }
-
 #header-icon {
   margin: 0;
   width: auto;
   max-width: 85vw;
+  height: 100%;
 }
 
+/* generic styles  */
 body {
   scrollbar-width: none;
   overscroll-behavior: none;
@@ -84,15 +82,14 @@ body {
     sans-serif;
   background-color: var(--background);
 }
-
 body::-webkit-scrollbar {
   display: none;
 }
 
+/* main content  */
 #body-content {
   padding: 20px 0;
 }
-
 #center-container {
   padding: 0px 15px;
   max-width: 500px;
@@ -102,6 +99,7 @@ body::-webkit-scrollbar {
   gap: 20px;
 }
 
+/* Input things  */
 #inputs-container {
   display: flex;
   flex-direction: row;
@@ -112,17 +110,14 @@ body::-webkit-scrollbar {
   border-radius: var(--borderrad);
   padding: 10px;
 }
-
 #inputs-container input {
   flex-grow: 8;
   background-color: white;
   border: 1px solid var(--borderfg);
 }
-
 #inputs-container button:hover {
   background-color: var(--text);
 }
-
 #inputs-container button {
   flex-grow: 2;
   color: white;
@@ -135,14 +130,12 @@ body::-webkit-scrollbar {
 
   transition: transform 0.1s ease-in-out;
 }
-
 #inputs-container button:hover,
 #inputs-container button:active {
   animation:
     shimmer 4s infinite ease-in-out alternate,
     bounceJiggle 0.5s infinite alternate;
 }
-
 @keyframes shimmer {
   0% {
     background-position: 0% 50%;
@@ -151,7 +144,6 @@ body::-webkit-scrollbar {
     background-position: 100% 50%;
   }
 }
-
 @keyframes bounceJiggle {
   0% {
     transform: rotate(-1deg) scale(1) translateY(0);
@@ -164,11 +156,11 @@ body::-webkit-scrollbar {
   }
 }
 
+/* post things  */
 #post-list {
   display: flex;
   flex-direction: column;
 }
-
 .post {
   background-color: #ffffff;
   border-radius: 12px;
@@ -178,18 +170,15 @@ body::-webkit-scrollbar {
   border: 1px solid #eef0f2;
   transition: transform 0.2s ease-in-out;
 }
-
 .post:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
-
 .post-header {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
 }
-
 .post-avatar {
   width: 40px;
   height: 40px;
@@ -202,35 +191,29 @@ body::-webkit-scrollbar {
   color: #555;
   flex-shrink: 0;
 }
-
 .post-user-info {
   display: flex;
   flex-direction: column;
 }
-
 .post-user-info .username {
   font-weight: 600;
   color: #1a1a1a;
 }
-
 .post-user-info .timestamp {
   font-size: 14px;
   color: #6c757d;
 }
-
 .post-content {
   color: #333;
   line-height: 1.6;
   margin-bottom: 16px;
 }
-
 .post-actions {
   display: flex;
   justify-content: space-around;
   border-top: 1px solid #eef0f2;
   padding-top: 8px;
 }
-
 .post-btn {
   background-color: transparent;
   border: none;
@@ -241,41 +224,34 @@ body::-webkit-scrollbar {
   color: #6c757d;
   transition: all 0.2s ease-in-out; /* smooth transition for hover and active states */
 }
-
 .post-btn .btn-content {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .post-btn .count {
   font-weight: 600;
   font-size: 15px;
 }
-
 .post-btn:hover {
   background-color: #f8f9fa;
 }
-
 /* active/selected button states */
 .post-btn.agreed-button:hover,
 .post-btn.agreed-button.active {
   color: #28a745;
   background-color: rgba(40, 167, 69, 0.1);
 }
-
 .post-btn.interested-button:hover,
 .post-btn.interested-button.active {
   color: #fd7e14;
   background-color: rgba(253, 126, 20, 0.1);
 }
-
 .post-btn.disagreed-button:hover,
 .post-btn.disagreed-button.active {
   color: #dc3545;
   background-color: rgba(220, 53, 69, 0.1);
 }
-
 /* make the icon filled when active */
 .post-btn.active .bi-check-square {
   content: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2328a745' class='bi bi-check-square-fill' viewBox='0 0 16 16'><path d='M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm10.03 4.97a.75.75 0 0 1 .011 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.75.75 0 0 1 1.08-.022z'/></svg>");
@@ -287,30 +263,7 @@ body::-webkit-scrollbar {
   content: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23dc3545' class='bi bi-x-square-fill' viewBox='0 0 16 16'><path d='M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708z'/></svg>");
 }
 
-.sign-in-overlay {
-  position: fixed; /* sits on top of everything */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.3s ease,
-    visibility 0.3s ease;
-}
-
-.sign-in-overlay.visible {
-  opacity: 1;
-  visibility: visible;
-}
-
+/* sign-in popup  */
 .sign-in-modal {
   background-color: white;
   padding: 32px;
@@ -324,10 +277,6 @@ body::-webkit-scrollbar {
   /* for the pop-in animation */
   transform: scale(0.95);
   transition: transform 0.3s ease;
-}
-
-.sign-in-overlay.visible .sign-in-modal {
-  transform: scale(1);
 }
 
 .sign-in-modal h2 {
@@ -366,7 +315,7 @@ body::-webkit-scrollbar {
 }
 
 /* maybe later button */
-.btn-close-text {
+#close-sign-in-btn {
   background: none;
   border: none;
   color: #6c757d;
@@ -375,13 +324,12 @@ body::-webkit-scrollbar {
   padding: 8px;
   font-size: 14px;
 }
-
-.btn-close-text:hover {
+#close-sign-in-btn:hover {
   text-decoration: underline;
 }
 
 /* X button in corner */
-.btn-close-icon {
+.close-modal-btn {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -398,11 +346,84 @@ body::-webkit-scrollbar {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-
-.btn-close-icon:hover {
+.close-modal-btn:hover {
   background-color: #e2e2e2;
 }
 
+/* sign out button  */
 .bi-box-arrow-right {
-  font-size: 25px;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+/* Help Popup */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+}
+
+.modal-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-card {
+  background-color: white;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 450px;
+  text-align: center;
+  position: relative;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+.modal-overlay.visible .modal-card {
+  transform: scale(1);
+}
+
+.modal-content {
+  text-align: left;
+  margin-top: 24px;
+  color: #333;
+}
+
+.modal-content h4 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #1a1a1a;
+  border-bottom: 1px solid #eef0f2;
+  padding-bottom: 5px;
+}
+
+.modal-content ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.modal-content ul li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.modal-content ul li i {
+  font-size: 1.2em;
+  color: #007bff;
 }
