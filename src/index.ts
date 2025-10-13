@@ -282,7 +282,7 @@ function render(posts: Post[]): void {
       <i class="bi bi-person-fill"></i>
     </div>
     <div class="post-user-info">
-      <span class="username">${post.userId.substring(0, 10)}</span>
+      <span class="username" title=${post.userId}>${currentUserId == post.userId ? "You" : post.userId.substring(0, 10) + "..."}</span>
       <span class="timestamp">${formattedTime}</span>
     </div>
   </div>
