@@ -1,4 +1,9 @@
 import { onValueWritten } from "firebase-functions/v2/database";
+import { HttpsError } from "firebase-functions/v2/https";
+import {
+  beforeUserCreated,
+  beforeUserSignedIn,
+} from "firebase-functions/v2/identity";
 import * as admin from "firebase-admin";
 
 admin.initializeApp();
@@ -49,3 +54,21 @@ export const updateInteractionCounts = onValueWritten(
     return counterRef.set(admin.database.ServerValue.increment(incrementValue));
   },
 );
+
+const uclaOnlyAuth = (user: any): void => {
+  const email = user.data.email;
+  if (!email || !email.endsWith("@ucla.edu")) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Only @ucla.edu emails are allowed to sign up.",
+    );
+  }
+};
+
+export const beforecreated = beforeUserCreated((user) => {
+  return uclaOnlyAuth(user);
+});
+
+export const beforesignedin = beforeUserSignedIn((user) => {
+  return uclaOnlyAuth(user);
+});

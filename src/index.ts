@@ -73,6 +73,11 @@ export interface Post {
 
 type View = "app" | "sign-in";
 type AuthUser = User | null;
+const provider = new GoogleAuthProvider();
+// only allow @ucla.edu
+provider.setCustomParameters({
+  hd: "ucla.edu",
+});
 
 // firebase things
 const app: FirebaseApp = initializeApp(firebaseConfig);
@@ -166,7 +171,12 @@ googleSignInBtn.addEventListener("click", () => {
       // const errorMessage = error.message;
       // const email = error.customData.email;
       // const credential = GoogleAuthProvider.credentialFromError(error);
-      console.log(error);
+      console.error("Sign-in failed:", error.message);
+
+      if (error.code === "auth/internal-error") {
+        alert("Only @ucla.edu emails are allowed to sign up."); // "Only @ucla.edu emails are allowed to sign up." (../functions/index.ts:63)
+      }
+      // console.log(error);
     });
 });
 
