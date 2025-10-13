@@ -55,9 +55,10 @@ export const updateInteractionCounts = onValueWritten(
   },
 );
 
-const uclaOnlyAuth = (user: any): void => {
-  const email = user.data.email;
-  if (!email || !email.endsWith("@g.ucla.edu")) {
+const uclaOnlyAuth = (event: any): void => {
+  const user = event.data;
+  // example from docs
+  if (!user?.email?.includes("@g.ucla.edu")) {
     throw new HttpsError(
       "invalid-argument",
       "Sorry, only @ucla.edu emails are allowed to sign up.",
@@ -65,10 +66,10 @@ const uclaOnlyAuth = (user: any): void => {
   }
 };
 
-export const beforecreated = beforeUserCreated((user) => {
-  return uclaOnlyAuth(user);
+export const beforecreated = beforeUserCreated((event) => {
+  return uclaOnlyAuth(event);
 });
 
-export const beforesignedin = beforeUserSignedIn((user) => {
-  return uclaOnlyAuth(user);
+export const beforesignedin = beforeUserSignedIn((event) => {
+  return uclaOnlyAuth(event);
 });
