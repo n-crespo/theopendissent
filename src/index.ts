@@ -12,7 +12,7 @@ import {
   // runTransaction,
   serverTimestamp,
   set,
-  // update,
+  update,
   // remove,
 } from "firebase/database";
 import {
@@ -251,16 +251,14 @@ function render(posts: Post[]): void {
         return;
       }
 
+      // HACK: this should probably happen on server side
       if (this.classList.contains("active")) {
         removeInteraction(postID, uid, buttonInteractionType);
-        console.log("removing interaction: ", buttonInteractionType);
       } else {
         addInteraction(postID, uid, buttonInteractionType);
-        console.log("addign interaction: ", buttonInteractionType);
         interactionTypes.forEach((interaction) => {
           if (interaction != buttonInteractionType) {
             removeInteraction(postID, uid, interaction);
-            console.log("removing interaction: ", interaction);
           }
         });
       }
@@ -361,41 +359,25 @@ function getInteractionPaths(postID: string, uid: string, interaction: string) {
   };
 }
 
-// // Example of a safe, multi-path update on the client
-// import { getDatabase, ref, update } from "firebase/database";
-//
-// function recordInteraction(uid, postId, interaction) {
-//   const db = getDatabase();
-//   const updates = {};
-//
-//   // Path for the user's interaction history
-//   updates[`/users/${uid}/postInteractions/${interaction}/${postId}`] = true;
-//
-//   // Path that triggers the Cloud Function
-//   updates[`/posts/${postId}/userInteractions/${interaction}/${uid}`] = true;
-//
-//   // Perform both writes as a single atomic operation
-//   return update(ref(db), updates);
-// }
-
-// Generic interaction handler
+// note: incrementing of interaction counts is done on server side
 function updateInteraction(
   postID: string,
   uid: string,
   interaction: string,
   value: boolean | null,
-  // incrementBy: number,
 ) {
   const paths = getInteractionPaths(postID, uid, interaction);
-  set(ref(db, paths.user), value);
-  set(ref(db, paths.post), value);
-  // set(ref(db, paths.metrics), increment(incrementBy));
+  const updates = {
+    [paths.user]: value,
+    [paths.post]: value,
+  };
+  return update(ref(db), updates);
 }
 
 function addInteraction(postID: string, uid: string, interaction: string) {
-  updateInteraction(postID, uid, interaction, true /* , 1 */);
+  updateInteraction(postID, uid, interaction, true);
 }
 
 function removeInteraction(postID: string, uid: string, interaction: string) {
-  updateInteraction(postID, uid, interaction, null /* , -1 */);
+  updateInteraction(postID, uid, interaction, null);
 }
