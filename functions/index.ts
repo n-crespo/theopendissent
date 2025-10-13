@@ -57,7 +57,7 @@ export const updateInteractionCounts = onValueWritten(
 
 const uclaOnlyAuth = (user: any): void => {
   const email = user.data.email;
-  if (!email || !email.endsWith("@ucla.edu")) {
+  if (!email || !email.endsWith("@g.ucla.edu")) {
     throw new HttpsError(
       "invalid-argument",
       "Only @ucla.edu emails are allowed to sign up.",
