@@ -3,6 +3,7 @@ import { FirebaseApp, FirebaseOptions, initializeApp } from "firebase/app";
 import {
   Database,
   DatabaseReference,
+  DataSnapshot,
   // get,
   getDatabase,
   // increment,
@@ -76,7 +77,7 @@ type AuthUser = User | null;
 // firebase things
 const app: FirebaseApp = initializeApp(firebaseConfig);
 const db: Database = getDatabase(app);
-const postsRefInDB: DatabaseReference = ref(db, "posts"); // create a reference (required)
+const pathToPosts: DatabaseReference = ref(db, "posts"); // create a reference (required)
 const auth: Auth = getAuth(app); // Get Auth service
 // const usersRefInDB = ref(database, "users"); // create a reference (required)
 // const googleProvider = new GoogleAuthProvider(); // Google Auth provider
@@ -91,6 +92,8 @@ const submitPostBtn = getElement("post-btn") as HTMLButtonElement;
 const signInBtn = getElement("signin-btn") as HTMLButtonElement;
 const googleSignInBtn = getElement("google-sign-in-btn") as HTMLButtonElement;
 const closeSignInBtn = getElement("close-sign-in-btn") as HTMLButtonElement;
+
+let currentPosts: Post[] = []; // list of posts that are later rendered
 
 // UI state handler
 const showView = (view: View): void => {
@@ -140,7 +143,9 @@ googleSignInBtn.addEventListener("click", () => {
         // const credential = GoogleAuthProvider.credentialFromResult(result);
         // const token = credential?.accessToken;
         const user = result.user;
-        console.log(user);
+        console.log(
+          "Signed in! User: " + user.displayName + " Email: " + user.email,
+        );
         updateUI(user);
 
         const newUser = { email: user.email, displayName: user.displayName };
@@ -162,6 +167,11 @@ closeSignInBtn.addEventListener("click", () => showView("app"));
 // preserve log in between session
 onAuthStateChanged(auth, (user) => {
   updateUI(user);
+  if (currentPosts.length > 0) {
+    render(currentPosts);
+  } else {
+    postList.innerHTML = `<div style="text-align: center">Loading posts...</div>`;
+  }
 });
 
 function render(posts: Post[]): void {
@@ -266,41 +276,62 @@ function render(posts: Post[]): void {
   });
 }
 
-onValue(postsRefInDB, function (snapshot) {
-  if (snapshot.exists()) {
-    const postsObject = snapshot.val();
-    const currentPosts: Post[] = [];
+/**
+ * Processes a Firebase DataSnapshot and returns a sorted array of Post objects.
+ *
+ * @param snapshot The DataSnapshot received from a Firebase listener.
+ * @returns A new array of Post objects, sorted with the newest first.
+ */
+function processPostsSnapshot(snapshot: DataSnapshot): Post[] {
+  if (!snapshot.exists()) {
+    console.log("Snapshot doesn't exist. Returning empty posts array.");
+    return [];
+  }
 
-    for (const postId in postsObject) {
-      if (Object.prototype.hasOwnProperty.call(postsObject, postId)) {
-        const postData = postsObject[postId];
-        if (
-          postData &&
-          typeof postData.postContent === "string" &&
-          typeof postData.userId === "string"
-        ) {
-          currentPosts.unshift({
-            id: postId,
-            userId: postData.userId,
-            content: postData.postContent,
-            timestamp: postData.timestamp,
-            metrics: postData.metrics || {
-              agreedCount: 0,
-              disagreedCount: 0,
-              interestedCount: 0,
-            },
-            userInteractions: postData.userInteractions || {
-              agreed: {},
-              interested: {},
-              disagreed: {},
-            },
-          });
-        }
+  const postsObject = snapshot.val();
+
+  const postsArray = Object.entries(postsObject).map(
+    ([postId, postData]: [string, any]) => {
+      if (
+        !postData ||
+        typeof postData.postContent !== "string" ||
+        typeof postData.userId !== "string"
+      ) {
+        return null;
       }
-    }
+
+      // 4. Construct a clean Post object with default fallbacks.
+      return {
+        id: postId,
+        userId: postData.userId,
+        content: postData.postContent,
+        timestamp: postData.timestamp || 0,
+        metrics: postData.metrics || {
+          agreedCount: 0,
+          disagreedCount: 0,
+          interestedCount: 0,
+        },
+        userInteractions: postData.userInteractions || {
+          agreed: {},
+          interested: {},
+          disagreed: {},
+        },
+      };
+    },
+  );
+
+  const validPosts = postsArray.filter((post): post is Post => post !== null);
+
+  return validPosts;
+}
+
+onValue(pathToPosts, function (snapshot) {
+  const newPostsArray = processPostsSnapshot(snapshot);
+  currentPosts = newPostsArray; // replace old posts with new ones
+
+  if (currentPosts.length > 0) {
     render(currentPosts);
   } else {
-    console.log("snapshot doesn't exist...");
     postList.innerHTML = "<p>No posts yet!</p>";
   }
 });
@@ -347,7 +378,7 @@ submitPostBtn.addEventListener("click", function () {
     //   agreed: { "uid": true },
   };
 
-  push(postsRefInDB, newPost);
+  push(pathToPosts, newPost);
   inputField.value = "";
 });
 
