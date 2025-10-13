@@ -3,13 +3,13 @@ import { FirebaseApp, FirebaseOptions, initializeApp } from "firebase/app";
 import {
   Database,
   DatabaseReference,
-  get,
+  // get,
   getDatabase,
-  increment,
+  // increment,
   onValue,
   push,
   ref,
-  runTransaction,
+  // runTransaction,
   serverTimestamp,
   set,
   // update,
@@ -360,6 +360,23 @@ function getInteractionPaths(postID: string, uid: string, interaction: string) {
     metrics: `posts/${postID}/metrics/${interaction}Count`,
   };
 }
+
+// // Example of a safe, multi-path update on the client
+// import { getDatabase, ref, update } from "firebase/database";
+//
+// function recordInteraction(uid, postId, interaction) {
+//   const db = getDatabase();
+//   const updates = {};
+//
+//   // Path for the user's interaction history
+//   updates[`/users/${uid}/postInteractions/${interaction}/${postId}`] = true;
+//
+//   // Path that triggers the Cloud Function
+//   updates[`/posts/${postId}/userInteractions/${interaction}/${uid}`] = true;
+//
+//   // Perform both writes as a single atomic operation
+//   return update(ref(db), updates);
+// }
 
 // Generic interaction handler
 function updateInteraction(
