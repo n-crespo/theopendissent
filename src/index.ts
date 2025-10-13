@@ -116,7 +116,9 @@ googleSignInBtn.addEventListener("click", () => {
       console.error("Sign-in failed:", error.message);
 
       if (error.code === "auth/internal-error") {
-        alert("Only @ucla.edu emails are allowed to sign up."); // "Only @ucla.edu emails are allowed to sign up." (../functions/index.ts:63)
+        alert(
+          "Sorry... only @g.ucla.edu emails are allowed to sign up right now. Feel free to browse!",
+        ); // "Only @ucla.edu emails are allowed to sign up." (../functions/index.ts:63)
       }
     });
 });

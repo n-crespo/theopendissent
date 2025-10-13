@@ -109,11 +109,18 @@ body::-webkit-scrollbar {
   font-size: 14px;
   border-radius: var(--borderrad);
   padding: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 #inputs-container input {
   flex-grow: 8;
   background-color: white;
   border: 1px solid var(--borderfg);
+}
+#inputs-container input:focus {
+  /* border: 1px solid red; */
+  /* box-shadow: none; */
+  outline: none;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 #inputs-container button:hover {
   background-color: var(--text);
@@ -121,13 +128,11 @@ body::-webkit-scrollbar {
 #inputs-container button {
   flex-grow: 2;
   color: white;
-  border: 1px solid var(--borderfg);
+  border: none;
   font-weight: bold;
-
   background: linear-gradient(to right, var(--blue), var(--green), var(--red));
   background-size: 300% 100%;
   animation: shimmer 4s infinite ease-in-out alternate;
-
   transition: transform 0.1s ease-in-out;
 }
 #inputs-container button:hover,
@@ -320,7 +325,7 @@ body::-webkit-scrollbar {
   border: none;
   color: #6c757d;
   cursor: pointer;
-  margin-top: 16px;
+  margin-top: 10px;
   padding: 8px;
   font-size: 14px;
 }
@@ -374,12 +379,10 @@ body::-webkit-scrollbar {
     opacity 0.3s ease,
     visibility 0.3s ease;
 }
-
 .modal-overlay.visible {
   opacity: 1;
   visibility: visible;
 }
-
 .modal-card {
   background-color: white;
   padding: 32px;
@@ -392,17 +395,14 @@ body::-webkit-scrollbar {
   transform: scale(0.95);
   transition: transform 0.3s ease;
 }
-
 .modal-overlay.visible .modal-card {
   transform: scale(1);
 }
-
 .modal-content {
   text-align: left;
   margin-top: 24px;
   color: #333;
 }
-
 .modal-content h4 {
   margin-top: 20px;
   margin-bottom: 10px;
@@ -410,20 +410,25 @@ body::-webkit-scrollbar {
   border-bottom: 1px solid #eef0f2;
   padding-bottom: 5px;
 }
-
 .modal-content ul {
   list-style-type: none;
   padding-left: 0;
 }
-
 .modal-content ul li {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 10px;
 }
-
 .modal-content ul li i {
   font-size: 1.2em;
   color: #007bff;
+}
+
+/* footer  */
+footer {
+  display: flex;
+  flex-direction: column; /* Stacks the items vertically */
+  align-items: center; /* Centers the items horizontally */
+  margin-bottom: 30px;
 }
