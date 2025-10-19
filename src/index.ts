@@ -258,10 +258,26 @@ function updateUIForAuth(user: AuthUser): void {
   }
 }
 
+// shuffle an array in place so that all permutations are equally possible
+function shuffleArray<T>(array: T[]): T[] {
+  let currentIndex = array.length,
+    randomIndex;
+  while (currentIndex !== 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex],
+      array[currentIndex],
+    ];
+  }
+  return array;
+}
+
 function render(posts: Post[]): void {
+  const shuffledPosts = shuffleArray([...posts]);
   let listItems = "";
 
-  for (const post of posts) {
+  for (const post of shuffledPosts) {
     const postTime: Date = new Date(
       typeof post.timestamp === "number" ? post.timestamp : 0,
     );
