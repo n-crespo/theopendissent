@@ -27,7 +27,7 @@ import { getElement, timeAgo } from "./utils.ts";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyBqrAeqFnJLS8GRVR1LJvlUJ_TYao-EPe0",
-  authDomain: "test-app-d0afd.firebaseapp.com",
+  authDomain: "auth.theopendissent.com",
   databaseURL: "https://test-app-d0afd-default-rtdb.firebaseio.com",
   projectId: "test-app-d0afd",
   storageBucket: "test-app-d0afd.firebasestorage.app",
