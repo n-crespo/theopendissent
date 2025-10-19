@@ -96,6 +96,10 @@ signInBtn.addEventListener("click", () => {
 
 googleSignInBtn.addEventListener("click", () => {
   const provider: GoogleAuthProvider = new GoogleAuthProvider();
+  provider.setCustomParameters({
+    login_hint: "user@g.ucla.edu",
+  });
+
   signInWithPopup(auth, provider)
     .then((result) => {
       if (result && result.user) {
