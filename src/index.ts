@@ -273,20 +273,35 @@ function shuffleArray<T>(array: T[]): T[] {
   return array;
 }
 
-let hasBeenShuffled = false;
+let shuffledPostIds: string[] = [];
+
 function render(posts: Post[]): void {
+  const postsMap = new Map<string, Post>();
+  for (const post of posts) {
+    postsMap.set(post.id, post);
+  }
+
+  const incomingPostIds = posts.map((p) => p.id);
   console.log("rendering!");
 
-  let shuffledPosts = posts;
-  if (!hasBeenShuffled) {
-    shuffledPosts = shuffleArray([...posts]);
-    console.log("shuffling");
-
-    hasBeenShuffled = true; // only shuffle posts on page load
+  if (shuffledPostIds.length === 0 && incomingPostIds.length > 0) {
+    shuffledPostIds = shuffleArray(incomingPostIds);
   }
-  let listItems = "";
 
-  for (const post of shuffledPosts) {
+  // add new post IDs that haven't been added yet
+  for (const postId of incomingPostIds) {
+    if (!shuffledPostIds.includes(postId)) {
+      shuffledPostIds.push(postId); // Append new posts to the end of list
+    }
+  }
+
+  // filter the fixed ID list to only include posts that currently exist.
+  const finalOrderIds = shuffledPostIds.filter((id) => postsMap.has(id));
+
+  let listItems = "";
+  for (const postId of finalOrderIds) {
+    const post = postsMap.get(postId)!;
+
     const postTime: Date = new Date(
       typeof post.timestamp === "number" ? post.timestamp : 0,
     );
