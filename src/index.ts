@@ -273,12 +273,12 @@ function shuffleArray<T>(array: T[]): T[] {
   return array;
 }
 
-let postsRandomized = false;
+let hasBeenShuffled = false;
 function render(posts: Post[]): void {
   let shuffledPosts = posts;
-  if (!postsRandomized) {
+  if (!hasBeenShuffled) {
     shuffledPosts = shuffleArray([...posts]);
-    postsRandomized = true;
+    hasBeenShuffled = true; // only shuffle posts on page load
   }
   let listItems = "";
 
