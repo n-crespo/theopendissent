@@ -275,9 +275,13 @@ function shuffleArray<T>(array: T[]): T[] {
 
 let hasBeenShuffled = false;
 function render(posts: Post[]): void {
+  console.log("rendering!");
+
   let shuffledPosts = posts;
   if (!hasBeenShuffled) {
     shuffledPosts = shuffleArray([...posts]);
+    console.log("shuffling");
+
     hasBeenShuffled = true; // only shuffle posts on page load
   }
   let listItems = "";
