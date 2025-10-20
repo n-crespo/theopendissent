@@ -273,8 +273,13 @@ function shuffleArray<T>(array: T[]): T[] {
   return array;
 }
 
+let postsRandomized = false;
 function render(posts: Post[]): void {
-  const shuffledPosts = shuffleArray([...posts]);
+  let shuffledPosts = posts;
+  if (!postsRandomized) {
+    shuffledPosts = shuffleArray([...posts]);
+    postsRandomized = true;
+  }
   let listItems = "";
 
   for (const post of shuffledPosts) {
