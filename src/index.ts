@@ -328,12 +328,12 @@ function render(posts: Post[]): void {
       <i class="bi bi-person-fill"></i>
     </div>
     <div class="post-user-info">
-      <span class="username" title=${post.userId}>${currentUserId == post.userId ? "You" : post.userId.substring(0, 10) + "..."}</span>
+      <span class="username" title=${post.userId}>${currentUserId == post.userId ? "You" : post.userId.substring(0, 10) + "…"}</span>
       <span class="timestamp">${formattedTime}</span>
     </div>
   </div>
   <p class="post-content">${post.content}</p>
-  <div class="post-actions">
+  <div class="post-interaction-buttons">
     <button class="post-btn agreed-button ${
       currentUserInteractions.hasAgreed ? "active" : ""
     }">
