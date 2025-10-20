@@ -282,7 +282,6 @@ function render(posts: Post[]): void {
   }
 
   const incomingPostIds = posts.map((p) => p.id);
-  console.log("rendering!");
 
   if (shuffledPostIds.length === 0 && incomingPostIds.length > 0) {
     shuffledPostIds = shuffleArray(incomingPostIds);
