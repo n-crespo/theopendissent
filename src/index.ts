@@ -291,7 +291,7 @@ function render(posts: Post[]): void {
   // add new post IDs that haven't been added yet
   for (const postId of incomingPostIds) {
     if (!shuffledPostIds.includes(postId)) {
-      shuffledPostIds.push(postId); // Append new posts to the end of list
+      shuffledPostIds.unshift(postId); // Append new posts to the end of list
     }
   }
 
