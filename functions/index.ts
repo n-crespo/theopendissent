@@ -1,3 +1,5 @@
+// `firebase deploy --only functions`
+require("firebase-functions/logger/compat");
 import { onValueWritten } from "firebase-functions/v2/database";
 import { HttpsError } from "firebase-functions/v2/https";
 import {
@@ -17,10 +19,28 @@ admin.initializeApp();
 export const updateInteractionCounts = onValueWritten(
   // use wildcard for postID, interaction, userID (allow any child)
   "/posts/{postId}/userInteractions/{interaction}/{userId}",
-  (event) => {
-    //
+  async (event) => {
     // extract actual postID and interaction
     const { postId, interaction } = event.params;
+
+    // check for valid keys in the post data
+    const postRef = admin.database().ref(`/posts/${postId}`);
+    const getPostSnapshot = await postRef.once("value");
+    if (!getPostSnapshot.exists()) {
+      console.log(
+        `Post ${postId} does not exist. Ignoring interaction update.`,
+      );
+      return;
+    }
+    const postData = getPostSnapshot.val();
+    const requiredKeys = ["postContent", "timestamp", "userId"];
+    const missingKeys = requiredKeys.filter((key) => !(key in postData));
+    if (missingKeys.length > 0) {
+      console.log(
+        `Post ${postId} is missing required keys: ${missingKeys.join(", ")}. Ignoring interaction update.`,
+      );
+      return;
+    }
 
     // ensure we only do this for valid interactions
     const validInteractions = ["agreed", "disagreed", "interested"];
