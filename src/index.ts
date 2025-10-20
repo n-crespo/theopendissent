@@ -324,7 +324,6 @@ function render(posts: Post[]): void {
 <div class="post" data-post-id="${post.id}">
   <div class="post-header">
     <div class="post-avatar">
-      <!-- Placeholder for a real avatar image -->
       <i class="bi bi-person-fill"></i>
     </div>
     <div class="post-user-info">
