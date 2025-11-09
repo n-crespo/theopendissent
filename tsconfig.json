@@ -3,6 +3,7 @@
     // "target": "ESNext",
     // "module": "ESNext",
     // "moduleResolution": "bundler",
+    "esModuleInterop": true,
     "allowImportingTsExtensions": true, // allow importing from utils.ts
     "noEmit": true,
     "strict": true

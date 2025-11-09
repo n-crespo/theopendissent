@@ -1,5 +1,6 @@
 // import firebase functions
 import { FirebaseApp, FirebaseOptions, initializeApp } from "firebase/app";
+import DOMPurify from "dompurify";
 import {
   Auth,
   getAuth,
@@ -304,7 +305,7 @@ function render(posts: Post[]): void {
     const postTime: Date = new Date(
       typeof post.timestamp === "number" ? post.timestamp : 0,
     );
-    const formattedTime: string = timeAgo(postTime, "en");
+    const formattedTime: string = DOMPurify.sanitize(timeAgo(postTime, "en"));
 
     // grab the uid of the current user
     const currentUserId: string | null = auth.currentUser
@@ -318,19 +319,28 @@ function render(posts: Post[]): void {
       hasDisagreed: post.userInteractions?.disagreed?.[currentUserId!],
     };
     const metrics = post.metrics;
+    // const id = DOMPurify.sanitize(post.id);
+
+    // sanitize inputs to prevent XSS attacks
+    const cleanPostId = DOMPurify.sanitize(post.id);
+    const cleanUserID = DOMPurify.sanitize(post.userId);
+    const shortenedCleanUserID = DOMPurify.sanitize(
+      post.userId.substring(0, 10) + "...",
+    );
+    const cleanPostContent = DOMPurify.sanitize(post.content);
 
     listItems += `
-<div class="post" data-post-id="${post.id}">
+<div class="post" data-post-id="${cleanPostId}">
   <div class="post-header">
     <div class="post-avatar">
       <i class="bi bi-person-fill"></i>
     </div>
     <div class="post-user-info">
-      <span class="username" title=${post.userId}>${currentUserId == post.userId ? "You" : post.userId.substring(0, 10) + "…"}</span>
+      <span class="username" title=${cleanUserID}>${currentUserId == post.userId ? "You" : shortenedCleanUserID}</span>
       <span class="timestamp">${formattedTime}</span>
     </div>
   </div>
-  <p class="post-content">${post.content}</p>
+  <p class="post-content">${cleanPostContent}</p>
   <div class="post-interaction-buttons">
     <button class="post-btn agreed-button ${
       currentUserInteractions.hasAgreed ? "active" : ""
