@@ -199,8 +199,8 @@ submitPostBtn.addEventListener("click", function () {
     return;
   }
 
-  const postContent = inputField.value;
-  if (postContent.trim() === "") {
+  const postContent = inputField.value.trim();
+  if (postContent === "") {
     return;
   }
   const newPost = {
