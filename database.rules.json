@@ -1,0 +1,30 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "posts": {
+      ".read": true,
+      ".write": "auth != null",
+
+      "userInteractions": {
+        ".read": true,
+        ".write": "auth != null"
+      },
+
+      "postContent": {
+        ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 600"
+      },
+
+      "timestamp": {
+        ".validate": "newData.isNumber()"
+      },
+      "$post_id": {
+        ".validate": "newData.child('userId').val() == auth.uid"
+      }
+    }
+  }
+}

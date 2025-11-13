@@ -1,5 +1,8 @@
 {
   "name": "functions",
+  "engines": {
+    "node": "22"
+  },
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
     "build": "tsc",
