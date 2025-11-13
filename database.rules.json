@@ -31,7 +31,7 @@
         },
 
         "userId": {
-          ".validate": "newData.val() == auth.uid && (!data.exists() || data.val() == newData.val())"
+          ".validate": "root.child('users').child(newData.val()).exists() && (newData.val() == auth.uid && (!data.exists() || data.val() == newData.val()))"
         },
 
         "userInteractions": {
