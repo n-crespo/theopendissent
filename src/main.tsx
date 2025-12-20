@@ -3,6 +3,7 @@ import App from "./App";
 import "./styles/index.css";
 import { AuthProvider } from "./context/AuthContext";
 import { ModalProvider } from "./context/ModalContext";
+import { PwaProvider } from "./context/PwaContext";
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -12,8 +13,10 @@ if ("serviceWorker" in navigator) {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <AuthProvider>
-    <ModalProvider>
-      <App />
-    </ModalProvider>
+    <PwaProvider>
+      <ModalProvider>
+        <App />
+      </ModalProvider>
+    </PwaProvider>
   </AuthProvider>,
 );
