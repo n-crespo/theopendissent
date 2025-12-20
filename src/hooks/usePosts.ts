@@ -1,4 +1,3 @@
-// src/hooks/usePosts.ts
 import { useState, useEffect } from "react";
 import {
   ref,
@@ -13,15 +12,14 @@ import { Post } from "../types";
 export const usePosts = (initialLimit: number = 20) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [limitCount, setLimitCount] = useState(initialLimit);
+  const [currentLimit, setCurrentLimit] = useState(initialLimit);
 
   useEffect(() => {
-    // query posts ordered by timestamp, limited to the most recent X
     const postsRef = ref(db, "posts");
     const postsQuery = query(
       postsRef,
       orderByChild("timestamp"),
-      limitToLast(limitCount),
+      limitToLast(currentLimit),
     );
 
     const unsubscribe = onValue(postsQuery, (snapshot) => {
@@ -51,15 +49,18 @@ export const usePosts = (initialLimit: number = 20) => {
         }))
         .filter((post) => post.content !== undefined);
 
-      // reverse so newest are at the top, or keep as is if your PostList handles order
       setPosts(postsArray);
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [limitCount]);
+  }, [currentLimit]); // re-run when limit changes
 
-  const loadMore = () => setLimitCount((prev) => prev + 20);
+  const loadMore = () => {
+    setLoading(true); // set loading to true while we fetch the next batch
+    setCurrentLimit((prev) => prev + 20);
+  };
 
-  return { posts, loading, loadMore };
+  // return currentLimit so App.tsx can use it for the button logic
+  return { posts, loading, loadMore, currentLimit };
 };

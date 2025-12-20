@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "./components/Header";
 import { PostInput } from "./components/PostInput";
 import { PostList } from "./components/PostList";
@@ -9,12 +9,34 @@ import { usePosts } from "./hooks/usePosts";
 
 export default function App() {
   const { user, signIn, logout } = useAuth();
-  const { posts, loading, loadMore } = usePosts(20);
-
-  // controls which modal is visible
+  const { posts, loading, loadMore, currentLimit } = usePosts(20);
   const [activeModal, setActiveModal] = useState<"signin" | "help" | null>(
     null,
   );
+
+  // state to show/hide the back-to-top button
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // show button if user scrolls down more than 400px
+      if (window.scrollY > 400) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   const closeModals = () => setActiveModal(null);
 
@@ -34,35 +56,26 @@ export default function App() {
             onRequireAuth={() => setActiveModal("signin")}
           />
 
-          {loading ? (
-            <div style={{ textAlign: "center", marginTop: "20px" }}>
-              Loading posts...
-            </div>
-          ) : (
-            <PostList
-              posts={posts}
-              currentUser={user}
-              onRequireAuth={() => setActiveModal("signin")}
-            />
-          )}
-          {!loading && posts.length >= 20 && (
-            <button
-              onClick={loadMore}
-              className="btn"
-              style={{
-                margin: "20px auto",
-                display: "block",
-                background: "var(--gray)",
-                color: "white",
-              }}
-            >
-              Load Older Posts
-            </button>
-          )}
+          <PostList
+            posts={posts}
+            currentUser={user}
+            onRequireAuth={() => setActiveModal("signin")}
+            loadMore={loadMore}
+            isLoading={loading}
+            hasMore={posts.length >= currentLimit}
+          />
         </div>
       </main>
 
-      {/* conditional rendering for modals */}
+      {/* floating back to top button */}
+      <button
+        className={`back-to-top ${showScrollTop ? "visible" : ""}`}
+        onClick={scrollToTop}
+        aria-label="Back to top"
+      >
+        <i className="bi bi-arrow-up-short"></i>
+      </button>
+
       {activeModal === "help" && <HelpModal onClose={closeModals} />}
 
       {activeModal === "signin" && (
