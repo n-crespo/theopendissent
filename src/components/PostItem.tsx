@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { Post } from "../types";
 import { timeAgo } from "../utils";
-import { toggleInteraction } from "../lib/firebase";
+import { addInteraction, removeInteraction } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
 
@@ -9,147 +9,195 @@ interface PostItemProps {
   post: Post;
 }
 
-export const PostItem = ({ post }: PostItemProps) => {
-  const { userId, id, content, timestamp } = post;
+export const PostItem = memo(
+  ({ post }: PostItemProps) => {
+    const { userId, id, postContent, timestamp, parentPostId } = post;
 
-  // get auth state and modal controls from context
-  const { user } = useAuth();
-  const { openModal } = useModal();
+    // fallback for legacy data if postContent isn't yet migrated in DB
+    const displayContent = postContent || (post as any).content;
 
-  const uid = user?.uid;
+    const { user } = useAuth();
+    const { openModal } = useModal();
+    const uid = user?.uid;
 
-  const [localMetrics, setLocalMetrics] = useState(post.metrics);
-  const [localInteractions, setLocalInteractions] = useState(
-    post.userInteractions,
-  );
+    const [localMetrics, setLocalMetrics] = useState(post.metrics);
+    const [localInteractions, setLocalInteractions] = useState(
+      post.userInteractions,
+    );
+    const [isReplying, setIsReplying] = useState(false);
 
-  const isOptimisticRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const isOptimisticRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    if (!isOptimisticRef.current) {
-      setLocalMetrics(post.metrics);
-      setLocalInteractions(post.userInteractions);
-    }
-  }, [post.metrics, post.userInteractions]);
+    // sync local state with incoming props if we aren't in the middle of an optimistic update
+    useEffect(() => {
+      if (!isOptimisticRef.current) {
+        setLocalMetrics(post.metrics);
+        setLocalInteractions(post.userInteractions);
+      }
+    }, [post.metrics, post.userInteractions]);
 
-  const interactionState = {
-    agreed: !!(uid && localInteractions?.agreed?.[uid]),
-    interested: !!(uid && localInteractions?.interested?.[uid]),
-    disagreed: !!(uid && localInteractions?.disagreed?.[uid]),
-  };
+    const interactionState = {
+      agreed: !!(uid && localInteractions?.agreed?.[uid]),
+      dissented: !!(uid && localInteractions?.dissented?.[uid]),
+    };
 
-  const handleInteraction = async (
-    type: "agreed" | "disagreed" | "interested",
-  ) => {
-    if (!uid) {
-      openModal("signin");
-      return;
-    }
+    const handleInteraction = async (type: "agreed" | "dissented") => {
+      if (!uid) {
+        openModal("signin");
+        return;
+      }
 
-    if (isOptimisticRef.current) clearTimeout(isOptimisticRef.current);
-    isOptimisticRef.current = setTimeout(() => {
-      isOptimisticRef.current = null;
-    }, 2000);
+      // click dissent to toggle the reply input
+      if (type === "dissented") {
+        setIsReplying(!isReplying);
+      }
 
-    const wasActive = interactionState[type];
-    const nextMetrics = { ...localMetrics };
-    const nextInteractions = JSON.parse(JSON.stringify(localInteractions));
+      // prevent the flicker by locking external props updates for 2 seconds
+      if (isOptimisticRef.current) clearTimeout(isOptimisticRef.current);
+      isOptimisticRef.current = setTimeout(() => {
+        isOptimisticRef.current = null;
+      }, 2000);
 
-    if (wasActive) {
-      nextMetrics[`${type}Count` as keyof typeof nextMetrics]--;
-      if (nextInteractions[type]) delete nextInteractions[type][uid];
-    } else {
-      nextMetrics[`${type}Count` as keyof typeof nextMetrics]++;
-      if (!nextInteractions[type]) nextInteractions[type] = {};
-      nextInteractions[type][uid] = true;
+      const wasActive = interactionState[type];
+      const nextMetrics = { ...localMetrics };
+      const nextInteractions = JSON.parse(JSON.stringify(localInteractions));
 
-      (
-        Object.keys(interactionState) as Array<keyof typeof interactionState>
-      ).forEach((other) => {
-        if (other !== type && interactionState[other]) {
+      // optimistic logic
+      if (wasActive) {
+        nextMetrics[`${type}Count` as keyof typeof nextMetrics]--;
+        if (nextInteractions[type]) delete nextInteractions[type][uid];
+      } else {
+        nextMetrics[`${type}Count` as keyof typeof nextMetrics]++;
+        if (!nextInteractions[type]) nextInteractions[type] = {};
+        nextInteractions[type][uid] = true;
+
+        // mutual exclusivity: if you agree, you can't be dissenting (and vice versa)
+        const other = type === "agreed" ? "dissented" : "agreed";
+        if (interactionState[other]) {
           nextMetrics[`${other}Count` as keyof typeof nextMetrics]--;
           if (nextInteractions[other]) delete nextInteractions[other][uid];
         }
-      });
-    }
+      }
 
-    setLocalMetrics(nextMetrics);
-    setLocalInteractions(nextInteractions);
+      setLocalMetrics(nextMetrics);
+      setLocalInteractions(nextInteractions);
 
-    try {
-      if (wasActive) {
-        await toggleInteraction(id, uid, type, true);
-      } else {
-        await toggleInteraction(id, uid, type, false);
-        const others = (["agreed", "disagreed", "interested"] as const).filter(
-          (t) => t !== type,
-        );
-        for (const other of others) {
+      try {
+        if (wasActive) {
+          await removeInteraction(id, uid, type);
+        } else {
+          await addInteraction(id, uid, type);
+          const other = type === "agreed" ? "dissented" : "agreed";
           if (interactionState[other]) {
-            await toggleInteraction(id, uid, other, true);
+            await removeInteraction(id, uid, other);
           }
         }
+      } catch (err) {
+        // rollback on failure
+        if (isOptimisticRef.current) {
+          clearTimeout(isOptimisticRef.current);
+          isOptimisticRef.current = null;
+        }
+        setLocalMetrics(post.metrics);
+        setLocalInteractions(post.userInteractions);
+        console.error("Interaction failed:", err);
       }
-    } catch (err) {
-      if (isOptimisticRef.current) {
-        clearTimeout(isOptimisticRef.current);
-        isOptimisticRef.current = null;
-      }
-      setLocalMetrics(post.metrics);
-      setLocalInteractions(post.userInteractions);
-      console.error("Interaction failed:", err);
-    }
-  };
+    };
 
-  const formattedTime = timeAgo(
-    new Date(typeof timestamp === "number" ? timestamp : 0),
-  );
-  const shortenedUid = userId.substring(0, 10) + "...";
+    const formattedTime = timeAgo(
+      new Date(typeof timestamp === "number" ? timestamp : 0),
+    );
+    const shortenedUid = userId.substring(0, 10) + "...";
 
-  return (
-    <div className="post">
-      <div className="post-header">
-        <div className="post-avatar">
-          <i className="bi bi-person-fill"></i>
+    return (
+      <div className={`post ${parentPostId ? "reply" : ""}`}>
+        <div className="post-header">
+          <div className="post-avatar">
+            <i className="bi bi-person-fill"></i>
+          </div>
+          <div className="post-user-info">
+            <span className="username" title={userId}>
+              {uid === userId ? "You" : shortenedUid}
+            </span>
+            <span className="timestamp">{formattedTime}</span>
+          </div>
         </div>
-        <div className="post-user-info">
-          <span className="username" title={userId}>
-            {uid === userId ? "You" : shortenedUid}
-          </span>
-          <span className="timestamp">{formattedTime}</span>
+
+        <p className="post-content">{displayContent}</p>
+
+        <div className="post-interaction-buttons">
+          <InteractionButton
+            type="agreed"
+            active={interactionState.agreed}
+            count={localMetrics.agreedCount}
+            icon="bi-check-square"
+            label="Agree"
+            onClick={() => handleInteraction("agreed")}
+          />
+          <InteractionButton
+            type="dissented"
+            active={interactionState.dissented}
+            count={localMetrics.dissentedCount}
+            icon="bi-chat-left-text"
+            label="Dissent"
+            onClick={() => handleInteraction("dissented")}
+          />
         </div>
+
+        {isReplying && (
+          <div className="reply-container" style={{ marginTop: "15px" }}>
+            {/* Phase 3: we'll place the reusable PostInput here next */}
+            <div
+              style={{
+                padding: "10px",
+                borderTop: "1px solid var(--border-fg)",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "var(--gray)",
+                  fontStyle: "italic",
+                }}
+              >
+                Write your dissent...
+              </p>
+            </div>
+          </div>
+        )}
       </div>
+    );
+  },
+  (prevProps, nextProps) => {
+    // custom comparison to prevent unnecessary re-renders in the list
+    return (
+      prevProps.post.id === nextProps.post.id &&
+      prevProps.post.postContent === nextProps.post.postContent &&
+      JSON.stringify(prevProps.post.metrics) ===
+        JSON.stringify(nextProps.post.metrics) &&
+      JSON.stringify(prevProps.post.userInteractions) ===
+        JSON.stringify(nextProps.post.userInteractions)
+    );
+  },
+);
 
-      <p className="post-content">{content}</p>
+interface InteractionButtonProps {
+  type: string;
+  active: boolean;
+  count: number;
+  icon: string;
+  label: string;
+  onClick: () => void;
+}
 
-      <div className="post-interaction-buttons">
-        <InteractionButton
-          type="agreed"
-          active={interactionState.agreed}
-          count={localMetrics.agreedCount}
-          icon="bi-check-square"
-          onClick={() => handleInteraction("agreed")}
-        />
-        <InteractionButton
-          type="interested"
-          active={interactionState.interested}
-          count={localMetrics.interestedCount}
-          icon="bi-fire"
-          onClick={() => handleInteraction("interested")}
-        />
-        <InteractionButton
-          type="disagreed"
-          active={interactionState.disagreed}
-          count={localMetrics.disagreedCount}
-          icon="bi-x-square"
-          onClick={() => handleInteraction("disagreed")}
-        />
-      </div>
-    </div>
-  );
-};
-
-const InteractionButton = ({ type, active, count, icon, onClick }: any) => (
+const InteractionButton = ({
+  type,
+  active,
+  count,
+  icon,
+  label,
+  onClick,
+}: InteractionButtonProps) => (
   <button
     className={`post-btn ${type}-button ${active ? "active" : ""}`}
     onClick={onClick}
@@ -157,6 +205,7 @@ const InteractionButton = ({ type, active, count, icon, onClick }: any) => (
     <div className="btn-content">
       <i className={`bi ${icon}`}></i>
       <span className="count">{count}</span>
+      <span className="btn-label">{label}</span>
     </div>
   </button>
 );
