@@ -1,27 +1,17 @@
-// src/components/Header.tsx
 import headIconUrl from "../assets/icons/head.svg";
 import logoUrl from "../assets/Flat-Logo.svg";
 import helpIconUrl from "../assets/icons/help.svg";
+import { useAuth } from "../context/AuthContext";
+import { useModal } from "../context/ModalContext";
 
-import { User } from "firebase/auth";
+export const Header = () => {
+  const { user } = useAuth();
+  const { openModal } = useModal();
 
-interface HeaderProps {
-  user: User | null;
-  onOpenHelp: () => void;
-  onOpenSignIn: () => void;
-  onConfirmLogout: () => void;
-}
-
-export const Header = ({
-  user,
-  onOpenHelp,
-  onOpenSignIn,
-  onConfirmLogout,
-}: HeaderProps) => {
   return (
     <header>
       <div id="header-content">
-        <button id="help-btn" className="btn" onClick={onOpenHelp}>
+        <button className="btn" onClick={() => openModal("help")}>
           <img src={helpIconUrl} alt="Help Icon" />
         </button>
 
@@ -30,13 +20,17 @@ export const Header = ({
         {user ? (
           <button
             className="btn signed-in"
-            onClick={onConfirmLogout}
+            onClick={() => openModal("logout")}
             title={`Signed in as ${user.email?.split("@")[0]}`}
           >
             <i className="bi bi-box-arrow-right"></i>
           </button>
         ) : (
-          <button className="btn" onClick={onOpenSignIn} title="Sign In">
+          <button
+            className="btn"
+            onClick={() => openModal("signin")}
+            title="Sign In"
+          >
             <img src={headIconUrl} alt="Head Icon" />
           </button>
         )}
