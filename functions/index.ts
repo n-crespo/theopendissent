@@ -12,40 +12,17 @@ import * as admin from "firebase-admin";
 admin.initializeApp();
 
 /**
- * Dynamically updates interaction counters on the client side using atomic
- * increment operation. Triggers on any change in the userInteractions path that
- * exists for all posts.
+ * Dynamically updates interaction counters.
+ * Triggers on any change in the userInteractions path.
  */
 export const updateInteractionCounts = onValueWritten(
-  // use wildcard for postID, interaction, userID (allow any child)
   "/posts/{postId}/userInteractions/{interaction}/{userId}",
   async (event) => {
-    // extract actual postID and interaction
     const { postId, interaction } = event.params;
 
-    // check for valid keys in the post data
-    const postRef = admin.database().ref(`/posts/${postId}`);
-    const getPostSnapshot = await postRef.once("value");
-    if (!getPostSnapshot.exists()) {
-      console.log(
-        `Post ${postId} does not exist. Ignoring interaction update.`,
-      );
-      return;
-    }
-    const postData = getPostSnapshot.val();
-    const requiredKeys = ["postContent", "timestamp", "userId"];
-    const missingKeys = requiredKeys.filter((key) => !(key in postData));
-    if (missingKeys.length > 0) {
-      console.log(
-        `Post ${postId} is missing required keys: ${missingKeys.join(", ")}. Ignoring interaction update.`,
-      );
-      return;
-    }
-
-    // ensure we only do this for valid interactions
+    // quick validation for interaction types
     const validInteractions = ["agreed", "disagreed", "interested"];
     if (!validInteractions.includes(interaction)) {
-      console.log(`Ignoring invalid interaction type: "${interaction}"`);
       return;
     }
 
@@ -54,32 +31,26 @@ export const updateInteractionCounts = onValueWritten(
 
     let incrementValue = 0;
     if (isCreation) {
-      // an interaction was added
       incrementValue = 1;
     } else if (isDeletion) {
-      // an interaction was removed
       incrementValue = -1;
     } else {
-      return; // no change was made to the children we are watching
+      // nothing to do (e.g. data was updated but not created/deleted)
+      return;
     }
 
-    // Dynamically build the path to the correct counter.
     const counterRef = admin
       .database()
       .ref(`/posts/${postId}/metrics/${interaction}Count`);
-    console.log(
-      `Updating ${interaction}Count for post ${postId} by ${incrementValue}.`,
-    );
 
-    // use the atomic increment operation to avoid race condition
+    // bypass extra reads and use the atomic server increment
     return counterRef.set(admin.database.ServerValue.increment(incrementValue));
   },
 );
 
-// restrict users to @g.ucla.edu emails
+// ucla auth restrictions
 const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
   const user = event.data;
-  // example from docs https://firebase.google.com/docs/auth/extend-with-blocking-functions?authuser=0#only_allowing_registration_from_a_specific_domain
   if (!user?.email?.endsWith("@g.ucla.edu")) {
     throw new HttpsError(
       "invalid-argument",
@@ -88,23 +59,19 @@ const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
   }
 };
 
-// run on user creation
 export const beforecreated = beforeUserCreated(async (event) => {
   uclaOnlyAuth(event);
   const user = event.data;
 
-  // add new user to db
   const newUserProfile = {
     email: user?.email,
     displayName: user?.displayName,
   };
-  const userRef = admin.database().ref(`users/${user?.uid}`);
-  console.log(`Validation passed. Creating profile for new user: ${user?.uid}`);
 
+  const userRef = admin.database().ref(`users/${user?.uid}`);
   await userRef.set(newUserProfile);
 });
 
-// run on user sign-in
 export const beforesignedin = beforeUserSignedIn((event) => {
   return uclaOnlyAuth(event);
 });
