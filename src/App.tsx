@@ -9,7 +9,7 @@ import { usePosts } from "./hooks/usePosts";
 
 export default function App() {
   const { user, signIn, logout } = useAuth();
-  const { posts, loading } = usePosts();
+  const { posts, loading, loadMore } = usePosts(20);
 
   // controls which modal is visible
   const [activeModal, setActiveModal] = useState<"signin" | "help" | null>(
@@ -44,6 +44,20 @@ export default function App() {
               currentUser={user}
               onRequireAuth={() => setActiveModal("signin")}
             />
+          )}
+          {!loading && posts.length >= 20 && (
+            <button
+              onClick={loadMore}
+              className="btn"
+              style={{
+                margin: "20px auto",
+                display: "block",
+                background: "var(--gray)",
+                color: "white",
+              }}
+            >
+              Load Older Posts
+            </button>
           )}
         </div>
       </main>
