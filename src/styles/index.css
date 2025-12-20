@@ -543,3 +543,24 @@ footer {
 .btn.signed-in i {
   color: var(--red);
 }
+
+/* loading auth  */
+#auth-section {
+  width: 50px; /* matches your logo-height logic */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* rotation for loading icon */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.bi-three-dots {
+  color: var(--gray);
+}
