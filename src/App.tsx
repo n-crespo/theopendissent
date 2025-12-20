@@ -7,12 +7,10 @@ import { HelpModal } from "./components/modals/HelpModal";
 import { LogoutModal } from "./components/modals/LogoutModal";
 
 import { useModal } from "./context/ModalContext";
-import { usePosts } from "./hooks/usePosts";
 import { Footer } from "./components/Footer";
 
 export default function App() {
   const { activeModal } = useModal();
-  const { posts, loading, loadMore, currentLimit } = usePosts(20);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // handle scroll-to-top visibility
@@ -28,12 +26,7 @@ export default function App() {
       <main id="body-content">
         <div id="center-container">
           <PostInput />
-          <PostList
-            posts={posts}
-            loadMore={loadMore}
-            isLoading={loading}
-            hasMore={posts.length >= currentLimit}
-          />
+          <PostList />
         </div>
       </main>
       <button
@@ -42,7 +35,7 @@ export default function App() {
       >
         <i className="bi bi-arrow-up-short"></i>
       </button>
-      {/* Modals - No props needed! */}
+      {/* modals */}
       {activeModal === "help" && <HelpModal />}
       {activeModal === "signin" && <SignInModal />}
       {activeModal === "logout" && <LogoutModal />}
