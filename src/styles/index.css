@@ -495,3 +495,51 @@ footer {
   text-align: center;
   border: 1px dashed var(--border-fg);
 }
+
+/* logout modal specific buttons */
+.btn-logout-confirm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  background-color: var(--red);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--border-rad);
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.btn-logout-confirm:hover {
+  opacity: 0.9;
+  box-shadow: 0 4px 12px rgba(112, 22, 30, 0.2);
+}
+
+.btn-logout-cancel {
+  background: none;
+  border: none;
+  color: var(--gray);
+  cursor: pointer;
+  margin-top: 15px;
+  padding: 8px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.btn-logout-cancel:hover {
+  text-decoration: underline;
+  color: var(--text);
+}
+
+/* ensure the header logout button matches help icon behavior */
+.btn.signed-in:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: var(--border-rad);
+}
+
+.btn.signed-in i {
+  color: var(--red);
+}

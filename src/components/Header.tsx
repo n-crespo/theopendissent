@@ -9,14 +9,14 @@ interface HeaderProps {
   user: User | null;
   onOpenHelp: () => void;
   onOpenSignIn: () => void;
-  onLogout: () => void;
+  onConfirmLogout: () => void;
 }
 
 export const Header = ({
   user,
   onOpenHelp,
   onOpenSignIn,
-  onLogout,
+  onConfirmLogout,
 }: HeaderProps) => {
   return (
     <header>
@@ -30,7 +30,7 @@ export const Header = ({
         {user ? (
           <button
             className="btn signed-in"
-            onClick={onLogout}
+            onClick={onConfirmLogout}
             title={`Signed in as ${user.email?.split("@")[0]}`}
           >
             <i className="bi bi-box-arrow-right"></i>

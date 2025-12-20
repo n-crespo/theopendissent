@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { LogoutModal } from "./components/modals/LogoutModal";
 import { Header } from "./components/Header";
 import { PostInput } from "./components/PostInput";
 import { PostList } from "./components/PostList";
@@ -11,9 +12,9 @@ export default function App() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const { user, signIn, logout } = useAuth();
   const { posts, loading, loadMore, currentLimit } = usePosts(20);
-  const [activeModal, setActiveModal] = useState<"signin" | "help" | null>(
-    null,
-  );
+  const [activeModal, setActiveModal] = useState<
+    "signin" | "help" | "logout" | null
+  >(null);
 
   // state to show/hide the back-to-top button
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -61,6 +62,11 @@ export default function App() {
     });
   };
 
+  const handleLogout = async () => {
+    await logout();
+    closeModals();
+  };
+
   const closeModals = () => setActiveModal(null);
 
   return (
@@ -69,9 +75,8 @@ export default function App() {
         user={user}
         onOpenHelp={() => setActiveModal("help")}
         onOpenSignIn={() => setActiveModal("signin")}
-        onLogout={logout}
+        onConfirmLogout={() => setActiveModal("logout")}
       />
-
       <main id="body-content">
         <div id="center-container">
           <PostInput
@@ -89,7 +94,6 @@ export default function App() {
           />
         </div>
       </main>
-
       {/* floating back to top button */}
       <button
         className={`back-to-top ${showScrollTop ? "visible" : ""}`}
@@ -98,7 +102,6 @@ export default function App() {
       >
         <i className="bi bi-arrow-up-short"></i>
       </button>
-
       {activeModal === "help" && (
         <HelpModal
           onClose={closeModals}
@@ -106,7 +109,6 @@ export default function App() {
           setInstallPrompt={setDeferredPrompt}
         />
       )}
-
       {activeModal === "signin" && (
         <SignInModal
           onClose={closeModals}
@@ -114,6 +116,13 @@ export default function App() {
             await signIn();
             closeModals();
           }}
+        />
+      )}
+      {activeModal === "logout" && (
+        <LogoutModal
+          user={user}
+          onClose={closeModals}
+          onConfirm={handleLogout}
         />
       )}
 

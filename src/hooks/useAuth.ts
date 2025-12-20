@@ -1,4 +1,3 @@
-// src/hooks/useAuth.ts
 import { useState, useEffect } from "react";
 import {
   onAuthStateChanged,
