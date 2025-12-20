@@ -3,10 +3,6 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  resolve: {
-    alias: {
-      // allows use of '@/assets/...' instead of relative paths
-      "@": "/src",
-    },
-  },
+  // adds support for importing svgs as strings
+  assetsInclude: ["**/*.svg"],
 });
