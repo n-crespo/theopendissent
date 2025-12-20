@@ -1,21 +1,53 @@
 {
   "name": "The Open Dissent",
   "short_name": "Open Dissent",
+  "description": "An open platform for anonymous political discussion.",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#f8f2e8",
+  "background_color": "#f8f2e8",
+  "categories": ["social", "politics", "education"],
   "icons": [
     {
-      "src": "/public/web-app-manifest-192x192.png",
+      "src": "/favicons/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any"
     },
     {
-      "src": "/public/web-app-manifest-512x512.png",
+      "src": "/favicons/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#f8f2e8",
-  "background_color": "#f8f2e8",
-  "display": "standalone"
+  "shortcuts": [
+    {
+      "name": "New Dissent",
+      "short_name": "Post",
+      "url": "/?action=new-post",
+      "icons": [
+        { "src": "/favicons/web-app-manifest-192x192.png", "sizes": "192x192" }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/mobile.png",
+      "sizes": "1170x2124",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "The Open Dissent Mobile Feed"
+    },
+    {
+      "src": "/screenshots/desktop.png",
+      "sizes": "2592x1448",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "The Open Dissent Desktop Feed"
+    }
+  ]
 }
