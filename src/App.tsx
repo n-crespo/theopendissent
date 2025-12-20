@@ -1,4 +1,3 @@
-// src/App.tsx
 import { useEffect, useState } from "react";
 import { Header } from "./components/Header";
 import { PostInput } from "./components/PostInput";
@@ -7,31 +6,13 @@ import { SignInModal } from "./components/modals/SignInModal";
 import { HelpModal } from "./components/modals/HelpModal";
 import { LogoutModal } from "./components/modals/LogoutModal";
 
-import { useAuth } from "./context/AuthContext";
 import { useModal } from "./context/ModalContext";
 import { usePosts } from "./hooks/usePosts";
 
 export default function App() {
-  const { user, signIn, logout } = useAuth();
-  const { activeModal, openModal, closeModal } = useModal();
+  const { activeModal } = useModal();
   const { posts, loading, loadMore, currentLimit } = usePosts(20);
-
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
-
-  // handle PWA installation prompt
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    return () =>
-      window.removeEventListener(
-        "beforeinstallprompt",
-        handleBeforeInstallPrompt,
-      );
-  }, []);
 
   // handle scroll-to-top visibility
   useEffect(() => {
@@ -40,11 +21,6 @@ export default function App() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLogout = async () => {
-    await logout();
-    closeModal();
-  };
-
   return (
     <div className="app-root">
       <Header />
@@ -52,7 +28,6 @@ export default function App() {
       <main id="body-content">
         <div id="center-container">
           <PostInput />
-
           <PostList
             posts={posts}
             loadMore={loadMore}
@@ -69,32 +44,10 @@ export default function App() {
         <i className="bi bi-arrow-up-short"></i>
       </button>
 
-      {/* Global Modals */}
-      {activeModal === "help" && (
-        <HelpModal
-          onClose={closeModal}
-          installPrompt={deferredPrompt}
-          setInstallPrompt={setDeferredPrompt}
-        />
-      )}
-
-      {activeModal === "signin" && (
-        <SignInModal
-          onClose={closeModal}
-          onSignIn={async () => {
-            await signIn();
-            closeModal();
-          }}
-        />
-      )}
-
-      {activeModal === "logout" && (
-        <LogoutModal
-          user={user}
-          onClose={closeModal}
-          onConfirm={handleLogout}
-        />
-      )}
+      {/* Modals - No props needed! */}
+      {activeModal === "help" && <HelpModal />}
+      {activeModal === "signin" && <SignInModal />}
+      {activeModal === "logout" && <LogoutModal />}
 
       <footer>
         <p>
