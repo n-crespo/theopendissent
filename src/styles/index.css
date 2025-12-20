@@ -224,12 +224,12 @@ body::-webkit-scrollbar {
   line-height: 1.6;
   margin-bottom: 16px;
 }
-.post-interaction-buttons {
-  display: flex;
-  justify-content: space-around;
-  border-top: 1px solid #eef0f2;
-  padding-top: 8px;
-}
+/* .post-interaction-buttons { */
+/*   display: flex; */
+/*   justify-content: space-around; */
+/*   border-top: 1px solid #eef0f2; */
+/*   padding-top: 8px; */
+/* } */
 .post-btn {
   background-color: transparent;
   border: none;
@@ -651,4 +651,33 @@ footer {
 
 .separator {
   color: var(--border-fg);
+}
+
+/* binary button adjustments */
+.post-interaction-buttons {
+  justify-content: flex-start;
+  gap: 20px;
+}
+
+.btn-label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.dissented-button:hover,
+.dissented-button.active {
+  background-color: var(--disagree-bg);
+}
+
+.bi-chat-left-text {
+  color: var(--disagree) !important;
+}
+
+/* styling for nested replies */
+.post.reply {
+  margin-left: 20px;
+  border-left: 3px solid var(--border-fg);
+  border-radius: 0 12px 12px 0;
+  transform: scale(0.98);
 }
