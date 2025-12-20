@@ -79,14 +79,8 @@ export const PostList = ({
         />
       ))}
 
-      {/* sentinel element for infinite scroll */}
-      <div ref={lastElementRef} style={{ height: "40px", marginTop: "20px" }}>
-        {isLoading && (
-          <p style={{ textAlign: "center", color: "var(--gray)" }}>
-            Loading more...
-          </p>
-        )}
-      </div>
+      {/* Invisible sentinel no text */}
+      <div ref={lastElementRef} style={{ height: "10px" }} />
     </div>
   );
 };
