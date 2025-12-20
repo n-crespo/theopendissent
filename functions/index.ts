@@ -68,6 +68,7 @@ export const beforecreated = beforeUserCreated(async (event) => {
     displayName: user?.displayName,
   };
 
+  // create root path for user
   const userRef = admin.database().ref(`users/${user?.uid}`);
   await userRef.set(newUserProfile);
 });
