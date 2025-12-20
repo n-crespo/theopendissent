@@ -1,11 +1,10 @@
 {
   "rules": {
-    ".read": false,
-    ".write": false,
-
     "users": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $uid"
+      }
     },
 
     "posts": {
@@ -13,38 +12,27 @@
       ".write": "auth != null",
 
       "$post_id": {
-        ".write": "!data.exists() || data.child('userId').val() == auth.uid",
+        ".write": "auth != null && (!data.exists() || data.child('userId').val() === auth.uid)",
 
         "metrics": {
-          ".write": "auth != null",
-          "$metricKey": {
-            ".validate": "newData.isNumber()"
-          }
-        },
-
-        "postContent": {
-          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 600"
-        },
-
-        "timestamp": {
-          ".validate": "newData.isNumber()"
-        },
-
-        "userId": {
-          ".validate": "root.child('users').child(newData.val()).exists() && (newData.val() == auth.uid && (!data.exists() || data.val() == newData.val()))"
+          ".write": false
         },
 
         "userInteractions": {
-          ".write": "auth != null",
           "$interactionType": {
             "$userId": {
-              ".validate": "newData.isBoolean()"
+              ".write": "auth != null && auth.uid === $userId",
+              ".validate": "newData.isBoolean() || newData.val() == null"
             }
           }
         },
 
-        "$other": {
-          ".validate": false
+        "userId": {
+          ".validate": "newData.val() === auth.uid"
+        },
+
+        "postContent": {
+          ".validate": "newData.isString() && newData.val().length <= 600"
         }
       }
     }
