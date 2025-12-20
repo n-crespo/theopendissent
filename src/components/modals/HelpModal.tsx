@@ -47,7 +47,7 @@ export const HelpModal = ({
         {installPrompt || isIOS ? (
           <div className="install-section">
             <h4>Install as an App</h4>
-            {true ? (
+            {isIOS ? (
               <ul>
                 <li>
                   Tap the <strong>Share</strong> button (bottom of your screen)
