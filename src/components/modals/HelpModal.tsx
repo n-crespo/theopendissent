@@ -13,6 +13,14 @@ export const HelpModal = ({
 }: HelpModalProps) => {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
+  const handleInstallApp = () => {
+    if (isIOS) {
+      handleShareClick();
+    } else if (installPrompt) {
+      handleInstallClick();
+    }
+  };
+
   const handleInstallClick = async () => {
     if (!installPrompt) return;
     installPrompt.prompt();
@@ -29,7 +37,7 @@ export const HelpModal = ({
           url: window.location.href,
         });
       } catch (err) {
-        console.log("Share cancelled or failed", err);
+        // user cancelled or browser doesn't support
       }
     }
   };
@@ -45,7 +53,6 @@ export const HelpModal = ({
           Post your thoughts to have a chance to be invited to The Open
           Dissent's debate-style show (coming soon)!
         </p>
-
         <h4>How to Interact with Posts</h4>
         <ul>
           <li>
@@ -58,45 +65,33 @@ export const HelpModal = ({
             <i className="bi bi-x-square"></i> <em>I disagree...</em>
           </li>
         </ul>
-
-        <h4>Install on Your iPhone or iPad</h4>
-
-        {/* Android/Desktop One-Tap Install */}
-        {true && (
-          <div className="install-section">
-            <button className="btn install-btn" onClick={handleInstallClick}>
-              <i className="bi bi-download"></i> Install to Home Screen
-            </button>
-          </div>
+        <h4>Install as an App</h4>
+        {(installPrompt || isIOS) && (
+          <button
+            className="btn install-btn-outline"
+            onClick={handleInstallApp}
+          >
+            <i className={`bi ${isIOS ? "bi-share" : "bi-download"}`}></i>
+            Install
+          </button>
         )}
-
-        {/* iOS Native Share Trigger */}
-        {true && (
-          <div className="install-section">
-            <button
-              className="btn install-btn ios-btn"
-              onClick={handleShareClick}
-            >
-              <i className="bi bi-share"></i> Open Share Menu
-            </button>
-          </div>
+        {isIOS && (
+          <ul>
+            <li>
+              Tap the "Share" button above &gt; "More" &gt; "Add to Home
+              Screen".
+            </li>
+            <li>Tap "Add" in the top-right corner.</li>
+            <li>
+              <a
+                href="https://support.apple.com/en-asia/guide/iphone/iphea86e5236/ios"
+                target="_blank"
+              >
+                Click here for a detailed guide (iOS).
+              </a>
+            </li>
+          </ul>
         )}
-
-        <ul>
-          <li>
-            Tap the "Share" button above (or the browser share icon) then "Add
-            to Home Screen".
-          </li>
-          <li>Tap "Add" in the top-right corner.</li>
-          <li>
-            <a
-              href="https://support.apple.com/en-asia/guide/iphone/iphea86e5236/ios"
-              target="_blank"
-            >
-              Click here for a detailed guide (iOS).
-            </a>
-          </li>
-        </ul>
       </div>
     </Modal>
   );

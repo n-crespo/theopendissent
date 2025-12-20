@@ -19,6 +19,11 @@ export default function App() {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
+    const isStandalone = window.matchMedia(
+      "(display-mode: standalone)",
+    ).matches;
+    if (isStandalone) return;
+
     const handleBeforeInstallPrompt = (e: Event) => {
       // prevent the mini-infobar from appearing on mobile
       e.preventDefault();
