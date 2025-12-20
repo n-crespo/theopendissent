@@ -395,7 +395,6 @@ body::-webkit-scrollbar {
   padding-left: 0;
 }
 .modal-content ul li {
-  display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 10px;

@@ -13,33 +13,11 @@ export const HelpModal = ({
 }: HelpModalProps) => {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-  const handleInstallApp = () => {
-    if (isIOS) {
-      handleShareClick();
-    } else if (installPrompt) {
-      handleInstallClick();
-    }
-  };
-
   const handleInstallClick = async () => {
     if (!installPrompt) return;
     installPrompt.prompt();
     const { outcome } = await installPrompt.userChoice;
     if (outcome === "accepted") setInstallPrompt(null);
-  };
-
-  const handleShareClick = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "The Open Dissent",
-          text: "Join the anonymous discourse at UCLA.",
-          url: window.location.href,
-        });
-      } catch (err) {
-        // user cancelled or browser doesn't support
-      }
-    }
   };
 
   return (
@@ -65,26 +43,19 @@ export const HelpModal = ({
             <i className="bi bi-x-square"></i> <em>I disagree...</em>
           </li>
         </ul>
-        {/* only show section if installation is possible (iOS or prompt available) */}
+        {/* show installation button or help message if needed */}
         {installPrompt || isIOS ? (
           <div className="install-section">
             <h4>Install as an App</h4>
-
-            <button
-              className="btn install-btn-outline"
-              onClick={handleInstallApp}
-            >
-              <i className={`bi ${isIOS ? "bi-share" : "bi-download"}`}></i>
-              Install
-            </button>
-
-            {isIOS && (
+            {true ? (
               <ul>
                 <li>
-                  Tap the "Install" button above &gt; "More" &gt; "Add to Home
-                  Screen".
+                  Tap the <strong>Share</strong> button (bottom of your screen)
                 </li>
-                <li>Tap "Add" in the top-right corner.</li>
+                <li>
+                  Tap <strong>More</strong>, then{" "}
+                  <strong>Add to Home Screen</strong>
+                </li>
                 <li>
                   <a
                     href="https://support.apple.com/en-asia/guide/iphone/iphea86e5236/ios"
@@ -95,6 +66,14 @@ export const HelpModal = ({
                   </a>
                 </li>
               </ul>
+            ) : (
+              <button
+                className="btn install-btn-outline"
+                onClick={handleInstallClick}
+              >
+                <i className={`bi ${isIOS ? "bi-share" : "bi-download"}`}></i>
+                Install
+              </button>
             )}
           </div>
         ) : (
