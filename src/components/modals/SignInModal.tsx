@@ -19,10 +19,15 @@ export const SignInModal = ({ onClose, onSignIn }: SignInProps) => {
           Unsure? Tap the
           <img
             src={helpIcon}
-            style={{ maxWidth: "17px", marginBottom: "-2px" }}
+            style={{
+              maxWidth: "17px",
+              marginBottom: "-3px",
+              marginLeft: "3px",
+              marginRight: "3px",
+            }}
             alt="Help"
           />
-          button in the top left to learn more.
+          in the top left to learn more.
         </p>
       </div>
       <button className="btn btn-google" onClick={onSignIn}>
