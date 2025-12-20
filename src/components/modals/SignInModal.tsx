@@ -1,4 +1,3 @@
-// src/components/modals/SignInModal.tsx
 import { Modal } from "./Modal";
 import helpIcon from "../../assets/icons/help.svg";
 
