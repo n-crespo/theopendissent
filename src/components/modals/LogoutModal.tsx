@@ -1,15 +1,18 @@
-import { User } from "firebase/auth";
 import { Modal } from "./Modal";
+import { useAuth } from "../../context/AuthContext";
+import { useModal } from "../../context/ModalContext";
 
-interface LogoutModalProps {
-  user: User | null;
-  onClose: () => void;
-  onConfirm: () => void;
-}
+export const LogoutModal = () => {
+  const { user, logout } = useAuth();
+  const { closeModal } = useModal();
 
-export const LogoutModal = ({ user, onClose, onConfirm }: LogoutModalProps) => {
+  const handleConfirm = async () => {
+    await logout();
+    closeModal();
+  };
+
   return (
-    <Modal id="logout-view" onClose={onClose}>
+    <Modal id="logout-view" onClose={closeModal}>
       <h2>Sign Out</h2>
       <div className="modal-content">
         <p style={{ textAlign: "center", marginBottom: "10px" }}>
@@ -37,11 +40,11 @@ export const LogoutModal = ({ user, onClose, onConfirm }: LogoutModalProps) => {
         )}
       </div>
 
-      <button className="btn-logout-confirm" onClick={onConfirm}>
+      <button className="btn-logout-confirm" onClick={handleConfirm}>
         Sign Out
       </button>
 
-      <button className="btn-logout-cancel" onClick={onClose}>
+      <button className="btn-logout-cancel" onClick={closeModal}>
         Stay signed in
       </button>
     </Modal>

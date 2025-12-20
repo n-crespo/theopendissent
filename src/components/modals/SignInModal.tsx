@@ -1,14 +1,22 @@
 import { Modal } from "./Modal";
 import helpIcon from "../../assets/icons/help.svg";
+import { useAuth } from "../../context/AuthContext";
+import { useModal } from "../../context/ModalContext";
 
-interface SignInProps {
-  onClose: () => void;
-  onSignIn: () => void;
-}
+export const SignInModal = () => {
+  const { signIn } = useAuth();
+  const { closeModal } = useModal();
 
-export const SignInModal = ({ onClose, onSignIn }: SignInProps) => {
+  /**
+   * handles the sign in process and closes the modal on success
+   */
+  const handleSignIn = async () => {
+    await signIn();
+    closeModal();
+  };
+
   return (
-    <Modal id="sign-in-view" onClose={onClose}>
+    <Modal id="sign-in-view" onClose={closeModal}>
       <h2>Sign In</h2>
       <div className="modal-content">
         <p style={{ textAlign: "center" }}>
@@ -29,11 +37,11 @@ export const SignInModal = ({ onClose, onSignIn }: SignInProps) => {
           in the top left to learn more.
         </p>
       </div>
-      <button className="btn btn-google" onClick={onSignIn}>
+      <button className="btn btn-google" onClick={handleSignIn}>
         <i className="bi bi-google"></i>
         <span>Sign In with Google</span>
       </button>
-      <button id="close-sign-in-btn" onClick={onClose}>
+      <button id="close-sign-in-btn" onClick={closeModal}>
         I'm just lurking
       </button>
     </Modal>
