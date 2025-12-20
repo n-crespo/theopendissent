@@ -5,6 +5,7 @@
 }
 
 :root {
+  background-color: #f8f2e8;
   --offwhite-background: #f8f2e8;
   --red: #70161e;
   --green: #4d5e19;
@@ -92,6 +93,8 @@ body {
     "Helvetica Neue",
     sans-serif;
   background-color: var(--offwhite-background);
+  padding-top: env(safe-area-inset-top);
+  min-height: 100vh;
 }
 body::-webkit-scrollbar {
   display: none;
