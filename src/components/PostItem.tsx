@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Post, UserInteractions } from "../types";
+import { Post } from "../types";
 import { User } from "firebase/auth";
 import { timeAgo } from "../utils";
 import { toggleInteraction } from "../lib/firebase";
