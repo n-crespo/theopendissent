@@ -24,16 +24,6 @@
       "purpose": "maskable"
     }
   ],
-  "shortcuts": [
-    {
-      "name": "New Dissent",
-      "short_name": "Post",
-      "url": "/?action=new-post",
-      "icons": [
-        { "src": "/favicons/web-app-manifest-192x192.png", "sizes": "192x192" }
-      ]
-    }
-  ],
   "screenshots": [
     {
       "src": "/screenshots/mobile.png",
