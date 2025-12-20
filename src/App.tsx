@@ -1,4 +1,3 @@
-// src/App.tsx
 import { useState } from "react";
 import { Header } from "./components/Header";
 import { PostInput } from "./components/PostInput";
@@ -11,6 +10,8 @@ import { usePosts } from "./hooks/usePosts";
 export default function App() {
   const { user, signIn, logout } = useAuth();
   const { posts, loading } = usePosts();
+
+  // controls which modal is visible
   const [activeModal, setActiveModal] = useState<"signin" | "help" | null>(
     null,
   );
@@ -26,7 +27,7 @@ export default function App() {
         onLogout={logout}
       />
 
-      <div id="body-content">
+      <main id="body-content">
         <div id="center-container">
           <PostInput
             user={user}
@@ -34,7 +35,9 @@ export default function App() {
           />
 
           {loading ? (
-            <div style={{ textAlign: "center" }}>Loading posts...</div>
+            <div style={{ textAlign: "center", marginTop: "20px" }}>
+              Loading posts...
+            </div>
           ) : (
             <PostList
               posts={posts}
@@ -43,8 +46,9 @@ export default function App() {
             />
           )}
         </div>
-      </div>
+      </main>
 
+      {/* conditional rendering for modals */}
       {activeModal === "help" && <HelpModal onClose={closeModals} />}
 
       {activeModal === "signin" && (
@@ -60,7 +64,11 @@ export default function App() {
       <footer>
         <p>
           &copy; 2025 The Open Dissent (
-          <a href="https://forms.gle/EA1DcFzigrmjRqZK8" target="_blank">
+          <a
+            href="https://forms.gle/EA1DcFzigrmjRqZK8"
+            target="_blank"
+            rel="noreferrer"
+          >
             Send Feedback
           </a>
           )
