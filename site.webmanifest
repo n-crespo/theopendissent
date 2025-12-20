@@ -23,21 +23,5 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshots/mobile.png",
-      "sizes": "1170x2124",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "The Open Dissent Mobile Feed"
-    },
-    {
-      "src": "/screenshots/desktop.png",
-      "sizes": "2592x1448",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "The Open Dissent Desktop Feed"
-    }
   ]
 }
