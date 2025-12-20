@@ -6,10 +6,11 @@ import { useModal } from "../context/ModalContext";
 
 export const PostInput = () => {
   const [content, setContent] = useState("");
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { openModal } = useModal();
 
   const handleSubmit = async () => {
+    if (loading) return; // prevent actions while initializing
     if (!user) {
       openModal("signin");
       return;
@@ -54,14 +55,20 @@ export const PostInput = () => {
       <input
         type="text"
         id="input-field"
-        placeholder="Speak your mind"
         maxLength={600}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         onKeyDown={handleKeyDown}
+        placeholder={loading ? "Checking connection..." : "Speak your mind"}
+        disabled={loading}
       />
-      <button id="post-btn" className="btn" onClick={handleSubmit}>
-        Post
+      <button
+        id="post-btn"
+        className="btn"
+        onClick={handleSubmit}
+        disabled={loading}
+      >
+        {loading ? "..." : "Post"}
       </button>
     </div>
   );
