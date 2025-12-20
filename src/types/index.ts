@@ -2,29 +2,30 @@
 
 export interface PostMetrics {
   agreedCount: number;
-  disagreedCount: number;
-  interestedCount: number;
+  dissentedCount: number;
 }
 
 export interface PostInteractions {
-  agreed: { [uid: string]: boolean };
-  interested: { [uid: string]: boolean };
-  disagreed: { [uid: string]: boolean };
+  agreed: Record<string, boolean>;
+  dissented: Record<string, boolean>;
 }
 
 export interface Post {
   id: string;
   userId: string;
-  content: string;
+  postContent: string;
   timestamp: number | object;
   metrics: PostMetrics;
-  userInteractions: PostInteractions;
+  userInteractions: UserInteractions;
+
+  // fields for handling replies
+  parentPostId?: string; // present only if this post is a reply
+  replyIds?: string[]; // list of IDs for posts that replied to this one
 }
 
 export interface UserInteractions {
-  hasAgreed: boolean;
-  hasInterested: boolean;
-  hasDisagreed: boolean;
+  agreed: Record<string, boolean>;
+  dissented: Record<string, boolean>;
 }
 
 // this matches the user profile created by your cloud function
