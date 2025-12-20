@@ -25,7 +25,7 @@ export const Header = ({
           <img src={helpIconUrl} alt="Help Icon" />
         </button>
 
-        <img src={logoUrl} alt="App Icon" id="header-icon" />
+        <img src={logoUrl} alt="App Icon" id="header-icon" draggable="false" />
 
         {user ? (
           <button
