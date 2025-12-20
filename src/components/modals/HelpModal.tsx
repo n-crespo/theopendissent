@@ -65,32 +65,51 @@ export const HelpModal = ({
             <i className="bi bi-x-square"></i> <em>I disagree...</em>
           </li>
         </ul>
-        <h4>Install as an App</h4>
-        {(installPrompt || isIOS) && (
-          <button
-            className="btn install-btn-outline"
-            onClick={handleInstallApp}
-          >
-            <i className={`bi ${isIOS ? "bi-share" : "bi-download"}`}></i>
-            Install
-          </button>
-        )}
-        {isIOS && (
-          <ul>
-            <li>
-              Tap the "Share" button above &gt; "More" &gt; "Add to Home
-              Screen".
-            </li>
-            <li>Tap "Add" in the top-right corner.</li>
-            <li>
-              <a
-                href="https://support.apple.com/en-asia/guide/iphone/iphea86e5236/ios"
-                target="_blank"
-              >
-                Click here for a detailed guide (iOS).
-              </a>
-            </li>
-          </ul>
+        {/* only show section if installation is possible (iOS or prompt available) */}
+        {installPrompt || isIOS ? (
+          <div className="install-section">
+            <h4>Install as an App</h4>
+
+            <button
+              className="btn install-btn-outline"
+              onClick={handleInstallApp}
+            >
+              <i className={`bi ${isIOS ? "bi-share" : "bi-download"}`}></i>
+              Install
+            </button>
+
+            {isIOS && (
+              <ul>
+                <li>
+                  Tap the "Install" button above &gt; "More" &gt; "Add to Home
+                  Screen".
+                </li>
+                <li>Tap "Add" in the top-right corner.</li>
+                <li>
+                  <a
+                    href="https://support.apple.com/en-asia/guide/iphone/iphea86e5236/ios"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Click here for a detailed guide (iOS).
+                  </a>
+                </li>
+              </ul>
+            )}
+          </div>
+        ) : (
+          <div className="install-section">
+            <h4>Install as an App</h4>
+            <p
+              style={{
+                fontSize: "0.9rem",
+                color: "var(--gray)",
+                marginTop: "10px",
+              }}
+            >
+              Already installed or unavailable on this browser.
+            </p>
+          </div>
         )}
       </div>
     </Modal>
