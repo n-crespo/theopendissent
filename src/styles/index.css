@@ -408,7 +408,7 @@ footer {
   display: flex;
   flex-direction: column; /* Stacks the items vertically */
   align-items: center; /* Centers the items horizontally */
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .back-to-top {
@@ -566,19 +566,17 @@ footer {
 }
 
 .podcast-section {
-  margin-top: 20px;
 }
 
 .podcast-links {
   display: flex;
   justify-content: center;
   gap: 25px;
-  padding: 10px 0;
 }
 
 .podcast-link img {
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px; /* makes apple icon look consistent */
   transition: transform 0.2s ease;
 }
@@ -586,4 +584,74 @@ footer {
 .podcast-link:hover img {
   transform: scale(1.1);
   /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
+}
+
+footer {
+  padding: 40px 0;
+  margin-top: 20px;
+  border-top: 1px solid var(--border-fg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.podcast-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--gray);
+  font-size: 14px;
+}
+
+.podcast-mini-links {
+  display: flex;
+  gap: 12px;
+}
+
+.podcast-mini-links img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  filter: grayscale(100%);
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.podcast-mini-links a:hover img {
+  filter: grayscale(0%);
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.footer-legal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--gray);
+}
+
+.footer-legal p {
+  margin: 0;
+}
+
+.footer-legal a {
+  color: var(--gray);
+  text-decoration: none;
+}
+
+.footer-legal a:hover {
+  text-decoration: underline;
+  color: var(--text);
+}
+
+.separator {
+  color: var(--border-fg);
 }
