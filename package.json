@@ -4,12 +4,16 @@
   "description": "",
   "main": "index.ts",
   "devDependencies": {
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.0.0"
   },
   "dependencies": {
     "dompurify": "^3.3.0",
     "firebase": "^12.3.0",
-    "react": "^19.2.3"
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   },
   "scripts": {
     "dev": "vite",
