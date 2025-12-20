@@ -1,4 +1,4 @@
-// src/components/PostItem.tsx
+import { useState, useEffect, useRef } from "react";
 import { Post, UserInteractions } from "../types";
 import { User } from "firebase/auth";
 import { timeAgo } from "../utils";
@@ -15,16 +15,32 @@ export const PostItem = ({
   currentUser,
   onRequireAuth,
 }: PostItemProps) => {
-  const { metrics, userInteractions, userId, id, content, timestamp } = post;
+  const { userId, id, content, timestamp } = post;
   const uid = currentUser?.uid;
 
-  const interactions: UserInteractions = {
-    hasAgreed: !!(uid && userInteractions?.agreed?.[uid]),
-    hasInterested: !!(uid && userInteractions?.interested?.[uid]),
-    hasDisagreed: !!(uid && userInteractions?.disagreed?.[uid]),
+  // optimistic state
+  const [localMetrics, setLocalMetrics] = useState(post.metrics);
+  const [localInteractions, setLocalInteractions] = useState(
+    post.userInteractions,
+  );
+
+  // ref to prevent the "stale data flicker"
+  const isOptimisticRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // sync local state with incoming props, but only if not locked
+  useEffect(() => {
+    if (!isOptimisticRef.current) {
+      setLocalMetrics(post.metrics);
+      setLocalInteractions(post.userInteractions);
+    }
+  }, [post.metrics, post.userInteractions]);
+
+  const interactionState = {
+    agreed: !!(uid && localInteractions?.agreed?.[uid]),
+    interested: !!(uid && localInteractions?.interested?.[uid]),
+    disagreed: !!(uid && localInteractions?.disagreed?.[uid]),
   };
 
-  // this is the only version of handleInteraction you need
   const handleInteraction = async (
     type: "agreed" | "disagreed" | "interested",
   ) => {
@@ -33,30 +49,64 @@ export const PostItem = ({
       return;
     }
 
-    const interactionMap = {
-      agreed: interactions.hasAgreed,
-      interested: interactions.hasInterested,
-      disagreed: interactions.hasDisagreed,
-    };
+    // set the lock to ignore incoming props for 2 seconds
+    if (isOptimisticRef.current) clearTimeout(isOptimisticRef.current);
+    isOptimisticRef.current = setTimeout(() => {
+      isOptimisticRef.current = null;
+    }, 2000);
 
-    const currentlyActive = interactionMap[type];
+    const wasActive = interactionState[type];
 
-    if (currentlyActive) {
-      await toggleInteraction(id, uid, type, true);
+    // apply optimistic update to UI immediately
+    const nextMetrics = { ...localMetrics };
+    const nextInteractions = JSON.parse(JSON.stringify(localInteractions));
+
+    if (wasActive) {
+      nextMetrics[`${type}Count` as keyof typeof nextMetrics]--;
+      if (nextInteractions[type]) delete nextInteractions[type][uid];
     } else {
-      // 1. add the new interaction
-      await toggleInteraction(id, uid, type, false);
+      nextMetrics[`${type}Count` as keyof typeof nextMetrics]++;
+      if (!nextInteractions[type]) nextInteractions[type] = {};
+      nextInteractions[type][uid] = true;
 
-      // 2. remove any other active interactions
-      const otherTypes = (
-        ["agreed", "disagreed", "interested"] as const
-      ).filter((t) => t !== type);
+      // "one choice only" logic
+      (
+        Object.keys(interactionState) as Array<keyof typeof interactionState>
+      ).forEach((other) => {
+        if (other !== type && interactionState[other]) {
+          nextMetrics[`${other}Count` as keyof typeof nextMetrics]--;
+          if (nextInteractions[other]) delete nextInteractions[other][uid];
+        }
+      });
+    }
 
-      for (const other of otherTypes) {
-        if (interactionMap[other]) {
-          await toggleInteraction(id, uid, other, true);
+    setLocalMetrics(nextMetrics);
+    setLocalInteractions(nextInteractions);
+
+    // background database update
+    try {
+      if (wasActive) {
+        await toggleInteraction(id, uid, type, true);
+      } else {
+        await toggleInteraction(id, uid, type, false);
+        const others = (["agreed", "disagreed", "interested"] as const).filter(
+          (t) => t !== type,
+        );
+        for (const other of others) {
+          if (interactionState[other]) {
+            await toggleInteraction(id, uid, other, true);
+          }
         }
       }
+    } catch (err) {
+      // release lock and rollback on error
+      if (isOptimisticRef.current) {
+        clearTimeout(isOptimisticRef.current);
+        isOptimisticRef.current = null;
+      }
+      setLocalMetrics(post.metrics);
+      setLocalInteractions(post.userInteractions);
+      console.error("Interaction failed:", err);
     }
   };
 
@@ -84,22 +134,22 @@ export const PostItem = ({
       <div className="post-interaction-buttons">
         <InteractionButton
           type="agreed"
-          active={interactions.hasAgreed}
-          count={metrics.agreedCount}
+          active={interactionState.agreed}
+          count={localMetrics.agreedCount}
           icon="bi-check-square"
           onClick={() => handleInteraction("agreed")}
         />
         <InteractionButton
           type="interested"
-          active={interactions.hasInterested}
-          count={metrics.interestedCount}
+          active={interactionState.interested}
+          count={localMetrics.interestedCount}
           icon="bi-fire"
           onClick={() => handleInteraction("interested")}
         />
         <InteractionButton
           type="disagreed"
-          active={interactions.hasDisagreed}
-          count={metrics.disagreedCount}
+          active={interactionState.disagreed}
+          count={localMetrics.disagreedCount}
           icon="bi-x-square"
           onClick={() => handleInteraction("disagreed")}
         />
