@@ -1,19 +1,17 @@
 import React, { useState } from "react";
-import { User } from "firebase/auth";
 import { push, serverTimestamp } from "firebase/database";
 import { postsRef } from "../lib/firebase";
+import { useAuth } from "../context/AuthContext";
+import { useModal } from "../context/ModalContext";
 
-interface PostInputProps {
-  user: User | null;
-  onRequireAuth: () => void;
-}
-
-export const PostInput = ({ user, onRequireAuth }: PostInputProps) => {
+export const PostInput = () => {
   const [content, setContent] = useState("");
+  const { user } = useAuth();
+  const { openModal } = useModal();
 
   const handleSubmit = async () => {
     if (!user) {
-      onRequireAuth();
+      openModal("signin");
       return;
     }
 
@@ -51,7 +49,6 @@ export const PostInput = ({ user, onRequireAuth }: PostInputProps) => {
     }
   };
 
-  // this must return JSX
   return (
     <div id="inputs-container">
       <input

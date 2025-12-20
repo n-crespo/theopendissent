@@ -1,33 +1,30 @@
 import { useState, useEffect, useRef } from "react";
 import { Post } from "../types";
-import { User } from "firebase/auth";
 import { timeAgo } from "../utils";
 import { toggleInteraction } from "../lib/firebase";
+import { useAuth } from "../context/AuthContext";
+import { useModal } from "../context/ModalContext";
 
 interface PostItemProps {
   post: Post;
-  currentUser: User | null;
-  onRequireAuth: () => void;
 }
 
-export const PostItem = ({
-  post,
-  currentUser,
-  onRequireAuth,
-}: PostItemProps) => {
+export const PostItem = ({ post }: PostItemProps) => {
   const { userId, id, content, timestamp } = post;
-  const uid = currentUser?.uid;
 
-  // optimistic state
+  // get auth state and modal controls from context
+  const { user } = useAuth();
+  const { openModal } = useModal();
+
+  const uid = user?.uid;
+
   const [localMetrics, setLocalMetrics] = useState(post.metrics);
   const [localInteractions, setLocalInteractions] = useState(
     post.userInteractions,
   );
 
-  // ref to prevent the "stale data flicker"
   const isOptimisticRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // sync local state with incoming props, but only if not locked
   useEffect(() => {
     if (!isOptimisticRef.current) {
       setLocalMetrics(post.metrics);
@@ -45,19 +42,16 @@ export const PostItem = ({
     type: "agreed" | "disagreed" | "interested",
   ) => {
     if (!uid) {
-      onRequireAuth();
+      openModal("signin");
       return;
     }
 
-    // set the lock to ignore incoming props for 2 seconds
     if (isOptimisticRef.current) clearTimeout(isOptimisticRef.current);
     isOptimisticRef.current = setTimeout(() => {
       isOptimisticRef.current = null;
     }, 2000);
 
     const wasActive = interactionState[type];
-
-    // apply optimistic update to UI immediately
     const nextMetrics = { ...localMetrics };
     const nextInteractions = JSON.parse(JSON.stringify(localInteractions));
 
@@ -69,7 +63,6 @@ export const PostItem = ({
       if (!nextInteractions[type]) nextInteractions[type] = {};
       nextInteractions[type][uid] = true;
 
-      // "one choice only" logic
       (
         Object.keys(interactionState) as Array<keyof typeof interactionState>
       ).forEach((other) => {
@@ -83,7 +76,6 @@ export const PostItem = ({
     setLocalMetrics(nextMetrics);
     setLocalInteractions(nextInteractions);
 
-    // background database update
     try {
       if (wasActive) {
         await toggleInteraction(id, uid, type, true);
@@ -99,7 +91,6 @@ export const PostItem = ({
         }
       }
     } catch (err) {
-      // release lock and rollback on error
       if (isOptimisticRef.current) {
         clearTimeout(isOptimisticRef.current);
         isOptimisticRef.current = null;
