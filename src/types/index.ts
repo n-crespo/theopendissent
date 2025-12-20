@@ -15,12 +15,16 @@ export interface Post {
   userId: string;
   postContent: string;
   timestamp: number | object;
-  metrics: PostMetrics;
-  userInteractions: UserInteractions;
-
-  // fields for handling replies
-  parentPostId?: string; // present only if this post is a reply
-  replyIds?: string[]; // list of IDs for posts that replied to this one
+  metrics: {
+    agreedCount: number;
+    dissentedCount: number;
+  };
+  userInteractions: {
+    agreed: Record<string, boolean>;
+    dissented: Record<string, boolean>;
+  };
+  parentPostId?: string;
+  replyIds?: Record<string, boolean>;
 }
 
 export interface UserInteractions {

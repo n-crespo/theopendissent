@@ -31,36 +31,50 @@ export const usePosts = (initialLimit: number = 20) => {
 
       const postsObject = snapshot.val();
       const postsArray: Post[] = Object.entries(postsObject)
-        .map(([postId, postData]: [string, any]) => ({
-          id: postId,
-          userId: postData.userId,
-          content: postData.postContent,
-          timestamp: postData.timestamp || 0,
-          metrics: postData.metrics || {
-            agreedCount: 0,
-            disagreedCount: 0,
-            interestedCount: 0,
-          },
-          userInteractions: postData.userInteractions || {
-            agreed: {},
-            interested: {},
-            disagreed: {},
-          },
-        }))
-        .filter((post) => post.content !== undefined);
+        .map(([postId, postData]: [string, any]) => {
+          // handle legacy data: fall back to .postContent if .content exists
+          const postContent = postData.postContent || postData.content;
+
+          return {
+            id: postId,
+            userId: postData.userId,
+            postContent: postContent, // mapped to match Post interface
+            timestamp: postData.timestamp || 0,
+            metrics: {
+              agreedCount: postData.metrics?.agreedCount || 0,
+              dissentedCount:
+                postData.metrics?.dissentedCount ||
+                postData.metrics?.disagreedCount ||
+                0,
+            },
+            userInteractions: {
+              agreed: postData.userInteractions?.agreed || {},
+              dissented:
+                postData.userInteractions?.dissented ||
+                postData.userInteractions?.disagreed ||
+                {},
+            },
+            parentPostId: postData.parentPostId,
+            replyIds: postData.replyIds || {},
+          };
+        })
+        .filter((post) => post.postContent !== undefined)
+        // sort by timestamp descending (newest first)
+        .sort(
+          (a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0),
+        );
 
       setPosts(postsArray);
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [currentLimit]); // re-run when limit changes
+  }, [currentLimit]);
 
   const loadMore = () => {
-    setLoading(true); // set loading to true while we fetch the next batch
+    setLoading(true);
     setCurrentLimit((prev) => prev + 20);
   };
 
-  // return currentLimit so App.tsx can use it for the button logic
   return { posts, loading, loadMore, currentLimit };
 };
