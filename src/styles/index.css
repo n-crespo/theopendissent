@@ -189,9 +189,6 @@ body::-webkit-scrollbar {
   border: 1px solid #eef0f2;
   transition: transform 0.2s ease-in-out;
 }
-.post:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-}
 .post-header {
   display: flex;
   align-items: center;
