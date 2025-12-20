@@ -461,7 +461,7 @@ footer {
 
 .install-btn-outline {
   width: 100%;
-  margin: 10px 0 20px 0;
+  margin: 20px 0 20px 0;
   padding: 12px;
   background-color: white;
   color: var(--text);
@@ -542,4 +542,48 @@ footer {
 
 .btn.signed-in i {
   color: var(--red);
+}
+
+/* loading auth  */
+#auth-section {
+  width: 50px; /* matches your logo-height logic */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* rotation for loading icon */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.bi-three-dots {
+  color: var(--gray);
+}
+
+.podcast-section {
+  margin-top: 20px;
+}
+
+.podcast-links {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  padding: 10px 0;
+}
+
+.podcast-link img {
+  width: 45px;
+  height: 45px;
+  border-radius: 8px; /* makes apple icon look consistent */
+  transition: transform 0.2s ease;
+}
+
+.podcast-link:hover img {
+  transform: scale(1.1);
+  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
 }
