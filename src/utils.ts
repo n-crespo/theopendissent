@@ -1,10 +1,19 @@
-/// <reference lib="dom" />
-export function getElement(id: string): HTMLElement {
-  const element = document.getElementById(id);
-  if (!element) {
-    throw new Error(`Element not found: ${id}`);
+/**
+ * Shuffle an array in place
+ */
+export function shuffleArray<T>(array: T[]): T[] {
+  const newArray = [...array]; // create a copy to maintain immutability
+  let currentIndex = newArray.length;
+
+  while (currentIndex !== 0) {
+    const randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    [newArray[currentIndex], newArray[randomIndex]] = [
+      newArray[randomIndex],
+      newArray[currentIndex],
+    ];
   }
-  return element;
+  return newArray;
 }
 
 /**
