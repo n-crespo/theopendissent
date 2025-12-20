@@ -485,3 +485,11 @@ footer {
   font-size: 1.1rem;
   color: var(--gray);
 }
+
+.install-section p {
+  padding: 10px;
+  background-color: var(--offwhite-background);
+  border-radius: 8px;
+  text-align: center;
+  border: 1px dashed var(--border-fg);
+}
