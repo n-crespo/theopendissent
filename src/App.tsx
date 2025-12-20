@@ -8,6 +8,7 @@ import { useAuth } from "./hooks/useAuth";
 import { usePosts } from "./hooks/usePosts";
 
 export default function App() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const { user, signIn, logout } = useAuth();
   const { posts, loading, loadMore, currentLimit } = usePosts(20);
   const [activeModal, setActiveModal] = useState<"signin" | "help" | null>(
@@ -16,6 +17,23 @@ export default function App() {
 
   // state to show/hide the back-to-top button
   const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // stash the event so it can be triggered later
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () =>
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -76,7 +94,13 @@ export default function App() {
         <i className="bi bi-arrow-up-short"></i>
       </button>
 
-      {activeModal === "help" && <HelpModal onClose={closeModals} />}
+      {activeModal === "help" && (
+        <HelpModal
+          onClose={closeModals}
+          installPrompt={deferredPrompt}
+          setInstallPrompt={setDeferredPrompt}
+        />
+      )}
 
       {activeModal === "signin" && (
         <SignInModal
