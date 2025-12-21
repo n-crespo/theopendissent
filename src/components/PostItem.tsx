@@ -7,13 +7,12 @@ import { useModal } from "../context/ModalContext";
 
 interface PostItemProps {
   post: Post;
+  disableClick?: boolean; // prevent recursive modals in the detail view
 }
 
 export const PostItem = memo(
-  ({ post }: PostItemProps) => {
+  ({ post, disableClick }: PostItemProps) => {
     const { userId, id, postContent, timestamp, parentPostId } = post;
-
-    // fallback for legacy data if postContent isn't yet migrated in DB
     const displayContent = postContent || (post as any).content;
 
     const { user } = useAuth();
@@ -24,11 +23,9 @@ export const PostItem = memo(
     const [localInteractions, setLocalInteractions] = useState(
       post.userInteractions,
     );
-    const [isReplying, setIsReplying] = useState(false);
 
     const isOptimisticRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // sync local state with incoming props if we aren't in the middle of an optimistic update
     useEffect(() => {
       if (!isOptimisticRef.current) {
         setLocalMetrics(post.metrics);
@@ -41,18 +38,23 @@ export const PostItem = memo(
       dissented: !!(uid && localInteractions?.dissented?.[uid]),
     };
 
-    const handleInteraction = async (type: "agreed" | "dissented") => {
+    // clicking the card opens the detail view
+    const handleCardClick = () => {
+      if (disableClick) return;
+      openModal("postDetails", post);
+    };
+
+    const handleInteraction = async (
+      e: React.MouseEvent,
+      type: "agreed" | "dissented",
+    ) => {
+      e.stopPropagation(); // stop the card click from firing
+
       if (!uid) {
         openModal("signin");
         return;
       }
 
-      // click dissent to toggle the reply input
-      if (type === "dissented") {
-        setIsReplying(!isReplying);
-      }
-
-      // prevent the flicker by locking external props updates for 2 seconds
       if (isOptimisticRef.current) clearTimeout(isOptimisticRef.current);
       isOptimisticRef.current = setTimeout(() => {
         isOptimisticRef.current = null;
@@ -62,7 +64,6 @@ export const PostItem = memo(
       const nextMetrics = { ...localMetrics };
       const nextInteractions = JSON.parse(JSON.stringify(localInteractions));
 
-      // optimistic logic
       if (wasActive) {
         nextMetrics[`${type}Count` as keyof typeof nextMetrics]--;
         if (nextInteractions[type]) delete nextInteractions[type][uid];
@@ -71,7 +72,6 @@ export const PostItem = memo(
         if (!nextInteractions[type]) nextInteractions[type] = {};
         nextInteractions[type][uid] = true;
 
-        // mutual exclusivity: if you agree, you can't be dissenting (and vice versa)
         const other = type === "agreed" ? "dissented" : "agreed";
         if (interactionState[other]) {
           nextMetrics[`${other}Count` as keyof typeof nextMetrics]--;
@@ -93,11 +93,6 @@ export const PostItem = memo(
           }
         }
       } catch (err) {
-        // rollback on failure
-        if (isOptimisticRef.current) {
-          clearTimeout(isOptimisticRef.current);
-          isOptimisticRef.current = null;
-        }
         setLocalMetrics(post.metrics);
         setLocalInteractions(post.userInteractions);
         console.error("Interaction failed:", err);
@@ -110,13 +105,16 @@ export const PostItem = memo(
     const shortenedUid = userId.substring(0, 10) + "...";
 
     return (
-      <div className={`post ${parentPostId ? "reply" : ""}`}>
+      <div
+        className={`post ${parentPostId ? "reply" : ""} ${disableClick ? "no-hover" : ""}`}
+        onClick={handleCardClick}
+      >
         <div className="post-header">
           <div className="post-avatar">
             <i className="bi bi-person-fill"></i>
           </div>
           <div className="post-user-info">
-            <span className="username" title={userId}>
+            <span className="username">
               {uid === userId ? "You" : shortenedUid}
             </span>
             <span className="timestamp">{formattedTime}</span>
@@ -132,7 +130,7 @@ export const PostItem = memo(
             count={localMetrics.agreedCount}
             icon="bi-check-square"
             label="Agree"
-            onClick={() => handleInteraction("agreed")}
+            onClick={(e: any) => handleInteraction(e, "agreed")}
           />
           <InteractionButton
             type="dissented"
@@ -140,55 +138,19 @@ export const PostItem = memo(
             count={localMetrics.dissentedCount}
             icon="bi-chat-left-text"
             label="Dissent"
-            onClick={() => handleInteraction("dissented")}
+            onClick={(e: any) => handleInteraction(e, "dissented")}
           />
         </div>
-
-        {isReplying && (
-          <div className="reply-container" style={{ marginTop: "15px" }}>
-            {/* Phase 3: we'll place the reusable PostInput here next */}
-            <div
-              style={{
-                padding: "10px",
-                borderTop: "1px solid var(--border-fg)",
-              }}
-            >
-              <p
-                style={{
-                  fontSize: "12px",
-                  color: "var(--gray)",
-                  fontStyle: "italic",
-                }}
-              >
-                Write your dissent...
-              </p>
-            </div>
-          </div>
-        )}
       </div>
     );
   },
-  (prevProps, nextProps) => {
-    // custom comparison to prevent unnecessary re-renders in the list
-    return (
-      prevProps.post.id === nextProps.post.id &&
-      prevProps.post.postContent === nextProps.post.postContent &&
-      JSON.stringify(prevProps.post.metrics) ===
-        JSON.stringify(nextProps.post.metrics) &&
-      JSON.stringify(prevProps.post.userInteractions) ===
-        JSON.stringify(nextProps.post.userInteractions)
-    );
-  },
+  (p, n) =>
+    p.post.id === n.post.id &&
+    p.post.postContent === n.post.postContent &&
+    JSON.stringify(p.post.metrics) === JSON.stringify(n.post.metrics) &&
+    JSON.stringify(p.post.userInteractions) ===
+      JSON.stringify(n.post.userInteractions),
 );
-
-interface InteractionButtonProps {
-  type: string;
-  active: boolean;
-  count: number;
-  icon: string;
-  label: string;
-  onClick: () => void;
-}
 
 const InteractionButton = ({
   type,
@@ -197,7 +159,7 @@ const InteractionButton = ({
   icon,
   label,
   onClick,
-}: InteractionButtonProps) => (
+}: any) => (
   <button
     className={`post-btn ${type}-button ${active ? "active" : ""}`}
     onClick={onClick}
