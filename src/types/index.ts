@@ -1,5 +1,3 @@
-// src/types/index.ts
-
 export interface PostMetrics {
   agreedCount: number;
   dissentedCount: number;
