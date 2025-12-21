@@ -679,3 +679,38 @@ footer {
   border-radius: 0 12px 12px 0;
   transform: scale(0.98);
 }
+
+.post-details-container {
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh; /* keeps the modal from exceeding screen height */
+}
+
+.original-post-wrapper {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.reply-input-section {
+  padding: 15px 0;
+}
+
+.replies-list {
+  flex: 1;
+  overflow-y: auto; /* enables scrolling inside the modal */
+  padding-right: 5px; /* space for scrollbar */
+}
+
+.reply-item {
+  padding: 12px;
+  margin-bottom: 8px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.reply-user {
+  font-weight: bold;
+  margin-right: 8px;
+  color: #555;
+}
