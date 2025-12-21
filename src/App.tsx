@@ -2,15 +2,10 @@ import { useEffect, useState } from "react";
 import { Header } from "./components/Header";
 import { PostInput } from "./components/PostInput";
 import { PostList } from "./components/PostList";
-import { SignInModal } from "./components/modals/SignInModal";
-import { HelpModal } from "./components/modals/HelpModal";
-import { LogoutModal } from "./components/modals/LogoutModal";
-
-import { useModal } from "./context/ModalContext";
+import { GlobalModal } from "./components/modals/GlobalModal";
 import { Footer } from "./components/Footer";
 
 export default function App() {
-  const { activeModal } = useModal();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // handle scroll-to-top visibility
@@ -29,16 +24,16 @@ export default function App() {
           <PostList />
         </div>
       </main>
+
       <button
         className={`back-to-top ${showScrollTop ? "visible" : ""}`}
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       >
         <i className="bi bi-arrow-up-short"></i>
       </button>
-      {/* modals */}
-      {activeModal === "help" && <HelpModal />}
-      {activeModal === "signin" && <SignInModal />}
-      {activeModal === "logout" && <LogoutModal />}
+
+      {/* handles all popups */}
+      <GlobalModal />
 
       <Footer />
     </div>

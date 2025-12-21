@@ -1,15 +1,17 @@
 import React from "react";
 
 interface ModalProps {
-  id: string;
   onClose: () => void;
   children: React.ReactNode;
 }
 
-export const Modal = ({ id, onClose, children }: ModalProps) => {
+/**
+ * a generic shell for all modals in the app.
+ */
+export const Modal = ({ onClose, children }: ModalProps) => {
   return (
-    <div id={id} className="modal-overlay visible">
-      <div className="modal-card">
+    <div className="modal-overlay visible" onClick={onClose}>
+      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
         <button
           className="close-modal-btn"
           aria-label="Close"
