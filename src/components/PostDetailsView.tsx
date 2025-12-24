@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ref, onValue, query, orderByChild } from "firebase/database";
 import { db } from "../lib/firebase";
-import { PostItem } from "./PostItem";
+import PostItem from "./PostItem";
 import { PostInput } from "./PostInput";
 import { ReplyItem } from "./ReplyItem";
 
@@ -12,7 +12,6 @@ export const PostDetailsView = ({ post }: { post: any }) => {
   const [replies, setReplies] = useState<any[]>([]);
 
   useEffect(() => {
-    // fetch replies specifically for this postId
     const repliesRef = ref(db, `replies/${post.id}`);
     const repliesQuery = query(repliesRef, orderByChild("timestamp"));
 
@@ -23,7 +22,6 @@ export const PostDetailsView = ({ post }: { post: any }) => {
           id,
           ...val,
         }));
-        // newest replies at the bottom for a "chat-like" flow, or reverse() for newest first
         setReplies(list);
       } else {
         setReplies([]);
@@ -34,22 +32,35 @@ export const PostDetailsView = ({ post }: { post: any }) => {
   }, [post.id]);
 
   return (
-    <div className="post-details-container">
-      {/* 1. Original Post - clicking it shouldn't re-open the modal */}
-      <div className="original-post-wrapper">
+    <div className="flex flex-col max-h-[75vh]">
+      {/* 1. Original Post - compact wrapper */}
+      <div className="mb-4 border-b border-slate-100 pb-2">
         <PostItem post={post} disableClick={true} />
       </div>
 
-      <div className="reply-input-section">
+      {/* 2. Reply Input - sticky-ish area above list */}
+      <div className="mb-6">
         <PostInput parentPostId={post.id} />
       </div>
 
-      {/* 3. Isolated Scrollable Area */}
-      <div className="replies-list">
+      {/* 3. Scrollable Replies Area */}
+      <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200">
+        <h4 className="text-sm font-bold text-ucla-blue mb-4 uppercase tracking-tight">
+          Discussion
+        </h4>
+
         {replies.length > 0 ? (
-          replies.map((reply) => <ReplyItem key={reply.id} reply={reply} />)
+          <div className="flex flex-col gap-3">
+            {replies.map((reply) => (
+              <ReplyItem key={reply.id} reply={reply} />
+            ))}
+          </div>
         ) : (
-          <p className="empty-replies">No replies yet.</p>
+          <div className="text-center py-10">
+            <p className="text-sm text-slate-400 italic">
+              No dissenters or supporters yet.
+            </p>
+          </div>
         )}
       </div>
     </div>

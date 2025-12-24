@@ -10,23 +10,37 @@ export const GlobalModal = () => {
   if (!activeModal) return null;
 
   return (
-    <div className="modal-overlay visible" onClick={closeModal}>
-      {/* stopPropagation prevents the modal from closing when clicking the card itself */}
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+    /* overlay: fixed position, covers screen, semi-transparent black, 
+       centered content using flex 
+    */
+    <div
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      onClick={closeModal}
+    >
+      {/* card: white bg, shadow, relative for the close button, 
+         prevents click-through to overlay 
+      */}
+      <div
+        className="relative w-full max-w-[450px] rounded-2xl bg-white p-8 shadow-2xl transition-transform duration-300 animate-in fade-in zoom-in-95"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* close button: positioned in top-right corner */}
         <button
-          className="close-modal-btn"
+          className="absolute top-3 right-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200"
           onClick={closeModal}
           aria-label="Close"
         >
-          <i className="bi bi-x-lg"></i>
+          <i className="bi bi-x-lg text-sm"></i>
         </button>
 
-        {activeModal === "signin" && <SignInModal />}
-        {activeModal === "help" && <HelpModal />}
-        {activeModal === "logout" && <LogoutModal />}
-        {activeModal === "postDetails" && (
-          <PostDetailsView post={modalPayload} />
-        )}
+        <div className="text-left">
+          {activeModal === "signin" && <SignInModal />}
+          {activeModal === "help" && <HelpModal />}
+          {activeModal === "logout" && <LogoutModal />}
+          {activeModal === "postDetails" && (
+            <PostDetailsView post={modalPayload} />
+          )}
+        </div>
       </div>
     </div>
   );
