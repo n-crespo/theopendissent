@@ -1,6 +1,7 @@
 export interface PostMetrics {
   agreedCount: number;
   dissentedCount: number;
+  replyCount: number;
 }
 
 export interface PostInteractions {
@@ -13,14 +14,8 @@ export interface Post {
   userId: string;
   postContent: string;
   timestamp: number | object;
-  metrics: {
-    agreedCount: number;
-    dissentedCount: number;
-  };
-  userInteractions: {
-    agreed: Record<string, boolean>;
-    dissented: Record<string, boolean>;
-  };
+  metrics: PostMetrics;
+  userInteractions: PostInteractions;
   parentPostId?: string;
   replyIds?: Record<string, boolean>;
 }
@@ -30,7 +25,6 @@ export interface UserInteractions {
   dissented: Record<string, boolean>;
 }
 
-// this matches the user profile created by your cloud function
 export interface UserProfile {
   uid: string;
   email: string | null;
