@@ -1,3 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  /* ucla colors */
+  --color-ucla-red: #70161e;
+  --color-ucla-green: #4d5e19;
+  --color-ucla-blue: #043f63;
+  --color-ucla-offwhite: #f8f2e8;
+
+  /* stance colors */
+  --color-agree: #28a745;
+  --color-agree-bg: rgba(40, 167, 69, 0.1);
+  --color-dissent: #dc3545;
+  --color-dissent-bg: rgba(220, 53, 69, 0.1);
+
+  /* animations */
+  @keyframes shimmer {
+    from {
+      background-position: 0% 50%;
+    }
+    to {
+      background-position: 100% 50%;
+    }
+  }
+  --animate-shimmer: shimmer 4s infinite ease-in-out alternate;
+}
 * {
   box-sizing: border-box;
   transition: all 0.2s ease-in-out; /* Adds a smooth hover effect */
@@ -713,4 +739,68 @@ footer {
   font-weight: bold;
   margin-right: 8px;
   color: #555;
+}
+
+/* reply item base */
+.reply-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-fg);
+  font-size: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.reply-user-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reply-user {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.reply-time {
+  font-size: 0.75rem;
+  color: var(--gray);
+}
+
+.reply-content {
+  line-height: 1.4;
+  color: #333;
+}
+
+/* stance-specific themes */
+.stance-agree {
+  background-color: var(--agree-bg);
+  border-left: 4px solid var(--agree);
+}
+
+.stance-dissent {
+  background-color: var(--disagree-bg);
+  border-left: 4px solid var(--disagree);
+}
+
+.stance-indicator {
+  font-size: 0.8rem;
+}
+
+.stance-agree .stance-indicator {
+  color: var(--agree);
+}
+
+.stance-dissent .stance-indicator {
+  color: var(--disagree);
 }
