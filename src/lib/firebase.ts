@@ -1,5 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { Post } from "../types/index.ts";
+
 import {
   getDatabase,
   ref,
@@ -96,3 +98,21 @@ export const removeInteraction = (
   uid: string,
   type: "agreed" | "dissented",
 ) => setInteraction(postId, uid, type, null); // passing null deletes the key in Firebase
+
+/**
+ * Updates a post's content and sets the edited timestamp
+ */
+export const updatePost = async (
+  postId: string,
+  updates: Partial<Pick<Post, "postContent" | "editedAt">>,
+) => {
+  try {
+    const postRef = ref(db, `posts/${postId}`);
+
+    // we use update here to keep existing metrics and interactions intact
+    await update(postRef, updates);
+  } catch (error) {
+    console.error("error updating post:", error);
+    throw error;
+  }
+};
