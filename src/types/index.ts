@@ -14,6 +14,7 @@ export interface Post {
   userId: string;
   postContent: string;
   timestamp: number | object;
+  editedAt?: number;
   metrics: PostMetrics;
   userInteractions: PostInteractions;
   parentPostId?: string;
