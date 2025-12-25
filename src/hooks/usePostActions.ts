@@ -21,6 +21,11 @@ export const usePostActions = (post: Post) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const isOptimisticRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const handleCancel = () => {
+    setEditContent(post.postContent);
+    setIsEditing(false);
+  };
+
   /**
    * synchronizes local state with incoming post props
    */
@@ -100,7 +105,10 @@ export const usePostActions = (post: Post) => {
 
   const handleEditSave = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (editContent.trim() === post.postContent) return setIsEditing(false);
+    if (!editContent.trim() || editContent.trim() === post.postContent) {
+      handleCancel();
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -129,6 +137,7 @@ export const usePostActions = (post: Post) => {
     menuRef,
     interactionState,
     handleInteraction,
+    handleCancel,
     handleEditSave,
   };
 };
