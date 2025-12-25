@@ -21,16 +21,10 @@
         ".validate": "newData.hasChildren(['userId', 'postContent', 'timestamp', 'metrics'])",
 
         "metrics": {
-          ".write": "auth != null && !data.exists()",
-          "agreedCount": {
-            ".validate": "newData.isNumber() && newData.val() === 0"
-          },
-          "dissentedCount": {
-            ".validate": "newData.isNumber() && newData.val() === 0"
-          },
-          "replyCount": {
-            ".validate": "newData.isNumber() && newData.val() === 0"
-          }
+          ".write": "auth != null",
+          "agreedCount": { ".validate": "newData.isNumber()" },
+          "dissentedCount": { ".validate": "newData.isNumber()" },
+          "replyCount": { ".validate": "newData.isNumber()" }
         },
 
         "userInteractions": {
@@ -53,17 +47,18 @@
       "$post_id": {
         ".read": true,
         "$reply_id": {
-          ".write": "auth != null && ( root.child('posts').child($post_id).child('userInteractions').child('agreed').child(auth.uid).exists() || root.child('posts').child($post_id).child('userInteractions').child('dissented').child(auth.uid).exists())",
+          ".write": "auth != null && (root.child('posts/' + $post_id + '/userInteractions/agreed/' + auth.uid).val() === true || root.child('posts/' + $post_id + '/userInteractions/dissented/' + auth.uid).val() === true)",
+
           ".validate": "newData.hasChildren(['userId', 'postContent', 'timestamp', 'parentPostId', 'userInteractionType'])",
 
           "userId": { ".validate": "newData.val() === auth.uid" },
           "parentPostId": { ".validate": "newData.val() === $post_id" },
-
           "postContent": {
             ".validate": "newData.isString() && newData.val().length <= 600"
           },
+
           "userInteractionType": {
-            ".validate": " (newData.val() === 'agreed' && root.child('posts').child($post_id).child('userInteractions').child('agreed').child(auth.uid).exists()) || (newData.val() === 'dissented' && root.child('posts').child($post_id).child('userInteractions').child('dissented').child(auth.uid).exists()) "
+            ".validate": "newData.val() === 'agreed' || newData.val() === 'dissented'"
           }
         }
       }
