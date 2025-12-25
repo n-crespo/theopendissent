@@ -24,6 +24,20 @@ export const PostInput = ({
   const isReplyMode = !!parentPostId;
   const hasNoStance = isReplyMode && !currentStance;
 
+  // character counter logic
+  const MAX_CHARS = 600;
+  const charsLeft = MAX_CHARS - content.length;
+  const isNearLimit = charsLeft < 50;
+
+  // TODO: update placeholder message to be more normal
+  const defaultPlaceholder = isReplyMode
+    ? `Replying as ${currentStance === "agreed" ? "Support" : "Dissent"}...`
+    : "Speak your mind...";
+
+  const activePlaceholder = hasNoStance
+    ? "You must have a stance to reply"
+    : placeholder || defaultPlaceholder;
+
   const handleSubmit = async () => {
     if (loading || isPosting || hasNoStance) return;
     if (!user) {
@@ -32,7 +46,7 @@ export const PostInput = ({
     }
 
     const trimmedContent = content.trim();
-    if (!trimmedContent) return;
+    if (!trimmedContent || trimmedContent.length > MAX_CHARS) return;
 
     setIsPosting(true);
     const targetRef = isReplyMode
@@ -46,7 +60,6 @@ export const PostInput = ({
         timestamp: serverTimestamp(),
         metrics: { agreedCount: 0, dissentedCount: 0, replyCount: 0 },
         userInteractions: { agreed: {}, dissented: {} },
-        // satisfy rules & types
         ...(isReplyMode && {
           parentPostId,
           userInteractionType: currentStance,
@@ -61,7 +74,7 @@ export const PostInput = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
@@ -69,35 +82,36 @@ export const PostInput = ({
 
   const isDisabled = loading || isPosting || hasNoStance;
 
-  // dynamic placeholder text
-  let activePlaceholder = placeholder;
-  if (hasNoStance) {
-    activePlaceholder = "You must have a stance to reply";
-  } else if (!placeholder) {
-    activePlaceholder = isReplyMode
-      ? `Replying as ${currentStance === "agreed" ? "Support" : "Dissent"}...`
-      : "Speak your mind...";
-  }
-
   return (
-    <div className="flex w-full flex-col gap-2">
+    <div className="flex w-full flex-col gap-1.5">
       <div className="flex w-full flex-row gap-[7px]">
-        <input
-          type="text"
-          maxLength={600}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={activePlaceholder}
-          disabled={isDisabled}
-          className={`flex-grow-[8] rounded-lg border p-[10px] text-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all outline-none
-            ${
-              hasNoStance
-                ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
-                : "bg-white border-slate-200 focus:shadow-[0_6px_16px_rgba(0,0,0,0.1)] focus:ring-1 focus:ring-logo-blue"
-            }
-          `}
-        />
+        <div className="relative flex-grow-[8]">
+          <input
+            type="text"
+            maxLength={MAX_CHARS}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={activePlaceholder}
+            disabled={isDisabled}
+            className={`w-full rounded-lg border p-[10px] text-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all outline-none
+              ${
+                hasNoStance
+                  ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed italic"
+                  : "bg-white border-slate-200 focus:shadow-[0_6px_16_rgba(0,0,0,0.1)] focus:ring-1 focus:ring-logo-blue"
+              }
+            `}
+          />
+
+          {/* visual character count */}
+          {!hasNoStance && content.length > 0 && (
+            <span
+              className={`absolute right-3 bottom-[-18px] text-[10px] font-bold uppercase tracking-tighter transition-colors ${isNearLimit ? "text-logo-red" : "text-slate-300"}`}
+            >
+              {charsLeft}
+            </span>
+          )}
+        </div>
 
         <button
           onClick={handleSubmit}
