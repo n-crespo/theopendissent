@@ -28,6 +28,7 @@ export const PostItem = memo(
       interactionState,
       handleInteraction,
       handleEditSave,
+      handleCancel,
     } = usePostActions(post);
 
     const formattedTime = timeAgo(
@@ -113,6 +114,11 @@ export const PostItem = memo(
               className="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-logo-blue/20 transition-all resize-none min-h-25"
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") handleCancel();
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
+                  handleEditSave(e as any);
+              }}
               disabled={isSaving}
             />
             <div className="flex gap-2 mt-2">
@@ -127,8 +133,7 @@ export const PostItem = memo(
                 className="px-4 py-1.5 bg-gray-100 text-gray-600 rounded-md text-sm font-semibold"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setIsEditing(false);
-                  setEditContent(postContent);
+                  handleCancel();
                 }}
                 disabled={isSaving}
               >
