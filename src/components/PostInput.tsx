@@ -44,7 +44,7 @@ export const PostInput = ({
   }, [content]);
 
   const defaultPlaceholder = isReplyMode
-    ? `Replying as ${currentStance === "agreed" ? "Support" : "Dissent"}...`
+    ? `I ${currentStance === "agreed" ? "agree" : "dissent"} because...`
     : "Speak your mind...";
 
   const activePlaceholder = hasNoStance
