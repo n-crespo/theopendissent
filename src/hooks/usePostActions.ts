@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Post } from "../types";
-import { addInteraction, removeInteraction, updatePost } from "../lib/firebase";
+import {
+  addInteraction,
+  removeInteraction,
+  updatePost,
+  deletePost,
+} from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
 
@@ -20,11 +25,6 @@ export const usePostActions = (post: Post) => {
 
   const menuRef = useRef<HTMLDivElement>(null);
   const isOptimisticRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handleCancel = () => {
-    setEditContent(post.postContent);
-    setIsEditing(false);
-  };
 
   /**
    * synchronizes local state with incoming post props
@@ -124,6 +124,12 @@ export const usePostActions = (post: Post) => {
     }
   };
 
+  // cancel editing
+  const handleCancel = () => {
+    setEditContent(post.postContent);
+    setIsEditing(false);
+  };
+
   const handleEditSave = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!editContent.trim() || editContent.trim() === post.postContent) {
@@ -145,6 +151,26 @@ export const usePostActions = (post: Post) => {
     }
   };
 
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this post? This cannot be undone.",
+    );
+    if (!confirmed) {
+      setShowMenu(false);
+      return;
+    }
+
+    try {
+      await deletePost(post.id);
+      // menu closes automatically as the component unmounts from the feed
+    } catch (err) {
+      alert("failed to delete post.");
+      setShowMenu(false);
+    }
+  };
+
   return {
     uid,
     localMetrics,
@@ -160,5 +186,6 @@ export const usePostActions = (post: Post) => {
     handleInteraction,
     handleCancel,
     handleEditSave,
+    handleDelete,
   };
 };
