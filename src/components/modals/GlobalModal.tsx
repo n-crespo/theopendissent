@@ -19,7 +19,8 @@ export const GlobalModal = () => {
       onClick={closeModal}
     >
       <div
-        className="relative flex max-h-[calc(100vh-10rem)] w-full max-w-112.5 flex-col rounded-2xl bg-white shadow-2xl transition-transform duration-300 animate-in fade-in zoom-in-95"
+        // only allow modals to take 80% of the view height
+        className="relative flex max-h-[80vh] w-full max-w-112.5 flex-col rounded-2xl bg-white shadow-2xl transition-transform duration-300 animate-in fade-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* close button: fixed in the corner of the modal card */}
