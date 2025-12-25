@@ -61,27 +61,45 @@ export const usePostActions = (post: Post) => {
     e.stopPropagation();
     if (!uid) return openModal("signin");
 
+    // optimistic lock
     if (isOptimisticRef.current) clearTimeout(isOptimisticRef.current);
     isOptimisticRef.current = setTimeout(() => {
       isOptimisticRef.current = null;
     }, 2000);
 
-    const wasActive = interactionState[type];
+    const otherType = type === "agreed" ? "dissented" : "agreed";
+    const wasActive = !!localInteractions?.[type]?.[uid];
+    const wasOtherActive = !!localInteractions?.[otherType]?.[uid];
+
     const nextMetrics = { ...localMetrics };
-    const nextInteractions = JSON.parse(JSON.stringify(localInteractions));
 
     if (wasActive) {
-      nextMetrics[`${type}Count` as keyof typeof nextMetrics]--;
-      if (nextInteractions[type]) delete nextInteractions[type][uid];
+      nextMetrics[`${type}Count` as keyof typeof nextMetrics] = Math.max(
+        0,
+        nextMetrics[`${type}Count` as keyof typeof nextMetrics] - 1,
+      );
     } else {
       nextMetrics[`${type}Count` as keyof typeof nextMetrics]++;
-      if (!nextInteractions[type]) nextInteractions[type] = {};
-      nextInteractions[type][uid] = true;
+      // only decrement the other count if the user was actually interacting with it
+      if (wasOtherActive) {
+        nextMetrics[`${otherType}Count` as keyof typeof nextMetrics] = Math.max(
+          0,
+          nextMetrics[`${otherType}Count` as keyof typeof nextMetrics] - 1,
+        );
+      }
+    }
 
-      const other = type === "agreed" ? "dissented" : "agreed";
-      if (interactionState[other]) {
-        nextMetrics[`${other}Count` as keyof typeof nextMetrics]--;
-        if (nextInteractions[other]) delete nextInteractions[other][uid];
+    const nextInteractions = {
+      agreed: { ...(localInteractions?.agreed || {}) },
+      dissented: { ...(localInteractions?.dissented || {}) },
+    };
+
+    if (wasActive) {
+      delete nextInteractions[type][uid];
+    } else {
+      nextInteractions[type][uid] = true;
+      if (wasOtherActive) {
+        delete nextInteractions[otherType][uid];
       }
     }
 
@@ -93,13 +111,14 @@ export const usePostActions = (post: Post) => {
         await removeInteraction(post.id, uid, type);
       } else {
         await addInteraction(post.id, uid, type);
-        const other = type === "agreed" ? "dissented" : "agreed";
-        if (interactionState[other])
-          await removeInteraction(post.id, uid, other);
+        if (wasOtherActive) await removeInteraction(post.id, uid, otherType);
       }
     } catch (err) {
+      // revert on error
       setLocalMetrics(post.metrics);
-      setLocalInteractions(post.userInteractions);
+      setLocalInteractions(
+        post.userInteractions || { agreed: {}, dissented: {} },
+      );
     }
   };
 
