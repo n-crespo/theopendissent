@@ -7,7 +7,7 @@ import { useModal } from "../context/ModalContext";
 
 interface PostItemProps {
   post: Post;
-  disableClick?: boolean; // prevent recursive modals in the detail view
+  disableClick?: boolean;
 }
 
 export const PostItem = memo(
@@ -38,7 +38,6 @@ export const PostItem = memo(
       dissented: !!(uid && localInteractions?.dissented?.[uid]),
     };
 
-    // clicking the card opens the detail view
     const handleCardClick = () => {
       if (disableClick) return;
       openModal("postDetails", post);
@@ -48,8 +47,7 @@ export const PostItem = memo(
       e: React.MouseEvent,
       type: "agreed" | "dissented",
     ) => {
-      e.stopPropagation(); // stop the card click from firing
-
+      e.stopPropagation();
       if (!uid) {
         openModal("signin");
         return;
@@ -88,14 +86,11 @@ export const PostItem = memo(
         } else {
           await addInteraction(id, uid, type);
           const other = type === "agreed" ? "dissented" : "agreed";
-          if (interactionState[other]) {
-            await removeInteraction(id, uid, other);
-          }
+          if (interactionState[other]) await removeInteraction(id, uid, other);
         }
       } catch (err) {
         setLocalMetrics(post.metrics);
         setLocalInteractions(post.userInteractions);
-        console.error("Interaction failed:", err);
       }
     };
 
@@ -106,24 +101,30 @@ export const PostItem = memo(
 
     return (
       <div
-        className={`post ${parentPostId ? "reply" : ""} ${disableClick ? "no-hover" : ""}`}
+        className={`bg-white rounded-xl p-4 mb-5 border border-slate-100 shadow-sm transition-transform duration-200 
+          ${disableClick ? "cursor-default" : "cursor-pointer hover:shadow-md hover:-translate-y-0.5"}
+          ${parentPostId ? "ml-5 border-l-4 border-l-slate-200 rounded-l-none" : ""}`}
         onClick={handleCardClick}
       >
-        <div className="post-header">
-          <div className="post-avatar">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 text-xl flex-shrink-0">
             <i className="bi bi-person-fill"></i>
           </div>
-          <div className="post-user-info">
-            <span className="username">
+          <div className="flex flex-col">
+            <span className="font-semibold text-blue">
               {uid === userId ? "You" : shortenedUid}
             </span>
-            <span className="timestamp">{formattedTime}</span>
+            <span className="text-sm text-gray-custom opacity-70">
+              {formattedTime}
+            </span>
           </div>
         </div>
 
-        <p className="post-content">{displayContent}</p>
+        <p className="text-slate-800 leading-relaxed mb-4 whitespace-pre-wrap">
+          {displayContent}
+        </p>
 
-        <div className="post-interaction-buttons">
+        <div className="flex items-center gap-5 pt-2 border-t border-slate-50">
           <InteractionButton
             type="agreed"
             active={interactionState.agreed}
@@ -140,6 +141,9 @@ export const PostItem = memo(
             label="Dissent"
             onClick={(e: any) => handleInteraction(e, "dissented")}
           />
+          <div className="ml-auto text-xs text-slate-400 font-medium uppercase tracking-widest">
+            {localMetrics.replyCount || 0} Replies
+          </div>
         </div>
       </div>
     );
@@ -159,15 +163,28 @@ const InteractionButton = ({
   icon,
   label,
   onClick,
-}: any) => (
-  <button
-    className={`post-btn ${type}-button ${active ? "active" : ""}`}
-    onClick={onClick}
-  >
-    <div className="btn-content">
-      <i className={`bi ${icon}`}></i>
-      <span className="count">{count}</span>
-      <span className="btn-label">{label}</span>
-    </div>
-  </button>
-);
+}: any) => {
+  const isAgree = type === "agreed";
+
+  return (
+    <button
+      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer
+        ${
+          active
+            ? isAgree
+              ? "bg-agree-bg text-agree"
+              : "bg-dissent-bg text-dissent"
+            : "text-slate-500 hover:bg-slate-50"
+        }`}
+      onClick={onClick}
+    >
+      <i className={`bi ${icon} ${active ? "opacity-100" : "opacity-60"}`}></i>
+      <span className="font-bold text-sm">{count}</span>
+      <span className="text-xs font-medium uppercase tracking-tight">
+        {label}
+      </span>
+    </button>
+  );
+};
+
+export default PostItem; // default export to fix diagnostic error
