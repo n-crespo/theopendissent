@@ -4,12 +4,24 @@ import { db } from "../lib/firebase";
 import PostItem from "./PostItem";
 import { PostInput } from "./PostInput";
 import { ReplyItem } from "./ReplyItem";
+import { useAuth } from "../context/AuthContext";
 
 /**
  * displays the original post, a reply field, and a scrollable list of replies.
  */
 export const PostDetailsView = ({ post }: { post: any }) => {
   const [replies, setReplies] = useState<any[]>([]);
+  const { user } = useAuth();
+
+  // calculate current user's stance on this post
+  const uid = user?.uid;
+  let currentStance: "agreed" | "dissented" | null = null;
+
+  if (uid && post.userInteractions) {
+    if (post.userInteractions.agreed?.[uid]) currentStance = "agreed";
+    else if (post.userInteractions.dissented?.[uid])
+      currentStance = "dissented";
+  }
 
   useEffect(() => {
     const repliesRef = ref(db, `replies/${post.id}`);
@@ -33,14 +45,14 @@ export const PostDetailsView = ({ post }: { post: any }) => {
 
   return (
     <div className="flex flex-col max-h-[75vh]">
-      {/* 1. Original Post - compact wrapper */}
+      {/* 1. Original Post */}
       <div className="mb-4 border-b border-slate-100 pb-2">
         <PostItem post={post} disableClick={true} />
       </div>
 
-      {/* 2. Reply Input - sticky-ish area above list */}
+      {/* 2. Reply Input - passing currentStance */}
       <div className="mb-6">
-        <PostInput parentPostId={post.id} />
+        <PostInput parentPostId={post.id} currentStance={currentStance} />
       </div>
 
       {/* 3. Scrollable Replies Area */}
