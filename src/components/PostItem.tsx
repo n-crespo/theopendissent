@@ -29,6 +29,7 @@ export const PostItem = memo(
       handleInteraction,
       handleEditSave,
       handleCancel,
+      handleDeleteTrigger,
     } = usePostActions(post);
 
     const formattedTime = timeAgo(
@@ -85,21 +86,30 @@ export const PostItem = memo(
             {showMenu && (
               <div className="absolute right-0 mt-1 w-36 bg-white border border-gray-100 shadow-xl rounded-lg py-1 z-50">
                 {uid === userId && (
-                  <button
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsEditing(true);
-                      setShowMenu(false);
-                    }}
-                  >
-                    <i className="bi bi-pencil-square"></i> Edit
-                  </button>
+                  <>
+                    <button
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsEditing(true);
+                        setShowMenu(false);
+                      }}
+                    >
+                      <i className="bi bi-pencil-square"></i> Edit
+                    </button>
+
+                    <button
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                      onClick={handleDeleteTrigger}
+                    >
+                      <i className="bi bi-trash"></i> Delete
+                    </button>
+                  </>
                 )}
                 <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                  <i className="bi bi-share"></i> Share
+                  <i className="bi bi-box-arrow-up"></i> Share
                 </button>
-                <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
+                <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 flex items-center gap-2">
                   <i className="bi bi-flag"></i> Report
                 </button>
               </div>
