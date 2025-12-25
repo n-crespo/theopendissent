@@ -165,61 +165,7 @@ body::-webkit-scrollbar {
   font-size: 1.2em;
 }
 
-/* footer  */
-footer {
-  display: flex;
-  flex-direction: column; /* Stacks the items vertically */
-  align-items: center; /* Centers the items horizontally */
-  margin-bottom: 20px;
-}
 
-.back-to-top {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 45px;
-  height: 45px;
-  background-color: var(--text);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  cursor: pointer;
-  z-index: 99;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(20px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.back-to-top.visible {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.back-to-top:hover {
-  background-color: var(--gray);
-  transform: scale(1.1);
-}
-
-.back-to-top i {
-  line-height: 0;
-}
-
-/* adjust for mobile screens to avoid hitting thumbs */
-@media (max-width: 600px) {
-  .back-to-top {
-    bottom: 20px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-  }
-}
 
 .install-btn-outline {
   width: 100%;
