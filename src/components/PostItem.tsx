@@ -101,30 +101,33 @@ export const PostItem = memo(
 
     return (
       <div
-        className={`bg-white rounded-xl p-4 mb-5 border border-slate-100 shadow-sm transition-transform duration-200 
-          ${disableClick ? "cursor-default" : "cursor-pointer hover:shadow-md hover:-translate-y-0.5"}
-          ${parentPostId ? "ml-5 border-l-4 border-l-slate-200 rounded-l-none" : ""}`}
+        className={`bg-white rounded-[12px] p-4 mb-5 border border-[#eef0f2] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-200 ease-in-out
+          ${disableClick ? "cursor-default" : "cursor-pointer hover:shadow-[0_6px_16px_rgba(0,0,0,0.1)] hover:-translate-y-0.5"}
+          ${parentPostId ? "ml-5 border-l-4 border-l-slate-200 rounded-l-none scale-[0.98]" : ""}`}
         onClick={handleCardClick}
       >
+        {/* post header */}
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 text-xl flex-shrink-0">
+          <div className="w-[40px] h-[40px] bg-[#eef0f2] rounded-full flex items-center justify-center text-[#555] text-[20px] flex-shrink-0">
             <i className="bi bi-person-fill"></i>
           </div>
           <div className="flex flex-col">
-            <span className="font-semibold text-blue">
+            <span className="font-semibold text-logo-blue leading-tight">
               {uid === userId ? "You" : shortenedUid}
             </span>
-            <span className="text-sm text-gray-custom opacity-70">
+            <span className="text-[14px] text-gray-custom opacity-70">
               {formattedTime}
             </span>
           </div>
         </div>
 
-        <p className="text-slate-800 leading-relaxed mb-4 whitespace-pre-wrap">
+        {/* content */}
+        <p className="text-[#333] leading-[1.6] mb-4 whitespace-pre-wrap">
           {displayContent}
         </p>
 
-        <div className="flex items-center gap-5 pt-2 border-t border-slate-50">
+        {/* interaction row */}
+        <div className="flex items-center gap-5 pt-2 border-t border-[#eef0f2]">
           <InteractionButton
             type="agreed"
             active={interactionState.agreed}
@@ -168,23 +171,27 @@ const InteractionButton = ({
 
   return (
     <button
-      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer
+      className={`flex items-center gap-2 px-3 py-2 rounded-[8px] transition-all duration-200 cursor-pointer text-[16px]
         ${
           active
             ? isAgree
               ? "bg-agree-bg text-agree"
               : "bg-dissent-bg text-dissent"
-            : "text-slate-500 hover:bg-slate-50"
+            : "text-[#6c757d] hover:bg-slate-50"
         }`}
       onClick={onClick}
     >
-      <i className={`bi ${icon} ${active ? "opacity-100" : "opacity-60"}`}></i>
-      <span className="font-bold text-sm">{count}</span>
-      <span className="text-xs font-medium uppercase tracking-tight">
-        {label}
-      </span>
+      <div className="flex items-center gap-2">
+        <i
+          className={`bi ${icon} ${active ? "opacity-100" : "opacity-60"}`}
+        ></i>
+        <span className="font-semibold text-[15px]">{count}</span>
+        <span className="text-[14px] font-medium hidden sm:inline">
+          {label}
+        </span>
+      </div>
     </button>
   );
 };
 
-export default PostItem; // default export to fix diagnostic error
+export default PostItem;

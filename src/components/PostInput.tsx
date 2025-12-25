@@ -9,10 +9,6 @@ interface PostInputProps {
   placeholder?: string;
 }
 
-/**
- * handles user input for both new posts and replies using Tailwind v4.
- * uses logo- prefix for brand colors.
- */
 export const PostInput = ({ parentPostId, placeholder }: PostInputProps) => {
   const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
@@ -21,7 +17,6 @@ export const PostInput = ({ parentPostId, placeholder }: PostInputProps) => {
 
   const handleSubmit = async () => {
     if (loading || isPosting) return;
-
     if (!user) {
       openModal("signin");
       return;
@@ -31,7 +26,6 @@ export const PostInput = ({ parentPostId, placeholder }: PostInputProps) => {
     if (!trimmedContent) return;
 
     setIsPosting(true);
-
     const targetRef = parentPostId
       ? ref(db, `replies/${parentPostId}`)
       : postsRef;
@@ -41,15 +35,8 @@ export const PostInput = ({ parentPostId, placeholder }: PostInputProps) => {
         userId: user.uid,
         postContent: trimmedContent,
         timestamp: serverTimestamp(),
-        metrics: {
-          agreedCount: 0,
-          dissentedCount: 0,
-          replyCount: 0,
-        },
-        userInteractions: {
-          agreed: {},
-          dissented: {},
-        },
+        metrics: { agreedCount: 0, dissentedCount: 0, replyCount: 0 },
+        userInteractions: { agreed: {}, dissented: {} },
         ...(parentPostId && { parentPostId }),
       });
       setContent("");
@@ -70,13 +57,12 @@ export const PostInput = ({ parentPostId, placeholder }: PostInputProps) => {
   const isDisabled = loading || isPosting;
   const defaultPlaceholder = parentPostId
     ? "Write a reply..."
-    : "Speak your mind";
+    : "Speak your mind...";
 
   return (
-    <div className="flex w-full flex-row gap-2">
+    <div className="flex w-full flex-row gap-[7px]">
       <input
         type="text"
-        className="flex-grow-[8] rounded-lg border border-slate-200 bg-white p-2.5 text-sm shadow-sm transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-logo-blue disabled:bg-slate-50 disabled:text-slate-400"
         maxLength={600}
         value={content}
         onChange={(e) => setContent(e.target.value)}
@@ -85,12 +71,17 @@ export const PostInput = ({ parentPostId, placeholder }: PostInputProps) => {
           loading ? "Checking connection..." : placeholder || defaultPlaceholder
         }
         disabled={isDisabled}
+        className="flex-grow-[8] rounded-lg border border-slate-200 bg-white p-[10px] text-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all outline-none focus:shadow-[0_6px_16px_rgba(0,0,0,0.1)] disabled:bg-slate-50 disabled:text-slate-400"
       />
 
       <button
         onClick={handleSubmit}
         disabled={isDisabled || !content.trim()}
-        className="flex-grow-[2] min-w-[85px] cursor-pointer rounded-lg bg-gradient-to-r from-logo-blue via-logo-green to-logo-red bg-[length:300%_100%] px-4 py-2.5 text-sm font-bold text-white shadow-md animate-shimmer transition-all duration-200 hover:scale-[1.03] active:scale-95 disabled:cursor-not-allowed"
+        className={`
+          flex-grow-[2] min-w-[85px] cursor-pointer rounded-lg px-[10px] py-2.5 text-[14px] font-bold text-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-100
+          bg-gradient-to-r from-logo-blue via-logo-green to-logo-red bg-[length:300%_100%] animate-shimmer
+          hover:animate-jiggle active:scale-95 disabled:cursor-not-allowed
+        `}
       >
         {isPosting ? (
           <i className="bi bi-three-dots animate-pulse"></i>
