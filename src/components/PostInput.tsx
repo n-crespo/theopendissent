@@ -77,7 +77,7 @@ export const PostInput = ({
     activePlaceholder = "You must have a stance to reply";
   } else if (!placeholder) {
     activePlaceholder = isReplyMode
-      ? `Replying as ${currentStance === "agreed" ? "Support" : "Dissent"}...`
+      ? `I ${currentStance === "agreed" ? "agree because" : "dissent because"}...`
       : "Speak your mind...";
   }
 
@@ -121,8 +121,8 @@ export const PostInput = ({
       </div>
 
       {hasNoStance && (
-        <p className="px-1 text-[11px] font-bold text-logo-red uppercase tracking-wider animate-pulse">
-          Click "Agree" or "Dissent" on the post above to unlock replies.
+        <p className="px-1 text-[11px] font-bold text-logo-red  animate-pulse">
+          Click "Agree" or "Dissent" on the post to unlock replies.
         </p>
       )}
     </div>

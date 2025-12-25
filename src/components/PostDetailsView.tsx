@@ -6,25 +6,36 @@ import { PostInput } from "./PostInput";
 import { ReplyItem } from "./ReplyItem";
 import { useAuth } from "../context/AuthContext";
 
-/**
- * displays the original post, a reply field, and a scrollable list of replies.
- */
-export const PostDetailsView = ({ post }: { post: any }) => {
+export const PostDetailsView = ({ post: initialPost }: { post: any }) => {
   const [replies, setReplies] = useState<any[]>([]);
+  const [livePost, setLivePost] = useState(initialPost); // track live interactions
   const { user } = useAuth();
 
-  // calculate current user's stance on this post
   const uid = user?.uid;
   let currentStance: "agreed" | "dissented" | null = null;
 
-  if (uid && post.userInteractions) {
-    if (post.userInteractions.agreed?.[uid]) currentStance = "agreed";
-    else if (post.userInteractions.dissented?.[uid])
+  // use livePost instead of the static initialPost prop
+  if (uid && livePost.userInteractions) {
+    if (livePost.userInteractions.agreed?.[uid]) currentStance = "agreed";
+    else if (livePost.userInteractions.dissented?.[uid])
       currentStance = "dissented";
   }
 
+  // listener for live post updates (to unlock input immediately)
   useEffect(() => {
-    const repliesRef = ref(db, `replies/${post.id}`);
+    const postRef = ref(db, `posts/${initialPost.id}`);
+    const unsubscribe = onValue(postRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setLivePost({ id: initialPost.id, ...data });
+      }
+    });
+    return () => unsubscribe();
+  }, [initialPost.id]);
+
+  // listener for replies
+  useEffect(() => {
+    const repliesRef = ref(db, `replies/${initialPost.id}`);
     const repliesQuery = query(repliesRef, orderByChild("timestamp"));
 
     const unsubscribe = onValue(repliesQuery, (snapshot) => {
@@ -41,21 +52,19 @@ export const PostDetailsView = ({ post }: { post: any }) => {
     });
 
     return () => unsubscribe();
-  }, [post.id]);
+  }, [initialPost.id]);
 
   return (
     <div className="flex flex-col max-h-[75vh]">
-      {/* 1. Original Post */}
       <div className="mb-4 border-b border-slate-100 pb-2">
-        <PostItem post={post} disableClick={true} />
+        {/* pass livePost so the buttons stay in sync */}
+        <PostItem post={livePost} disableClick={true} />
       </div>
 
-      {/* 2. Reply Input - passing currentStance */}
       <div className="mb-6">
-        <PostInput parentPostId={post.id} currentStance={currentStance} />
+        <PostInput parentPostId={livePost.id} currentStance={currentStance} />
       </div>
 
-      {/* 3. Scrollable Replies Area */}
       <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
         <h4 className="text-sm font-bold text-logo-blue mb-4 uppercase tracking-tight">
           Discussion
