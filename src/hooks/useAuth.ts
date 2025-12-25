@@ -24,6 +24,8 @@ export function useAuth() {
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
+      // sign user out locally to clear partially authenticated state
+      await auth.signOut();
       if (error.code === "auth/internal-error") {
         alert(
           "Sorry... only @g.ucla.edu emails are allowed to sign up right now.",
