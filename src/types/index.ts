@@ -18,6 +18,7 @@ export interface Post {
   userInteractions: PostInteractions;
   parentPostId?: string;
   replyIds?: Record<string, boolean>;
+  userInteractionType?: "agreed" | "dissented";
 }
 
 export interface UserInteractions {
