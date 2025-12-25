@@ -1,6 +1,13 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getDatabase, ref, update } from "firebase/database";
+import {
+  getDatabase,
+  ref,
+  update,
+  push,
+  serverTimestamp,
+  child,
+} from "firebase/database";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBqrAeqFnJLS8GRVR1LJvlUJ_TYao-EPe0",
@@ -20,26 +27,72 @@ googleProvider.setCustomParameters({ login_hint: "user@g.ucla.edu" });
 
 export const postsRef = ref(db, "posts");
 
-// generic helper
-export const toggleInteraction = async (
-  postId: string,
-  uid: string,
-  interactionType: string,
-  isRemoving: boolean,
+/**
+ * creates a new post or a reply to an existing post
+ */
+export const createPost = async (
+  userId: string,
+  content: string,
+  parentPostId?: string,
 ) => {
-  const value = isRemoving ? null : true;
+  // generate a unique ID for the new post
+  const newPostKey = push(child(ref(db), "posts")).key;
+  if (!newPostKey) return;
+
+  const postData = {
+    id: newPostKey,
+    userId,
+    postContent: content,
+    timestamp: serverTimestamp(),
+    metrics: {
+      agreedCount: 0,
+      dissentedCount: 0,
+    },
+    userInteractions: {
+      agreed: {},
+      dissented: {},
+    },
+    // only include this if it's actually a reply
+    ...(parentPostId && { parentPostId }),
+  };
 
   const updates: Record<string, any> = {
-    [`users/${uid}/postInteractions/${interactionType}/${postId}`]: value,
-    [`posts/${postId}/userInteractions/${interactionType}/${uid}`]: value,
+    [`posts/${newPostKey}`]: postData,
+  };
+
+  // if it's a reply, link it to the parent atomically
+  if (parentPostId) {
+    updates[`posts/${parentPostId}/replyIds/${newPostKey}`] = true;
+  }
+
+  return update(ref(db), updates);
+};
+
+/**
+ * atomic update to add or remove an interaction
+ */
+const setInteraction = async (
+  postId: string,
+  uid: string,
+  type: "agreed" | "dissented",
+  value: true | null,
+) => {
+  const updates: Record<string, any> = {
+    [`users/${uid}/postInteractions/${type}/${postId}`]: value,
+    [`posts/${postId}/userInteractions/${type}/${uid}`]: value,
   };
 
   return update(ref(db), updates);
 };
 
-// add these specific exports that PostItem is looking for
-export const addInteraction = (postId: string, uid: string, type: string) =>
-  toggleInteraction(postId, uid, type, false);
+export const addInteraction = (
+  postId: string,
+  uid: string,
+  type: "agreed" | "dissented",
+) => setInteraction(postId, uid, type, true);
 
-export const removeInteraction = (postId: string, uid: string, type: string) =>
-  toggleInteraction(postId, uid, type, true);
+export const removeInteraction = (
+  postId: string,
+  uid: string,
+  type: "agreed" | "dissented",
+) => setInteraction(postId, uid, type, null); // passing null deletes the key in Firebase

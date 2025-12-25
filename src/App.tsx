@@ -2,18 +2,12 @@ import { useEffect, useState } from "react";
 import { Header } from "./components/Header";
 import { PostInput } from "./components/PostInput";
 import { PostList } from "./components/PostList";
-import { SignInModal } from "./components/modals/SignInModal";
-import { HelpModal } from "./components/modals/HelpModal";
-import { LogoutModal } from "./components/modals/LogoutModal";
-
-import { useModal } from "./context/ModalContext";
+import { GlobalModal } from "./components/modals/GlobalModal";
 import { Footer } from "./components/Footer";
 
 export default function App() {
-  const { activeModal } = useModal();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  // handle scroll-to-top visibility
   useEffect(() => {
     const handleScroll = () => setShowScrollTop(window.scrollY > 400);
     window.addEventListener("scroll", handleScroll);
@@ -21,25 +15,33 @@ export default function App() {
   }, []);
 
   return (
-    <div className="app-root">
+    <div className="min-h-screen bg-logo-offwhite">
       <Header />
-      <main id="body-content">
-        <div id="center-container">
+
+      <main className="py-5">
+        <div className="mx-auto flex max-w-125 flex-col gap-5 px-4">
           <PostInput />
           <PostList />
         </div>
       </main>
-      <button
-        className={`back-to-top ${showScrollTop ? "visible" : ""}`}
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      >
-        <i className="bi bi-arrow-up-short"></i>
-      </button>
-      {/* modals */}
-      {activeModal === "help" && <HelpModal />}
-      {activeModal === "signin" && <SignInModal />}
-      {activeModal === "logout" && <LogoutModal />}
 
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className={`fixed z-99 flex items-center justify-center rounded-full border-none text-white shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 cubic-bezier-[0.4,0,0.2,1] cursor-pointer
+          bg-[#222222] hover:bg-gray-custom hover:scale-110
+          right-7.5 bottom-7.5 h-11.25 w-11.25 text-[24px]
+          max-[600px]:right-5 max-[600px]:bottom-5 max-[600px]:h-10 max-[600px]:w-10
+          ${
+            showScrollTop
+              ? "opacity-100 visible translate-y-0"
+              : "opacity-0 invisible translate-y-5"
+          }
+        `}
+      >
+        <i className="bi bi-arrow-up-short leading-none"></i>
+      </button>
+
+      <GlobalModal />
       <Footer />
     </div>
   );

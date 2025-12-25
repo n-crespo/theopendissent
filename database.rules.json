@@ -4,36 +4,62 @@
       "$uid": {
         ".read": "auth != null",
         ".write": "auth != null && auth.uid === $uid"
+      },
+      "posts": {
+        "$post_id": { ".validate": "newData.val() === true" }
+      },
+      "replies": {
+        "$post_id": { "$reply_id": { ".validate": "newData.val() === true" } }
       }
     },
 
     "posts": {
       ".indexOn": ["timestamp"],
       ".read": true,
-      ".write": "auth != null",
-
       "$post_id": {
         ".write": "auth != null && (!data.exists() || data.child('userId').val() === auth.uid)",
+        ".validate": "newData.hasChildren(['userId', 'postContent', 'timestamp', 'metrics'])",
 
         "metrics": {
-          ".write": false
+          ".write": "auth != null",
+          "agreedCount": { ".validate": "newData.isNumber()" },
+          "dissentedCount": { ".validate": "newData.isNumber()" },
+          "replyCount": { ".validate": "newData.isNumber()" }
         },
 
         "userInteractions": {
           "$interactionType": {
             "$userId": {
               ".write": "auth != null && auth.uid === $userId",
-              ".validate": "newData.isBoolean() || newData.val() == null"
+              ".validate": "newData.isBoolean() || !newData.exists()"
             }
           }
         },
 
-        "userId": {
-          ".validate": "newData.val() === auth.uid"
-        },
-
+        "userId": { ".validate": "newData.val() === auth.uid" },
         "postContent": {
           ".validate": "newData.isString() && newData.val().length <= 600"
+        }
+      }
+    },
+
+    "replies": {
+      "$post_id": {
+        ".read": true,
+        "$reply_id": {
+          ".write": "auth != null && (root.child('posts/' + $post_id + '/userInteractions/agreed/' + auth.uid).val() === true || root.child('posts/' + $post_id + '/userInteractions/dissented/' + auth.uid).val() === true)",
+
+          ".validate": "newData.hasChildren(['userId', 'postContent', 'timestamp', 'parentPostId', 'userInteractionType'])",
+
+          "userId": { ".validate": "newData.val() === auth.uid" },
+          "parentPostId": { ".validate": "newData.val() === $post_id" },
+          "postContent": {
+            ".validate": "newData.isString() && newData.val().length <= 600"
+          },
+
+          "userInteractionType": {
+            ".validate": "newData.val() === 'agreed' || newData.val() === 'dissented'"
+          }
         }
       }
     }

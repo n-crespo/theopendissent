@@ -1,52 +1,55 @@
-import { Modal } from "./Modal";
 import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
 
+/**
+ * simplified logout content for the global modal container.
+ * uses logo- red branding and utility-based profile preview.
+ */
 export const LogoutModal = () => {
   const { user, logout } = useAuth();
   const { closeModal } = useModal();
 
   const handleConfirm = async () => {
-    await logout();
-    closeModal();
+    try {
+      await logout();
+      closeModal();
+    } catch (error) {
+      console.error("failed to log out:", error);
+    }
   };
 
   return (
-    <Modal id="logout-view" onClose={closeModal}>
-      <h2>Sign Out</h2>
-      <div className="modal-content">
-        <p style={{ textAlign: "center", marginBottom: "10px" }}>
-          Are you sure you want to log out?
-        </p>
+    <div className="flex flex-col items-center">
+      <h2 className="text-2xl font-bold mb-4 text-[#1a1a1a]">Sign Out?</h2>
 
-        {user && (
-          <div
-            style={{
-              textAlign: "center",
-              backgroundColor: "var(--offwhite-background)",
-              padding: "15px",
-              borderRadius: "var(--border-rad)",
-              marginBottom: "20px",
-              border: "1px solid var(--border-fg)",
-            }}
-          >
-            <div style={{ fontWeight: "bold", color: "var(--text)" }}>
-              {user.displayName || "UCLA Student"}
-            </div>
-            <div style={{ fontSize: "14px", color: "var(--gray)" }}>
-              {user.email}
-            </div>
+      {user && (
+        <div className="w-full bg-slate-50 rounded-lg p-4 mb-6 flex flex-col items-center border border-slate-100">
+          <div className="font-semibold text-logo-blue text-lg">
+            {user.displayName || "UCLA Student"}
           </div>
-        )}
+          <div className="text-sm text-gray-custom opacity-70 italic">
+            {user.email}
+          </div>
+        </div>
+      )}
+
+      <div className="w-full flex flex-col items-center">
+        {/* .btn-logout-confirm */}
+        <button
+          className="inline-flex w-full items-center justify-center rounded-lg bg-logo-red p-3 text-base font-semibold text-white cursor-pointer border-none transition-all duration-200 hover:opacity-90 hover:shadow-[0_4px_12px_rgba(112,22,30,0.2)]"
+          onClick={handleConfirm}
+        >
+          Sign Out
+        </button>
+
+        {/* .btn-logout-cancel */}
+        <button
+          className="w-full mt-[15px] p-2 bg-none border-none text-sm text-gray-custom cursor-pointer transition-all hover:text-[#222222] hover:underline"
+          onClick={closeModal}
+        >
+          Stay signed in
+        </button>
       </div>
-
-      <button className="btn-logout-confirm" onClick={handleConfirm}>
-        Sign Out
-      </button>
-
-      <button className="btn-logout-cancel" onClick={closeModal}>
-        Stay signed in
-      </button>
-    </Modal>
+    </div>
   );
 };

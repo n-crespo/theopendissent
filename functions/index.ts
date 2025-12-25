@@ -1,4 +1,5 @@
-// `firebase deploy --only functions`
+// to update, run `firebase deploy --only functions`
+// for the db rules json, run `firebase deploy --only database`
 require("firebase-functions/logger/compat");
 import { onValueWritten } from "firebase-functions/v2/database";
 import { HttpsError } from "firebase-functions/v2/https";
@@ -12,49 +13,75 @@ import * as admin from "firebase-admin";
 admin.initializeApp();
 
 /**
- * Dynamically updates interaction counters.
- * Triggers on any change in the userInteractions path.
+ * dynamically updates interaction counters.
+ * handles 'agreed' and 'dissented'.
  */
 export const updateInteractionCounts = onValueWritten(
-  "/posts/{postId}/userInteractions/{interaction}/{userId}",
+  "/posts/{postId}/userInteractions/{interactionType}/{userId}",
   async (event) => {
-    const { postId, interaction } = event.params;
+    const { postId, interactionType } = event.params;
 
-    // quick validation for interaction types
-    const validInteractions = ["agreed", "disagreed", "interested"];
-    if (!validInteractions.includes(interaction)) {
-      return;
-    }
+    const metricMapping: Record<string, string> = {
+      agreed: "agreedCount",
+      dissented: "dissentedCount",
+    };
 
-    const isCreation = event.data.after.exists() && !event.data.before.exists();
-    const isDeletion = !event.data.after.exists() && event.data.before.exists();
+    const counterKey = metricMapping[interactionType];
+    if (!counterKey) return;
+
+    const before = event.data.before.exists();
+    const after = event.data.after.exists();
 
     let incrementValue = 0;
-    if (isCreation) {
+    if (after && !before) {
       incrementValue = 1;
-    } else if (isDeletion) {
+    } else if (!after && before) {
       incrementValue = -1;
     } else {
-      // nothing to do (e.g. data was updated but not created/deleted)
       return;
     }
 
     const counterRef = admin
       .database()
-      .ref(`/posts/${postId}/metrics/${interaction}Count`);
+      .ref(`/posts/${postId}/metrics/${counterKey}`);
 
-    // bypass extra reads and use the atomic server increment
     return counterRef.set(admin.database.ServerValue.increment(incrementValue));
   },
 );
 
-// ucla auth restrictions
+/**
+ * updates the replyCount on the parent post when a reply is created or deleted.
+ */
+export const updateReplyCount = onValueWritten(
+  "/replies/{postId}/{replyId}",
+  async (event) => {
+    const { postId } = event.params;
+    const before = event.data.before.exists();
+    const after = event.data.after.exists();
+
+    let incrementValue = 0;
+    if (after && !before) {
+      incrementValue = 1;
+    } else if (!after && before) {
+      incrementValue = -1;
+    } else {
+      return;
+    }
+
+    const counterRef = admin
+      .database()
+      .ref(`/posts/${postId}/metrics/replyCount`);
+
+    return counterRef.set(admin.database.ServerValue.increment(incrementValue));
+  },
+);
+
 const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
   const user = event.data;
   if (!user?.email?.endsWith("@g.ucla.edu")) {
     throw new HttpsError(
       "invalid-argument",
-      "Sorry, only @ucla.edu emails are allowed to sign up.",
+      "Only @g.ucla.edu emails are allowed.",
     );
   }
 };
@@ -66,13 +93,14 @@ export const beforecreated = beforeUserCreated(async (event) => {
   const newUserProfile = {
     email: user?.email,
     displayName: user?.displayName,
+    createdAt: admin.database.ServerValue.TIMESTAMP,
+    // we don't initialize 'posts' or 'replies' here because
+    // empty nodes don't exist in Firebase Realtime DB
   };
 
-  // create root path for user
-  const userRef = admin.database().ref(`users/${user?.uid}`);
-  await userRef.set(newUserProfile);
+  await admin.database().ref(`users/${user?.uid}`).set(newUserProfile);
 });
 
 export const beforesignedin = beforeUserSignedIn((event) => {
-  return uclaOnlyAuth(event);
+  uclaOnlyAuth(event);
 });

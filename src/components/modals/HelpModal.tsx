@@ -1,103 +1,111 @@
-import { Modal } from "./Modal";
-import { useModal } from "../../context/ModalContext";
 import { usePwa } from "../../context/PwaContext";
+import helpIcon from "../../assets/icons/help.svg";
 
 export const HelpModal = () => {
-  const { closeModal } = useModal();
   const { deferredPrompt, install } = usePwa();
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   const spotifyLogo =
     "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/2048px-Spotify_logo_without_text.svg.png";
   const appleLogo =
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Podcasts_%28iOS%29.svg/2048px-Podcasts_%28iOS%29.svg.png"; // standard apple podcast icon url
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Podcasts_%28iOS%29.svg/2048px-Podcasts_%28iOS%29.svg.png";
 
   return (
-    <Modal id="help-view" onClose={closeModal}>
-      <h2>What is this?</h2>
-      <div className="modal-content">
-        <p>
-          The Open Dissent is an open platform for
-          <strong> anonymous political discussion</strong>. <br />
-          <br />
-          Post your thoughts to have a chance to be invited to The Open
-          Dissent's debate-style show (see below)!
-          <br />
-        </p>
+    <div className="flex flex-col text-[#333]">
+      <h2 className="text-2xl font-bold mb-4 text-[#1a1a1a] text-center">
+        What is this?
+      </h2>
+      <p className="leading-relaxed mb-6">
+        The Open Dissent is an open platform for{" "}
+        <strong className="font-bold text-logo-blue">
+          anonymous political discussion
+        </strong>
+        . <br />
+        <br />
+        Post your thoughts to have a chance to be invited to The Open Dissent's
+        debate-style show!
+      </p>
 
-        <div className="podcast-section">
-          <div className="podcast-links">
-            <a
-              href="https://open.spotify.com/show/471WfoA8k9zORQPQbLynw2?si=81fb44fe7dd945bf"
-              target="_blank"
-              rel="noreferrer"
-              className="podcast-link"
-            >
-              <img src={spotifyLogo} alt="Spotify" />
-            </a>
-            <a
-              href="https://podcasts.apple.com/hr/podcast/the-open-dissent/id1860727185"
-              target="_blank"
-              rel="noreferrer"
-              className="podcast-link"
-            >
-              <img src={appleLogo} alt="Apple Podcasts" />
-            </a>
-          </div>
-        </div>
-
-        <h4>How to Interact</h4>
-        <ul>
-          <li>
-            <i className="bi bi-check-square"></i> <em>Agreed!</em>
-          </li>
-          <li>
-            <i className="bi bi-fire"></i> <em>Interesting take...</em>
-          </li>
-          <li>
-            <i className="bi bi-x-square"></i> <em>I disagree...</em>
-          </li>
-        </ul>
-
-        <div className="install-section">
-          <h4>Install as an App</h4>
-          {isIOS ? (
-            <ul>
-              <li>
-                Tap the <strong>Share</strong> button (bottom of screen)
-              </li>
-              <li>
-                Tap <strong>More</strong>, then{" "}
-                <strong>Add to Home Screen</strong>
-              </li>
-              <li>
-                <a
-                  href="https://support.apple.com/en-asia/guide/iphone/iphea86e5236/ios"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Detailed guide (iOS).
-                </a>
-              </li>
-            </ul>
-          ) : deferredPrompt ? (
-            <button className="btn install-btn-outline" onClick={install}>
-              <i className="bi bi-download"></i>
-              Install
-            </button>
-          ) : (
-            <p
-              style={{
-                fontSize: "0.9rem",
-                color: "var(--gray)",
-                marginTop: "10px",
-              }}
-            >
-              Already installed or unavailable on this browser.
-            </p>
-          )}
-        </div>
+      {/* Podcast Links */}
+      <div className="flex justify-center gap-6 mb-8">
+        <a
+          href="https://open.spotify.com/show/471WfoA8k9zORQPQbLynw2?si=81fb44fe7dd945bf"
+          target="_blank"
+          rel="noreferrer"
+          className="group"
+        >
+          <img
+            src={spotifyLogo}
+            alt="Spotify"
+            className="h-10 w-10 rounded-lg transition-transform duration-200 group-hover:scale-110"
+          />
+        </a>
+        <a
+          href="https://podcasts.apple.com/hr/podcast/the-open-dissent/id1860727185"
+          target="_blank"
+          rel="noreferrer"
+          className="group"
+        >
+          <img
+            src={appleLogo}
+            alt="Apple Podcasts"
+            className="h-10 w-10 rounded-lg transition-transform duration-200 group-hover:scale-110"
+          />
+        </a>
       </div>
-    </Modal>
+
+      <h4 className="text-lg font-bold mt-4 mb-3 border-b border-[#eef0f2] pb-1">
+        How to Interact
+      </h4>
+      <ul className="space-y-3 mb-8">
+        <li className="flex items-center gap-3">
+          <i className="bi bi-check-square text-agree text-xl"></i>
+          <span className="italic">Agreed!</span>
+        </li>
+        <li className="flex items-center gap-3">
+          <i className="bi bi-chat-left-text text-dissent text-xl"></i>
+          <span className="italic">Dissent!</span>
+        </li>
+      </ul>
+
+      <div className="mt-4 pt-4 border-t border-[#eef0f2]">
+        <h4 className="text-lg font-bold mb-3">Install as an App</h4>
+        {isIOS ? (
+          <ul className="space-y-2 list-disc pl-5 text-sm">
+            <li>
+              Tap the <strong>Share</strong> button (bottom of screen)
+            </li>
+            <li>
+              Tap <strong>More</strong>, then{" "}
+              <strong>Add to Home Screen</strong>
+            </li>
+            <li>
+              <a
+                href="https://support.apple.com/en-asia/guide/iphone/iphea86e5236/ios"
+                target="_blank"
+                rel="noreferrer"
+                className="text-logo-blue hover:underline"
+              >
+                Detailed guide (iOS).
+              </a>
+            </li>
+          </ul>
+        ) : deferredPrompt ? (
+          /* .install-btn-outline */
+          <button
+            className="w-full my-5 p-3 bg-white text-[#222] border border-[#dadce0] rounded-[12px] flex items-center justify-center gap-2.5 font-semibold cursor-pointer transition-all duration-200 shadow-[0_2px_6px_rgba(0,0,0,0.05)] hover:bg-logo-offwhite hover:border-gray-custom hover:-translate-y-px"
+            onClick={install}
+          >
+            <i className="bi bi-download text-[1.1rem] text-gray-custom"></i>
+            Install
+          </button>
+        ) : (
+          /* .install-section p */
+          <p className="p-2.5 bg-logo-offwhite rounded-lg text-center border border-dashed border-[#dadce0] text-sm text-gray-custom italic">
+            Already installed or unavailable on this browser.
+          </p>
+        )}
+      </div>
+    </div>
   );
 };
