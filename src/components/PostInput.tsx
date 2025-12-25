@@ -48,7 +48,7 @@ export const PostInput = ({
     : "Speak your mind...";
 
   const activePlaceholder = hasNoStance
-    ? "You must have a stance to reply"
+    ? "Choose a stance to reply"
     : placeholder || defaultPlaceholder;
 
   const handleSubmit = async () => {
