@@ -97,8 +97,8 @@ export const PostInput = ({
 
   return (
     <div className="flex w-full flex-col gap-1.5">
-      <div className="flex w-full flex-row items-end gap-[7px]">
-        <div className="relative flex-grow-[8]">
+      <div className="flex w-full flex-row items-end gap-1.75">
+        <div className="relative grow-8">
           <textarea
             ref={textareaRef}
             rows={1}
@@ -108,7 +108,7 @@ export const PostInput = ({
             onKeyDown={handleKeyDown}
             placeholder={activePlaceholder}
             disabled={isDisabled}
-            className={`w-full resize-none rounded-lg border p-[10px] text-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all outline-none block max-h-[240px] custom-scrollbar
+            className={`w-full resize-none rounded-lg border p-2.5 text-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all outline-none block max-h-60 custom-scrollbar
               ${
                 hasNoStance
                   ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed italic"
@@ -119,7 +119,7 @@ export const PostInput = ({
 
           {!hasNoStance && content.length > 0 && (
             <span
-              className={`absolute right-3 bottom-[-18px] text-[10px] font-bold uppercase tracking-tighter transition-colors ${isNearLimit ? "text-logo-red" : "text-slate-300"}`}
+              className={`absolute right-3 -bottom-4.5 text-[10px] font-bold uppercase tracking-tighter transition-colors ${isNearLimit ? "text-logo-red" : "text-slate-300"}`}
             >
               {charsLeft}
             </span>
@@ -130,8 +130,8 @@ export const PostInput = ({
           onClick={handleSubmit}
           disabled={isDisabled || !content.trim()}
           className={`
-            flex-grow-[2] min-w-[85px] h-[41px] rounded-lg px-[10px] py-2.5 text-[14px] font-bold text-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-100
-            bg-gradient-to-r from-logo-blue via-logo-green to-logo-red bg-[length:300%_100%] animate-shimmer
+            grow-2 min-w-21.25 h-10.25 rounded-lg px-2.5 py-2.5 text-[14px] font-bold text-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-100
+            bg-linear-to-r from-logo-blue via-logo-green to-logo-red bg-size-[300%_100%] animate-shimmer
             ${isDisabled || !content.trim() ? "cursor-not-allowed" : "cursor-pointer hover:animate-jiggle active:scale-95"}
           `}
         >
