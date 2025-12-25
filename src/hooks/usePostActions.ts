@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Post } from "../types";
-import { addInteraction, removeInteraction, updatePost } from "../lib/firebase";
+import {
+  addInteraction,
+  deletePost,
+  removeInteraction,
+  updatePost,
+} from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
 
@@ -148,8 +153,18 @@ export const usePostActions = (post: Post) => {
 
   const handleDeleteTrigger = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowMenu(false); // close the hamburger menu first
-    openModal("deleteConfirm", post); // pass the whole post object to the modal
+    setShowMenu(false);
+
+    openModal("deleteConfirm", {
+      name: post.postContent || "this post",
+      onConfirm: async () => {
+        try {
+          await deletePost(post.id);
+        } catch (error) {
+          console.error("failed to delete post:", error);
+        }
+      },
+    });
   };
 
   return {
