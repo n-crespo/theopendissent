@@ -1,20 +1,25 @@
 import React, { useState } from "react";
-import { push, serverTimestamp } from "firebase/database";
-import { postsRef } from "../lib/firebase";
+import { push, ref, serverTimestamp } from "firebase/database";
+import { db, postsRef } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
 
+interface PostInputProps {
+  parentPostId?: string;
+  placeholder?: string;
+}
+
 /**
- * Handles user input and database submission for new posts.
+ * handles user input for both new posts and replies using Tailwind v4.
+ * uses logo- prefix for brand colors.
  */
-export const PostInput = () => {
+export const PostInput = ({ parentPostId, placeholder }: PostInputProps) => {
   const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const { user, loading } = useAuth();
   const { openModal } = useModal();
 
   const handleSubmit = async () => {
-    // prevent actions while initializing or mid-request
     if (loading || isPosting) return;
 
     if (!user) {
@@ -27,26 +32,29 @@ export const PostInput = () => {
 
     setIsPosting(true);
 
+    const targetRef = parentPostId
+      ? ref(db, `replies/${parentPostId}`)
+      : postsRef;
+
     try {
-      await push(postsRef, {
+      await push(targetRef, {
         userId: user.uid,
         postContent: trimmedContent,
         timestamp: serverTimestamp(),
         metrics: {
           agreedCount: 0,
-          disagreedCount: 0,
-          interestedCount: 0,
+          dissentedCount: 0,
+          replyCount: 0,
         },
         userInteractions: {
           agreed: {},
-          interested: {},
-          disagreed: {},
+          dissented: {},
         },
+        ...(parentPostId && { parentPostId }),
       });
       setContent("");
     } catch (error) {
-      // log error for debugging
-      console.error("Failed to post:", error);
+      console.error("failed to submit:", error);
     } finally {
       setIsPosting(false);
     }
@@ -60,26 +68,37 @@ export const PostInput = () => {
   };
 
   const isDisabled = loading || isPosting;
+  const defaultPlaceholder = parentPostId
+    ? "Write a reply..."
+    : "Speak your mind";
 
   return (
-    <div id="inputs-container">
+    <div className="flex w-full flex-row gap-2">
       <input
         type="text"
-        id="input-field"
+        className="flex-grow-[8] rounded-lg border border-slate-200 bg-white p-2.5 text-sm shadow-sm transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-logo-blue disabled:bg-slate-50 disabled:text-slate-400"
         maxLength={600}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={loading ? "Checking connection..." : "Speak your mind"}
+        placeholder={
+          loading ? "Checking connection..." : placeholder || defaultPlaceholder
+        }
         disabled={isDisabled}
       />
+
       <button
-        id="post-btn"
-        className="btn"
         onClick={handleSubmit}
         disabled={isDisabled || !content.trim()}
+        className="flex-grow-[2] min-w-[85px] cursor-pointer rounded-lg bg-gradient-to-r from-logo-blue via-logo-green to-logo-red bg-[length:300%_100%] px-4 py-2.5 text-sm font-bold text-white shadow-md animate-shimmer transition-all duration-200 hover:scale-[1.03] active:scale-95 disabled:cursor-not-allowed"
       >
-        {isPosting ? "..." : "Post"}
+        {isPosting ? (
+          <i className="bi bi-three-dots animate-pulse"></i>
+        ) : parentPostId ? (
+          "Reply"
+        ) : (
+          "Post"
+        )}
       </button>
     </div>
   );
