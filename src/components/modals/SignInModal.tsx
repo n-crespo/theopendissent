@@ -4,6 +4,7 @@ import { useModal } from "../../context/ModalContext";
 
 /**
  * sign-in content for the global modal container.
+ * uses logo- prefix and specific pixel values to match previous CSS.
  */
 export const SignInModal = () => {
   const { signIn } = useAuth();
@@ -19,28 +20,40 @@ export const SignInModal = () => {
   };
 
   return (
-    <div className="modal-content" id="sign-in-view">
-      <h2>Sign In</h2>
-      <div className="sign-in-description">
-        <p style={{ textAlign: "center" }}>
-          Sign in with a <strong>@g.ucla.edu</strong> email to post or interact!
+    <div className="flex flex-col items-center text-[#333]">
+      <h2 className="text-2xl font-bold mb-4 text-[#1a1a1a]">Sign In</h2>
+
+      <div className="mb-8 space-y-4">
+        <p className="text-center leading-relaxed">
+          Sign in with a{" "}
+          <strong className="font-bold text-logo-blue">@g.ucla.edu</strong>{" "}
+          email to post or interact!
         </p>
-        <p style={{ textAlign: "center" }}>
+        <p className="text-center flex items-center justify-center gap-1 leading-relaxed">
           Unsure? Tap the
-          <img src={helpIcon} className="help-inline-icon" alt="Help" />
+          <img
+            src={helpIcon}
+            className="h-5 w-5 mx-0.5"
+            alt="Help"
+            draggable="false"
+          />
           in the top left to learn more.
         </p>
       </div>
 
-      <div className="modal-actions">
-        <button className="btn btn-google" onClick={handleSignIn}>
-          <i className="bi bi-google"></i>
+      <div className="w-full flex flex-col items-center gap-3">
+        {/* primary google button */}
+        <button
+          className="inline-flex w-full items-center justify-center gap-3 rounded-lg bg-[#4285f4] p-3 text-base font-semibold text-white transition-colors duration-200 hover:bg-[#357ae8] cursor-pointer border-none shadow-sm"
+          onClick={handleSignIn}
+        >
+          <i className="bi bi-google text-lg"></i>
           <span>Sign In with Google</span>
         </button>
 
+        {/* maybe later button */}
         <button
-          id="close-sign-in-btn"
-          className="btn-link"
+          className="mt-2.5 cursor-pointer border-none bg-none p-2 text-sm text-[#6c757d] transition-all hover:underline"
           onClick={closeModal}
         >
           I'm just lurking
