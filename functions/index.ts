@@ -1,4 +1,5 @@
 // to update, run `firebase deploy --only functions`
+// for the db rules json, run `firebase deploy --only database`
 require("firebase-functions/logger/compat");
 import { onValueWritten } from "firebase-functions/v2/database";
 import { HttpsError } from "firebase-functions/v2/https";
