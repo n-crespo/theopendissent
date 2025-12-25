@@ -9,7 +9,6 @@ import {
   push,
   serverTimestamp,
   child,
-  remove,
 } from "firebase/database";
 
 const firebaseConfig = {
@@ -119,12 +118,18 @@ export const updatePost = async (
 };
 
 /**
- * Removes a post from the database
+ * Removes a post and cleans up top-level references
  */
-export const deletePost = async (postId: string) => {
+export const deletePost = async (postId: string, uid: string) => {
   try {
-    const postRef = ref(db, `posts/${postId}`);
-    await remove(postRef);
+    const updates: Record<string, any> = {
+      [`posts/${postId}`]: null,
+      [`users/${uid}/postInteractions/agreed/${postId}`]: null,
+      [`users/${uid}/postInteractions/dissented/${postId}`]: null,
+    };
+
+    // use update at root for atomic deletion
+    await update(ref(db), updates);
   } catch (error) {
     console.error("error deleting post:", error);
     throw error;

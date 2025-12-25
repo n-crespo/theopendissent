@@ -21,10 +21,16 @@
         ".validate": "newData.hasChildren(['userId', 'postContent', 'timestamp', 'metrics'])",
 
         "metrics": {
-          ".write": "auth != null",
-          "agreedCount": { ".validate": "newData.isNumber()" },
-          "dissentedCount": { ".validate": "newData.isNumber()" },
-          "replyCount": { ".validate": "newData.isNumber()" }
+          ".write": "auth != null && data.parent().exists()",
+          "agreedCount": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "dissentedCount": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "replyCount": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          }
         },
 
         "userInteractions": {
