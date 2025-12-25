@@ -9,6 +9,7 @@ import {
   push,
   serverTimestamp,
   child,
+  remove,
 } from "firebase/database";
 
 const firebaseConfig = {
@@ -113,6 +114,19 @@ export const updatePost = async (
     await update(postRef, updates);
   } catch (error) {
     console.error("error updating post:", error);
+    throw error;
+  }
+};
+
+/**
+ * Removes a post from the database
+ */
+export const deletePost = async (postId: string) => {
+  try {
+    const postRef = ref(db, `posts/${postId}`);
+    await remove(postRef);
+  } catch (error) {
+    console.error("error deleting post:", error);
     throw error;
   }
 };
