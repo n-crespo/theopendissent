@@ -44,7 +44,7 @@ export const PostDetailsView = ({ post }: { post: any }) => {
       </div>
 
       {/* 3. Scrollable Replies Area */}
-      <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200">
+      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
         <h4 className="text-sm font-bold text-logo-blue mb-4 uppercase tracking-tight">
           Discussion
         </h4>
