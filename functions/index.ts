@@ -109,3 +109,27 @@ export const beforecreated = beforeUserCreated(async (event) => {
 export const beforesignedin = beforeUserSignedIn((event) => {
   uclaOnlyAuth(event);
 });
+
+/**
+ * cleans up user-specific indexes and replies when a post is deleted
+ */
+export const onPostDeleted = onValueWritten(
+  "/posts/{postId}",
+  async (event) => {
+    // only run if the post was deleted (before exists, after doesn't)
+    if (event.data.after.exists() || !event.data.before.exists()) return;
+
+    const postId = event.params.postId;
+    const postData = event.data.before.val();
+    const authorId = postData.userId;
+
+    const updates: Record<string, any> = {
+      // remove from author's list
+      [`users/${authorId}/posts/${postId}`]: null,
+      // remove all replies associated with this post
+      [`replies/${postId}`]: null,
+    };
+
+    return admin.database().ref().update(updates);
+  },
+);
