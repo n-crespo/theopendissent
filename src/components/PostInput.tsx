@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { push, ref, serverTimestamp } from "firebase/database";
 import { db, postsRef } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
@@ -17,6 +17,7 @@ export const PostInput = ({
 }: PostInputProps) => {
   const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { user, loading } = useAuth();
   const { openModal } = useModal();
@@ -24,12 +25,19 @@ export const PostInput = ({
   const isReplyMode = !!parentPostId;
   const hasNoStance = isReplyMode && !currentStance;
 
-  // character counter logic
   const MAX_CHARS = 600;
   const charsLeft = MAX_CHARS - content.length;
   const isNearLimit = charsLeft < 50;
 
-  // TODO: update placeholder message to be more normal
+  // auto-expand height logic
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  }, [content]);
+
   const defaultPlaceholder = isReplyMode
     ? `Replying as ${currentStance === "agreed" ? "Support" : "Dissent"}...`
     : "Speak your mind...";
@@ -73,7 +81,7 @@ export const PostInput = ({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
@@ -84,17 +92,18 @@ export const PostInput = ({
 
   return (
     <div className="flex w-full flex-col gap-1.5">
-      <div className="flex w-full flex-row gap-[7px]">
+      <div className="flex w-full flex-row items-end gap-[7px]">
         <div className="relative flex-grow-[8]">
-          <input
-            type="text"
+          <textarea
+            ref={textareaRef}
+            rows={1}
             maxLength={MAX_CHARS}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={activePlaceholder}
             disabled={isDisabled}
-            className={`w-full rounded-lg border p-[10px] text-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all outline-none
+            className={`w-full resize-none overflow-hidden rounded-lg border p-[10px] text-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all outline-none block
               ${
                 hasNoStance
                   ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed italic"
@@ -103,7 +112,6 @@ export const PostInput = ({
             `}
           />
 
-          {/* visual character count */}
           {!hasNoStance && content.length > 0 && (
             <span
               className={`absolute right-3 bottom-[-18px] text-[10px] font-bold uppercase tracking-tighter transition-colors ${isNearLimit ? "text-logo-red" : "text-slate-300"}`}
@@ -117,7 +125,7 @@ export const PostInput = ({
           onClick={handleSubmit}
           disabled={isDisabled || !content.trim()}
           className={`
-            flex-grow-[2] min-w-[85px] rounded-lg px-[10px] py-2.5 text-[14px] font-bold text-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-100
+            flex-grow-[2] min-w-[85px] h-[41px] rounded-lg px-[10px] py-2.5 text-[14px] font-bold text-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-100
             bg-gradient-to-r from-logo-blue via-logo-green to-logo-red bg-[length:300%_100%] animate-shimmer
             ${isDisabled || !content.trim() ? "cursor-not-allowed" : "cursor-pointer hover:animate-jiggle active:scale-95"}
           `}
