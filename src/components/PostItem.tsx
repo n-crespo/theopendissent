@@ -11,7 +11,7 @@ interface PostItemProps {
 
 export const PostItem = memo(
   ({ post, disableClick }: PostItemProps) => {
-    const { userId, id, postContent, timestamp, parentPostId, editedAt } = post;
+    const { userId, postContent, timestamp, parentPostId, editedAt } = post;
     const { openModal } = useModal();
 
     const {
@@ -33,6 +33,7 @@ export const PostItem = memo(
     const formattedTime = timeAgo(
       new Date(typeof timestamp === "number" ? timestamp : 0),
     );
+
     const formattedEditTime = editedAt ? timeAgo(new Date(editedAt)) : null;
     const shortenedUid = userId.substring(0, 10) + "...";
 
@@ -43,28 +44,29 @@ export const PostItem = memo(
 
     return (
       <div
-        className={`bg-white rounded-[12px] p-4 mb-5 border border-[#eef0f2] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-200 ease-in-out
+        className={`bg-white rounded-xl p-4 mb-5 border border-[#eef0f2] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-200 ease-in-out
         ${disableClick || isEditing ? "cursor-default" : "cursor-pointer hover:shadow-[0_6px_16px_rgba(0,0,0,0.1)] hover:-translate-y-0.5"}
         ${parentPostId ? "ml-5 border-l-4 border-l-slate-200 rounded-l-none scale-[0.98]" : ""}`}
         onClick={handleCardClick}
       >
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-[40px] h-[40px] bg-[#eef0f2] rounded-full flex items-center justify-center text-[#555] text-[20px] flex-shrink-0">
+            <div className="w-10 h-10 bg-[#eef0f2] rounded-full flex items-center justify-center text-[#555] text-[20px] shrink-0">
               <i className="bi bi-person-fill"></i>
             </div>
             <div className="flex flex-col text-sm sm:text-base">
               <span className="font-semibold text-logo-blue leading-tight">
                 {uid === userId ? "You" : shortenedUid}
               </span>
-              <span className="text-[13px] text-gray-custom opacity-70">
-                {formattedTime}
+              <div className="flex items-center flex-wrap gap-1 text-[13px] text-gray-custom opacity-70">
+                <span>{formattedTime}</span>
                 {formattedEditTime && (
-                  <span className="italic ml-1 opacity-80">
-                    (edited {formattedEditTime})
+                  <span className="flex items-center italic opacity-80">
+                    <span className="mx-1">·</span>
+                    edited {formattedEditTime}
                   </span>
                 )}
-              </span>
+              </div>
             </div>
           </div>
 
@@ -108,7 +110,7 @@ export const PostItem = memo(
           <div className="mb-4" onClick={(e) => e.stopPropagation()}>
             <textarea
               autoFocus
-              className="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-logo-blue/20 transition-all resize-none min-h-[100px]"
+              className="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-logo-blue/20 transition-all resize-none min-h-25"
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
               disabled={isSaving}
@@ -184,7 +186,7 @@ const InteractionButton = ({
   const isAgree = type === "agreed";
   return (
     <button
-      className={`flex items-center gap-2 px-3 py-2 rounded-[8px] transition-all duration-200 cursor-pointer text-[16px]
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer text-[16px]
         ${active ? (isAgree ? "bg-agree-bg text-agree" : "bg-dissent-bg text-dissent") : "text-[#6c757d] hover:bg-slate-50"}`}
       onClick={onClick}
     >
@@ -194,3 +196,5 @@ const InteractionButton = ({
     </button>
   );
 };
+
+export default PostItem;

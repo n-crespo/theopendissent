@@ -40,6 +40,7 @@ export const usePosts = (initialLimit: number = 20) => {
             userId: postData.userId,
             postContent: postContent,
             timestamp: postData.timestamp || 0,
+            editedAt: postData.editedAt,
             metrics: {
               agreedCount: postData.metrics?.agreedCount || 0,
               dissentedCount:

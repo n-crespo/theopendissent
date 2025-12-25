@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ref, onValue, query, orderByChild } from "firebase/database";
 import { db } from "../lib/firebase";
-import PostItem from "./PostItem";
+import { PostItem } from "./PostItem";
 import { PostInput } from "./PostInput";
 import { ReplyItem } from "./ReplyItem";
 import { useAuth } from "../context/AuthContext";
