@@ -29,12 +29,17 @@ export const PostInput = ({
   const charsLeft = MAX_CHARS - content.length;
   const isNearLimit = charsLeft < 50;
 
-  // auto-expand height logic
+  // auto-expand height logic with max-height constraint
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
-      textarea.style.height = `${textarea.scrollHeight}px`;
+      const newHeight = Math.min(textarea.scrollHeight, 240); // 240px is approx 15rem
+      textarea.style.height = `${newHeight}px`;
+
+      // show scrollbar only if we've hit the max height
+      textarea.style.overflowY =
+        textarea.scrollHeight > 240 ? "auto" : "hidden";
     }
   }, [content]);
 
@@ -103,7 +108,7 @@ export const PostInput = ({
             onKeyDown={handleKeyDown}
             placeholder={activePlaceholder}
             disabled={isDisabled}
-            className={`w-full resize-none overflow-hidden rounded-lg border p-[10px] text-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all outline-none block
+            className={`w-full resize-none rounded-lg border p-[10px] text-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all outline-none block max-h-[240px] custom-scrollbar
               ${
                 hasNoStance
                   ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed italic"
