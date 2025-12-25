@@ -21,6 +21,11 @@ export const updateInteractionCounts = onValueWritten(
   async (event) => {
     const { postId, interactionType } = event.params;
 
+    // verify the post actually exists so we don't create "ghost" metrics
+    const postRef = admin.database().ref(`/posts/${postId}`);
+    const postSnapshot = await postRef.child("userId").once("value");
+    if (!postSnapshot.exists()) return;
+
     const metricMapping: Record<string, string> = {
       agreed: "agreedCount",
       dissented: "dissentedCount",
