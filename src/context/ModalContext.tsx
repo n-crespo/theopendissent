@@ -1,6 +1,15 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
-type ModalType = "signin" | "help" | "logout" | "postDetails" | null;
+/**
+ * updated to include "deleteConfirm"
+ */
+type ModalType =
+  | "signin"
+  | "help"
+  | "logout"
+  | "postDetails"
+  | "deleteConfirm"
+  | null;
 
 interface ModalContextType {
   activeModal: ModalType;
@@ -15,27 +24,35 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [modalPayload, setModalPayload] = useState<any>(null);
 
+  /**
+   * sets the active modal type and optional data payload
+   */
   const openModal = (type: ModalType, payload: any = null) => {
     setModalPayload(payload);
     setActiveModal(type);
   };
 
+  /**
+   * resets the modal state to null
+   */
   const closeModal = () => {
     setActiveModal(null);
     setModalPayload(null);
   };
 
   return (
-    <ModalContext.Provider
-      value={{ activeModal, modalPayload, openModal, closeModal }}
-    >
-      {children}
-    </ModalContext.Provider>
+    <div className="contents">
+      <ModalContext.Provider
+        value={{ activeModal, modalPayload, openModal, closeModal }}
+      >
+        {children}
+      </ModalContext.Provider>
+    </div>
   );
 };
 
 /**
- * Controls the visibility of global app modals.
+ * controls the visibility of global app modals.
  */
 export const useModal = () => {
   const context = useContext(ModalContext);
