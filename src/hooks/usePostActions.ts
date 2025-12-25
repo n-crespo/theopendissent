@@ -11,7 +11,7 @@ export const usePostActions = (post: Post) => {
 
   const [localMetrics, setLocalMetrics] = useState(post.metrics);
   const [localInteractions, setLocalInteractions] = useState(
-    post.userInteractions,
+    post.userInteractions || { agreed: {}, dissented: {} },
   );
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.postContent);
@@ -32,7 +32,9 @@ export const usePostActions = (post: Post) => {
   useEffect(() => {
     if (!isOptimisticRef.current) {
       setLocalMetrics(post.metrics);
-      setLocalInteractions(post.userInteractions);
+      setLocalInteractions(
+        post.userInteractions || { agreed: {}, dissented: {} },
+      );
     }
   }, [post.metrics, post.userInteractions]);
 
