@@ -38,7 +38,7 @@ export const usePosts = (initialLimit: number = 20) => {
           return {
             id: postId,
             userId: postData.userId,
-            postContent: postContent, // mapped to match Post interface
+            postContent: postContent,
             timestamp: postData.timestamp || 0,
             metrics: {
               agreedCount: postData.metrics?.agreedCount || 0,
@@ -46,6 +46,7 @@ export const usePosts = (initialLimit: number = 20) => {
                 postData.metrics?.dissentedCount ||
                 postData.metrics?.disagreedCount ||
                 0,
+              replyCount: postData.metrics?.replyCount || 0,
             },
             userInteractions: {
               agreed: postData.userInteractions?.agreed || {},
