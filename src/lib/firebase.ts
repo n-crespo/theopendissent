@@ -26,7 +26,10 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
 export const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({ login_hint: "user@g.ucla.edu" });
+googleProvider.setCustomParameters({
+  login_hint: "user@g.ucla.edu",
+  prompt: "select_account",
+});
 
 export const postsRef = ref(db, "posts");
 
