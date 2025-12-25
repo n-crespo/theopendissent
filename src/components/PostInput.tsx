@@ -108,7 +108,7 @@ export const PostInput = ({
             onKeyDown={handleKeyDown}
             placeholder={activePlaceholder}
             disabled={isDisabled}
-            className={`w-full resize-none rounded-lg border p-2.5 text-[14px] min-h-9 shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all outline-none block max-h-60 custom-scrollbar
+            className={`w-full resize-none rounded-lg border p-2.5 text-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all outline-none block max-h-60 custom-scrollbar appearance-none leading-normal
               ${
                 hasNoStance
                   ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed italic"
