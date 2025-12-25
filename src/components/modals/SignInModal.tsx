@@ -29,14 +29,14 @@ export const SignInModal = () => {
           <strong className="font-bold text-logo-blue">@g.ucla.edu</strong>{" "}
           email to post or interact!
         </p>
-        <p className="text-center flex items-center justify-center gap-1 leading-relaxed">
-          Unsure? Tap the
+        <p className="text-center leading-relaxed">
+          Unsure? Tap the{" "}
           <img
             src={helpIcon}
-            className="h-5 w-5 mx-0.5"
+            className="inline-block h-5 w-5 align-text-bottom mx-0"
             alt="Help"
             draggable="false"
-          />
+          />{" "}
           in the top left to learn more.
         </p>
       </div>
