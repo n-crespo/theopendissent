@@ -44,7 +44,7 @@ export const LogoutModal = () => {
 
         {/* .btn-logout-cancel */}
         <button
-          className="w-full mt-[15px] p-2 bg-none border-none text-sm text-gray-custom cursor-pointer transition-all hover:text-[#222222] hover:underline"
+          className="w-full mt-3.75 p-2 bg-none border-none text-sm text-gray-custom cursor-pointer transition-all hover:text-[#222222] hover:underline"
           onClick={closeModal}
         >
           Stay signed in
