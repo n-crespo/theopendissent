@@ -9,6 +9,10 @@ interface PostItemProps {
   disableClick?: boolean;
 }
 
+/**
+ * Professionalized post item with geometric consistency.
+ * utilizes global design tokens for borders, radius, and shadows.
+ */
 export const PostItem = memo(
   ({ post, disableClick }: PostItemProps) => {
     const { userId, postContent, timestamp, parentPostId, editedAt } = post;
@@ -46,24 +50,26 @@ export const PostItem = memo(
 
     return (
       <div
-        className={`bg-white rounded-xl p-4 mb-5 border border-[#eef0f2] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-200 ease-in-out
-        ${disableClick || isEditing ? "cursor-default" : "cursor-pointer hover:shadow-[0_6px_16px_rgba(0,0,0,0.1)] hover:-translate-y-0.5"}
-        ${parentPostId ? "ml-5 border-l-4 border-l-slate-200 rounded-l-none scale-[0.98]" : ""}`}
+        className={`bg-white p-4 mb-4 border border-border-subtle transition-all duration-200
+        ${disableClick || isEditing ? "cursor-default" : "cursor-pointer hover:border-slate-300 hover:shadow-sm"}
+        ${parentPostId ? "ml-4 border-l-4 border-l-slate-200 rounded-r-(--radius-modal) scale-[0.99]" : "rounded-(--radius-modal) shadow-sm"}`}
+        style={{ boxShadow: !parentPostId ? "var(--shadow-modal)" : "none" }}
         onClick={handleCardClick}
       >
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#eef0f2] rounded-full flex items-center justify-center text-[#555] text-[20px] shrink-0">
+            {/* profile icon: simplified colors */}
+            <div className="w-9 h-9 bg-slate-100 rounded-md flex items-center justify-center text-slate-500 text-lg shrink-0 border border-slate-200/50">
               <i className="bi bi-person-fill"></i>
             </div>
-            <div className="flex flex-col text-sm sm:text-base">
-              <span className="font-semibold text-logo-blue leading-tight">
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-slate-900 leading-tight">
                 {uid === userId ? "You" : shortenedUid}
               </span>
-              <div className="flex items-center flex-wrap gap-1 text-[13px] text-gray-custom opacity-70">
+              <div className="flex items-center flex-wrap gap-1 text-[12px] text-slate-400 font-medium tracking-tight">
                 <span>{formattedTime}</span>
                 {formattedEditTime && (
-                  <span className="flex items-center italic opacity-80">
+                  <span className="flex items-center italic">
                     <span className="mx-1">·</span>
                     edited {formattedEditTime}
                   </span>
@@ -74,43 +80,44 @@ export const PostItem = memo(
 
           <div className="relative" ref={menuRef}>
             <button
-              className="p-1 px-2 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
+              className="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-50 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowMenu(!showMenu);
               }}
             >
-              <i className="bi bi-three-dots"></i>
+              <i className="bi bi-three-dots text-lg"></i>
             </button>
 
             {showMenu && (
-              <div className="absolute right-0 mt-1 w-36 bg-white border border-gray-100 shadow-xl rounded-lg py-1 z-50">
+              <div className="absolute right-0 mt-1 w-40 bg-white border border-border-subtle shadow-lg rounded-(--radius-input) py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
                 {uid === userId && (
                   <>
                     <button
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                      className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 font-medium"
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsEditing(true);
                         setShowMenu(false);
                       }}
                     >
-                      <i className="bi bi-pencil-square"></i> Edit
+                      <i className="bi bi-pencil-square opacity-70"></i> Edit
                     </button>
 
                     <button
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2.5 font-medium"
                       onClick={handleDeleteTrigger}
                     >
-                      <i className="bi bi-trash"></i> Delete
+                      <i className="bi bi-trash opacity-70"></i> Delete
                     </button>
+                    <div className="h-px bg-slate-100 my-1 mx-2" />
                   </>
                 )}
-                <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                  <i className="bi bi-box-arrow-up"></i> Share
+                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-2.5 font-medium">
+                  <i className="bi bi-box-arrow-up opacity-70"></i> Share
                 </button>
-                <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 flex items-center gap-2">
-                  <i className="bi bi-flag"></i> Report
+                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-red-50 hover:text-red-600 flex items-center gap-2.5 font-medium">
+                  <i className="bi bi-flag opacity-70"></i> Report
                 </button>
               </div>
             )}
@@ -121,7 +128,7 @@ export const PostItem = memo(
           <div className="mb-4" onClick={(e) => e.stopPropagation()}>
             <textarea
               autoFocus
-              className="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-logo-blue/20 transition-all resize-none min-h-25"
+              className="w-full p-3 border border-border-subtle rounded-(--radius-input) outline-none focus:ring-2 focus:ring-logo-blue/10 focus:border-logo-blue/40 transition-all resize-none min-h-24 text-[15px] text-slate-800"
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
               onKeyDown={(e) => {
@@ -131,16 +138,16 @@ export const PostItem = memo(
               }}
               disabled={isSaving}
             />
-            <div className="flex gap-2 mt-2">
+            <div className="flex gap-2 mt-3">
               <button
-                className="px-4 py-1.5 bg-logo-blue text-white rounded-md text-sm font-semibold disabled:opacity-50"
+                className="px-4 py-1.5 bg-logo-blue text-white rounded-(--radius-button) text-sm font-semibold disabled:opacity-50 transition-colors hover:bg-logo-blue/90"
                 onClick={handleEditSave}
                 disabled={isSaving}
               >
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving ? "Saving..." : "Save changes"}
               </button>
               <button
-                className="px-4 py-1.5 bg-gray-100 text-gray-600 rounded-md text-sm font-semibold"
+                className="px-4 py-1.5 bg-slate-100 text-slate-600 rounded-(--radius-button) text-sm font-semibold transition-colors hover:bg-slate-200"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleCancel();
@@ -152,12 +159,12 @@ export const PostItem = memo(
             </div>
           </div>
         ) : (
-          <p className="text-[#333] leading-[1.6] mb-4 whitespace-pre-wrap">
+          <p className="text-[15px] text-slate-800 leading-[1.6] mb-5 whitespace-pre-wrap">
             {postContent}
           </p>
         )}
 
-        <div className="flex items-center gap-5 pt-2 border-t border-[#eef0f2]">
+        <div className="flex items-center gap-2 pt-3 border-t border-border-subtle">
           <InteractionButton
             type="agreed"
             active={interactionState.agreed}
@@ -174,7 +181,7 @@ export const PostItem = memo(
             label="Dissent"
             onClick={(e: any) => handleInteraction(e, "dissented")}
           />
-          <div className="ml-auto text-xs text-slate-400 font-medium uppercase tracking-widest">
+          <div className="ml-auto text-[11px] text-slate-400 font-bold tracking-wider">
             {localMetrics.replyCount || 0} Replies
           </div>
         </div>
@@ -201,13 +208,17 @@ const InteractionButton = ({
   const isAgree = type === "agreed";
   return (
     <button
-      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer text-[16px]
-        ${active ? (isAgree ? "bg-agree-bg text-agree" : "bg-dissent-bg text-dissent") : "text-[#6c757d] hover:bg-slate-50"}`}
+      className={`flex items-center gap-2 px-3 py-1.5 rounded-(--radius-button) transition-all duration-200 cursor-pointer
+        ${active ? (isAgree ? "bg-agree-bg text-agree" : "bg-dissent-bg text-dissent") : "text-slate-500 hover:bg-slate-50"}`}
       onClick={onClick}
     >
-      <i className={`bi ${icon} ${active ? "opacity-100" : "opacity-60"}`}></i>
-      <span className="font-semibold text-[15px]">{count}</span>
-      <span className="text-[14px] font-medium hidden sm:inline">{label}</span>
+      <i
+        className={`bi ${icon} text-[15px] ${active ? "opacity-100" : "opacity-70"}`}
+      ></i>
+      <span className="font-bold text-[13px]">{count}</span>
+      <span className="text-[13px] font-semibold hidden sm:inline">
+        {label}
+      </span>
     </button>
   );
 };
