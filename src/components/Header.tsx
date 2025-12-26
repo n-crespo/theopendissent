@@ -10,16 +10,16 @@ export const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 rounded-b-lg border-b border-slate-200 bg-logo-offwhite">
-      <div className="mx-auto flex max-w-[500px] items-center justify-between px-0 py-0">
+      <div className="mx-auto flex max-w-125 items-center justify-between px-0 py-0">
         {/* help button */}
         <button
-          className="flex h-[50px] w-auto cursor-pointer items-center justify-center border-none bg-logo-offwhite p-[10px] text-slate-800"
+          className="flex h-12.5 w-auto cursor-pointer items-center justify-center border-none bg-logo-offwhite p-2.5 text-slate-800"
           onClick={() => openModal("help")}
         >
           <img
             src={helpIconUrl}
             alt="Help Icon"
-            className="h-[90%] max-h-[60px] w-auto"
+            className="h-[90%] max-h-15 w-auto"
           />
         </button>
 
@@ -33,15 +33,15 @@ export const Header = () => {
 
         <div
           id="auth-section"
-          className="flex w-[50px] items-center justify-center"
+          className="flex w-12.5 items-center justify-center"
         >
           {loading ? (
-            <div className="flex h-[50px] items-center justify-center p-[10px] opacity-50">
+            <div className="flex h-12.5 items-center justify-center p-2.5 opacity-50">
               <i className="bi bi-three-dots text-slate-400"></i>
             </div>
           ) : user ? (
             <button
-              className="group flex h-[50px] w-auto cursor-pointer items-center justify-center border-none bg-logo-offwhite p-[10px] transition-colors hover:rounded-lg hover:bg-black/5"
+              className="group flex h-12.5 w-auto cursor-pointer items-center justify-center border-none bg-logo-offwhite p-2.5 transition-colors hover:rounded-lg hover:bg-black/5"
               onClick={() => openModal("logout")}
               title={`Signed in as ${user.email?.split("@")[0]}`}
             >
@@ -49,14 +49,14 @@ export const Header = () => {
             </button>
           ) : (
             <button
-              className="flex h-[50px] w-auto cursor-pointer items-center justify-center border-none bg-logo-offwhite p-[10px] text-slate-800"
+              className="flex h-12.5 w-auto cursor-pointer items-center justify-center border-none bg-logo-offwhite p-2.5 text-slate-800"
               onClick={() => openModal("signin")}
               title="Sign In"
             >
               <img
                 src={headIconUrl}
                 alt="Head Icon"
-                className="h-[90%] max-h-[60px] w-auto"
+                className="h-[90%] max-h-15 w-auto"
               />
             </button>
           )}
