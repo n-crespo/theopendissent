@@ -1,5 +1,4 @@
 import { usePwa } from "../../context/PwaContext";
-import helpIcon from "../../assets/icons/help.svg";
 
 export const HelpModal = () => {
   const { deferredPrompt, install } = usePwa();
@@ -15,21 +14,22 @@ export const HelpModal = () => {
       <h2 className="text-2xl font-bold mb-4 text-[#1a1a1a] text-center">
         What is this?
       </h2>
-      <p className="leading-relaxed mb-6">
+      <p className="leading-relaxed mb-6 text-center">
         The Open Dissent is an open platform for{" "}
         <strong className="font-bold text-logo-blue">
           anonymous political discussion
         </strong>
-        . <br />
+        .
+        <br />
         <br />
         Post your thoughts to have a chance to be invited to The Open Dissent's
         debate-style show!
       </p>
 
-      {/* Podcast Links */}
+      {/* podcast links */}
       <div className="flex justify-center gap-6 mb-8">
         <a
-          href="https://open.spotify.com/show/471WfoA8k9zORQPQbLynw2?si=81fb44fe7dd945bf"
+          href="https://open.spotify.com/show/471WfoA8k9zORQPQbLynw2"
           target="_blank"
           rel="noreferrer"
           className="group"
@@ -54,7 +54,7 @@ export const HelpModal = () => {
         </a>
       </div>
 
-      <h4 className="text-lg font-bold mt-4 mb-3 border-b border-[#eef0f2] pb-1">
+      <h4 className="text-lg font-bold mb-3 border-b border-[#eef0f2] pb-1">
         How to Interact
       </h4>
       <ul className="space-y-3 mb-8">
@@ -68,7 +68,7 @@ export const HelpModal = () => {
         </li>
       </ul>
 
-      <div className="mt-4 pt-4 border-t border-[#eef0f2]">
+      <div className="pt-4 border-t border-[#eef0f2]">
         <h4 className="text-lg font-bold mb-3">Install as an App</h4>
         {isIOS ? (
           <ul className="space-y-2 list-disc pl-5 text-sm">
@@ -91,17 +91,15 @@ export const HelpModal = () => {
             </li>
           </ul>
         ) : deferredPrompt ? (
-          /* .install-btn-outline */
           <button
-            className="w-full my-5 p-3 bg-white text-[#222] border border-[#dadce0] rounded-[12px] flex items-center justify-center gap-2.5 font-semibold cursor-pointer transition-all duration-200 shadow-[0_2px_6px_rgba(0,0,0,0.05)] hover:bg-logo-offwhite hover:border-gray-custom hover:-translate-y-px"
+            className="w-full my-2 p-3 bg-white text-[#222] border border-[#dadce0] rounded-xl flex items-center justify-center gap-2.5 font-semibold cursor-pointer transition-all duration-200 shadow-[0_2px_6px_rgba(0,0,0,0.05)] hover:bg-slate-50 hover:border-slate-400 hover:-translate-y-px"
             onClick={install}
           >
             <i className="bi bi-download text-[1.1rem] text-gray-custom"></i>
             Install
           </button>
         ) : (
-          /* .install-section p */
-          <p className="p-2.5 bg-logo-offwhite rounded-lg text-center border border-dashed border-[#dadce0] text-sm text-gray-custom italic">
+          <p className="p-2.5 bg-slate-50 rounded-lg text-center border border-dashed border-[#dadce0] text-sm text-gray-custom italic">
             Already installed or unavailable on this browser.
           </p>
         )}
