@@ -8,10 +8,11 @@ import { useAuth } from "../context/AuthContext";
 
 /**
  * displays the original post, a reply field, and a list of replies.
+ * matches geometric consistency of the global design system.
  */
 export const PostDetailsView = ({ post: initialPost }: { post: any }) => {
   const [replies, setReplies] = useState<any[]>([]);
-  const [livePost, setLivePost] = useState(initialPost); // track live interactions
+  const [livePost, setLivePost] = useState(initialPost);
   const { user } = useAuth();
 
   const uid = user?.uid;
@@ -58,31 +59,34 @@ export const PostDetailsView = ({ post: initialPost }: { post: any }) => {
 
   return (
     <div className="flex flex-col">
-      {/* Original Post */}
-      <div className="mb-4 border-b border-slate-100 pb-2">
+      {/* focused original post */}
+      <div className="pt-3">
         <PostItem post={livePost} disableClick={true} />
       </div>
 
-      {/* Reply Input */}
-      <div className="mb-6">
+      {/* reply input area */}
+      <div className="mb-10">
         <PostInput parentPostId={livePost.id} currentStance={currentStance} />
       </div>
 
-      {/* Replies List - scrolling handled by GlobalModal */}
-      <div className="pr-2">
-        <h4 className="text-sm font-bold mb-4 tracking-tight uppercase text-slate-500">
-          Replies
-        </h4>
+      {/* replies section */}
+      <div className="pr-1">
+        <div className="flex items-center justify-between mb-6">
+          <h4 className="text-[11px] font-bold tracking-widest uppercase text-slate-400">
+            Discussion
+          </h4>
+          <div className="h-px bg-border-subtle grow ml-4 opacity-50"></div>
+        </div>
 
         {replies.length > 0 ? (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {replies.map((reply) => (
               <ReplyItem key={reply.id} reply={reply} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-10">
-            <p className="text-sm text-slate-400 italic">
+          <div className="text-center py-16 bg-bg-preview rounded-(--radius-input) border border-dashed border-border-subtle">
+            <p className="text-sm text-slate-400 italic font-medium">
               No dissenters or supporters yet.
             </p>
           </div>
