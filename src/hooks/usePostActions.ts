@@ -20,14 +20,12 @@ export const usePostActions = (post: Post) => {
   );
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.postContent);
-  const [showMenu, setShowMenu] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const menuRef = useRef<HTMLDivElement>(null);
   const isOptimisticRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /**
-   * synchronizes local state with incoming post props
+   * Synchronizes local state with incoming post props
    */
   useEffect(() => {
     if (!isOptimisticRef.current) {
@@ -37,19 +35,6 @@ export const usePostActions = (post: Post) => {
       );
     }
   }, [post.metrics, post.userInteractions]);
-
-  /**
-   * handles closing the menu when clicking outside
-   */
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowMenu(false);
-      }
-    };
-    if (showMenu) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showMenu]);
 
   const interactionState = {
     agreed: !!(uid && localInteractions?.agreed?.[uid]),
@@ -82,7 +67,6 @@ export const usePostActions = (post: Post) => {
       );
     } else {
       nextMetrics[`${type}Count` as keyof typeof nextMetrics]++;
-      // only decrement the other count if the user was actually interacting with it
       if (wasOtherActive) {
         nextMetrics[`${otherType}Count` as keyof typeof nextMetrics] = Math.max(
           0,
@@ -116,7 +100,6 @@ export const usePostActions = (post: Post) => {
         if (wasOtherActive) await removeInteraction(post.id, uid, otherType);
       }
     } catch (err) {
-      // revert on error
       setLocalMetrics(post.metrics);
       setLocalInteractions(
         post.userInteractions || { agreed: {}, dissented: {} },
@@ -124,7 +107,6 @@ export const usePostActions = (post: Post) => {
     }
   };
 
-  // cancel editing
   const handleCancel = () => {
     setEditContent(post.postContent);
     setIsEditing(false);
@@ -153,7 +135,6 @@ export const usePostActions = (post: Post) => {
 
   const handleDeleteTrigger = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowMenu(false);
 
     openModal("deleteConfirm", {
       name: post.postContent || "this post",
@@ -174,10 +155,7 @@ export const usePostActions = (post: Post) => {
     setIsEditing,
     editContent,
     setEditContent,
-    showMenu,
-    setShowMenu,
     isSaving,
-    menuRef,
     interactionState,
     handleInteraction,
     handleCancel,

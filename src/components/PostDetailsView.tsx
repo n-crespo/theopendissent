@@ -5,38 +5,37 @@ import { PostItem } from "./PostItem";
 import { PostInput } from "./PostInput";
 import { ReplyItem } from "./ReplyItem";
 import { useAuth } from "../context/AuthContext";
+import { useModal } from "../context/ModalContext";
 
-/**
- * displays the original post, a reply field, and a list of replies.
- * matches geometric consistency of the global design system.
- */
 export const PostDetailsView = ({ post: initialPost }: { post: any }) => {
   const [replies, setReplies] = useState<any[]>([]);
   const [livePost, setLivePost] = useState(initialPost);
   const { user } = useAuth();
+  const { closeAllModals } = useModal();
 
   const uid = user?.uid;
   let currentStance: "agreed" | "dissented" | null = null;
 
-  if (uid && livePost.userInteractions) {
+  if (uid && livePost?.userInteractions) {
     if (livePost.userInteractions.agreed?.[uid]) currentStance = "agreed";
     else if (livePost.userInteractions.dissented?.[uid])
       currentStance = "dissented";
   }
 
-  // listener for live post updates
   useEffect(() => {
     const postRef = ref(db, `posts/${initialPost.id}`);
     const unsubscribe = onValue(postRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         setLivePost({ id: initialPost.id, ...data });
+      } else {
+        // close the view if the post is deleted by any user
+        closeAllModals();
       }
     });
     return () => unsubscribe();
-  }, [initialPost.id]);
+  }, [initialPost.id, closeAllModals]);
 
-  // listener for replies
   useEffect(() => {
     const repliesRef = ref(db, `replies/${initialPost.id}`);
     const repliesQuery = query(repliesRef, orderByChild("timestamp"));
@@ -59,17 +58,17 @@ export const PostDetailsView = ({ post: initialPost }: { post: any }) => {
 
   return (
     <div className="flex flex-col">
-      {/* focused original post */}
-      <div className="pt-3">
-        <PostItem post={livePost} disableClick={true} />
+      <div className="mb-6 border-b border-border-subtle pb-6">
+        {/* check for livePost existence to prevent child crashes */}
+        {livePost && <PostItem post={livePost} disableClick={true} />}
       </div>
 
-      {/* reply input area */}
       <div className="mb-10">
-        <PostInput parentPostId={livePost.id} currentStance={currentStance} />
+        {livePost && (
+          <PostInput parentPostId={livePost.id} currentStance={currentStance} />
+        )}
       </div>
 
-      {/* replies section */}
       <div className="pr-1">
         <div className="flex items-center justify-between mb-6">
           <h4 className="text-[11px] font-bold tracking-widest uppercase text-slate-400">

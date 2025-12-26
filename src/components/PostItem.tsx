@@ -3,6 +3,7 @@ import { Post } from "../types";
 import { timeAgo } from "../utils";
 import { useModal } from "../context/ModalContext";
 import { usePostActions } from "../hooks/usePostActions";
+import { ActionMenu } from "./ActionMenu";
 
 interface PostItemProps {
   post: Post;
@@ -15,6 +16,7 @@ interface PostItemProps {
  */
 export const PostItem = memo(
   ({ post, disableClick }: PostItemProps) => {
+    if (!post || !post.userId) return null;
     const { userId, postContent, timestamp, parentPostId, editedAt } = post;
     const { openModal } = useModal();
 
@@ -25,10 +27,7 @@ export const PostItem = memo(
       setIsEditing,
       editContent,
       setEditContent,
-      showMenu,
-      setShowMenu,
       isSaving,
-      menuRef,
       interactionState,
       handleInteraction,
       handleEditSave,
@@ -42,6 +41,7 @@ export const PostItem = memo(
 
     const formattedEditTime = editedAt ? timeAgo(new Date(editedAt)) : null;
     const shortenedUid = userId.substring(0, 10) + "...";
+    const isOwner = uid === userId;
 
     const handleCardClick = () => {
       if (disableClick || isEditing) return;
@@ -58,13 +58,13 @@ export const PostItem = memo(
       >
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            {/* profile icon: simplified colors */}
+            {/* profile icon */}
             <div className="w-9 h-9 bg-slate-100 rounded-md flex items-center justify-center text-slate-500 text-lg shrink-0 border border-slate-200/50">
               <i className="bi bi-person-fill"></i>
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-slate-900 leading-tight">
-                {uid === userId ? "You" : shortenedUid}
+                {isOwner ? "You" : shortenedUid}
               </span>
               <div className="flex items-center flex-wrap gap-1 text-[12px] text-slate-400 font-medium tracking-tight">
                 <span>{formattedTime}</span>
@@ -78,53 +78,19 @@ export const PostItem = memo(
             </div>
           </div>
 
-          <div className="relative" ref={menuRef}>
-            <button
-              className="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-50 transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMenu(!showMenu);
-              }}
-            >
-              <i className="bi bi-three-dots text-lg"></i>
-            </button>
-
-            {showMenu && (
-              <div className="absolute right-0 mt-1 w-40 bg-white border border-border-subtle shadow-lg rounded-(--radius-input) py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-                {uid === userId && (
-                  <>
-                    <button
-                      className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 font-medium"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsEditing(true);
-                        setShowMenu(false);
-                      }}
-                    >
-                      <i className="bi bi-pencil-square opacity-70"></i> Edit
-                    </button>
-
-                    <button
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2.5 font-medium"
-                      onClick={handleDeleteTrigger}
-                    >
-                      <i className="bi bi-trash opacity-70"></i> Delete
-                    </button>
-                    <div className="h-px bg-slate-100 my-1 mx-2" />
-                  </>
-                )}
-                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-2.5 font-medium">
-                  <i className="bi bi-box-arrow-up opacity-70"></i> Share
-                </button>
-                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-red-50 hover:text-red-600 flex items-center gap-2.5 font-medium">
-                  <i className="bi bi-flag opacity-70"></i> Report
-                </button>
-              </div>
-            )}
-          </div>
+          {/* REPLACED inline menu with ActionMenu component */}
+          <ActionMenu
+            isOwner={isOwner}
+            onEdit={(e) => {
+              e.stopPropagation(); // ensure the card click doesn't fire
+              setIsEditing(true);
+            }}
+            onDelete={handleDeleteTrigger}
+          />
         </div>
 
         {isEditing ? (
+          // ... existing edit mode JSX (textarea & buttons) ...
           <div className="mb-4" onClick={(e) => e.stopPropagation()}>
             <textarea
               autoFocus
@@ -165,6 +131,7 @@ export const PostItem = memo(
         )}
 
         <div className="flex items-center gap-2 pt-3 border-t border-border-subtle">
+          {/* ... existing interaction buttons ... */}
           <InteractionButton
             type="agreed"
             active={interactionState.agreed}
@@ -188,6 +155,7 @@ export const PostItem = memo(
       </div>
     );
   },
+  // ... memo comparison function ...
   (p, n) =>
     p.post.id === n.post.id &&
     p.post.postContent === n.post.postContent &&
