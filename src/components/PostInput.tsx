@@ -145,7 +145,7 @@ export const PostInput = ({
           onClick={handleSubmit}
           disabled={isDisabled || !content.trim()}
           className={`
-            grow-2 min-w-21.25 h-[41px] flex items-center justify-center rounded-lg px-2.5 py-2.5 text-[14px] font-bold text-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-100
+            grow-2 min-w-21.25 h-10.25 flex items-center justify-center rounded-lg px-2.5 py-2.5 text-[14px] font-bold text-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-100
             bg-linear-to-r from-logo-blue via-logo-green to-logo-red bg-size-[300%_100%] animate-shimmer
             ${isDisabled || !content.trim() ? "cursor-not-allowed" : "cursor-pointer hover:animate-jiggle active:scale-95"}
           `}
