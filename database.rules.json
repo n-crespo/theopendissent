@@ -36,7 +36,7 @@
         "userInteractions": {
           "$interactionType": {
             "$userId": {
-              ".write": "auth != null && auth.uid === $userId",
+              ".write": "auth != null && auth.uid === $userId && data.parent().parent().exists()",
               ".validate": "newData.isBoolean() || !newData.exists()"
             }
           }

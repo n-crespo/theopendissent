@@ -9,7 +9,7 @@ import {
   push,
   serverTimestamp,
   child,
-  remove,
+  // remove,
 } from "firebase/database";
 
 const firebaseConfig = {
@@ -41,7 +41,6 @@ export const createPost = async (
   content: string,
   parentPostId?: string,
 ) => {
-  // generate a unique ID for the new post
   const newPostKey = push(child(ref(db), "posts")).key;
   if (!newPostKey) return;
 
@@ -50,15 +49,8 @@ export const createPost = async (
     userId,
     postContent: content,
     timestamp: serverTimestamp(),
-    metrics: {
-      agreedCount: 0,
-      dissentedCount: 0,
-    },
-    userInteractions: {
-      agreed: {},
-      dissented: {},
-    },
-    // only include this if it's actually a reply
+    metrics: { agreedCount: 0, dissentedCount: 0 },
+    userInteractions: { agreed: {}, dissented: {} },
     ...(parentPostId && { parentPostId }),
   };
 
@@ -66,9 +58,10 @@ export const createPost = async (
     [`posts/${newPostKey}`]: postData,
   };
 
-  // if it's a reply, link it to the parent atomically
   if (parentPostId) {
     updates[`posts/${parentPostId}/replyIds/${newPostKey}`] = true;
+    // ensure the reply is also added to the dedicated replies tree for PostDetailsView
+    updates[`replies/${parentPostId}/${newPostKey}`] = postData;
   }
 
   return update(ref(db), updates);
@@ -122,14 +115,30 @@ export const updatePost = async (
 };
 
 /**
- * removes a post from the database
+ * removes a post or reply and cleans up all associated references atomically
  */
-export const deletePost = async (postId: string) => {
+export const deletePost = async (postId: string, parentPostId?: string) => {
   try {
-    const postRef = ref(db, `posts/${postId}`);
-    await remove(postRef);
+    const updates: Record<string, any> = {};
+
+    // nulling a path in an update() call deletes it
+    updates[`posts/${postId}`] = null;
+
+    if (parentPostId) {
+      // if it's a reply, remove it from the parent's index
+      updates[`posts/${parentPostId}/replyIds/${postId}`] = null;
+      // also remove from the dedicated replies tree
+      updates[`replies/${parentPostId}/${postId}`] = null;
+    } else {
+      // if it's a main post, we should ideally delete the entire replies sub-tree
+      // note: RTDB update() doesn't support wildcards, but we can null the whole node
+      updates[`replies/${postId}`] = null;
+    }
+
+    // this executes all deletions as a single transaction
+    await update(ref(db), updates);
   } catch (error) {
-    console.error("error deleting post:", error);
+    console.error("error deleting content:", error);
     throw error;
   }
 };

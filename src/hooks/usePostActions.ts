@@ -140,9 +140,10 @@ export const usePostActions = (post: Post) => {
       name: post.postContent || "this post",
       onConfirm: async () => {
         try {
-          await deletePost(post.id);
+          // pass parentPostId to ensure both paths are cleaned
+          await deletePost(post.id, post.parentPostId);
         } catch (error) {
-          console.error("failed to delete post:", error);
+          console.error("failed to delete:", error);
         }
       },
     });
