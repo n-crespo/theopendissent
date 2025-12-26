@@ -12,8 +12,7 @@ export const ConfirmPostModal = ({
       <h2 className="text-2xl font-bold mb-4 text-[#1a1a1a]">Ready to post?</h2>
 
       <p className="text-slate-600 mb-8 leading-relaxed">
-        Make sure your post follows our community guidelines. You can always
-        edit or delete it later.
+        Ready to publish your post? You can always edit or delete it later.
       </p>
 
       <div className="w-full flex flex-col gap-3">
