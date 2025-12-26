@@ -41,11 +41,11 @@ export const Header = () => {
             </div>
           ) : user ? (
             <button
-              className="group flex h-12.5 w-auto cursor-pointer items-center justify-center border-none bg-logo-offwhite p-2.5 transition-colors hover:rounded-lg hover:bg-black/5"
+              className="group flex h-12.5 w-auto cursor-pointer items-center justify-center border-none bg-logo-offwhite p-2.5 transition-colors hover:rounded-lg"
               onClick={() => openModal("logout")}
               title={`Signed in as ${user.email?.split("@")[0]}`}
             >
-              <i className="bi bi-box-arrow-right text-[30px] font-black text-logo-red"></i>
+              <i className="bi bi-box-arrow-right text-[30px] font-black"></i>
             </button>
           ) : (
             <button
