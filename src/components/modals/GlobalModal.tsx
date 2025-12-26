@@ -25,7 +25,12 @@ export const GlobalModal = () => {
           onClick={closeModal}
         >
           <div
-            className="relative flex max-h-[85vh] w-full max-w-112.5 flex-col rounded-lg border border-slate-200 bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_10px_30px_rgba(0,0,0,0.1)] transition-all animate-in fade-in zoom-in-[0.98] duration-200"
+            className="relative flex max-h-[85vh] w-full max-w-112.5 flex-col bg-white transition-all animate-in fade-in zoom-in-[0.98] duration-200"
+            style={{
+              borderRadius: "var(--radius-modal)",
+              border: "1px solid var(--color-border-subtle)",
+              boxShadow: "var(--shadow-modal)",
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* close button: ghost style, slightly rounded */}

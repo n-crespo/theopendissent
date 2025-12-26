@@ -1,5 +1,3 @@
-import React from "react";
-
 interface ConfirmDeleteModalProps {
   onClose: () => void;
   onConfirm: () => void;
@@ -7,7 +5,8 @@ interface ConfirmDeleteModalProps {
 }
 
 /**
- * matches the confirm post modal styling with a preview of the content being deleted.
+ * matches the refined global modal styling.
+ * uses danger branding with geometric, professional components.
  */
 export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   onClose,
@@ -15,41 +14,43 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   itemName,
 }) => {
   return (
-    <div className="flex flex-col items-center">
-      <h2 className="text-2xl font-bold mb-4 text-[#1a1a1a]">Delete Post?</h2>
+    <div className="flex flex-col">
+      <h2 className="text-xl font-semibold mb-6 text-slate-900 text-center">
+        Delete this post?
+      </h2>
 
-      {/* content preview box - identical to confirm post styling */}
-      <div className="w-full bg-slate-50 rounded-lg p-4 mb-6 flex flex-col border border-slate-100 max-h-48 overflow-y-auto custom-scrollbar">
-        <div className="text-[10px] font-bold text-logo-red uppercase tracking-widest mb-2 opacity-70 text-left">
-          Content
+      {/* content preview box: aligned with confirm post styling */}
+      <div className="w-full bg-slate-50/50 rounded-md p-4 mb-6 flex flex-col border border-slate-200 max-h-48 overflow-y-auto custom-scrollbar">
+        <div className="text-[11px] font-bold text-logo-red uppercase tracking-wider mb-2 opacity-80">
+          Content to remove
         </div>
-        <div className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap wrap-break-word text-left">
+        <div className="text-[15px] text-slate-700 leading-relaxed whitespace-pre-wrap break-words">
           {itemName || "this item"}
         </div>
       </div>
 
-      <p className="text-sm text-gray-custom text-center mb-6 leading-relaxed">
-        This action is permanent and cannot be reversed.
+      <p className="text-sm text-slate-500 text-center mb-8 px-4 leading-relaxed">
+        This action is permanent and cannot be undone.
       </p>
 
-      <div className="w-full flex flex-col items-center">
-        {/* main destructive action */}
+      <div className="w-full flex flex-col gap-2">
+        {/* primary action: destructive red */}
         <button
-          className="inline-flex w-full items-center justify-center rounded-lg bg-logo-red p-3 text-base font-semibold text-white cursor-pointer border-none transition-all duration-200 hover:opacity-90 hover:shadow-[0_4px_12px_rgba(112,22,30,0.2)]"
+          className="inline-flex w-full items-center justify-center rounded-md bg-logo-red px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-red-700"
           onClick={() => {
             onConfirm();
             onClose();
           }}
         >
-          Delete Permanently
+          Delete permanently
         </button>
 
-        {/* secondary cancel action */}
+        {/* secondary action: ghost style */}
         <button
-          className="w-full mt-3.75 p-2 bg-none border-none text-sm text-gray-custom cursor-pointer transition-all hover:text-[#222222] hover:underline"
+          className="w-full rounded-md px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100"
           onClick={onClose}
         >
-          Nevermind, go back
+          Nevermind, keep it
         </button>
       </div>
     </div>

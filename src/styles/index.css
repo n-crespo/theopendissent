@@ -14,6 +14,15 @@
 
   --color-gray-custom: #464646;
 
+  --radius-modal: 8px;
+  --radius-button: 6px;
+  --radius-input: 6px;
+
+  --color-border-subtle: #e2e8f0; /* slate-200 */
+  --color-bg-preview: #f8fafc80; /* slate-50 with 50% opacity */
+
+  --shadow-modal: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 10px 30px rgba(0, 0, 0, 0.1);
+
   /* animations */
   @keyframes shimmer {
     from {

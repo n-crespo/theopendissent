@@ -2,8 +2,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
 
 /**
- * simplified logout content for the global modal container.
- * uses logo- red branding and utility-based profile preview.
+ * Simplified logout content for the global modal container.
+ * uses css variables for consistent professional geometry.
  */
 export const LogoutModal = () => {
   const { user, logout } = useAuth();
@@ -19,32 +19,35 @@ export const LogoutModal = () => {
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <h2 className="text-2xl font-bold mb-4 text-[#1a1a1a]">Sign Out?</h2>
+    <div className="flex flex-col">
+      <h2 className="text-xl font-semibold mb-6 text-slate-900 text-center">
+        Sign out?
+      </h2>
 
       {user && (
-        <div className="w-full bg-slate-50 rounded-lg p-4 mb-6 flex flex-col items-center border border-slate-100">
-          <div className="font-semibold text-logo-blue text-lg">
+        /* user profile box: uses global preview and border tokens */
+        <div className="w-full bg-bg-preview rounded-(--radius-input) p-4 mb-8 flex flex-col items-center border border-border-subtle">
+          <div className="font-semibold text-logo-blue text-base">
             {user.displayName || "UCLA Student"}
           </div>
-          <div className="text-sm text-gray-custom opacity-70 italic">
+          <div className="text-xs text-slate-500 italic mt-0.5">
             {user.email}
           </div>
         </div>
       )}
 
-      <div className="w-full flex flex-col items-center">
-        {/* .btn-logout-confirm */}
+      <div className="w-full flex flex-col gap-2">
+        {/* primary action: destructive sign out */}
         <button
-          className="inline-flex w-full items-center justify-center rounded-lg bg-logo-red p-3 text-base font-semibold text-white cursor-pointer border-none transition-all duration-200 hover:opacity-90 hover:shadow-[0_4px_12px_rgba(112,22,30,0.2)]"
+          className="inline-flex w-full items-center justify-center rounded-(--radius-button) bg-logo-red px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-red-700"
           onClick={handleConfirm}
         >
-          Sign Out
+          Sign out
         </button>
 
-        {/* .btn-logout-cancel */}
+        {/* secondary action: ghost style cancel */}
         <button
-          className="w-full mt-3.75 p-2 bg-none border-none text-sm text-gray-custom cursor-pointer transition-all hover:text-[#222222] hover:underline"
+          className="w-full rounded-(--radius-button) px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100"
           onClick={closeModal}
         >
           Stay signed in

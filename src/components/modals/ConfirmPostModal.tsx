@@ -5,7 +5,8 @@ interface ConfirmPostModalProps {
 }
 
 /**
- * matches the global modal styling with a preview of the user's input.
+ * matches the refined global modal styling.
+ * uses css variables for radius and border tokens.
  */
 export const ConfirmPostModal = ({
   onConfirm,
@@ -13,36 +14,38 @@ export const ConfirmPostModal = ({
   content,
 }: ConfirmPostModalProps) => {
   return (
-    <div className="flex flex-col items-center">
-      <h2 className="text-2xl font-bold mb-4 text-[#1a1a1a]">Ready to post?</h2>
+    <div className="flex flex-col">
+      <h2 className="text-xl font-semibold mb-6 text-slate-900 text-center">
+        Review your post
+      </h2>
 
-      {/* content preview box */}
-      <div className="w-full bg-slate-50 rounded-lg p-4 mb-6 flex flex-col border border-slate-100 max-h-48 overflow-y-auto custom-scrollbar">
-        <div className="text-[10px] font-bold text-logo-blue uppercase tracking-widest mb-2 opacity-70">
+      {/* content preview box: using global border and background tokens */}
+      <div className="w-full bg-[var(--color-bg-preview)] rounded-[var(--radius-input)] p-4 mb-6 flex flex-col border border-[var(--color-border-subtle)] max-h-48 overflow-y-auto custom-scrollbar">
+        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
           Preview
         </div>
-        <div className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap break-words">
+        <div className="text-[15px] text-slate-700 leading-relaxed whitespace-pre-wrap break-words">
           {content}
         </div>
       </div>
 
-      <p className="text-sm text-gray-custom text-center mb-6 leading-relaxed">
-        Double check for typos! You can still edit or delete this later if
+      <p className="text-sm text-slate-500 text-center mb-8 px-2">
+        Double check for typos. You can edit or delete this post later if
         needed.
       </p>
 
-      <div className="w-full flex flex-col items-center">
-        {/* main action: confirm */}
+      <div className="w-full flex flex-col gap-2">
+        {/* primary action: post now */}
         <button
-          className="inline-flex w-full items-center justify-center rounded-lg bg-logo-blue p-3 text-base font-semibold text-white cursor-pointer border-none transition-all duration-200 hover:opacity-90 hover:shadow-[0_4px_12px_rgba(66,133,244,0.2)]"
+          className="inline-flex w-full items-center justify-center rounded-[var(--radius-button)] bg-logo-blue px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-logo-blue/90"
           onClick={onConfirm}
         >
-          Confirm & Post
+          Post now
         </button>
 
-        {/* secondary action: cancel */}
+        {/* secondary action: ghost style */}
         <button
-          className="w-full mt-3.75 p-2 bg-none border-none text-sm text-gray-custom cursor-pointer transition-all hover:text-[#222222] hover:underline"
+          className="w-full rounded-[var(--radius-button)] px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100"
           onClick={onClose}
         >
           Wait, let me edit

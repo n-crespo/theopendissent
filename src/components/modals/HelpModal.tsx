@@ -1,5 +1,9 @@
 import { usePwa } from "../../context/PwaContext";
 
+/**
+ * matches the refined global modal styling.
+ * uses css variables for consistent geometry and professional spacing.
+ */
 export const HelpModal = () => {
   const { deferredPrompt, install } = usePwa();
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -10,11 +14,12 @@ export const HelpModal = () => {
     "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Podcasts_%28iOS%29.svg/2048px-Podcasts_%28iOS%29.svg.png";
 
   return (
-    <div className="flex flex-col text-[#333]">
-      <h2 className="text-2xl font-bold mb-4 text-[#1a1a1a] text-center">
+    <div className="flex flex-col text-slate-700">
+      <h2 className="text-xl font-semibold mb-6 text-slate-900 text-center">
         What is this?
       </h2>
-      <p className="leading-relaxed mb-6 text-center">
+
+      <p className="leading-relaxed mb-8 text-center px-2">
         The Open Dissent is an open platform for{" "}
         <strong className="font-bold text-logo-blue">
           anonymous political discussion
@@ -27,7 +32,7 @@ export const HelpModal = () => {
       </p>
 
       {/* podcast links */}
-      <div className="flex justify-center gap-6 mb-8">
+      <div className="flex justify-center gap-8 mb-8">
         <a
           href="https://open.spotify.com/show/471WfoA8k9zORQPQbLynw2"
           target="_blank"
@@ -37,7 +42,7 @@ export const HelpModal = () => {
           <img
             src={spotifyLogo}
             alt="Spotify"
-            className="h-10 w-10 rounded-lg transition-transform duration-200 group-hover:scale-110"
+            className="h-10 w-10 rounded-(--radius-button) transition-transform duration-200 group-hover:scale-110"
           />
         </a>
         <a
@@ -49,29 +54,31 @@ export const HelpModal = () => {
           <img
             src={appleLogo}
             alt="Apple Podcasts"
-            className="h-10 w-10 rounded-lg transition-transform duration-200 group-hover:scale-110"
+            className="h-10 w-10 rounded-(--radius-button) transition-transform duration-200 group-hover:scale-110"
           />
         </a>
       </div>
 
-      <h4 className="text-lg font-bold mb-3 border-b border-[#eef0f2] pb-1">
+      <h4 className="text-base font-semibold mb-4 border-b border-border-subtle pb-1.5 text-slate-900">
         How to Interact
       </h4>
-      <ul className="space-y-3 mb-8">
-        <li className="flex items-center gap-3">
+      <ul className="space-y-4 mb-8 px-1">
+        <li className="flex items-center gap-4">
           <i className="bi bi-check-square text-agree text-xl"></i>
-          <span className="italic">Agreed!</span>
+          <span className="text-sm font-medium italic">Agreed!</span>
         </li>
-        <li className="flex items-center gap-3">
+        <li className="flex items-center gap-4">
           <i className="bi bi-chat-left-text text-dissent text-xl"></i>
-          <span className="italic">Dissent!</span>
+          <span className="text-sm font-medium italic">Dissent!</span>
         </li>
       </ul>
 
-      <div className="pt-4 border-t border-[#eef0f2]">
-        <h4 className="text-lg font-bold mb-3">Install as an App</h4>
+      <div className="pt-6 border-t border-border-subtle">
+        <h4 className="text-base font-semibold mb-4 text-slate-900">
+          Install as an App
+        </h4>
         {isIOS ? (
-          <ul className="space-y-2 list-disc pl-5 text-sm">
+          <ul className="space-y-3 list-disc pl-5 text-sm text-slate-600">
             <li>
               Tap the <strong>Share</strong> button (bottom of screen)
             </li>
@@ -84,7 +91,7 @@ export const HelpModal = () => {
                 href="https://support.apple.com/en-asia/guide/iphone/iphea86e5236/ios"
                 target="_blank"
                 rel="noreferrer"
-                className="text-logo-blue hover:underline"
+                className="text-logo-blue font-medium hover:underline"
               >
                 Detailed guide (iOS).
               </a>
@@ -92,14 +99,15 @@ export const HelpModal = () => {
           </ul>
         ) : deferredPrompt ? (
           <button
-            className="w-full my-2 p-3 bg-white text-[#222] border border-[#dadce0] rounded-xl flex items-center justify-center gap-2.5 font-semibold cursor-pointer transition-all duration-200 shadow-[0_2px_6px_rgba(0,0,0,0.05)] hover:bg-slate-50 hover:border-slate-400 hover:-translate-y-px"
+            className="w-full my-2 flex items-center justify-center gap-2.5 rounded-(--radius-button) border border-border-subtle bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 hover:border-slate-400 active:scale-[0.98]"
             onClick={install}
           >
-            <i className="bi bi-download text-[1.1rem] text-gray-custom"></i>
-            Install
+            <i className="bi bi-download text-base text-slate-500"></i>
+            Install App
           </button>
         ) : (
-          <p className="p-2.5 bg-slate-50 rounded-lg text-center border border-dashed border-[#dadce0] text-sm text-gray-custom italic">
+          /* status box: uses global preview token */
+          <p className="p-3 bg-bg-preview rounded-(--radius-input) text-center border border-dashed border-border-subtle text-xs text-slate-500 italic">
             Already installed or unavailable on this browser.
           </p>
         )}
