@@ -1,8 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
-/**
- * updated to include "deleteConfirm"
- */
 type ModalType =
   | "signin"
   | "help"
@@ -12,39 +9,63 @@ type ModalType =
   | "confirmPost"
   | null;
 
+interface ModalInstance {
+  type: ModalType;
+  payload: any;
+}
+
 interface ModalContextType {
+  modalStack: ModalInstance[];
   activeModal: ModalType;
-  modalPayload: any; // holds the post data
+  modalPayload: any;
   openModal: (type: ModalType, payload?: any) => void;
   closeModal: () => void;
+  closeAllModals: () => void;
 }
 
 const ModalContext = createContext<ModalContextType | undefined>(undefined);
 
 export const ModalProvider = ({ children }: { children: ReactNode }) => {
-  const [activeModal, setActiveModal] = useState<ModalType>(null);
-  const [modalPayload, setModalPayload] = useState<any>(null);
+  const [modalStack, setModalStack] = useState<ModalInstance[]>([]);
 
   /**
-   * sets the active modal type and optional data payload
+   * Pushes a new modal onto the stack
    */
   const openModal = (type: ModalType, payload: any = null) => {
-    setModalPayload(payload);
-    setActiveModal(type);
+    if (!type) return;
+    setModalStack((prev) => [...prev, { type, payload }]);
   };
 
   /**
-   * resets the modal state to null
+   * Pops the top-most modal from the stack
    */
   const closeModal = () => {
-    setActiveModal(null);
-    setModalPayload(null);
+    setModalStack((prev) => prev.slice(0, -1));
   };
+
+  /**
+   * Clears the entire stack
+   */
+  const closeAllModals = () => {
+    setModalStack([]);
+  };
+
+  // derived values for backward compatibility with single-modal logic
+  const topInstance = modalStack[modalStack.length - 1];
+  const activeModal = topInstance?.type || null;
+  const modalPayload = topInstance?.payload || null;
 
   return (
     <div className="contents">
       <ModalContext.Provider
-        value={{ activeModal, modalPayload, openModal, closeModal }}
+        value={{
+          modalStack,
+          activeModal,
+          modalPayload,
+          openModal,
+          closeModal,
+          closeAllModals,
+        }}
       >
         {children}
       </ModalContext.Provider>
@@ -52,9 +73,6 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-/**
- * controls the visibility of global app modals.
- */
 export const useModal = () => {
   const context = useContext(ModalContext);
   if (!context) throw new Error("useModal must be used within ModalProvider");

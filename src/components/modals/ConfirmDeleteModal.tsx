@@ -7,7 +7,7 @@ interface ConfirmDeleteModalProps {
 }
 
 /**
- * matches the logout modal styling for permanent deletion actions.
+ * matches the confirm post modal styling with a preview of the content being deleted.
  */
 export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   onClose,
@@ -18,8 +18,12 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
     <div className="flex flex-col items-center">
       <h2 className="text-2xl font-bold mb-4 text-[#1a1a1a]">Delete Post?</h2>
 
-      <div className="w-full bg-slate-50 rounded-lg p-4 mb-6 flex flex-col items-center border border-slate-100">
-        <div className="font-semibold text-logo-red text-center line-clamp-2">
+      {/* content preview box - identical to confirm post styling */}
+      <div className="w-full bg-slate-50 rounded-lg p-4 mb-6 flex flex-col border border-slate-100 max-h-48 overflow-y-auto custom-scrollbar">
+        <div className="text-[10px] font-bold text-logo-red uppercase tracking-widest mb-2 opacity-70 text-left">
+          Content
+        </div>
+        <div className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap wrap-break-word text-left">
           {itemName || "this item"}
         </div>
       </div>
