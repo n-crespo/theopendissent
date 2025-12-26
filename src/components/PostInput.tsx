@@ -43,6 +43,19 @@ export const PostInput = ({
     }
   }, [content]);
 
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      // start calculation from the base height
+      textarea.style.height = "41px";
+      const newHeight = Math.max(41, Math.min(textarea.scrollHeight, 240));
+      textarea.style.height = `${newHeight}px`;
+
+      textarea.style.overflowY =
+        textarea.scrollHeight > 240 ? "auto" : "hidden";
+    }
+  }, [content]);
+
   const defaultPlaceholder = isReplyMode
     ? `I ${currentStance === "agreed" ? "agree" : "dissent"} because...`
     : "Speak your mind...";
@@ -108,13 +121,15 @@ export const PostInput = ({
             onKeyDown={handleKeyDown}
             placeholder={activePlaceholder}
             disabled={isDisabled}
-            className={`w-full resize-none rounded-lg border p-2.5 text-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all outline-none block max-h-60 custom-scrollbar appearance-none leading-normal
-              ${
-                hasNoStance
-                  ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed italic"
-                  : "bg-white border-slate-200 focus:shadow-[0_6px_16_rgba(0,0,0,0.1)] focus:ring-1 focus:ring-logo-blue"
-              }
-            `}
+            className={`w-full resize-none rounded-lg border p-2.5 text-[16px] md:text-[14px]
+            min-h-10.25 shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all
+            outline-none block max-h-60 custom-scrollbar appearance-none leading-[1.4]
+            ${
+              hasNoStance
+                ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed italic"
+                : "bg-white border-slate-200 focus:shadow-[0_6px_16px_rgba(0,0,0,0.1)] focus:ring-1 focus:ring-logo-blue"
+            }
+          `}
           />
 
           {!hasNoStance && content.length > 0 && (
@@ -130,7 +145,7 @@ export const PostInput = ({
           onClick={handleSubmit}
           disabled={isDisabled || !content.trim()}
           className={`
-            grow-2 min-w-21.25 h-10.25 rounded-lg px-2.5 py-2.5 text-[14px] font-bold text-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-100
+            grow-2 min-w-21.25 h-[41px] flex items-center justify-center rounded-lg px-2.5 py-2.5 text-[14px] font-bold text-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-100
             bg-linear-to-r from-logo-blue via-logo-green to-logo-red bg-size-[300%_100%] animate-shimmer
             ${isDisabled || !content.trim() ? "cursor-not-allowed" : "cursor-pointer hover:animate-jiggle active:scale-95"}
           `}
@@ -146,7 +161,7 @@ export const PostInput = ({
       </div>
 
       {hasNoStance && (
-        <p className="px-1 text-[11px] font-bold text-logo-red ">
+        <p className="px-1 text-[11px] font-bold text-logo-red">
           Click "Agree" or "Dissent" to unlock replies.
         </p>
       )}
