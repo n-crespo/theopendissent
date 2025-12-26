@@ -20,7 +20,7 @@ export const PostInput = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { user, loading } = useAuth();
-  const { openModal } = useModal();
+  const { openModal, closeModal } = useModal();
 
   const isReplyMode = !!parentPostId;
   const hasNoStance = isReplyMode && !currentStance;
@@ -74,29 +74,34 @@ export const PostInput = ({
     const trimmedContent = content.trim();
     if (!trimmedContent || trimmedContent.length > MAX_CHARS) return;
 
-    setIsPosting(true);
-    const targetRef = isReplyMode
-      ? ref(db, `replies/${parentPostId}`)
-      : postsRef;
+    openModal("confirmPost", {
+      onConfirm: async () => {
+        setIsPosting(true);
+        const targetRef = isReplyMode
+          ? ref(db, `replies/${parentPostId}`)
+          : postsRef;
 
-    try {
-      await push(targetRef, {
-        userId: user.uid,
-        postContent: trimmedContent,
-        timestamp: serverTimestamp(),
-        metrics: { agreedCount: 0, dissentedCount: 0, replyCount: 0 },
-        userInteractions: { agreed: {}, dissented: {} },
-        ...(isReplyMode && {
-          parentPostId,
-          userInteractionType: currentStance,
-        }),
-      });
-      setContent("");
-    } catch (error) {
-      console.error("failed to submit:", error);
-    } finally {
-      setIsPosting(false);
-    }
+        try {
+          await push(targetRef, {
+            userId: user.uid,
+            postContent: trimmedContent,
+            timestamp: serverTimestamp(),
+            metrics: { agreedCount: 0, dissentedCount: 0, replyCount: 0 },
+            userInteractions: { agreed: {}, dissented: {} },
+            ...(isReplyMode && {
+              parentPostId,
+              userInteractionType: currentStance,
+            }),
+          });
+          setContent("");
+          closeModal();
+        } catch (error) {
+          console.error("failed to submit:", error);
+        } finally {
+          setIsPosting(false);
+        }
+      },
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

@@ -3,7 +3,8 @@ import { SignInModal } from "./SignInModal";
 import { HelpModal } from "./HelpModal";
 import { LogoutModal } from "./LogoutModal";
 import { PostDetailsView } from "../PostDetailsView";
-import ConfirmDeleteModal from "./ConfirmDeleteModal";
+import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
+import { ConfirmPostModal } from "./ConfirmPostModal";
 
 /**
  * manages the visibility and content of the application's central modal system.
@@ -44,6 +45,12 @@ export const GlobalModal = () => {
           {activeModal === "deleteConfirm" && (
             <ConfirmDeleteModal
               itemName={modalPayload?.name || "this item"}
+              onConfirm={modalPayload?.onConfirm}
+              onClose={closeModal}
+            />
+          )}
+          {activeModal === "confirmPost" && (
+            <ConfirmPostModal
               onConfirm={modalPayload?.onConfirm}
               onClose={closeModal}
             />

@@ -7,7 +7,7 @@ interface ConfirmDeleteModalProps {
 /**
  * simple inner content for the global modal when confirming deletion.
  */
-const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
+export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   onClose,
   onConfirm,
   itemName,
@@ -44,5 +44,3 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
     </div>
   );
 };
-
-export default ConfirmDeleteModal;

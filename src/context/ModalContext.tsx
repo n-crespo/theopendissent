@@ -9,6 +9,7 @@ type ModalType =
   | "logout"
   | "postDetails"
   | "deleteConfirm"
+  | "confirmPost"
   | null;
 
 interface ModalContextType {
