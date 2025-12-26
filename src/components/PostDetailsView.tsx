@@ -7,6 +7,9 @@ import { ReplyItem } from "./ReplyItem";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
 
+/**
+ * displays the original post, a reply field, and a list of replies.
+ */
 export const PostDetailsView = ({ post: initialPost }: { post: any }) => {
   const [replies, setReplies] = useState<any[]>([]);
   const [livePost, setLivePost] = useState(initialPost);
@@ -25,11 +28,10 @@ export const PostDetailsView = ({ post: initialPost }: { post: any }) => {
   useEffect(() => {
     const postRef = ref(db, `posts/${initialPost.id}`);
     const unsubscribe = onValue(postRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        setLivePost({ id: initialPost.id, ...data });
+      if (snapshot.exists()) {
+        setLivePost({ id: initialPost.id, ...snapshot.val() });
       } else {
-        // close the view if the post is deleted by any user
+        // close the modal if the post is deleted
         closeAllModals();
       }
     });
@@ -56,17 +58,17 @@ export const PostDetailsView = ({ post: initialPost }: { post: any }) => {
     return () => unsubscribe();
   }, [initialPost.id]);
 
+  // prevent rendering if the post is gone
+  if (!livePost) return null;
+
   return (
     <div className="flex flex-col">
       <div className="mb-6 border-b border-border-subtle pb-6">
-        {/* check for livePost existence to prevent child crashes */}
-        {livePost && <PostItem post={livePost} disableClick={true} />}
+        <PostItem post={livePost} disableClick={true} />
       </div>
 
       <div className="mb-10">
-        {livePost && (
-          <PostInput parentPostId={livePost.id} currentStance={currentStance} />
-        )}
+        <PostInput parentPostId={livePost.id} currentStance={currentStance} />
       </div>
 
       <div className="pr-1">
