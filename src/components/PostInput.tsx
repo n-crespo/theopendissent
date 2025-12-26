@@ -75,6 +75,7 @@ export const PostInput = ({
     if (!trimmedContent || trimmedContent.length > MAX_CHARS) return;
 
     openModal("confirmPost", {
+      content: trimmedContent, // pass the text here
       onConfirm: async () => {
         setIsPosting(true);
         const targetRef = isReplyMode

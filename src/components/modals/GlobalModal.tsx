@@ -51,6 +51,7 @@ export const GlobalModal = () => {
           )}
           {activeModal === "confirmPost" && (
             <ConfirmPostModal
+              content={modalPayload?.content}
               onConfirm={modalPayload?.onConfirm}
               onClose={closeModal}
             />
