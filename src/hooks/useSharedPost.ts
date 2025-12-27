@@ -3,8 +3,8 @@ import { getPostById } from "../lib/firebase";
 import { useModal } from "../context/ModalContext";
 
 /**
- * Handles deep-linking via the ?s=POST_ID query parameter.
- * fetches the post, identifies if it's a reply or top-level post,
+ * Handles deep-linking via ?s=ID and optional ?p=PARENT_ID.
+ * Fetches the post, identifies if it's a reply or top-level post,
  * and automatically opens the appropriate modal.
  */
 export const useSharedPost = () => {
@@ -12,37 +12,38 @@ export const useSharedPost = () => {
   const hasprocessed = useRef(false);
 
   useEffect(() => {
-    // prevent double-processing in strict mode
     if (hasprocessed.current) return;
 
     const params = new URLSearchParams(window.location.search);
     const sharedId = params.get("s");
+    const parentId = params.get("p"); // new: required for replies
 
     if (!sharedId) return;
 
     const handleDeepLink = async () => {
       hasprocessed.current = true;
 
-      const targetPost = await getPostById(sharedId);
+      // if p exists, we are looking for a reply. if not, a top-level post.
+      const targetPost = await getPostById(sharedId, parentId || undefined);
       if (!targetPost) return;
 
-      // if it's a reply, we need the parent to open the correct view
       let displayPost = targetPost;
-      if (targetPost.parentPostId) {
-        const parent = await getPostById(targetPost.parentPostId);
+      let highlightReplyId = null;
+
+      if (parentId) {
+        // fetch the parent to populate the modal background
+        const parent = await getPostById(parentId);
         if (parent) {
           displayPost = parent;
+          highlightReplyId = sharedId;
         }
       }
 
-      // trigger the modal.
-      // payload includes 'highlightReplyId' to let PostDetailsView know what to focus on.
       openModal("postDetails", {
         post: displayPost,
-        highlightReplyId: targetPost.parentPostId ? sharedId : null,
+        highlightReplyId: highlightReplyId,
       });
 
-      // clean the URL without refreshing to keep it tidy
       const newUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     };

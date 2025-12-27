@@ -6,7 +6,13 @@ import { ActionMenu } from "./ActionMenu";
  * Redesigned ReplyItem to match PostItem consistency.
  * Uses standard rounded corners, subtle stance indicators, and includes the ActionMenu.
  */
-export const ReplyItem = ({ reply }: { reply: any }) => {
+export const ReplyItem = ({
+  reply,
+  highlighted,
+}: {
+  reply: any;
+  highlighted?: boolean;
+}) => {
   const { userId, timestamp, postContent, userInteractionType, editedAt } =
     reply;
 
@@ -41,7 +47,12 @@ export const ReplyItem = ({ reply }: { reply: any }) => {
 
   return (
     <div
-      className={`flex flex-col p-4 bg-white border border-border-subtle shadow-sm transition-all hover:border-slate-300 rounded-(--radius-modal)`}
+      className={`flex flex-col p-4 bg-white border border-border-subtle shadow-sm transition-all hover:border-slate-300 rounded-(--radius-modal)
+      ${
+        highlighted
+          ? "border-logo-blue ring-2 ring-logo-blue/10 shadow-md scale-[1.02]"
+          : "border-border-subtle shadow-sm hover:border-slate-300"
+      }`}
     >
       {/* Header: User info, stance, and ActionMenu */}
       <div className="flex justify-between items-start mb-3">
@@ -75,12 +86,13 @@ export const ReplyItem = ({ reply }: { reply: any }) => {
 
         {/*The extracted Menu Component */}
         <ActionMenu
+          post={reply} // provide the reply object as the post prop
           isOwner={isOwner}
           onEdit={(e) => {
             e.stopPropagation(); // ensure the card click doesn't fire
             setIsEditing(true);
           }}
-          onDelete={handleDeleteTrigger}
+          onDelete={(e) => handleDeleteTrigger(e)}
         />
       </div>
 

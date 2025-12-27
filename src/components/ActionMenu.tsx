@@ -56,11 +56,15 @@ export const ActionMenu = ({
   }, [show]);
 
   const handleShare = async (e: React.MouseEvent) => {
-    console.log("sharing");
     e.stopPropagation();
     setShow(false);
 
-    const shareUrl = `${window.location.origin}?s=${post.id}`;
+    // build url with parent ID if it exists to support deep-linking replies
+    const baseUrl = window.location.origin;
+    const shareUrl = post.parentPostId
+      ? `${baseUrl}?s=${post.id}&p=${post.parentPostId}`
+      : `${baseUrl}?s=${post.id}`;
+
     const shareData = {
       title: "The Open Dissent",
       text: "Check out this discussion:",
@@ -76,7 +80,7 @@ export const ActionMenu = ({
     } else {
       try {
         await navigator.clipboard.writeText(shareUrl);
-        // todo: add a global toast context call here later
+        // todo: add global toast context call
       } catch (err) {
         console.error("failed to copy:", err);
       }

@@ -10,7 +10,13 @@ import { useModal } from "../context/ModalContext";
 /**
  * displays the original post, a reply field, and a list of replies.
  */
-export const PostDetailsView = ({ post: initialPost }: { post: any }) => {
+export const PostDetailsView = ({
+  post: initialPost,
+  highlightReplyId,
+}: {
+  post: any;
+  highlightReplyId?: string | null;
+}) => {
   const [replies, setReplies] = useState<any[]>([]);
   const [livePost, setLivePost] = useState(initialPost);
   const { user } = useAuth();
@@ -38,6 +44,7 @@ export const PostDetailsView = ({ post: initialPost }: { post: any }) => {
     return () => unsubscribe();
   }, [initialPost.id, closeAllModals]);
 
+  // listen for live post updates
   useEffect(() => {
     const repliesRef = ref(db, `replies/${initialPost.id}`);
     const repliesQuery = query(repliesRef, orderByChild("timestamp"));
@@ -57,6 +64,37 @@ export const PostDetailsView = ({ post: initialPost }: { post: any }) => {
 
     return () => unsubscribe();
   }, [initialPost.id]);
+
+  // listen for replies and handle auto-scroll
+  useEffect(() => {
+    const repliesRef = ref(db, `replies/${initialPost.id}`);
+    const repliesQuery = query(repliesRef, orderByChild("timestamp"));
+
+    const unsubscribe = onValue(repliesQuery, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const list = Object.entries(data).map(([id, val]: [string, any]) => ({
+          id,
+          ...val,
+        }));
+        setReplies(list);
+
+        // scroll to highlighted reply after DOM updates
+        if (highlightReplyId) {
+          setTimeout(() => {
+            const element = document.getElementById(
+              `reply-${highlightReplyId}`,
+            );
+            element?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 100);
+        }
+      } else {
+        setReplies([]);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [initialPost.id, highlightReplyId]);
 
   // prevent rendering if the post is gone
   if (!livePost) return null;
@@ -82,7 +120,12 @@ export const PostDetailsView = ({ post: initialPost }: { post: any }) => {
         {replies.length > 0 ? (
           <div className="flex flex-col gap-4">
             {replies.map((reply) => (
-              <ReplyItem key={reply.id} reply={reply} />
+              <div key={reply.id} id={`reply-${reply.id}`}>
+                <ReplyItem
+                  reply={reply}
+                  highlighted={highlightReplyId === reply.id}
+                />
+              </div>
             ))}
           </div>
         ) : (

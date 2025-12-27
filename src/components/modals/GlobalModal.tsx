@@ -48,7 +48,10 @@ export const GlobalModal = () => {
               {modal.type === "help" && <HelpModal />}
               {modal.type === "logout" && <LogoutModal />}
               {modal.type === "postDetails" && (
-                <PostDetailsView post={modal.payload} />
+                <PostDetailsView
+                  post={modal.payload.post || modal.payload}
+                  highlightReplyId={modal.payload.highlightReplyId}
+                />
               )}
               {modal.type === "deleteConfirm" && (
                 <ConfirmDeleteModal
