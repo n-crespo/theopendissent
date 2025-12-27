@@ -1,5 +1,3 @@
-// to update, run `firebase deploy --only functions`
-// for the db rules json, run `firebase deploy --only database`
 require("firebase-functions/logger/compat");
 import { onValueWritten } from "firebase-functions/v2/database";
 import { HttpsError } from "firebase-functions/v2/https";
@@ -13,8 +11,8 @@ import * as admin from "firebase-admin";
 admin.initializeApp();
 
 /**
- * dynamically updates interaction counters.
- * handles 'agreed' and 'dissented'.
+ * updates interaction counts (agreed/dissented).
+ * transactions ensure we don't accidentally recreate a deleted post.
  */
 export const updateInteractionCounts = onValueWritten(
   "/posts/{postId}/userInteractions/{interactionType}/{userId}",
@@ -33,23 +31,14 @@ export const updateInteractionCounts = onValueWritten(
     const after = event.data.after.exists();
 
     let incrementValue = 0;
-    if (after && !before) {
-      incrementValue = 1;
-    } else if (!after && before) {
-      incrementValue = -1;
-    } else {
-      return;
-    }
+    if (after && !before) incrementValue = 1;
+    else if (!after && before) incrementValue = -1;
+    else return;
 
     const postRef = admin.database().ref(`/posts/${postId}`);
 
-    // transaction ensures we don't recreate a deleted post
     return postRef.transaction((currentData) => {
-      // if currentData is null, the post has been deleted.
-      // returning nothing (undefined) aborts the transaction and prevents ghost nodes.
-      if (currentData === null) return;
-
-      // initialize metrics if they somehow don't exist
+      if (currentData === null) return; // abort if post was deleted
       if (!currentData.metrics) {
         currentData.metrics = {
           agreedCount: 0,
@@ -57,20 +46,19 @@ export const updateInteractionCounts = onValueWritten(
           replyCount: 0,
         };
       }
-
       const currentCount = currentData.metrics[counterKey] || 0;
       currentData.metrics[counterKey] = Math.max(
         0,
         currentCount + incrementValue,
       );
-
       return currentData;
     });
   },
 );
 
 /**
- * updates the replyCount on the parent post when a reply is created or deleted.
+ * updates the replyCount on the parent post.
+ * listens to the dedicated /replies/ tree for changes.
  */
 export const updateReplyCount = onValueWritten(
   "/replies/{postId}/{replyId}",
@@ -80,24 +68,14 @@ export const updateReplyCount = onValueWritten(
     const after = event.data.after.exists();
 
     let incrementValue = 0;
-    if (after && !before) {
-      incrementValue = 1;
-    } else if (!after && before) {
-      incrementValue = -1;
-    } else {
-      return;
-    }
+    if (after && !before) incrementValue = 1;
+    else if (!after && before) incrementValue = -1;
+    else return;
 
     const postRef = admin.database().ref(`/posts/${postId}`);
 
-    // use a transaction to ensure we don't recreate a deleted post
     return postRef.transaction((currentData) => {
-      if (currentData === null) {
-        // post doesn't exist, abort transaction to prevent ghost nodes
-        return;
-      }
-
-      // ensure metrics object exists
+      if (currentData === null) return; // abort if parent was deleted
       if (!currentData.metrics) {
         currentData.metrics = {
           replyCount: 0,
@@ -105,13 +83,11 @@ export const updateReplyCount = onValueWritten(
           dissentedCount: 0,
         };
       }
-
       const currentCount = currentData.metrics.replyCount || 0;
       currentData.metrics.replyCount = Math.max(
         0,
         currentCount + incrementValue,
       );
-
       return currentData;
     });
   },
@@ -135,37 +111,10 @@ export const beforecreated = beforeUserCreated(async (event) => {
     email: user?.email,
     displayName: user?.displayName,
     createdAt: admin.database.ServerValue.TIMESTAMP,
-    // we don't initialize 'posts' or 'replies' here because
-    // empty nodes don't exist in Firebase Realtime DB
   };
-
   await admin.database().ref(`users/${user?.uid}`).set(newUserProfile);
 });
 
 export const beforesignedin = beforeUserSignedIn((event) => {
   uclaOnlyAuth(event);
 });
-
-/**
- * cleans up user-specific indexes and replies when a post is deleted
- */
-export const onPostDeleted = onValueWritten(
-  "/posts/{postId}",
-  async (event) => {
-    // only run if the post was deleted (before exists, after doesn't)
-    if (event.data.after.exists() || !event.data.before.exists()) return;
-
-    const postId = event.params.postId;
-    const postData = event.data.before.val();
-    const authorId = postData.userId;
-
-    const updates: Record<string, any> = {
-      // remove from author's list
-      [`users/${authorId}/posts/${postId}`]: null,
-      // remove all replies associated with this post
-      [`replies/${postId}`]: null,
-    };
-
-    return admin.database().ref().update(updates);
-  },
-);
