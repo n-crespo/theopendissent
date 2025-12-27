@@ -148,7 +148,7 @@ export const PostItem = memo(
             type="dissented"
             active={interactionState.dissented}
             count={localMetrics.dissentedCount}
-            icon="bi-chat-left-text"
+            icon="bi-x-square"
             label="Dissent"
             onClick={(e: any) => handleInteraction(e, "dissented")}
           />

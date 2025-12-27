@@ -33,9 +33,7 @@ export const ReplyItem = ({
 
   // Subtle stance colors
   const stanceText = isAgree ? "text-agree" : "text-dissent";
-  const stanceIcon = isAgree
-    ? "bi-check-square-fill"
-    : "bi-chat-left-text-fill";
+  const stanceIcon = isAgree ? "bi-check-square-fill" : "bi-x-square-fill";
   const stanceBg = isAgree ? "bg-agree-bg" : "bg-dissent-bg";
 
   const formattedTime = timeAgo(

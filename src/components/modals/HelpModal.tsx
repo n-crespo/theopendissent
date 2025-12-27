@@ -68,7 +68,7 @@ export const HelpModal = () => {
           <span className="text-sm font-medium italic">Agreed!</span>
         </li>
         <li className="flex items-center gap-4">
-          <i className="bi bi-chat-left-text text-dissent text-xl"></i>
+          <i className="bi bi-x-square text-dissent text-xl"></i>
           <span className="text-sm font-medium italic">Dissent!</span>
         </li>
       </ul>
