@@ -63,72 +63,61 @@ export const removeInteraction = (
 ) => setInteraction(postId, uid, type, null); // passing null deletes the key in Firebase
 
 /**
- * Creates a new post or a reply to an existing post.
- * stance is required for replies to satisfy security rules.
+ * Creates a new post or a reply.
+ * replies are now stored exclusively in the replies/ tree.
  */
 export const createPost = async (
   userId: string,
   content: string,
   parentPostId?: string,
-  stance?: "agreed" | "dissented", // added to satisfy rules
+  stance?: "agreed" | "dissented",
 ) => {
-  const newPostKey = push(child(ref(db), "posts")).key;
-  if (!newPostKey) return;
+  const tree = parentPostId ? `replies/${parentPostId}` : "posts";
+  const newKey = push(child(ref(db), tree)).key;
+  if (!newKey) return;
 
   const postData = {
-    id: newPostKey,
+    id: newKey,
     userId,
     postContent: content,
     timestamp: serverTimestamp(),
     metrics: { agreedCount: 0, dissentedCount: 0 },
     userInteractions: { agreed: {}, dissented: {} },
-    ...(parentPostId && { parentPostId }),
-    ...(parentPostId && stance && { userInteractionType: stance }),
+    ...(parentPostId && { parentPostId, userInteractionType: stance }),
   };
 
-  const updates: Record<string, any> = {
-    [`posts/${newPostKey}`]: postData,
-  };
+  const updates: Record<string, any> = {};
 
   if (parentPostId) {
-    updates[`posts/${parentPostId}/replyIds/${newPostKey}`] = true;
-    // this path requires userInteractionType for validation to pass
-    updates[`replies/${parentPostId}/${newPostKey}`] = postData;
+    // only store content in replies, but keep a reference in the parent post
+    updates[`replies/${parentPostId}/${newKey}`] = postData;
+    updates[`posts/${parentPostId}/replyIds/${newKey}`] = true;
+  } else {
+    // top-level post storage
+    updates[`posts/${newKey}`] = postData;
   }
 
   return update(ref(db), updates);
 };
 
 /**
- * updates a post's content and sets the edited timestamp.
- * handles both top-level posts and replies in the replies/ tree.
+ * Updates content in the correct tree.
  */
 export const updatePost = async (
   postId: string,
   updates: Partial<Pick<Post, "postContent" | "editedAt">>,
   parentPostId?: string,
 ) => {
-  try {
-    console.log("trying to update post");
-    console.log(updates);
-    const multiUpdates: Record<string, any> = {
-      [`posts/${postId}/postContent`]: updates.postContent,
-      [`posts/${postId}/editedAt`]: updates.editedAt,
-    };
+  const path = parentPostId
+    ? `replies/${parentPostId}/${postId}`
+    : `posts/${postId}`;
 
-    // if it's a reply, we must also update the source of truth in the replies tree
-    if (parentPostId) {
-      multiUpdates[`replies/${parentPostId}/${postId}/postContent`] =
-        updates.postContent;
-      multiUpdates[`replies/${parentPostId}/${postId}/editedAt`] =
-        updates.editedAt;
-    }
+  const multiUpdates: Record<string, any> = {
+    [`${path}/postContent`]: updates.postContent,
+    [`${path}/editedAt`]: updates.editedAt,
+  };
 
-    await update(ref(db), multiUpdates);
-  } catch (error) {
-    console.error("error updating post:", error);
-    throw error;
-  }
+  return update(ref(db), multiUpdates);
 };
 
 /**
