@@ -85,7 +85,10 @@ export const PostItem = memo(
               e.stopPropagation(); // ensure the card click doesn't fire
               setIsEditing(true);
             }}
-            onDelete={handleDeleteTrigger}
+            onDelete={(e) => {
+              e.stopPropagation();
+              handleDeleteTrigger(e);
+            }}
           />
         </div>
 
