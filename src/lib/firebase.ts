@@ -89,8 +89,8 @@ export const createPost = async (
   const updates: Record<string, any> = {};
 
   if (parentPostId) {
+    // only write to the replies tree to avoid hitting 'posts' write restrictions
     updates[`replies/${parentPostId}/${newKey}`] = postData;
-    updates[`posts/${parentPostId}/replyIds/${newKey}`] = true;
   } else {
     updates[`posts/${newKey}`] = postData;
   }
@@ -126,11 +126,10 @@ export const deletePost = async (postId: string, parentPostId?: string) => {
     const updates: Record<string, any> = {};
 
     if (parentPostId) {
-      // reply deletion: remove from the specific post's reply tree
+      // remove from the reply tree only
       updates[`replies/${parentPostId}/${postId}`] = null;
-      updates[`posts/${parentPostId}/replyIds/${postId}`] = null;
     } else {
-      // top-level deletion: wipe the post and the entire associated reply tree
+      // wipe the post and its discussion tree
       updates[`posts/${postId}`] = null;
       updates[`replies/${postId}`] = null;
     }
