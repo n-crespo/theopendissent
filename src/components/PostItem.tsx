@@ -8,6 +8,7 @@ import { ActionMenu } from "./ActionMenu";
 interface PostItemProps {
   post: Post;
   disableClick?: boolean;
+  highlighted?: boolean;
 }
 
 /**
@@ -78,11 +79,11 @@ export const PostItem = memo(
             </div>
           </div>
 
-          {/* REPLACED inline menu with ActionMenu component */}
           <ActionMenu
+            post={post}
             isOwner={isOwner}
             onEdit={(e) => {
-              e.stopPropagation(); // ensure the card click doesn't fire
+              e.stopPropagation();
               setIsEditing(true);
             }}
             onDelete={(e) => {

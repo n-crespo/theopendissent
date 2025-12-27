@@ -1,17 +1,24 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { Post } from "../types";
 
 interface ActionMenuProps {
+  post: Post;
   isOwner: boolean;
   onEdit: (e: React.MouseEvent) => void;
   onDelete: (e: React.MouseEvent) => void;
 }
 
 /**
- * ActionMenu using React Portals and global CSS tokens.
- * ensures no clipping in modals while maintaining geometric consistency.
+ * updated ActionMenu with native share functionality.
+ * uses portals to bypass modal clipping and global vars for styling.
  */
-export const ActionMenu = ({ isOwner, onEdit, onDelete }: ActionMenuProps) => {
+export const ActionMenu = ({
+  post,
+  isOwner,
+  onEdit,
+  onDelete,
+}: ActionMenuProps) => {
   const [show, setShow] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
   const [openUpward, setOpenUpward] = useState(false);
@@ -24,7 +31,7 @@ export const ActionMenu = ({ isOwner, onEdit, onDelete }: ActionMenuProps) => {
       const rect = buttonRef.current.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom;
 
-      setOpenUpward(spaceBelow < 220); // space for all 4 buttons
+      setOpenUpward(spaceBelow < 220);
       setCoords({
         top: rect.top + window.scrollY,
         left: rect.left + window.scrollX,
@@ -48,6 +55,34 @@ export const ActionMenu = ({ isOwner, onEdit, onDelete }: ActionMenuProps) => {
     };
   }, [show]);
 
+  const handleShare = async (e: React.MouseEvent) => {
+    console.log("sharing");
+    e.stopPropagation();
+    setShow(false);
+
+    const shareUrl = `${window.location.origin}?s=${post.id}`;
+    const shareData = {
+      title: "The Open Dissent",
+      text: "Check out this discussion:",
+      url: shareUrl,
+    };
+
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") console.error(err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        // todo: add a global toast context call here later
+      } catch (err) {
+        console.error("failed to copy:", err);
+      }
+    }
+  };
+
   const menuContent = (
     <div
       onClick={(e) => e.stopPropagation()}
@@ -56,7 +91,7 @@ export const ActionMenu = ({ isOwner, onEdit, onDelete }: ActionMenuProps) => {
         top: openUpward ? coords.top - 8 : coords.top + 32 + 8,
         left: coords.left + coords.width,
         transform: `translateX(-100%) ${openUpward ? "translateY(-100%)" : ""}`,
-        borderRadius: "var(--radius-modal)", // using modal radius for the floating container
+        borderRadius: "var(--radius-modal)",
       }}
       className="z-9999 w-44 overflow-hidden border border-border-subtle bg-white py-1.5 shadow-xl animate-in fade-in zoom-in-95 duration-100"
     >
@@ -87,7 +122,9 @@ export const ActionMenu = ({ isOwner, onEdit, onDelete }: ActionMenuProps) => {
         ) : (
           <button
             onClick={(e) => {
-              e.stopPropagation(); /* todo: report logic */
+              e.stopPropagation();
+              setShow(false);
+              /* todo: report logic */
             }}
             className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
           >
@@ -99,9 +136,7 @@ export const ActionMenu = ({ isOwner, onEdit, onDelete }: ActionMenuProps) => {
         <div className="my-1.5 border-t border-slate-100" />
 
         <button
-          onClick={(e) => {
-            e.stopPropagation(); /* todo: share logic */
-          }}
+          onClick={handleShare}
           className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
         >
           <i className="bi bi-share text-slate-400"></i>

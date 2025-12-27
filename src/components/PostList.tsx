@@ -1,17 +1,56 @@
+import { useState, useEffect } from "react";
 import { PostItem } from "./PostItem";
 import { usePosts } from "../hooks/usePosts";
+import { getPostById } from "../lib/firebase";
+import { Post } from "../types";
 
 /**
- * displays the main feed of top-level posts
+ * displays the main feed with support for deep-linked post injection.
  */
 export const PostList = () => {
-  // PostList now naturally manages only top-level data due to tree separation
   const { posts, loading, loadMore, currentLimit } = usePosts(20);
+  const [injectedPost, setInjectedPost] = useState<Post | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sharedId = params.get("s");
+
+    if (sharedId) {
+      const fetchAndInject = async () => {
+        const target = await getPostById(sharedId);
+        if (!target) return;
+
+        // if reply, fetch parent to inject into main feed
+        if (target.parentPostId) {
+          const parent = await getPostById(target.parentPostId);
+          if (parent) setInjectedPost(parent);
+        } else {
+          setInjectedPost(target);
+        }
+      };
+      fetchAndInject();
+    }
+  }, []);
+
+  // filter out the injected post from the main list to prevent duplicates
+  const filteredPosts = injectedPost
+    ? posts.filter((p) => p.id !== injectedPost.id)
+    : posts;
+
   const hasMore = posts.length >= currentLimit;
 
   return (
     <div className="flex flex-col">
-      {posts.map((post) => (
+      {/* priority injection for shared content */}
+      {injectedPost && (
+        <PostItem
+          key={`injected-${injectedPost.id}`}
+          post={injectedPost}
+          highlighted={true}
+        />
+      )}
+
+      {filteredPosts.map((post) => (
         <PostItem key={post.id} post={post} />
       ))}
 
