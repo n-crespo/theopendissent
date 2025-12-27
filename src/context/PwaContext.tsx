@@ -18,7 +18,7 @@ export const PwaProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
+      // e.preventDefault();
       setDeferredPrompt(e);
     };
 
