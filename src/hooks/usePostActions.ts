@@ -121,10 +121,12 @@ export const usePostActions = (post: Post) => {
 
     setIsSaving(true);
     try {
-      await updatePost(post.id, {
-        postContent: editContent,
-        editedAt: Date.now(),
-      });
+      await updatePost(
+        post.id,
+        { postContent: editContent, editedAt: Date.now() },
+        // Pass parentPostId (if it exists) to the firebase helper
+        post.parentPostId,
+      );
       setIsEditing(false);
     } catch (err) {
       alert("failed to save changes.");

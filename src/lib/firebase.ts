@@ -97,17 +97,29 @@ export const removeInteraction = (
 ) => setInteraction(postId, uid, type, null); // passing null deletes the key in Firebase
 
 /**
- * Updates a post's content and sets the edited timestamp
+ * updates a post's content and sets the edited timestamp.
+ * handles both top-level posts and replies in the replies/ tree.
  */
 export const updatePost = async (
   postId: string,
   updates: Partial<Pick<Post, "postContent" | "editedAt">>,
+  parentPostId?: string, // added to handle reply sync
 ) => {
   try {
-    const postRef = ref(db, `posts/${postId}`);
+    const multiUpdates: Record<string, any> = {
+      [`posts/${postId}/postContent`]: updates.postContent,
+      [`posts/${postId}/editedAt`]: updates.editedAt,
+    };
 
-    // we use update here to keep existing metrics and interactions intact
-    await update(postRef, updates);
+    // if it's a reply, we must also update the source of truth in the replies tree
+    if (parentPostId) {
+      multiUpdates[`replies/${parentPostId}/${postId}/postContent`] =
+        updates.postContent;
+      multiUpdates[`replies/${parentPostId}/${postId}/editedAt`] =
+        updates.editedAt;
+    }
+
+    await update(ref(db), multiUpdates);
   } catch (error) {
     console.error("error updating post:", error);
     throw error;
