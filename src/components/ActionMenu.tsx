@@ -39,12 +39,12 @@ export const ActionMenu = ({ isOwner, onEdit, onDelete }: ActionMenuProps) => {
     if (show) {
       window.addEventListener("scroll", close, true);
       window.addEventListener("resize", close);
-      document.addEventListener("mousedown", close);
+      document.addEventListener("click", close);
     }
     return () => {
       window.removeEventListener("scroll", close, true);
       window.removeEventListener("resize", close);
-      document.removeEventListener("mousedown", close);
+      document.removeEventListener("click", close);
     };
   }, [show]);
 
@@ -65,8 +65,8 @@ export const ActionMenu = ({ isOwner, onEdit, onDelete }: ActionMenuProps) => {
           <>
             <button
               onClick={(e) => {
-                setShow(false);
                 onEdit(e);
+                setShow(false);
               }}
               className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
             >
@@ -75,8 +75,8 @@ export const ActionMenu = ({ isOwner, onEdit, onDelete }: ActionMenuProps) => {
             </button>
             <button
               onClick={(e) => {
-                setShow(false);
                 onDelete(e);
+                setShow(false);
               }}
               className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-logo-red hover:bg-red-50 transition-colors"
             >
