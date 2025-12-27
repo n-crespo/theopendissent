@@ -34,7 +34,7 @@ googleProvider.setCustomParameters({
 export const postsRef = ref(db, "posts");
 
 /**
- * atomic update to add or remove an interaction
+ * Atomic update to add or remove an interaction.
  */
 const setInteraction = async (
   postId: string,
@@ -60,11 +60,11 @@ export const removeInteraction = (
   postId: string,
   uid: string,
   type: "agreed" | "dissented",
-) => setInteraction(postId, uid, type, null); // passing null deletes the key in Firebase
+) => setInteraction(postId, uid, type, null);
 
 /**
  * Creates a new post or a reply.
- * replies are now stored exclusively in the replies/ tree.
+ * uses pointers/ to enable deep-linking without cluttering the posts/ feed.
  */
 export const createPost = async (
   userId: string,
@@ -72,8 +72,8 @@ export const createPost = async (
   parentPostId?: string,
   stance?: "agreed" | "dissented",
 ) => {
-  const tree = parentPostId ? `replies/${parentPostId}` : "posts";
-  const newKey = push(child(ref(db), tree)).key;
+  const mainTree = parentPostId ? `replies/${parentPostId}` : "posts";
+  const newKey = push(child(ref(db), mainTree)).key;
   if (!newKey) return;
 
   const postData = {
@@ -89,12 +89,12 @@ export const createPost = async (
   const updates: Record<string, any> = {};
 
   if (parentPostId) {
-    // only store content in replies, but keep a reference in the parent post
     updates[`replies/${parentPostId}/${newKey}`] = postData;
     updates[`posts/${parentPostId}/replyIds/${newKey}`] = true;
+    updates[`pointers/${newKey}`] = { parentPostId };
   } else {
-    // top-level post storage
     updates[`posts/${newKey}`] = postData;
+    updates[`pointers/${newKey}`] = { isTopLevel: true };
   }
 
   return update(ref(db), updates);
@@ -121,11 +121,12 @@ export const updatePost = async (
 };
 
 /**
- * Removes a post or reply and cleans up all associated references atomically
+ * Removes a post or reply and cleans up all associated references atomically.
  */
 export const deletePost = async (postId: string, parentPostId?: string) => {
   try {
     const updates: Record<string, any> = {};
+    updates[`pointers/${postId}`] = null;
 
     if (parentPostId) {
       // it's a reply: remove from dedicated tree and parent reference
@@ -145,19 +146,29 @@ export const deletePost = async (postId: string, parentPostId?: string) => {
 };
 
 /**
- * fetches a single post or reply by ID.
- * if parentPostId is provided, looks in replies tree.
+ * Fetches a single post/reply by ID using the pointer tree.
  */
-export const getPostById = async (
-  postId: string,
-  parentPostId?: string,
-): Promise<Post | null> => {
-  const path = parentPostId
-    ? `replies/${parentPostId}/${postId}`
-    : `posts/${postId}`;
-  const snapshot = await get(child(ref(db), path));
-  if (snapshot.exists()) {
-    return { id: postId, ...snapshot.val() };
+export const getPostById = async (postId: string): Promise<Post | null> => {
+  try {
+    const pointerRef = ref(db, `pointers/${postId}`);
+    const pointerSnap = await get(pointerRef);
+
+    if (!pointerSnap.exists()) return null;
+
+    const { parentPostId, isTopLevel } = pointerSnap.val();
+    const contentPath = isTopLevel
+      ? `posts/${postId}`
+      : `replies/${parentPostId}/${postId}`;
+
+    const contentSnap = await get(ref(db, contentPath));
+
+    if (contentSnap.exists()) {
+      return { id: postId, ...contentSnap.val() };
+    }
+
+    return null;
+  } catch (error) {
+    console.error("error in getPostById:", error);
+    return null;
   }
-  return null;
 };
