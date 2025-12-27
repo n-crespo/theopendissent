@@ -129,6 +129,7 @@ export const usePostActions = (post: Post) => {
       );
       setIsEditing(false);
     } catch (err) {
+      console.error("failed to save changes:", err);
       alert("failed to save changes.");
     } finally {
       setIsSaving(false);

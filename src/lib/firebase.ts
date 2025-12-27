@@ -103,7 +103,7 @@ export const removeInteraction = (
 export const updatePost = async (
   postId: string,
   updates: Partial<Pick<Post, "postContent" | "editedAt">>,
-  parentPostId?: string, // added to handle reply sync
+  parentPostId?: string,
 ) => {
   try {
     const multiUpdates: Record<string, any> = {
