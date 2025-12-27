@@ -32,9 +32,20 @@ export const PwaProvider = ({ children }: { children: ReactNode }) => {
 
   const install = async () => {
     if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") {
+
+    try {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+
+      // always clear the prompt after an attempt
+      // the event is now invalid regardless of 'accepted' or 'dismissed'
+      setDeferredPrompt(null);
+
+      if (outcome === "accepted") {
+        console.log("user accepted the pwa install");
+      }
+    } catch (err) {
+      console.error("pwa installation failed:", err);
       setDeferredPrompt(null);
     }
   };
