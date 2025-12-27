@@ -55,7 +55,6 @@ export const usePosts = (initialLimit: number = 20) => {
               postData.userInteractions?.disagreed ||
               {},
           },
-          replyIds: postData.replyIds || {},
           parentPostId: postData.parentPostId,
         }))
         // ensure we only display top-level posts in the main feed
