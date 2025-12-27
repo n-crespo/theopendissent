@@ -63,7 +63,7 @@ export const PostDetailsView = ({ post: initialPost }: { post: any }) => {
 
   return (
     <div className="flex flex-col">
-      <div className="mb-6 border-b border-border-subtle pb-6">
+      <div className="mt-4">
         <PostItem post={livePost} disableClick={true} />
       </div>
 
