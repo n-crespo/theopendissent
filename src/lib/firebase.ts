@@ -34,6 +34,35 @@ googleProvider.setCustomParameters({
 export const postsRef = ref(db, "posts");
 
 /**
+ * atomic update to add or remove an interaction
+ */
+const setInteraction = async (
+  postId: string,
+  uid: string,
+  type: "agreed" | "dissented",
+  value: true | null,
+) => {
+  const updates: Record<string, any> = {
+    [`users/${uid}/postInteractions/${type}/${postId}`]: value,
+    [`posts/${postId}/userInteractions/${type}/${uid}`]: value,
+  };
+
+  return update(ref(db), updates);
+};
+
+export const addInteraction = (
+  postId: string,
+  uid: string,
+  type: "agreed" | "dissented",
+) => setInteraction(postId, uid, type, true);
+
+export const removeInteraction = (
+  postId: string,
+  uid: string,
+  type: "agreed" | "dissented",
+) => setInteraction(postId, uid, type, null); // passing null deletes the key in Firebase
+
+/**
  * Creates a new post or a reply to an existing post.
  * stance is required for replies to satisfy security rules.
  */
@@ -69,35 +98,6 @@ export const createPost = async (
 
   return update(ref(db), updates);
 };
-
-/**
- * atomic update to add or remove an interaction
- */
-const setInteraction = async (
-  postId: string,
-  uid: string,
-  type: "agreed" | "dissented",
-  value: true | null,
-) => {
-  const updates: Record<string, any> = {
-    [`users/${uid}/postInteractions/${type}/${postId}`]: value,
-    [`posts/${postId}/userInteractions/${type}/${uid}`]: value,
-  };
-
-  return update(ref(db), updates);
-};
-
-export const addInteraction = (
-  postId: string,
-  uid: string,
-  type: "agreed" | "dissented",
-) => setInteraction(postId, uid, type, true);
-
-export const removeInteraction = (
-  postId: string,
-  uid: string,
-  type: "agreed" | "dissented",
-) => setInteraction(postId, uid, type, null); // passing null deletes the key in Firebase
 
 /**
  * updates a post's content and sets the edited timestamp.
