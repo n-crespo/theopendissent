@@ -19,12 +19,12 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
         Delete this post?
       </h2>
 
-      {/* content preview box: aligned with confirm post styling */}
-      <div className="w-full bg-slate-50/50 rounded-md p-4 mb-6 flex flex-col border border-slate-200 max-h-48 overflow-y-auto custom-scrollbar">
+      {/* content preview box: aligned with global preview tokens */}
+      <div className="w-full bg-bg-preview rounded-(--radius-input) p-4 mb-6 flex flex-col border border-border-subtle max-h-48 overflow-y-auto custom-scrollbar">
         <div className="text-[11px] font-bold text-logo-red uppercase tracking-wider mb-2 opacity-80">
           Content to remove
         </div>
-        <div className="text-[15px] text-slate-700 leading-relaxed whitespace-pre-wrap break-words">
+        <div className="text-[15px] text-slate-700 leading-relaxed whitespace-pre-wrap wrap-break-word">
           {itemName || "this item"}
         </div>
       </div>
@@ -34,9 +34,9 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
       </p>
 
       <div className="w-full flex flex-col gap-2">
-        {/* primary action: destructive red */}
+        {/* primary action: destructive red using global radius */}
         <button
-          className="inline-flex w-full items-center justify-center rounded-md bg-logo-red px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-red-700"
+          className="inline-flex w-full items-center justify-center rounded-(--radius-button) bg-logo-red px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-red-700"
           onClick={() => {
             onConfirm();
             onClose();
@@ -45,9 +45,9 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
           Delete permanently
         </button>
 
-        {/* secondary action: ghost style */}
+        {/* secondary action: ghost style using global radius */}
         <button
-          className="w-full rounded-md px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100"
+          className="w-full rounded-(--radius-button) px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100"
           onClick={onClose}
         >
           Nevermind, keep it
