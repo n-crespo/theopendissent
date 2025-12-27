@@ -51,7 +51,7 @@ export const PostItem = memo(
     return (
       <div
         className={`bg-white p-4 mb-4 border border-border-subtle transition-all duration-200
-        ${disableClick || isEditing ? "cursor-default" : "cursor-pointer hover:border-slate-300 hover:shadow-sm"}
+        ${disableClick || isEditing ? "cursor-default" : "cursor-pointer"}
         ${parentPostId ? "ml-4 border-l-4 border-l-slate-200 rounded-r-(--radius-modal) scale-[0.99]" : "rounded-(--radius-modal) shadow-sm"}`}
         style={{ boxShadow: !parentPostId ? "var(--shadow-modal)" : "none" }}
         onClick={handleCardClick}
