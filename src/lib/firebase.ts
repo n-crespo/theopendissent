@@ -64,7 +64,7 @@ export const removeInteraction = (
 
 /**
  * Creates a new post or a reply.
- * uses pointers/ to enable deep-linking without cluttering the posts/ feed.
+ * logical separation between top-level posts and nested replies.
  */
 export const createPost = async (
   userId: string,
@@ -81,7 +81,7 @@ export const createPost = async (
     userId,
     postContent: content,
     timestamp: serverTimestamp(),
-    metrics: { agreedCount: 0, dissentedCount: 0 },
+    metrics: { agreedCount: 0, dissentedCount: 0, replyCount: 0 },
     userInteractions: { agreed: {}, dissented: {} },
     ...(parentPostId && { parentPostId, userInteractionType: stance }),
   };
@@ -91,10 +91,8 @@ export const createPost = async (
   if (parentPostId) {
     updates[`replies/${parentPostId}/${newKey}`] = postData;
     updates[`posts/${parentPostId}/replyIds/${newKey}`] = true;
-    updates[`pointers/${newKey}`] = { parentPostId };
   } else {
     updates[`posts/${newKey}`] = postData;
-    updates[`pointers/${newKey}`] = { isTopLevel: true };
   }
 
   return update(ref(db), updates);
@@ -126,14 +124,13 @@ export const updatePost = async (
 export const deletePost = async (postId: string, parentPostId?: string) => {
   try {
     const updates: Record<string, any> = {};
-    updates[`pointers/${postId}`] = null;
 
     if (parentPostId) {
-      // it's a reply: remove from dedicated tree and parent reference
+      // reply deletion: remove from the specific post's reply tree
       updates[`replies/${parentPostId}/${postId}`] = null;
       updates[`posts/${parentPostId}/replyIds/${postId}`] = null;
     } else {
-      // it's a top-level post: remove post and its entire discussion tree
+      // top-level deletion: wipe the post and the entire associated reply tree
       updates[`posts/${postId}`] = null;
       updates[`replies/${postId}`] = null;
     }
@@ -146,19 +143,17 @@ export const deletePost = async (postId: string, parentPostId?: string) => {
 };
 
 /**
- * Fetches a single post/reply by ID using the pointer tree.
+ * Fetches a single post/reply by ID. Requires parentPostId if the target is a
+ * reply.
  */
-export const getPostById = async (postId: string): Promise<Post | null> => {
+export const getPostById = async (
+  postId: string,
+  parentPostId?: string,
+): Promise<Post | null> => {
   try {
-    const pointerRef = ref(db, `pointers/${postId}`);
-    const pointerSnap = await get(pointerRef);
-
-    if (!pointerSnap.exists()) return null;
-
-    const { parentPostId, isTopLevel } = pointerSnap.val();
-    const contentPath = isTopLevel
-      ? `posts/${postId}`
-      : `replies/${parentPostId}/${postId}`;
+    const contentPath = parentPostId
+      ? `replies/${parentPostId}/${postId}`
+      : `posts/${postId}`;
 
     const contentSnap = await get(ref(db, contentPath));
 
