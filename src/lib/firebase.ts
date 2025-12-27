@@ -121,23 +121,19 @@ export const updatePost = async (
 };
 
 /**
- * removes a post or reply and cleans up all associated references atomically
+ * Removes a post or reply and cleans up all associated references atomically
  */
 export const deletePost = async (postId: string, parentPostId?: string) => {
   try {
     const updates: Record<string, any> = {};
 
-    // delete main post entry
-    updates[`posts/${postId}`] = null;
-
     if (parentPostId) {
-      // 1. remove from parent's index in /posts/
-      updates[`posts/${parentPostId}/replyIds/${postId}`] = null;
-      // 2. remove from the dedicated /replies/ tree
-      // this triggers the updateReplyCount Cloud Function
+      // it's a reply: remove from dedicated tree and parent reference
       updates[`replies/${parentPostId}/${postId}`] = null;
+      updates[`posts/${parentPostId}/replyIds/${postId}`] = null;
     } else {
-      // if it's a main post, wipe the entire replies sub-tree
+      // it's a top-level post: remove post and its entire discussion tree
+      updates[`posts/${postId}`] = null;
       updates[`replies/${postId}`] = null;
     }
 
