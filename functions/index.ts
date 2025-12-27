@@ -21,11 +21,6 @@ export const updateInteractionCounts = onValueWritten(
   async (event) => {
     const { postId, interactionType } = event.params;
 
-    // verify the post actually exists so we don't create "ghost" metrics
-    const postRef = admin.database().ref(`/posts/${postId}`);
-    const postSnapshot = await postRef.child("userId").once("value");
-    if (!postSnapshot.exists()) return;
-
     const metricMapping: Record<string, string> = {
       agreed: "agreedCount",
       dissented: "dissentedCount",
@@ -46,11 +41,31 @@ export const updateInteractionCounts = onValueWritten(
       return;
     }
 
-    const counterRef = admin
-      .database()
-      .ref(`/posts/${postId}/metrics/${counterKey}`);
+    const postRef = admin.database().ref(`/posts/${postId}`);
 
-    return counterRef.set(admin.database.ServerValue.increment(incrementValue));
+    // transaction ensures we don't recreate a deleted post
+    return postRef.transaction((currentData) => {
+      // if currentData is null, the post has been deleted.
+      // returning nothing (undefined) aborts the transaction and prevents ghost nodes.
+      if (currentData === null) return;
+
+      // initialize metrics if they somehow don't exist
+      if (!currentData.metrics) {
+        currentData.metrics = {
+          agreedCount: 0,
+          dissentedCount: 0,
+          replyCount: 0,
+        };
+      }
+
+      const currentCount = currentData.metrics[counterKey] || 0;
+      currentData.metrics[counterKey] = Math.max(
+        0,
+        currentCount + incrementValue,
+      );
+
+      return currentData;
+    });
   },
 );
 
@@ -73,11 +88,32 @@ export const updateReplyCount = onValueWritten(
       return;
     }
 
-    const counterRef = admin
-      .database()
-      .ref(`/posts/${postId}/metrics/replyCount`);
+    const postRef = admin.database().ref(`/posts/${postId}`);
 
-    return counterRef.set(admin.database.ServerValue.increment(incrementValue));
+    // use a transaction to ensure we don't recreate a deleted post
+    return postRef.transaction((currentData) => {
+      if (currentData === null) {
+        // post doesn't exist, abort transaction to prevent ghost nodes
+        return;
+      }
+
+      // ensure metrics object exists
+      if (!currentData.metrics) {
+        currentData.metrics = {
+          replyCount: 0,
+          agreedCount: 0,
+          dissentedCount: 0,
+        };
+      }
+
+      const currentCount = currentData.metrics.replyCount || 0;
+      currentData.metrics.replyCount = Math.max(
+        0,
+        currentCount + incrementValue,
+      );
+
+      return currentData;
+    });
   },
 );
 

@@ -121,21 +121,20 @@ export const deletePost = async (postId: string, parentPostId?: string) => {
   try {
     const updates: Record<string, any> = {};
 
-    // nulling a path in an update() call deletes it
+    // delete main post entry
     updates[`posts/${postId}`] = null;
 
     if (parentPostId) {
-      // if it's a reply, remove it from the parent's index
+      // 1. remove from parent's index in /posts/
       updates[`posts/${parentPostId}/replyIds/${postId}`] = null;
-      // also remove from the dedicated replies tree
+      // 2. remove from the dedicated /replies/ tree
+      // this triggers the updateReplyCount Cloud Function
       updates[`replies/${parentPostId}/${postId}`] = null;
     } else {
-      // if it's a main post, we should ideally delete the entire replies sub-tree
-      // note: RTDB update() doesn't support wildcards, but we can null the whole node
+      // if it's a main post, wipe the entire replies sub-tree
       updates[`replies/${postId}`] = null;
     }
 
-    // this executes all deletions as a single transaction
     await update(ref(db), updates);
   } catch (error) {
     console.error("error deleting content:", error);
