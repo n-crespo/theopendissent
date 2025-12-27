@@ -159,7 +159,7 @@ export const PostInput = ({
       </div>
 
       {hasNoStance && (
-        <p className="px-1 text-[11px] font-bold text-logo-red animate-pulse">
+        <p className="px-1 text-[11px] font-bold text-logo-red">
           Select "Agree" or "Dissent" on the post to unlock replies.
         </p>
       )}
