@@ -23,13 +23,13 @@
         "metrics": {
           ".write": "auth != null && data.parent().exists()",
           "agreedCount": {
-            ".validate": "newData.isNumber() && newData.val() >= 0"
+            ".validate": "!newData.exists() || newData.isNumber()"
           },
           "dissentedCount": {
-            ".validate": "newData.isNumber() && newData.val() >= 0"
+            ".validate": "!newData.exists() || newData.isNumber()"
           },
           "replyCount": {
-            ".validate": "newData.isNumber() && newData.val() >= 0"
+            ".validate": "!newData.exists() || newData.isNumber()"
           }
         },
 
@@ -68,14 +68,23 @@
 
           ".validate": "newData.exists() && (data.exists() || newData.hasChildren(['userId', 'postContent', 'timestamp', 'parentPostId', 'userInteractionType']))",
 
-          "userId": { ".validate": "newData.val() === auth.uid" },
-          "parentPostId": { ".validate": "newData.val() === $post_id" },
+          "userId": {
+            ".validate": "!newData.exists() || newData.val() === auth.uid"
+          },
+          "parentPostId": {
+            ".validate": "!newData.exists() || newData.val() === $post_id"
+          },
           "postContent": {
             ".validate": "newData.isString() && newData.val().length <= 600"
           },
-
           "userInteractionType": {
-            ".validate": "newData.val() === 'agreed' || newData.val() === 'dissented'"
+            ".validate": "!newData.exists() || (newData.val() === 'agreed' || newData.val() === 'dissented')"
+          },
+          "timestamp": {
+            ".validate": "!data.exists() || data.val() === newData.val()"
+          },
+          "editedAt": {
+            ".validate": "newData.isNumber()"
           }
         }
       }

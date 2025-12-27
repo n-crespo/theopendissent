@@ -34,12 +34,14 @@ googleProvider.setCustomParameters({
 export const postsRef = ref(db, "posts");
 
 /**
- * creates a new post or a reply to an existing post
+ * Creates a new post or a reply to an existing post.
+ * stance is required for replies to satisfy security rules.
  */
 export const createPost = async (
   userId: string,
   content: string,
   parentPostId?: string,
+  stance?: "agreed" | "dissented", // added to satisfy rules
 ) => {
   const newPostKey = push(child(ref(db), "posts")).key;
   if (!newPostKey) return;
@@ -52,6 +54,7 @@ export const createPost = async (
     metrics: { agreedCount: 0, dissentedCount: 0 },
     userInteractions: { agreed: {}, dissented: {} },
     ...(parentPostId && { parentPostId }),
+    ...(parentPostId && stance && { userInteractionType: stance }),
   };
 
   const updates: Record<string, any> = {
@@ -60,7 +63,7 @@ export const createPost = async (
 
   if (parentPostId) {
     updates[`posts/${parentPostId}/replyIds/${newPostKey}`] = true;
-    // ensure the reply is also added to the dedicated replies tree for PostDetailsView
+    // this path requires userInteractionType for validation to pass
     updates[`replies/${parentPostId}/${newPostKey}`] = postData;
   }
 
@@ -106,6 +109,8 @@ export const updatePost = async (
   parentPostId?: string,
 ) => {
   try {
+    console.log("trying to update post");
+    console.log(updates);
     const multiUpdates: Record<string, any> = {
       [`posts/${postId}/postContent`]: updates.postContent,
       [`posts/${postId}/editedAt`]: updates.editedAt,

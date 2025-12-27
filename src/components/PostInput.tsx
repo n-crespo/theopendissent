@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { push, ref, serverTimestamp } from "firebase/database";
-import { db, postsRef } from "../lib/firebase";
+import { createPost } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
 
@@ -29,30 +28,22 @@ export const PostInput = ({
   const charsLeft = MAX_CHARS - content.length;
   const isNearLimit = charsLeft < 50;
 
-  // auto-expand height logic with max-height constraint
+  /**
+   * Snaps the textarea height to fit content exactly.
+   * using 'auto' allows for an immediate shrink when text is deleted.
+   */
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
+      // reset to auto to force the browser to recalculate scrollHeight from scratch
       textarea.style.height = "auto";
-      const newHeight = Math.min(textarea.scrollHeight, 240); // 240px is approx 15rem
+      const scrollHeight = textarea.scrollHeight;
+
+      // base height of 44px matches the h-11 button exactly
+      const newHeight = Math.max(44, Math.min(scrollHeight, 240));
       textarea.style.height = `${newHeight}px`;
 
-      // show scrollbar only if we've hit the max height
-      textarea.style.overflowY =
-        textarea.scrollHeight > 240 ? "auto" : "hidden";
-    }
-  }, [content]);
-
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      // start calculation from the base height
-      textarea.style.height = "41px";
-      const newHeight = Math.max(41, Math.min(textarea.scrollHeight, 240));
-      textarea.style.height = `${newHeight}px`;
-
-      textarea.style.overflowY =
-        textarea.scrollHeight > 240 ? "auto" : "hidden";
+      textarea.style.overflowY = scrollHeight > 240 ? "auto" : "hidden";
     }
   }, [content]);
 
@@ -75,25 +66,16 @@ export const PostInput = ({
     if (!trimmedContent || trimmedContent.length > MAX_CHARS) return;
 
     openModal("confirmPost", {
-      content: trimmedContent, // pass the text here
+      content: trimmedContent,
       onConfirm: async () => {
         setIsPosting(true);
-        const targetRef = isReplyMode
-          ? ref(db, `replies/${parentPostId}`)
-          : postsRef;
-
         try {
-          await push(targetRef, {
-            userId: user.uid,
-            postContent: trimmedContent,
-            timestamp: serverTimestamp(),
-            metrics: { agreedCount: 0, dissentedCount: 0, replyCount: 0 },
-            userInteractions: { agreed: {}, dissented: {} },
-            ...(isReplyMode && {
-              parentPostId,
-              userInteractionType: currentStance,
-            }),
-          });
+          await createPost(
+            user.uid,
+            trimmedContent,
+            parentPostId,
+            currentStance || undefined,
+          );
           setContent("");
           closeModal();
         } catch (error) {
@@ -112,11 +94,11 @@ export const PostInput = ({
     }
   };
 
-  const isDisabled = loading || isPosting || hasNoStance;
+  const isSubmitDisabled = loading || isPosting || hasNoStance;
 
   return (
     <div className="flex w-full flex-col gap-1.5">
-      <div className="flex w-full flex-row items-end gap-1.75">
+      <div className="flex w-full flex-row items-end gap-2">
         <div className="relative grow-8">
           <textarea
             ref={textareaRef}
@@ -126,21 +108,26 @@ export const PostInput = ({
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={activePlaceholder}
-            disabled={isDisabled}
-            className={`w-full resize-none rounded-lg border p-2.5 text-[16px] md:text-[14px]
-            min-h-10.25 shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all
-            outline-none block max-h-60 custom-scrollbar appearance-none leading-[1.4]
+            disabled={isSubmitDisabled}
+            className={`w-full resize-none border px-3 py-2.25 text-[15px] transition-all
+            outline-none block custom-scrollbar appearance-none leading-[1.6]
             ${
               hasNoStance
                 ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed italic"
-                : "bg-white border-slate-200 focus:shadow-[0_6px_16px_rgba(0,0,0,0.1)] focus:ring-1 focus:ring-logo-blue"
+                : "bg-white border-border-subtle focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10"
             }
           `}
+            style={{
+              borderRadius: "var(--radius-input)",
+              boxSizing: "border-box",
+            }}
           />
 
           {!hasNoStance && content.length > 0 && (
             <span
-              className={`absolute right-3 -bottom-4.5 text-[10px] font-bold uppercase tracking-tighter transition-colors ${isNearLimit ? "text-logo-red" : "text-slate-300"}`}
+              className={`absolute right-3 -bottom-4.5 text-[10px] font-bold uppercase tracking-tight transition-colors ${
+                isNearLimit ? "text-logo-red" : "text-slate-300"
+              }`}
             >
               {charsLeft}
             </span>
@@ -149,12 +136,17 @@ export const PostInput = ({
 
         <button
           onClick={handleSubmit}
-          disabled={isDisabled || !content.trim()}
+          disabled={isSubmitDisabled}
           className={`
-            grow-2 min-w-21.25 h-10.25 flex items-center justify-center rounded-lg px-2.5 py-2.5 text-[14px] font-bold text-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-transform duration-100
+            grow-2 min-w-22 h-11 flex items-center justify-center px-4 text-sm font-bold text-white transition-all duration-200
             bg-linear-to-r from-logo-blue via-logo-green to-logo-red bg-size-[300%_100%] animate-shimmer
-            ${isDisabled || !content.trim() ? "cursor-not-allowed" : "cursor-pointer hover:animate-jiggle active:scale-95"}
+            ${
+              isSubmitDisabled
+                ? "cursor-not-allowed grayscale-[0.6] opacity-60"
+                : "cursor-pointer hover:shadow-md active:scale-95"
+            }
           `}
+          style={{ borderRadius: "var(--radius-button)" }}
         >
           {isPosting ? (
             <i className="bi bi-three-dots animate-pulse"></i>
@@ -167,8 +159,8 @@ export const PostInput = ({
       </div>
 
       {hasNoStance && (
-        <p className="px-1 text-[11px] font-bold text-logo-red">
-          Click "Agree" or "Dissent" to unlock replies.
+        <p className="px-1 text-[11px] font-bold text-logo-red animate-pulse">
+          Select "Agree" or "Dissent" on the post to unlock replies.
         </p>
       )}
     </div>
