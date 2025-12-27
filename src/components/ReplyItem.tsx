@@ -70,7 +70,7 @@ export const ReplyItem = ({
             </span>
             <div className="flex items-center flex-wrap gap-1 text-[12px] text-slate-400 font-medium tracking-tight">
               {/* Subtle text stance indicator */}
-              <span className={`${stanceText} font-semibold opacity-90 mr-1`}>
+              <span className={`${stanceText} font-semibold opacity-90`}>
                 {isAgree ? "Agreed" : "Dissented"}
               </span>
               <span>· {formattedTime}</span>

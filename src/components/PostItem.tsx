@@ -67,7 +67,7 @@ export const PostItem = memo(
               <span className="text-sm font-semibold text-slate-900 leading-tight">
                 {isOwner ? "You" : shortenedUid}
               </span>
-              <div className="flex items-center flex-wrap gap-1 text-[12px] text-slate-400 font-medium tracking-tight">
+              <div className="flex items-center flex-wrap text-[12px] text-slate-400 font-medium tracking-tight">
                 <span>{formattedTime}</span>
                 {formattedEditTime && (
                   <span className="flex items-center italic">
