@@ -58,7 +58,7 @@ export const ActionMenu = ({ isOwner, onEdit, onDelete }: ActionMenuProps) => {
         transform: `translateX(-100%) ${openUpward ? "translateY(-100%)" : ""}`,
         borderRadius: "var(--radius-modal)", // using modal radius for the floating container
       }}
-      className="z-[9999] w-44 overflow-hidden border border-[var(--color-border-subtle)] bg-white py-1.5 shadow-xl animate-in fade-in zoom-in-95 duration-100"
+      className="z-9999 w-44 overflow-hidden border border-border-subtle bg-white py-1.5 shadow-xl animate-in fade-in zoom-in-95 duration-100"
     >
       <div className="flex flex-col">
         {isOwner ? (
