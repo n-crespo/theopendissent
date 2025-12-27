@@ -9,6 +9,9 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
 
+/**
+ * manages post interactions, editing, deletion, and sharing.
+ */
 export const usePostActions = (post: Post) => {
   const { user } = useAuth();
   const { openModal } = useModal();
@@ -24,9 +27,6 @@ export const usePostActions = (post: Post) => {
 
   const isOptimisticRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /**
-   * Synchronizes local state with incoming post props
-   */
   useEffect(() => {
     if (!isOptimisticRef.current) {
       setLocalMetrics(post.metrics);
@@ -48,7 +48,6 @@ export const usePostActions = (post: Post) => {
     e.stopPropagation();
     if (!uid) return openModal("signin");
 
-    // optimistic lock
     if (isOptimisticRef.current) clearTimeout(isOptimisticRef.current);
     isOptimisticRef.current = setTimeout(() => {
       isOptimisticRef.current = null;
@@ -124,13 +123,11 @@ export const usePostActions = (post: Post) => {
       await updatePost(
         post.id,
         { postContent: editContent, editedAt: Date.now() },
-        // Pass parentPostId (if it exists) to the firebase helper
         post.parentPostId,
       );
       setIsEditing(false);
     } catch (err) {
       console.error("failed to save changes:", err);
-      alert("failed to save changes.");
     } finally {
       setIsSaving(false);
     }
@@ -138,12 +135,10 @@ export const usePostActions = (post: Post) => {
 
   const handleDeleteTrigger = (e: React.MouseEvent) => {
     e.stopPropagation();
-
     openModal("deleteConfirm", {
       name: post.postContent || "this post",
       onConfirm: async () => {
         try {
-          // pass parentPostId to ensure both paths are cleaned
           await deletePost(post.id, post.parentPostId);
         } catch (error) {
           console.error("failed to delete:", error);
