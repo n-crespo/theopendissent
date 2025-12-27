@@ -9,7 +9,7 @@ import {
   push,
   serverTimestamp,
   child,
-  // remove,
+  get,
 } from "firebase/database";
 
 const firebaseConfig = {
@@ -142,4 +142,22 @@ export const deletePost = async (postId: string, parentPostId?: string) => {
     console.error("error deleting content:", error);
     throw error;
   }
+};
+
+/**
+ * fetches a single post or reply by ID.
+ * if parentPostId is provided, looks in replies tree.
+ */
+export const getPostById = async (
+  postId: string,
+  parentPostId?: string,
+): Promise<Post | null> => {
+  const path = parentPostId
+    ? `replies/${parentPostId}/${postId}`
+    : `posts/${postId}`;
+  const snapshot = await get(child(ref(db), path));
+  if (snapshot.exists()) {
+    return { id: postId, ...snapshot.val() };
+  }
+  return null;
 };
