@@ -1,8 +1,11 @@
 import { PostItem } from "./PostItem";
 import { usePosts } from "../hooks/usePosts";
 
+/**
+ * displays the main feed of top-level posts
+ */
 export const PostList = () => {
-  // PostList now manages its own data requirements
+  // PostList now naturally manages only top-level data due to tree separation
   const { posts, loading, loadMore, currentLimit } = usePosts(20);
   const hasMore = posts.length >= currentLimit;
 
@@ -14,7 +17,11 @@ export const PostList = () => {
 
       {hasMore && (
         <button
-          className="mx-auto my-5 block cursor-pointer rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-custom shadow-sm transition-all hover:bg-logo-offwhite hover:shadow-md disabled:opacity-50"
+          className="mx-auto my-8 block cursor-pointer border bg-white px-8 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 hover:shadow-md disabled:opacity-50"
+          style={{
+            borderRadius: "var(--radius-button)",
+            borderColor: "var(--color-border-subtle)",
+          }}
           onClick={loadMore}
           disabled={loading}
         >
