@@ -137,3 +137,40 @@ export const beforecreated = beforeUserCreated(async (event) => {
 export const beforesignedin = beforeUserSignedIn((event) => {
   uclaOnlyAuth(event);
 });
+
+/**
+ * Clean up user interaction references when a post is deleted.
+ */
+export const onPostDeletedCleanup = onValueWritten(
+  "/posts/{postId}",
+  async (event) => {
+    // only run if the data was deleted (before exists, after doesn't)
+    if (event.data.after.exists() || !event.data.before.exists()) return;
+
+    const postData = event.data.before.val();
+    const postId = event.params.postId;
+    const interactions = postData.userInteractions;
+
+    if (!interactions) return;
+
+    const updates: Record<string, any> = {};
+
+    // map through agreed users
+    if (interactions.agreed) {
+      Object.keys(interactions.agreed).forEach((uid) => {
+        updates[`users/${uid}/postInteractions/agreed/${postId}`] = null;
+      });
+    }
+
+    // map through dissented users
+    if (interactions.dissented) {
+      Object.keys(interactions.dissented).forEach((uid) => {
+        updates[`users/${uid}/postInteractions/dissented/${postId}`] = null;
+      });
+    }
+
+    if (Object.keys(updates).length === 0) return;
+
+    return admin.database().ref().update(updates);
+  },
+);
