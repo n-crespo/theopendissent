@@ -57,6 +57,25 @@ export const updateInteractionCounts = onValueWritten(
 );
 
 /**
+ * syncs user interactions from the user's private tree to the public post tree.
+ */
+export const syncInteractionToPost = onValueWritten(
+  "/users/{userId}/postInteractions/{interactionType}/{postId}",
+  async (event) => {
+    const { userId, interactionType, postId } = event.params;
+    const exists = event.data.after.exists();
+
+    const targetPath = `/posts/${postId}/userInteractions/${interactionType}/${userId}`;
+
+    // this write triggers existing 'updateInteractionCounts' function
+    return admin
+      .database()
+      .ref(targetPath)
+      .set(exists ? true : null);
+  },
+);
+
+/**
  * updates the replyCount on the parent post.
  * listens to the dedicated /replies/ tree for changes.
  */

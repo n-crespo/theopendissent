@@ -44,7 +44,8 @@ const setInteraction = async (
 ) => {
   const updates: Record<string, any> = {
     [`users/${uid}/postInteractions/${type}/${postId}`]: value,
-    [`posts/${postId}/userInteractions/${type}/${uid}`]: value,
+    // cloud function will update below path
+    // [`posts/${postId}/userInteractions/${type}/${uid}`]: value,
   };
 
   return update(ref(db), updates);
