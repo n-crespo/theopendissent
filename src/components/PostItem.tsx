@@ -13,7 +13,7 @@ interface PostItemProps {
 
 /**
  * Professionalized post item with geometric consistency.
- * utilizes global design tokens for borders, radius, and shadows.
+ * utilizes derived metrics for interactions and flat property for replies.
  */
 export const PostItem = memo(
   ({ post, disableClick }: PostItemProps) => {
@@ -94,7 +94,6 @@ export const PostItem = memo(
         </div>
 
         {isEditing ? (
-          // ... existing edit mode JSX (textarea & buttons) ...
           <div className="mb-4" onClick={(e) => e.stopPropagation()}>
             <textarea
               autoFocus
@@ -164,7 +163,7 @@ export const PostItem = memo(
     p.post.id === n.post.id &&
     p.post.postContent === n.post.postContent &&
     p.post.editedAt === n.post.editedAt &&
-    JSON.stringify(p.post.metrics) === JSON.stringify(n.post.metrics) &&
+    p.post.replyCount === n.post.replyCount &&
     JSON.stringify(p.post.userInteractions) ===
       JSON.stringify(n.post.userInteractions),
 );
