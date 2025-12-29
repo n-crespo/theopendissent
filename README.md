@@ -44,8 +44,8 @@ erDiagram
     String timestamp
     String editedAt
     String postContent
-    Object metrics "agreed/dissented/replied counts"
-    Map userInteractions "agreed/dissented userId maps"
+    Object metrics "{agreed|dissented|replied}: Number"
+    Object userInteractions "{agreed|dissented}: {userId}: true"
   }
 
   REPLIES {
@@ -55,7 +55,7 @@ erDiagram
     String timestamp
     String editedAt
     String postContent
-    String userInteractionType "agreed | dissented"
+    String userInteractionType "agreed|dissented"
   }
 
 ```
