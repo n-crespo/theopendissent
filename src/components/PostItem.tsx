@@ -32,6 +32,10 @@ export const PostItem = memo(
     const [isJiggling, setIsJiggling] = useState(false);
     const isOwner = uid === userId;
     const hasStance = interactionState.agreed || interactionState.dissented;
+    const formattedEditTime = editedAt ? timeAgo(new Date(editedAt)) : null;
+    const formattedTime = timeAgo(
+      new Date(typeof timestamp === "number" ? timestamp : 0),
+    );
 
     // trigger the nudge animation when the user takes a stance
     const onStanceClick = (
@@ -65,9 +69,15 @@ export const PostItem = memo(
               <span className="text-sm font-semibold text-slate-900 leading-tight">
                 {isOwner ? "You" : userId.substring(0, 10) + "..."}
               </span>
-              <span className="text-[12px] text-slate-400 font-medium tracking-tight">
-                {timeAgo(new Date(Number(timestamp)))}
-              </span>
+              <div className="flex items-center flex-wrap gap-1 text-[12px] text-slate-400 font-medium tracking-tight">
+                <span>{formattedTime}</span>
+                {formattedEditTime && (
+                  <span className="flex items-center italic">
+                    <span className="mx-1">·</span>
+                    edited {formattedEditTime}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <ActionMenu
