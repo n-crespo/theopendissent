@@ -93,10 +93,13 @@ export const usePostActions = (post: Post) => {
 
     try {
       if (wasActive) {
-        await removeInteraction(post.id, uid, type);
+        // passed parentPostId to help the cloud function locate the content
+        await removeInteraction(post.id, uid, type, post.parentPostId);
       } else {
-        await addInteraction(post.id, uid, type);
-        if (wasOtherActive) await removeInteraction(post.id, uid, otherType);
+        await addInteraction(post.id, uid, type, post.parentPostId);
+        if (wasOtherActive) {
+          await removeInteraction(post.id, uid, otherType, post.parentPostId);
+        }
       }
     } catch (err) {
       setLocalMetrics(post.metrics);

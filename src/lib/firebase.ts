@@ -34,18 +34,21 @@ googleProvider.setCustomParameters({
 export const postsRef = ref(db, "posts");
 
 /**
- * Atomic update to add or remove an interaction.
+ * atomic update to add or remove an interaction in the user's tree.
+ * cloud function handles syncing this to the public post/reply and metrics.
  */
 const setInteraction = async (
   postId: string,
   uid: string,
   type: "agreed" | "dissented",
   value: true | null,
+  parentPostId?: string,
 ) => {
   const updates: Record<string, any> = {
-    [`users/${uid}/postInteractions/${type}/${postId}`]: value,
-    // cloud function will update below path
-    // [`posts/${postId}/userInteractions/${type}/${uid}`]: value,
+    // we store the parentPostId so the cloud function knows where to find the target
+    [`users/${uid}/postInteractions/${type}/${postId}`]: value
+      ? { parentPostId: parentPostId || "top" }
+      : null,
   };
 
   return update(ref(db), updates);
@@ -55,16 +58,18 @@ export const addInteraction = (
   postId: string,
   uid: string,
   type: "agreed" | "dissented",
-) => setInteraction(postId, uid, type, true);
+  parentPostId?: string,
+) => setInteraction(postId, uid, type, true, parentPostId);
 
 export const removeInteraction = (
   postId: string,
   uid: string,
   type: "agreed" | "dissented",
-) => setInteraction(postId, uid, type, null);
+  parentPostId?: string,
+) => setInteraction(postId, uid, type, null, parentPostId);
 
 /**
- * Creates a new post or a reply.
+ * creates a new post or a reply.
  * logical separation between top-level posts and nested replies.
  */
 export const createPost = async (
@@ -90,7 +95,6 @@ export const createPost = async (
   const updates: Record<string, any> = {};
 
   if (parentPostId) {
-    // only write to the replies tree to avoid hitting 'posts' write restrictions
     updates[`replies/${parentPostId}/${newKey}`] = postData;
   } else {
     updates[`posts/${newKey}`] = postData;
@@ -100,7 +104,7 @@ export const createPost = async (
 };
 
 /**
- * Updates content in the correct tree.
+ * updates content in the correct tree.
  */
 export const updatePost = async (
   postId: string,
@@ -120,17 +124,15 @@ export const updatePost = async (
 };
 
 /**
- * Removes a post or reply and cleans up all associated references atomically.
+ * removes a post or reply and cleans up all associated references atomically.
  */
 export const deletePost = async (postId: string, parentPostId?: string) => {
   try {
     const updates: Record<string, any> = {};
 
     if (parentPostId) {
-      // remove from the reply tree only
       updates[`replies/${parentPostId}/${postId}`] = null;
     } else {
-      // wipe the post and its discussion tree
       updates[`posts/${postId}`] = null;
       updates[`replies/${postId}`] = null;
     }
