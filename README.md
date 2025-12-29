@@ -2,7 +2,7 @@
 
 ## Development Setup
 
-Start the frontend:
+Install dependencies and start the frontend:
 
 ```sh
 npm i
@@ -11,13 +11,13 @@ npm run dev
 
 ## Development Workflow
 
-### Deploy Database Security Rules
+Deploy database security rules
 
 ```sh
 firebase deploy --only database
 ```
 
-### Deploy Cloud Functions
+Deploy cloud/backend functions
 
 ```sh
 firebase deploy --only functions
