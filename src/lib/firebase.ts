@@ -311,3 +311,24 @@ export const signInWithGoogle = async () => {
  * signs the current user out.
  */
 export const logoutUser = () => signOut(auth);
+
+/**
+ * fetches data required for deep-linking based on post and parent ids.
+ */
+export const getDeepLinkData = async (
+  sharedId: string,
+  parentId?: string | null,
+) => {
+  // if p exists, we are looking for a reply. if not, a top-level post.
+  const targetPost = await getPostById(sharedId, parentId || undefined);
+  if (!targetPost) return null;
+
+  if (parentId) {
+    const parent = await getPostById(parentId);
+    if (parent) {
+      return { displayPost: parent, highlightReplyId: sharedId };
+    }
+  }
+
+  return { displayPost: targetPost, highlightReplyId: null };
+};
