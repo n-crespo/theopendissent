@@ -34,16 +34,17 @@ export const usePostActions = (post: Post) => {
     }
   }, [post.userInteractions]);
 
-  // derive counts and state from the interactions object
+  // derive state from the interactions object
   const interactionState = {
     agreed: !!(uid && localInteractions?.agreed?.[uid]),
     dissented: !!(uid && localInteractions?.dissented?.[uid]),
   };
 
+  // derive metrics dynamically
   const dynamicMetrics = {
     agreedCount: Object.keys(localInteractions?.agreed || {}).length,
     dissentedCount: Object.keys(localInteractions?.dissented || {}).length,
-    replyCount: post.metrics?.replyCount || 0, // still using managed counter
+    replyCount: post.replyCount || 0,
   };
 
   const handleInteraction = async (
@@ -137,7 +138,7 @@ export const usePostActions = (post: Post) => {
 
   return {
     uid,
-    localMetrics: dynamicMetrics, // returning derived metrics
+    localMetrics: dynamicMetrics,
     isEditing,
     setIsEditing,
     editContent,
