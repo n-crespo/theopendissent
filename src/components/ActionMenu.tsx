@@ -11,7 +11,7 @@ interface ActionMenuProps {
 
 /**
  * updated ActionMenu with native share functionality.
- * uses portals to bypass modal clipping and global vars for styling.
+ * uses portals to bypass modal clipping and supports deep-linking logic.
  */
 export const ActionMenu = ({
   post,
@@ -59,11 +59,14 @@ export const ActionMenu = ({
     e.stopPropagation();
     setShow(false);
 
-    // build url with parent ID if it exists to support deep-linking replies
-    const baseUrl = window.location.origin;
-    const shareUrl = post.parentPostId
-      ? `${baseUrl}?s=${post.id}&p=${post.parentPostId}`
-      : `${baseUrl}?s=${post.id}`;
+    // build url using URLSearchParams for cleaner construction
+    const url = new URL(window.location.origin);
+    url.searchParams.set("s", post.id);
+    if (post.parentPostId) {
+      url.searchParams.set("p", post.parentPostId);
+    }
+
+    const shareUrl = url.toString();
 
     const shareData = {
       title: "The Open Dissent",
