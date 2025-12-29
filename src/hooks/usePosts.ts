@@ -40,7 +40,6 @@ export const usePosts = (initialLimit: number = 20) => {
           postContent: postData.postContent || postData.content,
           timestamp: postData.timestamp || 0,
           editedAt: postData.editedAt,
-          // metrics object is gone; replyCount is now a direct field
           replyCount: postData.metrics?.replyCount || postData.replyCount || 0,
           userInteractions: {
             agreed: postData.userInteractions?.agreed || {},

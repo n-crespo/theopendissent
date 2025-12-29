@@ -9,7 +9,7 @@ export interface Post {
   postContent: string;
   timestamp: number | object;
   editedAt?: number;
-  replyCount: number; // replaced metrics object
+  replyCount: number;
   userInteractions: PostInteractions;
   parentPostId?: string;
   userInteractionType?: "agreed" | "dissented";
