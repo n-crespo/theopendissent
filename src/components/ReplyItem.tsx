@@ -1,16 +1,17 @@
 import { timeAgo } from "../utils";
 import { usePostActions } from "../hooks/usePostActions";
 import { ActionMenu } from "./ActionMenu";
+import { Post } from "../types";
 
 /**
- * Redesigned ReplyItem to match PostItem consistency.
- * Uses standard rounded corners, subtle stance indicators, and includes the ActionMenu.
+ * ReplyItem to match PostItem consistency.
+ * Uses derived metrics and supports inline editing via usePostActions.
  */
 export const ReplyItem = ({
   reply,
   highlighted,
 }: {
-  reply: any;
+  reply: Post;
   highlighted?: boolean;
 }) => {
   const { userId, timestamp, postContent, userInteractionType, editedAt } =
@@ -45,17 +46,16 @@ export const ReplyItem = ({
 
   return (
     <div
-      className={`flex flex-col p-4 bg-white border border-border-subtle shadow-sm transition-all hover:border-slate-300 rounded-(--radius-modal)
+      className={`flex flex-col p-4 bg-white border transition-all rounded-(--radius-modal)
       ${
         highlighted
           ? "border-logo-blue ring-2 ring-logo-blue/10 shadow-md scale-[1.02]"
           : "border-border-subtle shadow-sm hover:border-slate-300"
       }`}
     >
-      {/* Header: User info, stance, and ActionMenu */}
+      {/* header: user info, stance, and ActionMenu */}
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-3">
-          {/* Subtle Stance Indicator Icon instead of harsh border */}
           <div
             className={`flex items-center justify-center w-8 h-8 rounded-md ${stanceBg} shrink-0`}
           >
@@ -67,7 +67,6 @@ export const ReplyItem = ({
               {isOwner ? "You" : shortenedUid}
             </span>
             <div className="flex items-center flex-wrap gap-1 text-[12px] text-slate-400 font-medium tracking-tight">
-              {/* Subtle text stance indicator */}
               <span className={`${stanceText} font-semibold opacity-90`}>
                 {isAgree ? "Agreed" : "Dissented"}
               </span>
@@ -82,21 +81,20 @@ export const ReplyItem = ({
           </div>
         </div>
 
-        {/*The extracted Menu Component */}
         <ActionMenu
-          post={reply} // provide the reply object as the post prop
+          post={reply}
           isOwner={isOwner}
           onEdit={(e) => {
-            e.stopPropagation(); // ensure the card click doesn't fire
+            e.stopPropagation();
             setIsEditing(true);
           }}
           onDelete={(e) => handleDeleteTrigger(e)}
         />
       </div>
 
-      {/* Content Area (supports editing mode like PostItem) */}
+      {/* content area */}
       {isEditing ? (
-        <div className="mb-2" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-2 pl-11" onClick={(e) => e.stopPropagation()}>
           <textarea
             autoFocus
             className="w-full p-3 border border-border-subtle rounded-(--radius-input) outline-none focus:ring-2 focus:ring-logo-blue/10 focus:border-logo-blue/40 transition-all resize-none min-h-20 text-[14px] text-slate-800"
