@@ -23,6 +23,12 @@ Deploy cloud/backend functions
 firebase deploy --only functions
 ```
 
+Check cloud function logs
+
+```sh
+firebase functions:log
+```
+
 ## Database Layout
 
 ```mermaid
