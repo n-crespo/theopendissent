@@ -16,6 +16,13 @@ import {
   limitToLast,
 } from "firebase/database";
 
+import {
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut,
+  User,
+} from "firebase/auth";
+
 const firebaseConfig = {
   apiKey: "AIzaSyBqrAeqFnJLS8GRVR1LJvlUJ_TYao-EPe0",
   authDomain: "auth.theopendissent.com",
@@ -273,3 +280,34 @@ export const subscribeToFeed = (
     callback(postsArray);
   });
 };
+
+/**
+ * subscribes to auth state changes.
+ */
+export const subscribeToAuth = (callback: (user: User | null) => void) => {
+  return onAuthStateChanged(auth, callback);
+};
+
+/**
+ * handles google sign-in with ucla-only email restriction logic.
+ */
+export const signInWithGoogle = async () => {
+  try {
+    await signInWithPopup(auth, googleProvider);
+  } catch (error: any) {
+    // sign user out locally to clear partially authenticated state
+    await auth.signOut();
+    if (error.code === "auth/internal-error") {
+      alert(
+        "Sorry... only @g.ucla.edu emails are allowed to sign up right now.",
+      );
+    }
+    console.error("sign-in failed:", error.message);
+    throw error;
+  }
+};
+
+/**
+ * signs the current user out.
+ */
+export const logoutUser = () => signOut(auth);
