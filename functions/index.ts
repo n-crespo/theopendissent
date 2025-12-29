@@ -10,35 +10,52 @@ import * as admin from "firebase-admin";
 
 admin.initializeApp();
 
-/**
- * updates interaction counts (agreed/dissented).
- * transactions ensure we don't accidentally recreate a deleted post.
- */
-export const updateInteractionCounts = onValueWritten(
-  "/posts/{postId}/userInteractions/{interactionType}/{userId}",
+export const syncInteractionToPost = onValueWritten(
+  "/users/{userId}/postInteractions/{interactionType}/{postId}",
   async (event) => {
-    const { postId, interactionType } = event.params;
+    const { userId, interactionType, postId } = event.params;
+    const interactionData = event.data.after.val(); // contains { parentPostId }
+    const exists = event.data.after.exists();
+    const db = admin.database();
+
+    // Determine the root path (Post vs Reply)
+    let rootPath: string;
+    if (
+      interactionData?.parentPostId &&
+      interactionData.parentPostId !== "top"
+    ) {
+      // It's a reply
+      rootPath = `replies/${interactionData.parentPostId}/${postId}`;
+    } else {
+      // It's a top-level post
+      rootPath = `posts/${postId}`;
+    }
 
     const metricMapping: Record<string, string> = {
       agreed: "agreedCount",
       dissented: "dissentedCount",
     };
-
     const counterKey = metricMapping[interactionType];
-    if (!counterKey) return;
+    const incrementValue = exists ? 1 : -1;
 
-    const before = event.data.before.exists();
-    const after = event.data.after.exists();
+    return db.ref(rootPath).transaction((currentData) => {
+      if (currentData === null) return; // abort if content was deleted
 
-    let incrementValue = 0;
-    if (after && !before) incrementValue = 1;
-    else if (!after && before) incrementValue = -1;
-    else return;
+      // update userInteractions object
+      if (!currentData.userInteractions) currentData.userInteractions = {};
+      if (!currentData.userInteractions[interactionType]) {
+        currentData.userInteractions[interactionType] = {};
+      }
 
-    const postRef = admin.database().ref(`/posts/${postId}`);
+      if (exists) {
+        currentData.userInteractions[interactionType][userId] = true;
+      } else {
+        if (currentData.userInteractions[interactionType]) {
+          delete currentData.userInteractions[interactionType][userId];
+        }
+      }
 
-    return postRef.transaction((currentData) => {
-      if (currentData === null) return; // abort if post was deleted
+      // update metric interaction counts
       if (!currentData.metrics) {
         currentData.metrics = {
           agreedCount: 0,
@@ -46,32 +63,15 @@ export const updateInteractionCounts = onValueWritten(
           replyCount: 0,
         };
       }
+
       const currentCount = currentData.metrics[counterKey] || 0;
       currentData.metrics[counterKey] = Math.max(
         0,
         currentCount + incrementValue,
       );
+
       return currentData;
     });
-  },
-);
-
-/**
- * syncs user interactions from the user's private tree to the public post tree.
- */
-export const syncInteractionToPost = onValueWritten(
-  "/users/{userId}/postInteractions/{interactionType}/{postId}",
-  async (event) => {
-    const { userId, interactionType, postId } = event.params;
-    const exists = event.data.after.exists();
-
-    const targetPath = `/posts/${postId}/userInteractions/${interactionType}/${userId}`;
-
-    // this write triggers existing 'updateInteractionCounts' function
-    return admin
-      .database()
-      .ref(targetPath)
-      .set(exists ? true : null);
   },
 );
 
