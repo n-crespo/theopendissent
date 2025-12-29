@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { ref, onValue, query, orderByChild } from "firebase/database";
-import { db } from "../lib/firebase";
+import { subscribeToPost, subscribeToReplies } from "../lib/firebase";
 import { PostItem } from "./PostItem";
 import { PostInput } from "./PostInput";
 import { ReplyItem } from "./ReplyItem";
@@ -8,9 +7,6 @@ import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
 import { Post } from "../types";
 
-/**
- * displays the original post, a reply field, and a list of replies.
- */
 export const PostDetailsView = ({
   post: initialPost,
   highlightReplyId,
@@ -35,19 +31,10 @@ export const PostDetailsView = ({
 
   // listen for live post updates
   useEffect(() => {
-    const postRef = ref(db, `posts/${initialPost.id}`);
-    const unsubscribe = onValue(postRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        setLivePost({
-          id: initialPost.id,
-          ...data,
-          // ensure userInteractions is initialized if missing in DB
-          userInteractions: data.userInteractions || {
-            agreed: {},
-            dissented: {},
-          },
-        });
+    // listen for post updates
+    const unsubscribe = subscribeToPost(initialPost.id, (post) => {
+      if (post) {
+        setLivePost(post);
       } else {
         closeAllModals();
       }
@@ -57,37 +44,18 @@ export const PostDetailsView = ({
 
   // listen for replies and handle auto-scroll
   useEffect(() => {
-    const repliesRef = ref(db, `replies/${initialPost.id}`);
-    const repliesQuery = query(repliesRef, orderByChild("timestamp"));
+    // listen for replies
+    const unsubscribe = subscribeToReplies(initialPost.id, (list) => {
+      setReplies(list);
 
-    const unsubscribe = onValue(repliesQuery, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const list = Object.entries(data).map(([id, val]: [string, any]) => ({
-          id,
-          ...val,
-          userInteractions: val.userInteractions || {
-            agreed: {},
-            dissented: {},
-          },
-        }));
-
-        setReplies(list);
-
-        // handle auto-scroll to highlighted reply
-        if (highlightReplyId) {
-          setTimeout(() => {
-            const element = document.getElementById(
-              `reply-${highlightReplyId}`,
-            );
-            element?.scrollIntoView({ behavior: "smooth", block: "center" });
-          }, 100);
-        }
-      } else {
-        setReplies([]);
+      // handle auto-scroll to highlighted reply
+      if (highlightReplyId) {
+        setTimeout(() => {
+          const element = document.getElementById(`reply-${highlightReplyId}`);
+          element?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
       }
     });
-
     return () => unsubscribe();
   }, [initialPost.id, highlightReplyId]);
 

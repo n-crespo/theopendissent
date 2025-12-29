@@ -10,6 +10,9 @@ import {
   serverTimestamp,
   child,
   get,
+  onValue,
+  query,
+  orderByChild,
 } from "firebase/database";
 
 const firebaseConfig = {
@@ -168,4 +171,53 @@ export const getPostById = async (
     console.error("error in getPostById:", error);
     return null;
   }
+};
+
+/**
+ * subscribes to updates for a single post.
+ */
+export const subscribeToPost = (
+  postId: string,
+  callback: (post: Post | null) => void,
+) => {
+  const postRef = ref(db, `posts/${postId}`);
+  return onValue(postRef, (snapshot) => {
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      callback({
+        id: postId,
+        ...data,
+        userInteractions: data.userInteractions || {
+          agreed: {},
+          dissented: {},
+        },
+      });
+    } else {
+      callback(null);
+    }
+  });
+};
+
+/**
+ * subscribes to updates for all replies to a post.
+ */
+export const subscribeToReplies = (
+  postId: string,
+  callback: (replies: Post[]) => void,
+) => {
+  const repliesRef = ref(db, `replies/${postId}`);
+  const q = query(repliesRef, orderByChild("timestamp"));
+  return onValue(q, (snapshot) => {
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      const list = Object.entries(data).map(([id, val]: [string, any]) => ({
+        id,
+        ...val,
+        userInteractions: val.userInteractions || { agreed: {}, dissented: {} },
+      }));
+      callback(list);
+    } else {
+      callback([]);
+    }
+  });
 };
