@@ -4,6 +4,7 @@ import { HttpsError } from "firebase-functions/v2/https";
 import {
   AuthBlockingEvent,
   beforeUserCreated,
+  beforeUserSignedIn,
 } from "firebase-functions/v2/identity";
 import * as admin from "firebase-admin";
 
@@ -74,12 +75,19 @@ export const updateReplyCount = onValueWritten(
 
 const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
   const user = event.data;
-  if (!user?.email?.endsWith("@g.ucla.edu")) {
+  const email = user?.email || "no-email";
+
+  console.log(`checking authorization for: [${email}]`);
+
+  if (!email.toLowerCase().trim().endsWith("@g.ucla.edu")) {
+    console.error(`auth blocked for: ${email}`);
     throw new HttpsError(
-      "invalid-argument",
+      "permission-denied",
       "Only @g.ucla.edu emails are allowed.",
     );
   }
+
+  console.log(`auth permitted for: ${email}`);
 };
 
 export const beforecreated = beforeUserCreated(async (event) => {
@@ -94,9 +102,9 @@ export const beforecreated = beforeUserCreated(async (event) => {
   await admin.database().ref(`users/${user?.uid}`).set(newUserProfile);
 });
 
-// export const beforesignedin = beforeUserSignedIn((event) => {
-//   uclaOnlyAuth(event);
-// });
+export const beforesignedin = beforeUserSignedIn((event) => {
+  uclaOnlyAuth(event);
+});
 
 /**
  * Clean up user interaction references when a post or reply is deleted.
