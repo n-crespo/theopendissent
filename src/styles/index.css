@@ -44,8 +44,25 @@
     }
   }
 
+  @keyframes jiggle {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-4px);
+    }
+    50% {
+      transform: translateX(4px);
+    }
+    75% {
+      transform: translateX(-4px);
+    }
+  }
+
+  --animate-jiggle: jiggle 0.4s ease-in-out;
   --animate-shimmer: shimmer 4s infinite ease-in-out alternate;
-  --animate-jiggle: bounceJiggle 0.5s infinite alternate;
+  /* --animate-jiggle: bounceJiggle 0.5s infinite alternate; */
 }
 
 /* Scrollbar styling for PostDetailsView */
