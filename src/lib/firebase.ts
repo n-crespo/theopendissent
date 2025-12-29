@@ -156,14 +156,14 @@ export const deletePost = async (postId: string, parentPostId?: string) => {
 };
 
 /**
- * Fetches a single post/reply by ID. Requires parentPostId if the target is a
- * reply.
+ * Fetches a single post or reply by its id.
  */
 export const getPostById = async (
   postId: string,
   parentPostId?: string,
 ): Promise<Post | null> => {
   try {
+    // determine path based on whether parent id is provided
     const contentPath = parentPostId
       ? `replies/${parentPostId}/${postId}`
       : `posts/${postId}`;
@@ -171,7 +171,17 @@ export const getPostById = async (
     const contentSnap = await get(ref(db, contentPath));
 
     if (contentSnap.exists()) {
-      return { id: postId, ...contentSnap.val() };
+      const data = contentSnap.val();
+      return {
+        id: postId,
+        ...data,
+        // normalize fields to match the post type structure
+        replyCount: data.replyCount || 0,
+        userInteractions: data.userInteractions || {
+          agreed: {},
+          dissented: {},
+        },
+      };
     }
 
     return null;
