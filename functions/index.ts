@@ -55,11 +55,13 @@ export const updateReplyCount = onValueWritten(
     else if (!after && before) incrementValue = -1;
     else return;
 
-    // replyCount is now a top-level field on the post
+    // replyCount is a top-level field on the post
     const postRef = admin.database().ref(`/posts/${postId}/replyCount`);
 
     return postRef.transaction((currentCount) => {
-      return Math.max(0, (currentCount || 0) + incrementValue);
+      // treat null/undefined as 0
+      const count = currentCount || 0;
+      return Math.max(0, count + incrementValue);
     });
   },
 );
