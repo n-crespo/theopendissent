@@ -6,6 +6,7 @@ import { PostInput } from "./PostInput";
 import { ReplyItem } from "./ReplyItem";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
+import { Post } from "../types";
 
 /**
  * displays the original post, a reply field, and a list of replies.
@@ -14,56 +15,45 @@ export const PostDetailsView = ({
   post: initialPost,
   highlightReplyId,
 }: {
-  post: any;
+  post: Post;
   highlightReplyId?: string | null;
 }) => {
-  const [replies, setReplies] = useState<any[]>([]);
-  const [livePost, setLivePost] = useState(initialPost);
+  const [replies, setReplies] = useState<Post[]>([]);
+  const [livePost, setLivePost] = useState<Post>(initialPost);
   const { user } = useAuth();
   const { closeAllModals } = useModal();
 
   const uid = user?.uid;
-  let currentStance: "agreed" | "dissented" | null = null;
 
-  if (uid && livePost?.userInteractions) {
-    if (livePost.userInteractions.agreed?.[uid]) currentStance = "agreed";
-    else if (livePost.userInteractions.dissented?.[uid])
-      currentStance = "dissented";
-  }
+  // calculate current user's stance on the live post
+  const currentStance = (() => {
+    if (!uid || !livePost?.userInteractions) return null;
+    if (livePost.userInteractions.agreed?.[uid]) return "agreed";
+    if (livePost.userInteractions.dissented?.[uid]) return "dissented";
+    return null;
+  })();
 
+  // listen for live post updates
   useEffect(() => {
     const postRef = ref(db, `posts/${initialPost.id}`);
     const unsubscribe = onValue(postRef, (snapshot) => {
       if (snapshot.exists()) {
-        setLivePost({ id: initialPost.id, ...snapshot.val() });
+        const data = snapshot.val();
+        setLivePost({
+          id: initialPost.id,
+          ...data,
+          // ensure userInteractions is initialized if missing in DB
+          userInteractions: data.userInteractions || {
+            agreed: {},
+            dissented: {},
+          },
+        });
       } else {
-        // close the modal if the post is deleted
         closeAllModals();
       }
     });
     return () => unsubscribe();
   }, [initialPost.id, closeAllModals]);
-
-  // listen for live post updates
-  useEffect(() => {
-    const repliesRef = ref(db, `replies/${initialPost.id}`);
-    const repliesQuery = query(repliesRef, orderByChild("timestamp"));
-
-    const unsubscribe = onValue(repliesQuery, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const list = Object.entries(data).map(([id, val]: [string, any]) => ({
-          id,
-          ...val,
-        }));
-        setReplies(list);
-      } else {
-        setReplies([]);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [initialPost.id]);
 
   // listen for replies and handle auto-scroll
   useEffect(() => {
@@ -71,15 +61,20 @@ export const PostDetailsView = ({
     const repliesQuery = query(repliesRef, orderByChild("timestamp"));
 
     const unsubscribe = onValue(repliesQuery, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
         const list = Object.entries(data).map(([id, val]: [string, any]) => ({
           id,
           ...val,
+          userInteractions: val.userInteractions || {
+            agreed: {},
+            dissented: {},
+          },
         }));
+
         setReplies(list);
 
-        // scroll to highlighted reply after DOM updates
+        // handle auto-scroll to highlighted reply
         if (highlightReplyId) {
           setTimeout(() => {
             const element = document.getElementById(
@@ -96,7 +91,6 @@ export const PostDetailsView = ({
     return () => unsubscribe();
   }, [initialPost.id, highlightReplyId]);
 
-  // prevent rendering if the post is gone
   if (!livePost) return null;
 
   return (
