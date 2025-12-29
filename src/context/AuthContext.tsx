@@ -5,13 +5,8 @@ import {
   useState,
   useEffect,
 } from "react";
-import {
-  User,
-  onAuthStateChanged,
-  signInWithPopup,
-  signOut,
-} from "firebase/auth";
-import { auth, googleProvider } from "../lib/firebase";
+import { User } from "firebase/auth";
+import { subscribeToAuth, signInWithGoogle, logoutUser } from "../lib/firebase";
 
 interface AuthContextType {
   user: User | null;
@@ -22,13 +17,16 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Manages the authentication state and provides auth methods via context.
+ */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // listen for auth changes
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    // listen for auth changes using the library helper
+    const unsubscribe = subscribeToAuth((currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
@@ -37,18 +35,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error: any) {
-      if (error.code === "auth/internal-error") {
-        alert(
-          "Sorry... only @g.ucla.edu emails are allowed to sign up right now.",
-        );
-      }
-      console.error("Sign-in failed:", error.message);
+      await signInWithGoogle();
+    } catch (error) {
+      // errors are handled inside signInWithGoogle or caught here
+      console.error("context sign-in error:", error);
     }
   };
 
-  const logout = () => signOut(auth);
+  const logout = async () => {
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error("context logout error:", error);
+    }
+  };
 
   return (
     <AuthContext.Provider value={{ user, loading, signIn, logout }}>
