@@ -1,16 +1,9 @@
 import { useState, useEffect } from "react";
-import {
-  ref,
-  query,
-  limitToLast,
-  onValue,
-  orderByChild,
-} from "firebase/database";
-import { db } from "../lib/firebase";
+import { subscribeToFeed } from "../lib/firebase";
 import { Post } from "../types";
 
 /**
- * fetches top-level posts from the database with pagination support.
+ * manages top-level posts state and pagination.
  */
 export const usePosts = (initialLimit: number = 20) => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -18,40 +11,8 @@ export const usePosts = (initialLimit: number = 20) => {
   const [currentLimit, setCurrentLimit] = useState(initialLimit);
 
   useEffect(() => {
-    const postsRef = ref(db, "posts");
-    const postsQuery = query(
-      postsRef,
-      orderByChild("timestamp"),
-      limitToLast(currentLimit),
-    );
-
-    const unsubscribe = onValue(postsQuery, (snapshot) => {
-      if (!snapshot.exists()) {
-        setPosts([]);
-        setLoading(false);
-        return;
-      }
-
-      const postsObject = snapshot.val();
-      const postsArray: Post[] = Object.entries(postsObject)
-        .map(([postId, postData]: [string, any]) => ({
-          id: postId,
-          userId: postData.userId,
-          postContent: postData.postContent || postData.content,
-          timestamp: postData.timestamp || 0,
-          editedAt: postData.editedAt,
-          replyCount: postData.metrics?.replyCount || postData.replyCount || 0,
-          userInteractions: {
-            agreed: postData.userInteractions?.agreed || {},
-            dissented: postData.userInteractions?.dissented || {},
-          },
-          parentPostId: postData.parentPostId,
-        }))
-        .filter((post) => post.postContent && !post.parentPostId)
-        .sort(
-          (a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0),
-        );
-
+    setLoading(true);
+    const unsubscribe = subscribeToFeed(currentLimit, (postsArray) => {
       setPosts(postsArray);
       setLoading(false);
     });
@@ -60,7 +21,6 @@ export const usePosts = (initialLimit: number = 20) => {
   }, [currentLimit]);
 
   const loadMore = () => {
-    setLoading(true);
     setCurrentLimit((prev) => prev + 20);
   };
 

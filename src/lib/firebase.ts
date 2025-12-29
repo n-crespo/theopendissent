@@ -13,6 +13,7 @@ import {
   onValue,
   query,
   orderByChild,
+  limitToLast,
 } from "firebase/database";
 
 const firebaseConfig = {
@@ -219,5 +220,49 @@ export const subscribeToReplies = (
     } else {
       callback([]);
     }
+  });
+};
+
+/**
+ * subscribes to the main feed of top-level posts.
+ */
+export const subscribeToFeed = (
+  limitCount: number,
+  callback: (posts: Post[]) => void,
+) => {
+  const postsRef = ref(db, "posts");
+  const postsQuery = query(
+    postsRef,
+    orderByChild("timestamp"),
+    limitToLast(limitCount),
+  );
+
+  return onValue(postsQuery, (snapshot) => {
+    if (!snapshot.exists()) {
+      callback([]);
+      return;
+    }
+
+    const postsObject = snapshot.val();
+    const postsArray: Post[] = Object.entries(postsObject)
+      .map(([postId, postData]: [string, any]) => ({
+        id: postId,
+        userId: postData.userId,
+        postContent: postData.postContent || postData.content,
+        timestamp: postData.timestamp || 0,
+        editedAt: postData.editedAt,
+        replyCount: postData.replyCount || 0,
+        userInteractions: {
+          agreed: postData.userInteractions?.agreed || {},
+          dissented: postData.userInteractions?.dissented || {},
+        },
+        parentPostId: postData.parentPostId,
+      }))
+      // filter out replies and invalid content
+      .filter((post) => post.postContent && !post.parentPostId)
+      // newest first
+      .sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
+
+    callback(postsArray);
   });
 };
