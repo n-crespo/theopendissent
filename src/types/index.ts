@@ -1,9 +1,3 @@
-export interface PostMetrics {
-  agreedCount: number;
-  dissentedCount: number;
-  replyCount: number;
-}
-
 export interface PostInteractions {
   agreed: Record<string, boolean>;
   dissented: Record<string, boolean>;
@@ -15,15 +9,10 @@ export interface Post {
   postContent: string;
   timestamp: number | object;
   editedAt?: number;
-  metrics: PostMetrics;
+  replyCount: number; // replaced metrics object
   userInteractions: PostInteractions;
   parentPostId?: string;
   userInteractionType?: "agreed" | "dissented";
-}
-
-export interface UserInteractions {
-  agreed: Record<string, boolean>;
-  dissented: Record<string, boolean>;
 }
 
 export interface UserProfile {

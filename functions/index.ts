@@ -12,37 +12,36 @@ admin.initializeApp();
 
 /**
  * syncs user interactions from the user's private tree to the public post or reply tree.
+ * data value in user tree is now the parentPostId string or "top".
  */
 export const syncInteractionToPost = onValueWritten(
   "/users/{userId}/postInteractions/{interactionType}/{postId}",
   async (event) => {
     const { userId, interactionType, postId } = event.params;
-    const afterData = event.data.after.val();
-    const beforeData = event.data.before.val();
+    const afterValue = event.data.after.val();
+    const beforeValue = event.data.before.val();
     const exists = event.data.after.exists();
 
-    // determine which data to use for path resolution
-    const data = exists ? afterData : beforeData;
+    // Use beforeValue for cleanup if the interaction was removed
+    const parentId = exists ? afterValue : beforeValue;
     const db = admin.database();
 
     let rootPath: string;
-    if (data?.parentPostId && data.parentPostId !== "top") {
-      rootPath = `replies/${data.parentPostId}/${postId}`;
+    if (parentId && parentId !== "top") {
+      rootPath = `replies/${parentId}/${postId}`;
     } else {
       rootPath = `posts/${postId}`;
     }
 
     const targetPath = `${rootPath}/userInteractions/${interactionType}/${userId}`;
 
-    // simply set or remove the userId marker
+    // sync marker to the target post/reply
     return db.ref(targetPath).set(exists ? true : null);
   },
 );
 
 /**
- * updates the replyCount on the parent post.
- * since replies aren't stored as a list of IDs inside the post,
- * we keep this specific counter for feed performance.
+ * updates the replyCount on the parent post when replies are created.
  */
 export const updateReplyCount = onValueWritten(
   "/replies/{postId}/{replyId}",
@@ -56,7 +55,8 @@ export const updateReplyCount = onValueWritten(
     else if (!after && before) incrementValue = -1;
     else return;
 
-    const postRef = admin.database().ref(`/posts/${postId}/metrics/replyCount`);
+    // replyCount is now a top-level field on the post
+    const postRef = admin.database().ref(`/posts/${postId}/replyCount`);
 
     return postRef.transaction((currentCount) => {
       return Math.max(0, (currentCount || 0) + incrementValue);

@@ -10,7 +10,7 @@ import { db } from "../lib/firebase";
 import { Post } from "../types";
 
 /**
- * Fetches top-level posts from the database with pagination support.
+ * fetches top-level posts from the database with pagination support.
  */
 export const usePosts = (initialLimit: number = 20) => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -40,26 +40,15 @@ export const usePosts = (initialLimit: number = 20) => {
           postContent: postData.postContent || postData.content,
           timestamp: postData.timestamp || 0,
           editedAt: postData.editedAt,
-          metrics: {
-            agreedCount: postData.metrics?.agreedCount || 0,
-            dissentedCount:
-              postData.metrics?.dissentedCount ||
-              postData.metrics?.disagreedCount ||
-              0,
-            replyCount: postData.metrics?.replyCount || 0,
-          },
+          // metrics object is gone; replyCount is now a direct field
+          replyCount: postData.metrics?.replyCount || postData.replyCount || 0,
           userInteractions: {
             agreed: postData.userInteractions?.agreed || {},
-            dissented:
-              postData.userInteractions?.dissented ||
-              postData.userInteractions?.disagreed ||
-              {},
+            dissented: postData.userInteractions?.dissented || {},
           },
           parentPostId: postData.parentPostId,
         }))
-        // ensure we only display top-level posts in the main feed
         .filter((post) => post.postContent && !post.parentPostId)
-        // sort newest first
         .sort(
           (a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0),
         );
