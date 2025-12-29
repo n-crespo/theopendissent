@@ -32,10 +32,10 @@ export const useReplies = (parentId: string | undefined) => {
         .map(([id, postData]: [string, any]) => ({
           id,
           ...postData,
-          metrics: {
-            agreedCount: postData.metrics?.agreedCount || 0,
-            dissentedCount: postData.metrics?.dissentedCount || 0,
-            replyCount: postData.metrics?.replyCount || 0,
+          replyCount: postData.replyCount || 0,
+          userInteractions: {
+            agreed: postData.userInteractions?.agreed || {},
+            dissented: postData.userInteractions?.dissented || {},
           },
         }))
         // sort by timestamp ascending for conversation flow
