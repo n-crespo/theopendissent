@@ -17,7 +17,6 @@ export const usePostActions = (post: Post) => {
   const { openModal } = useModal();
   const uid = user?.uid;
 
-  const [localMetrics, setLocalMetrics] = useState(post.metrics);
   const [localInteractions, setLocalInteractions] = useState(
     post.userInteractions || { agreed: {}, dissented: {} },
   );
@@ -29,16 +28,22 @@ export const usePostActions = (post: Post) => {
 
   useEffect(() => {
     if (!isOptimisticRef.current) {
-      setLocalMetrics(post.metrics);
       setLocalInteractions(
         post.userInteractions || { agreed: {}, dissented: {} },
       );
     }
-  }, [post.metrics, post.userInteractions]);
+  }, [post.userInteractions]);
 
+  // derive counts and state from the interactions object
   const interactionState = {
     agreed: !!(uid && localInteractions?.agreed?.[uid]),
     dissented: !!(uid && localInteractions?.dissented?.[uid]),
+  };
+
+  const dynamicMetrics = {
+    agreedCount: Object.keys(localInteractions?.agreed || {}).length,
+    dissentedCount: Object.keys(localInteractions?.dissented || {}).length,
+    replyCount: post.metrics?.replyCount || 0, // still using managed counter
   };
 
   const handleInteraction = async (
@@ -57,23 +62,6 @@ export const usePostActions = (post: Post) => {
     const wasActive = !!localInteractions?.[type]?.[uid];
     const wasOtherActive = !!localInteractions?.[otherType]?.[uid];
 
-    const nextMetrics = { ...localMetrics };
-
-    if (wasActive) {
-      nextMetrics[`${type}Count` as keyof typeof nextMetrics] = Math.max(
-        0,
-        nextMetrics[`${type}Count` as keyof typeof nextMetrics] - 1,
-      );
-    } else {
-      nextMetrics[`${type}Count` as keyof typeof nextMetrics]++;
-      if (wasOtherActive) {
-        nextMetrics[`${otherType}Count` as keyof typeof nextMetrics] = Math.max(
-          0,
-          nextMetrics[`${otherType}Count` as keyof typeof nextMetrics] - 1,
-        );
-      }
-    }
-
     const nextInteractions = {
       agreed: { ...(localInteractions?.agreed || {}) },
       dissented: { ...(localInteractions?.dissented || {}) },
@@ -88,12 +76,10 @@ export const usePostActions = (post: Post) => {
       }
     }
 
-    setLocalMetrics(nextMetrics);
     setLocalInteractions(nextInteractions);
 
     try {
       if (wasActive) {
-        // passed parentPostId to help the cloud function locate the content
         await removeInteraction(post.id, uid, type, post.parentPostId);
       } else {
         await addInteraction(post.id, uid, type, post.parentPostId);
@@ -102,7 +88,6 @@ export const usePostActions = (post: Post) => {
         }
       }
     } catch (err) {
-      setLocalMetrics(post.metrics);
       setLocalInteractions(
         post.userInteractions || { agreed: {}, dissented: {} },
       );
@@ -152,7 +137,7 @@ export const usePostActions = (post: Post) => {
 
   return {
     uid,
-    localMetrics,
+    localMetrics: dynamicMetrics, // returning derived metrics
     isEditing,
     setIsEditing,
     editContent,
