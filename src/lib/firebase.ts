@@ -36,6 +36,7 @@ export const postsRef = ref(db, "posts");
 /**
  * atomic update to add or remove an interaction in the user's tree.
  * cloud function handles syncing this to the public post/reply and metrics.
+ * stores the parent ID as a string so the cloud function can resolve paths.
  */
 const setInteraction = async (
   postId: string,
@@ -45,9 +46,9 @@ const setInteraction = async (
   parentPostId?: string,
 ) => {
   const updates: Record<string, any> = {
-    // we store the parentPostId so the cloud function knows where to find the target
+    // value is the parent ID string or "top"
     [`users/${uid}/postInteractions/${type}/${postId}`]: value
-      ? { parentPostId: parentPostId || "top" }
+      ? parentPostId || "top"
       : null,
   };
 
@@ -70,7 +71,6 @@ export const removeInteraction = (
 
 /**
  * creates a new post or a reply.
- * logical separation between top-level posts and nested replies.
  */
 export const createPost = async (
   userId: string,
@@ -87,7 +87,7 @@ export const createPost = async (
     userId,
     postContent: content,
     timestamp: serverTimestamp(),
-    metrics: { agreedCount: 0, dissentedCount: 0, replyCount: 0 },
+    replyCount: 0,
     userInteractions: { agreed: {}, dissented: {} },
     ...(parentPostId && { parentPostId, userInteractionType: stance }),
   };
