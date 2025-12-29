@@ -95,9 +95,7 @@ export const PostDetailsView = ({
 
   return (
     <div className="flex flex-col">
-      <div className="mt-4">
-        <PostItem post={livePost} disableClick={true} />
-      </div>
+      <PostItem post={livePost} disableClick={true} />
 
       <div className="mb-10">
         <PostInput parentPostId={livePost.id} currentStance={currentStance} />

@@ -25,7 +25,7 @@ export const GlobalModal = () => {
           onClick={closeModal}
         >
           <div
-            className="relative flex max-h-[85vh] w-full max-w-112.5 flex-col bg-white transition-all animate-in fade-in zoom-in-[0.98] duration-200"
+            className="relative flex max-h-[90vh] w-full max-w-120 flex-col overflow-hidden bg-white transition-all animate-in fade-in zoom-in-[0.98] duration-200"
             style={{
               borderRadius: "var(--radius-modal)",
               border: "1px solid var(--color-border-subtle)",
@@ -33,17 +33,19 @@ export const GlobalModal = () => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* close button: ghost style, slightly rounded */}
-            <button
-              className="absolute top-3 right-3 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 active:bg-slate-200"
-              onClick={closeModal}
-              aria-label="Close"
-            >
-              <i className="bi bi-x-lg text-lg"></i>
-            </button>
+            {/* small fixed header */}
+            <div className="sticky top-0 z-50 flex h-10 w-full shrink-0 items-center justify-end bg-white/80 backdrop-blur-sm px-1">
+              <button
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100"
+                onClick={closeModal}
+                aria-label="Close"
+              >
+                <i className="bi bi-x-lg text-lg"></i>
+              </button>
+            </div>
 
             {/* content area */}
-            <div className="custom-scrollbar overflow-y-auto p-8 text-left">
+            <div className="custom-scrollbar overflow-y-auto p-8 pt-0 text-left">
               {modal.type === "signin" && <SignInModal />}
               {modal.type === "help" && <HelpModal />}
               {modal.type === "logout" && <LogoutModal />}
