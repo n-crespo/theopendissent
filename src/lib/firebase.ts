@@ -201,6 +201,7 @@ export const subscribeToPost = (
 
 /**
  * subscribes to updates for all replies to a post.
+ * ensures data is sorted chronologically and normalized.
  */
 export const subscribeToReplies = (
   postId: string,
@@ -209,17 +210,23 @@ export const subscribeToReplies = (
   const repliesRef = ref(db, `replies/${postId}`);
   const q = query(repliesRef, orderByChild("timestamp"));
   return onValue(q, (snapshot) => {
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      const list = Object.entries(data).map(([id, val]: [string, any]) => ({
+    if (!snapshot.exists()) {
+      callback([]);
+      return;
+    }
+
+    const data = snapshot.val();
+    const list: Post[] = Object.entries(data)
+      .map(([id, val]: [string, any]) => ({
         id,
         ...val,
+        replyCount: val.replyCount || 0,
         userInteractions: val.userInteractions || { agreed: {}, dissented: {} },
-      }));
-      callback(list);
-    } else {
-      callback([]);
-    }
+      }))
+      // sort by timestamp ascending for conversation flow
+      .sort((a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0));
+
+    callback(list);
   });
 };
 

@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { ref, onValue, query, orderByChild } from "firebase/database";
-import { db } from "../lib/firebase";
+import { subscribeToReplies } from "../lib/firebase";
 import { Post } from "../types";
 
 /**
- * fetches all replies for a specific parent post.
+ * manages the state of replies for a specific parent post.
  */
 export const useReplies = (parentId: string | undefined) => {
   const [replies, setReplies] = useState<Post[]>([]);
@@ -17,32 +16,8 @@ export const useReplies = (parentId: string | undefined) => {
       return;
     }
 
-    const repliesRef = ref(db, `replies/${parentId}`);
-    const repliesQuery = query(repliesRef, orderByChild("timestamp"));
-
-    const unsubscribe = onValue(repliesQuery, (snapshot) => {
-      if (!snapshot.exists()) {
-        setReplies([]);
-        setLoading(false);
-        return;
-      }
-
-      const data = snapshot.val();
-      const repliesArray: Post[] = Object.entries(data)
-        .map(([id, postData]: [string, any]) => ({
-          id,
-          ...postData,
-          replyCount: postData.replyCount || 0,
-          userInteractions: {
-            agreed: postData.userInteractions?.agreed || {},
-            dissented: postData.userInteractions?.dissented || {},
-          },
-        }))
-        // sort by timestamp ascending for conversation flow
-        .sort(
-          (a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0),
-        );
-
+    setLoading(true);
+    const unsubscribe = subscribeToReplies(parentId, (repliesArray) => {
       setReplies(repliesArray);
       setLoading(false);
     });
