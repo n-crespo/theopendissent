@@ -33,9 +33,9 @@ export const ReplyItem = ({
   const isAgree = userInteractionType === "agreed";
 
   // Subtle stance colors
-  const stanceText = isAgree ? "text-agree" : "text-dissent";
+  const stanceText = isAgree ? "text-logo-green" : "text-logo-red";
   const stanceIcon = isAgree ? "bi-check-square-fill" : "bi-x-square-fill";
-  const stanceBg = isAgree ? "bg-agree-bg" : "bg-dissent-bg";
+  const stanceBg = isAgree ? "bg-logo-green-light" : "bg-logo-red-light";
 
   const formattedTime = timeAgo(
     new Date(typeof timestamp === "number" ? timestamp : 0),

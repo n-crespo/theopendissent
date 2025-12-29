@@ -118,7 +118,7 @@ export const PostItem = memo(
         {/* interaction row */}
         <div className="flex items-center justify-between pt-3 border-t border-border-subtle">
           <div className="relative flex items-center bg-slate-50 p-0.5 rounded-full border border-slate-100">
-            {/* interaction pill: agree left, dissent right */}
+            {/* interaction pill: centers itself when neutral */}
             <div
               className={`absolute h-7 rounded-full transition-all duration-300 cubic-bezier(0.34, 1.56, 0.64, 1) z-0
                 ${interactionState.agreed ? "translate-x-0 bg-logo-green" : ""}
@@ -128,9 +128,10 @@ export const PostItem = memo(
               style={{ left: "2px", width: "48%" }}
             />
 
+            {/* agree button */}
             <button
               onClick={(e: any) => onStanceClick(e, "agreed")}
-              className={`relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full transition-all duration-200
+              className={`relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-transform duration-100
                 ${interactionState.agreed ? "text-white" : "text-slate-400 hover:text-logo-green"}`}
             >
               <i
@@ -141,9 +142,10 @@ export const PostItem = memo(
               </span>
             </button>
 
+            {/* dissent button */}
             <button
               onClick={(e: any) => onStanceClick(e, "dissented")}
-              className={`relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full transition-all duration-200
+              className={`relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-transform duration-100
                 ${interactionState.dissented ? "text-white" : "text-slate-400 hover:text-logo-red"}`}
             >
               <i
@@ -155,11 +157,11 @@ export const PostItem = memo(
             </button>
           </div>
 
-          {/* discussion nudge (jiggles when stance is taken) */}
+          {/* discussion button */}
           <button
             onClick={handleViewDetails}
             disabled={disableClick}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all origin-center
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full origin-center active:scale-95 transition-all
               ${isJiggling ? "animate-jiggle shadow-md ring-2 ring-logo-blue/10" : ""}
               ${disableClick ? "cursor-default text-logo-blue" : "text-slate-400 hover:bg-slate-50 hover:text-logo-blue"}`}
           >

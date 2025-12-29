@@ -6,11 +6,8 @@
   --color-logo-blue: #043f63;
   --color-logo-offwhite: #f8f2e8;
 
-  /* stance colors */
-  --color-agree: #28a745;
-  --color-agree-bg: rgba(40, 167, 69, 0.1);
-  --color-dissent: #dc3545;
-  --color-dissent-bg: rgba(220, 53, 69, 0.1);
+  --color-logo-green-light: rgba(77, 94, 25, 0.1);
+  --color-logo-red-light: rgba(112, 22, 30, 0.1);
 
   --color-gray-custom: #464646;
 
