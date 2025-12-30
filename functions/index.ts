@@ -204,7 +204,7 @@ export const sharePost = onRequest(async (req, res) => {
       return;
     }
 
-    // 1. Calculate Interaction Counts
+    // 1. Prepare Content
     const interactions = data.userInteractions || {};
     const agreedCount = interactions.agreed
       ? Object.keys(interactions.agreed).length
@@ -213,8 +213,6 @@ export const sharePost = onRequest(async (req, res) => {
       ? Object.keys(interactions.dissented).length
       : 0;
 
-    // 2. Prepare Text Fields
-    // Sanitize content
     const rawContent = data.postContent || "";
     const cleanContent = escapeHtml(rawContent);
     const contentPreview =
@@ -222,13 +220,12 @@ export const sharePost = onRequest(async (req, res) => {
         ? `${cleanContent.slice(0, 77)}...`
         : cleanContent;
 
-    // PAGE TITLE (The Bold Text): The interaction stats
-    const pageTitle = `${agreedCount} agreed, ${dissentedCount} dissented`;
+    // The Bold Header
+    const pageTitle = `• ${agreedCount} agrees, ${dissentedCount} dissents`;
 
-    // PAGE DESCRIPTION (The Gray/Small Text): The post content
+    // The Post Content (Apple explicitly asks for this in og:description)
     const pageDescription = contentPreview;
 
-    // 3. URLs
     const shareUrl = `${DOMAIN}/share?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
     const appUrl = `${DOMAIN}/?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
 
@@ -239,16 +236,22 @@ export const sharePost = onRequest(async (req, res) => {
         <meta charset="utf-8">
         <title>${pageTitle}</title>
 
+        <link rel="alternate" type="application/activity+json" href="${shareUrl}" />
+
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="The Open Dissent" />
         <meta property="og:url" content="${shareUrl}" />
 
         <meta property="og:title" content="${pageTitle}" />
+
         <meta property="og:description" content="${pageDescription}" />
+
+        <meta property="og:image" content="${DEFAULT_IMAGE}" />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="${pageTitle}" />
         <meta name="twitter:description" content="${pageDescription}" />
+        <meta name="twitter:image" content="${DEFAULT_IMAGE}" />
       </head>
       <body>
         <p>Redirecting to discussion...</p>
