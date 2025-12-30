@@ -3,15 +3,16 @@ import { getDeepLinkData } from "../lib/firebase";
 import { useModal } from "../context/ModalContext";
 
 /**
- * Handles deep-linking via ?s=ID and optional ?p=PARENT_ID.
+ * Handles incoming deep links via ?s=ID and optional ?p=PARENT_ID.
  * Automatically opens the appropriate modal based on link data.
  */
-export const useSharedPost = () => {
+export const useDeepLinkHandler = () => {
   const { openModal } = useModal();
-  const hasprocessed = useRef(false);
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
-    if (hasprocessed.current) return;
+    // If we already processed a link or there are no params, skip
+    if (hasProcessed.current) return;
 
     const params = new URLSearchParams(window.location.search);
     const sharedId = params.get("s");
@@ -20,7 +21,7 @@ export const useSharedPost = () => {
     if (!sharedId) return;
 
     const handleDeepLink = async () => {
-      hasprocessed.current = true;
+      hasProcessed.current = true;
 
       // resolve post data from the library
       const data = await getDeepLinkData(sharedId, parentId);
