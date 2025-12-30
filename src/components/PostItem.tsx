@@ -154,9 +154,10 @@ export const PostItem = memo(
               style={{ left: "2px", width: "48%" }}
             />
 
+            {/* agree button */}
             <button
               onClick={(e: any) => onStanceClick(e, "agreed")}
-              className={`relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-transform duration-100
+              className={`relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-all duration-200
                 ${interactionState.agreed ? "text-white" : "text-slate-400 hover:text-logo-green"}`}
             >
               <i
@@ -167,9 +168,10 @@ export const PostItem = memo(
               </span>
             </button>
 
+            {/* dissent button */}
             <button
               onClick={(e: any) => onStanceClick(e, "dissented")}
-              className={`relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-transform duration-100
+              className={`relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-all duration-200
                 ${interactionState.dissented ? "text-white" : "text-slate-400 hover:text-logo-red"}`}
             >
               <i
