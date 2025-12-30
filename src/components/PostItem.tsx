@@ -9,7 +9,15 @@ import { ActionMenu } from "./ActionMenu";
  * displays a post with a stance slider and a reactive discussion nudge.
  */
 export const PostItem = memo(
-  ({ post, disableClick }: { post: Post; disableClick?: boolean }) => {
+  ({
+    post,
+    disableClick,
+    onStanceChange,
+  }: {
+    post: Post;
+    disableClick?: boolean;
+    onStanceChange?: (stance: "agreed" | "dissented" | null) => void;
+  }) => {
     if (!post || !post.userId) return null;
     const { userId, postContent, timestamp, parentPostId, editedAt } = post;
     const { openModal } = useModal();
@@ -32,22 +40,39 @@ export const PostItem = memo(
     const [isJiggling, setIsJiggling] = useState(false);
     const isOwner = uid === userId;
     const hasStance = interactionState.agreed || interactionState.dissented;
-    const formattedEditTime = editedAt ? timeAgo(new Date(editedAt)) : null;
+
     const formattedTime = timeAgo(
       new Date(typeof timestamp === "number" ? timestamp : 0),
     );
+    const formattedEditTime = editedAt ? timeAgo(new Date(editedAt)) : null;
 
-    // trigger the nudge animation when the user takes a stance
+    // trigger the nudge animation only if transitioning from neutral
     const onStanceClick = (
       e: React.MouseEvent,
       type: "agreed" | "dissented",
     ) => {
+      // capture state BEFORE the update processes
+      const wasNeutral =
+        !interactionState.agreed && !interactionState.dissented;
+
+      // Determine what the NEXT stance will be for the parent callback
+      let nextStance: "agreed" | "dissented" | null = type;
+      if (type === "agreed" && interactionState.agreed) nextStance = null;
+      if (type === "dissented" && interactionState.dissented) nextStance = null;
+
+      // Notify parent immediately (Optimistic UI for PostInput)
+      if (onStanceChange) {
+        onStanceChange(nextStance);
+      }
+
       handleInteraction(e, type);
 
-      // reset and trigger jiggle
-      setIsJiggling(false);
-      setTimeout(() => setIsJiggling(true), 10);
-      setTimeout(() => setIsJiggling(false), 500);
+      // only jiggle if we started from a neutral stance
+      if (wasNeutral) {
+        setIsJiggling(false);
+        setTimeout(() => setIsJiggling(true), 10);
+        setTimeout(() => setIsJiggling(false), 500);
+      }
     };
 
     const handleViewDetails = (e: React.MouseEvent) => {
@@ -189,10 +214,12 @@ export const PostItem = memo(
       </div>
     );
   },
+  // memo comparison
   (p, n) =>
     p.post.id === n.post.id &&
     p.post.postContent === n.post.postContent &&
     p.post.replyCount === n.post.replyCount &&
+    p.post.editedAt === n.post.editedAt &&
     JSON.stringify(p.post.userInteractions) ===
       JSON.stringify(n.post.userInteractions),
 );

@@ -16,22 +16,41 @@ export const PostDetailsView = ({
 }) => {
   const [replies, setReplies] = useState<Post[]>([]);
   const [livePost, setLivePost] = useState<Post>(initialPost);
-  const { user } = useAuth();
-  const { closeAllModals } = useModal();
 
+  // Local optimistic stance state
+  const { user } = useAuth();
   const uid = user?.uid;
 
-  // calculate current user's stance on the live post
-  const currentStance = (() => {
-    if (!uid || !livePost?.userInteractions) return null;
-    if (livePost.userInteractions.agreed?.[uid]) return "agreed";
-    if (livePost.userInteractions.dissented?.[uid]) return "dissented";
+  // Initialize stance from props/server data
+  const getInitialStance = () => {
+    if (!uid || !initialPost.userInteractions) return null;
+    if (initialPost.userInteractions.agreed?.[uid]) return "agreed";
+    if (initialPost.userInteractions.dissented?.[uid]) return "dissented";
     return null;
-  })();
+  };
+
+  const [localStance, setLocalStance] = useState<"agreed" | "dissented" | null>(
+    getInitialStance,
+  );
+
+  const { closeAllModals } = useModal();
+
+  // Sync local stance if server data changes (and we aren't mid-interaction)
+  useEffect(() => {
+    if (!livePost || !uid) return;
+    const serverStance = livePost.userInteractions?.agreed?.[uid]
+      ? "agreed"
+      : livePost.userInteractions?.dissented?.[uid]
+        ? "dissented"
+        : null;
+
+    // Only update if we don't have a local override or if we want to ensure sync
+    // For now, we trust the server eventually catches up, but we can sync here
+    setLocalStance(serverStance);
+  }, [livePost, uid]);
 
   // listen for live post updates
   useEffect(() => {
-    // listen for post updates
     const unsubscribe = subscribeToPost(initialPost.id, (post) => {
       if (post) {
         setLivePost(post);
@@ -44,7 +63,6 @@ export const PostDetailsView = ({
 
   // listen for replies and handle auto-scroll
   useEffect(() => {
-    // listen for replies
     const unsubscribe = subscribeToReplies(initialPost.id, (list) => {
       setReplies(list);
 
@@ -63,10 +81,14 @@ export const PostDetailsView = ({
 
   return (
     <div className="flex flex-col">
-      <PostItem post={livePost} disableClick={true} />
+      <PostItem
+        post={livePost}
+        disableClick={true}
+        onStanceChange={setLocalStance}
+      />
 
       <div className="mb-10">
-        <PostInput parentPostId={livePost.id} currentStance={currentStance} />
+        <PostInput parentPostId={livePost.id} currentStance={localStance} />
       </div>
 
       <div className="pr-1">

@@ -11,6 +11,7 @@ import { useModal } from "../context/ModalContext";
 
 /**
  * manages post interactions, editing, deletion, and sharing.
+ * implements debouncing to prevent db flicker during rapid interactions.
  */
 export const usePostActions = (post: Post) => {
   const { user } = useAuth();
@@ -24,10 +25,13 @@ export const usePostActions = (post: Post) => {
   const [editContent, setEditContent] = useState(post.postContent);
   const [isSaving, setIsSaving] = useState(false);
 
-  const isOptimisticRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // refs for debouncing backend calls
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isInteractingRef = useRef(false);
 
+  // sync local state with prop updates, but pause if user is actively interacting
   useEffect(() => {
-    if (!isOptimisticRef.current) {
+    if (!isInteractingRef.current) {
       setLocalInteractions(
         post.userInteractions || { agreed: {}, dissented: {} },
       );
@@ -54,10 +58,9 @@ export const usePostActions = (post: Post) => {
     e.stopPropagation();
     if (!uid) return openModal("signin");
 
-    if (isOptimisticRef.current) clearTimeout(isOptimisticRef.current);
-    isOptimisticRef.current = setTimeout(() => {
-      isOptimisticRef.current = null;
-    }, 2000);
+    // 1. Optimistic Update
+    // mark user as interacting to block incoming prop overwrites (flicker prevention)
+    isInteractingRef.current = true;
 
     const otherType = type === "agreed" ? "dissented" : "agreed";
     const wasActive = !!localInteractions?.[type]?.[uid];
@@ -79,20 +82,60 @@ export const usePostActions = (post: Post) => {
 
     setLocalInteractions(nextInteractions);
 
-    try {
-      if (wasActive) {
-        await removeInteraction(post.id, uid, type, post.parentPostId);
-      } else {
-        await addInteraction(post.id, uid, type, post.parentPostId);
-        if (wasOtherActive) {
-          await removeInteraction(post.id, uid, otherType, post.parentPostId);
+    // 2. Debounced Backend Call
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+
+    debounceTimerRef.current = setTimeout(async () => {
+      try {
+        // determine final intent based on the *latest* local state
+        const finalAgreed = !!nextInteractions.agreed[uid];
+        const finalDissented = !!nextInteractions.dissented[uid];
+
+        // check against server truth (post.userInteractions) to minimize writes
+        const serverAgreed = !!post.userInteractions?.agreed?.[uid];
+        const serverDissented = !!post.userInteractions?.dissented?.[uid];
+
+        // execute only the necessary diff
+        if (finalAgreed && !serverAgreed) {
+          await addInteraction(post.id, uid, "agreed", post.parentPostId);
+          if (serverDissented) {
+            // cleanup the other side if needed (though backend triggers usually handle this, explicit is safer)
+            await removeInteraction(
+              post.id,
+              uid,
+              "dissented",
+              post.parentPostId,
+            );
+          }
+        } else if (finalDissented && !serverDissented) {
+          await addInteraction(post.id, uid, "dissented", post.parentPostId);
+          if (serverAgreed) {
+            await removeInteraction(post.id, uid, "agreed", post.parentPostId);
+          }
+        } else if (!finalAgreed && !finalDissented) {
+          // user removed their stance entirely
+          if (serverAgreed)
+            await removeInteraction(post.id, uid, "agreed", post.parentPostId);
+          if (serverDissented)
+            await removeInteraction(
+              post.id,
+              uid,
+              "dissented",
+              post.parentPostId,
+            );
         }
+      } catch (err) {
+        console.error("interaction sync failed", err);
+        // rollback on error
+        setLocalInteractions(
+          post.userInteractions || { agreed: {}, dissented: {} },
+        );
+      } finally {
+        // release the lock
+        isInteractingRef.current = false;
+        debounceTimerRef.current = null;
       }
-    } catch (err) {
-      setLocalInteractions(
-        post.userInteractions || { agreed: {}, dissented: {} },
-      );
-    }
+    }, 1000); // 1 second debounce
   };
 
   const handleCancel = () => {
