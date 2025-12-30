@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Post } from "../types";
+import { useShare } from "../hooks/useShare";
 
 interface ActionMenuProps {
   post: Post;
@@ -9,10 +10,6 @@ interface ActionMenuProps {
   onDelete: (e: React.MouseEvent) => void;
 }
 
-/**
- * updated ActionMenu with native share functionality.
- * uses portals to bypass modal clipping and supports deep-linking logic.
- */
 export const ActionMenu = ({
   post,
   isOwner,
@@ -24,6 +21,9 @@ export const ActionMenu = ({
   const [openUpward, setOpenUpward] = useState(false);
 
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Use the hook
+  const { sharePost } = useShare();
 
   const toggleMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -55,39 +55,10 @@ export const ActionMenu = ({
     };
   }, [show]);
 
-  const handleShare = async (e: React.MouseEvent) => {
+  const handleShareClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShow(false);
-
-    // build url using URLSearchParams for cleaner construction
-    const url = new URL(window.location.origin);
-    url.searchParams.set("s", post.id);
-    if (post.parentPostId) {
-      url.searchParams.set("p", post.parentPostId);
-    }
-
-    const shareUrl = url.toString();
-
-    const shareData = {
-      title: "The Open Dissent",
-      text: "Check out this discussion:",
-      url: shareUrl,
-    };
-
-    if (navigator.share && navigator.canShare?.(shareData)) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        if ((err as Error).name !== "AbortError") console.error(err);
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        // todo: add global toast context call
-      } catch (err) {
-        console.error("failed to copy:", err);
-      }
-    }
+    sharePost(post);
   };
 
   const menuContent = (
@@ -131,7 +102,6 @@ export const ActionMenu = ({
             onClick={(e) => {
               e.stopPropagation();
               setShow(false);
-              /* todo: report logic */
             }}
             className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
           >
@@ -143,7 +113,7 @@ export const ActionMenu = ({
         <div className="my-1.5 border-t border-slate-100" />
 
         <button
-          onClick={handleShare}
+          onClick={handleShareClick}
           className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
         >
           <i className="bi bi-share text-slate-400"></i>
