@@ -204,7 +204,7 @@ export const sharePost = onRequest(async (req, res) => {
       return;
     }
 
-    // 1. Prepare Content
+    // prepare content
     const interactions = data.userInteractions || {};
     const agreedCount = interactions.agreed
       ? Object.keys(interactions.agreed).length
@@ -215,13 +215,16 @@ export const sharePost = onRequest(async (req, res) => {
 
     const rawContent = data.postContent || "";
     const cleanContent = escapeHtml(rawContent);
+
+    // increased limit to 200 chars for better iMessage utilization
+    const maxLength = 300;
     const contentPreview =
-      cleanContent.length > 80
-        ? `${cleanContent.slice(0, 77)}...`
+      cleanContent.length > maxLength
+        ? `${cleanContent.slice(0, maxLength)}...`
         : cleanContent;
 
-    // PAGE TITLE (Bold Text): The interaction stats
-    const pageTitle = `• ${agreedCount} agrees, ${dissentedCount} dissents`;
+    // PAGE TITLE (Bold Text): The interaction stats with bullet
+    const pageTitle = `${agreedCount} agreed • ${dissentedCount} dissented`;
 
     // PAGE DESCRIPTION (Gray/Normal Text): The post content
     const pageDescription = contentPreview;
