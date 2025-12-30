@@ -2,10 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Post } from "../types";
 import { useShare } from "../hooks/useShare";
+import { useReport } from "../hooks/useReport";
 
 interface ActionMenuProps {
   post: Post;
   isOwner: boolean;
+  currentUserId?: string;
   onEdit: (e: React.MouseEvent) => void;
   onDelete: (e: React.MouseEvent) => void;
 }
@@ -13,6 +15,7 @@ interface ActionMenuProps {
 export const ActionMenu = ({
   post,
   isOwner,
+  currentUserId,
   onEdit,
   onDelete,
 }: ActionMenuProps) => {
@@ -22,8 +25,8 @@ export const ActionMenu = ({
 
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Use the hook
   const { sharePost } = useShare();
+  const { reportPost } = useReport();
 
   const toggleMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -59,6 +62,12 @@ export const ActionMenu = ({
     e.stopPropagation();
     setShow(false);
     sharePost(post);
+  };
+
+  const handleReportClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShow(false);
+    reportPost(post.id, currentUserId);
   };
 
   const menuContent = (
@@ -99,10 +108,7 @@ export const ActionMenu = ({
           </>
         ) : (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShow(false);
-            }}
+            onClick={handleReportClick}
             className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
           >
             <i className="bi bi-flag text-slate-400"></i>

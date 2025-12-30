@@ -4,12 +4,9 @@ import { PostInput } from "./components/PostInput";
 import { PostList } from "./components/PostList";
 import { GlobalModal } from "./components/modals/GlobalModal";
 import { Footer } from "./components/Footer";
-import { useSharedPost } from "./hooks/useSharedPost";
 
 export default function App() {
   const [showScrollTop, setShowScrollTop] = useState(false);
-
-  useSharedPost();
 
   useEffect(() => {
     const handleScroll = () => setShowScrollTop(window.scrollY > 400);

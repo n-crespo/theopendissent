@@ -84,6 +84,7 @@ export const ReplyItem = ({
         <ActionMenu
           post={reply}
           isOwner={isOwner}
+          currentUserId={uid}
           onEdit={(e) => {
             e.stopPropagation();
             setIsEditing(true);

@@ -101,6 +101,7 @@ export const PostItem = memo(
           <ActionMenu
             post={post}
             isOwner={isOwner}
+            currentUserId={uid}
             onEdit={(e) => {
               e.stopPropagation();
               setIsEditing(true);
