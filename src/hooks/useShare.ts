@@ -22,7 +22,8 @@ export const useShare = () => {
     }
 
     const shareUrl = url.toString();
-    const shareText = `Check out this discussion: "${post.postContent.substring(0, 50)}..."`;
+    // const shareText = `Check out this discussion on TheOpenDissent: "${post.postContent.substring(0, 50)}..."`;
+    const shareText = `Check out this discussion on TheOpenDissent!`;
 
     const shareData = {
       title: "The Open Dissent",
