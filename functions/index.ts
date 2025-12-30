@@ -249,7 +249,7 @@ export const sharePost = onRequest(async (req, res) => {
         <meta property="og:description" content="${pageDescription}" />
         <meta property="og:image" content="${DEFAULT_IMAGE}" />
 
-        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="${pageTitle}" />
         <meta name="twitter:description" content="${pageDescription}" />
         <meta name="twitter:image" content="${DEFAULT_IMAGE}" />
