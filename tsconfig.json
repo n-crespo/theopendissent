@@ -11,7 +11,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": ["vite/client"],
+    "types": ["vite/client", "node"],
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "allowImportingTsExtensions": true, // allow importing from utils.ts
