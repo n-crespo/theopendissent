@@ -194,9 +194,6 @@ export const PostItem = memo(
             <span className="text-[13px] font-bold">
               {localMetrics.replyCount}
             </span>
-            <span className="text-[12px] font-bold uppercase tracking-tight hidden sm:inline">
-              Discussion
-            </span>
           </button>
         </div>
       </div>
