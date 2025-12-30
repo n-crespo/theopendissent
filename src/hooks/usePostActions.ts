@@ -10,25 +10,27 @@ export const usePostActions = (post: Post) => {
   const { openModal } = useModal();
   const uid = user?.uid;
 
-  // Initialize with props, but allow store to override
-  const [localInteractions, setLocalInteractions] = useState(
-    post.userInteractions || { agreed: {}, dissented: {} },
+  // Initialize from Store if available, else props
+  const [localInteractions, setLocalInteractions] = useState(() =>
+    interactionStore.get(post.id).agreed
+      ? interactionStore.get(post.id)
+      : post.userInteractions || { agreed: {}, dissented: {} },
   );
 
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.postContent);
   const [isSaving, setIsSaving] = useState(false);
 
-  // 1. Sync Server Props -> Store
+  // 1. Sync Server Props -> Store (With User Protection)
   useEffect(() => {
     if (post.userInteractions) {
-      interactionStore.syncFromServer(post.id, post.userInteractions);
+      // We pass 'uid' here so the store knows to merge CAREFULLY
+      interactionStore.syncFromServer(post.id, post.userInteractions, uid);
     }
-  }, [post.id, post.userInteractions]);
+  }, [post.id, post.userInteractions, uid]);
 
-  // 2. Sync Store -> Local State (This connects Feed & Modal)
+  // 2. Sync Store -> Local State
   useEffect(() => {
-    // Subscribe returns an unsubscribe function
     return interactionStore.subscribe(post.id, (newData) => {
       setLocalInteractions(newData);
     });
@@ -53,11 +55,9 @@ export const usePostActions = (post: Post) => {
     e.stopPropagation();
     if (!uid) return openModal("signin");
 
-    // Delegate to the global store
     interactionStore.toggle(post.id, uid, type, post.parentPostId);
   };
 
-  // ... (Edit/Delete logic remains the same)
   const handleCancel = () => {
     setEditContent(post.postContent);
     setIsEditing(false);

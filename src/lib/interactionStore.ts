@@ -9,9 +9,15 @@ type Interactions = {
 class InteractionStore {
   private state: Record<string, Interactions> = {};
   private listeners: Record<string, Set<(state: Interactions) => void>> = {};
+
+  // Timers and Locks
+  private lastSyncTime: Record<string, number> = {};
   private pendingDebounce: Record<string, NodeJS.Timeout> = {};
 
-  // Helper to ensure data structure is always complete
+  // A timestamp until which we IGNORE server updates for the current user
+  // This prevents the "flashback" when an immediate sync beats the DB roundtrip
+  private optimisticLocks: Record<string, number> = {};
+
   private sanitize(data?: Partial<Interactions>): Interactions {
     return {
       agreed: data?.agreed || {},
@@ -26,24 +32,59 @@ class InteractionStore {
   subscribe(postId: string, callback: (state: Interactions) => void) {
     if (!this.listeners[postId]) this.listeners[postId] = new Set();
     this.listeners[postId].add(callback);
-
-    // Send immediate current state (sanitized)
     callback(this.get(postId));
-
     return () => {
       this.listeners[postId]?.delete(callback);
       if (this.listeners[postId]?.size === 0) delete this.listeners[postId];
     };
   }
 
-  syncFromServer(postId: string, serverData: Interactions) {
-    if (this.pendingDebounce[postId]) return; // Ignore server if user is interacting
+  syncFromServer(
+    postId: string,
+    serverData: Interactions,
+    currentUid?: string,
+  ) {
+    const safeServerData = this.sanitize(serverData);
+    const currentState = this.get(postId);
 
-    // Sanitize incoming server data to ensure both keys exist
-    const safeData = this.sanitize(serverData);
+    // Check if we are in a "Protected State"
+    // 1. Is a debounce timer running?
+    // 2. OR, did we click recently (within 2 seconds)?
+    const isDebouncing = !!this.pendingDebounce[postId];
+    const isLocked =
+      this.optimisticLocks[postId] && Date.now() < this.optimisticLocks[postId];
+    const shouldProtectLocalState = currentUid && (isDebouncing || isLocked);
 
-    if (JSON.stringify(safeData) !== JSON.stringify(this.state[postId])) {
-      this.state[postId] = safeData;
+    // If we don't need to protect the user, just trust the server
+    if (!shouldProtectLocalState) {
+      if (JSON.stringify(safeServerData) !== JSON.stringify(currentState)) {
+        this.state[postId] = safeServerData;
+        this.notify(postId);
+      }
+      return;
+    }
+
+    // --- MERGE LOGIC (Protected) ---
+    // We accept that other people's counts might have changed (Server Data)
+    // But we FORCE the current user's state to match our local memory
+    const mergedState = {
+      agreed: { ...safeServerData.agreed },
+      dissented: { ...safeServerData.dissented },
+    };
+
+    // Apply Local Truth
+    const localAgreed = !!currentState.agreed[currentUid!];
+    const localDissented = !!currentState.dissented[currentUid!];
+
+    if (localAgreed) mergedState.agreed[currentUid!] = true;
+    else delete mergedState.agreed[currentUid!];
+
+    if (localDissented) mergedState.dissented[currentUid!] = true;
+    else delete mergedState.dissented[currentUid!];
+
+    // Only update if something actually changed (e.g. someone ELSE liked it)
+    if (JSON.stringify(mergedState) !== JSON.stringify(currentState)) {
+      this.state[postId] = mergedState;
       this.notify(postId);
     }
   }
@@ -54,27 +95,21 @@ class InteractionStore {
     type: InteractionType,
     parentPostId?: string,
   ) {
-    // 1. Initialize safe state if missing
-    if (!this.state[postId]) {
-      this.state[postId] = { agreed: {}, dissented: {} };
-    }
+    if (!this.state[postId]) this.state[postId] = { agreed: {}, dissented: {} };
+    if (!this.state[postId].agreed) this.state[postId].agreed = {};
+    if (!this.state[postId].dissented) this.state[postId].dissented = {};
 
-    // Ensure strict structure before accessing
     const current = this.state[postId];
-    if (!current.agreed) current.agreed = {};
-    if (!current.dissented) current.dissented = {};
-
     const otherType = type === "agreed" ? "dissented" : "agreed";
 
-    // SAFE ACCESS: Now guaranteed to exist
-    const wasActive = !!current[type][uid];
-    const wasOtherActive = !!current[otherType][uid];
-
-    // 2. Optimistic Update (In Memory)
+    // 1. Optimistic Update
     const next = {
       agreed: { ...current.agreed },
       dissented: { ...current.dissented },
     };
+
+    const wasActive = !!next[type][uid];
+    const wasOtherActive = !!next[otherType][uid];
 
     if (wasActive) {
       delete next[type][uid];
@@ -84,30 +119,49 @@ class InteractionStore {
     }
 
     this.state[postId] = next;
+
+    // NEW: Set the Lock!
+    // We promise to ignore conflicting server data for this user for 2 seconds.
+    this.optimisticLocks[postId] = Date.now() + 2000;
+
     this.notify(postId);
 
-    // 3. Debounced Server Call
-    if (this.pendingDebounce[postId])
+    // 2. Sync Logic
+    if (this.pendingDebounce[postId]) {
       clearTimeout(this.pendingDebounce[postId]);
+    }
 
-    this.pendingDebounce[postId] = setTimeout(async () => {
+    const now = Date.now();
+    const lastSync = this.lastSyncTime[postId] || 0;
+    const timeSinceLastSync = now - lastSync;
+    const COOLDOWN_PERIOD = 2000; // 2 seconds to match the lock
+
+    const executeSync = async () => {
       delete this.pendingDebounce[postId];
+      this.lastSyncTime[postId] = Date.now();
+
       try {
-        if (wasActive) {
-          await removeInteraction(postId, uid, type, parentPostId);
-        } else {
+        if (!wasActive) {
           await addInteraction(postId, uid, type, parentPostId);
           if (wasOtherActive)
             await removeInteraction(postId, uid, otherType, parentPostId);
+        } else {
+          await removeInteraction(postId, uid, type, parentPostId);
         }
       } catch (err) {
-        console.error("Interaction sync failed", err);
+        console.error("Sync failed", err);
       }
-    }, 1000);
+    };
+
+    if (timeSinceLastSync > COOLDOWN_PERIOD) {
+      executeSync();
+    } else {
+      this.pendingDebounce[postId] = setTimeout(executeSync, 500);
+    }
   }
 
   private notify(postId: string) {
-    const data = this.sanitize(this.state[postId]);
+    const data = this.get(postId);
     this.listeners[postId]?.forEach((cb) => cb(data));
   }
 }
