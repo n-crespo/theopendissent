@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/share",
+      "destination": "https://sharepost-ds2eg6r2sq-uc.a.run.app"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
