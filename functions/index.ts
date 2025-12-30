@@ -227,7 +227,7 @@ export const sharePost = onRequest(async (req, res) => {
     const pageTitle = `${agreedCount} agreed • ${dissentedCount} dissented`;
 
     // PAGE DESCRIPTION (Gray/Normal Text): The post content
-    const pageDescription = contentPreview;
+    const pageDescription = `"${contentPreview}"`;
 
     const shareUrl = `${DOMAIN}/share?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
     const appUrl = `${DOMAIN}/?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
@@ -248,6 +248,8 @@ export const sharePost = onRequest(async (req, res) => {
         <meta property="og:title" content="${pageTitle}" />
         <meta property="og:description" content="${pageDescription}" />
         <meta property="og:image" content="${DEFAULT_IMAGE}" />
+        <meta property="og:image:width" content="1000" />
+        <meta property="og:image:height" content="1000" />
 
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content="${pageTitle}" />
