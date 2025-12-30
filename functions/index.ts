@@ -20,6 +20,7 @@ interface InteractionNode {
 
 const DOMAIN = "https://theopendissent.com";
 const DEFAULT_IMAGE = `${DOMAIN}/favicon.jpg`;
+const LARGE_IMAGE = `${DOMAIN}/share-card.jpg`;
 
 const escapeHtml = (unsafe: string) => {
   return unsafe
@@ -239,6 +240,9 @@ export const sharePost = onRequest(async (req, res) => {
         <meta charset="utf-8">
         <title>${pageTitle}</title>
 
+        <link rel="icon" href="${DEFAULT_IMAGE}" />
+        <link rel="apple-touch-icon" href="${DEFAULT_IMAGE}" />
+
         <link rel="alternate" type="application/activity+json" href="${shareUrl}" />
 
         <meta property="og:type" content="article" />
@@ -247,14 +251,15 @@ export const sharePost = onRequest(async (req, res) => {
 
         <meta property="og:title" content="${pageTitle}" />
         <meta property="og:description" content="${pageDescription}" />
-        <meta property="og:image" content="${DEFAULT_IMAGE}" />
-        <meta property="og:image:width" content="1000" />
-        <meta property="og:image:height" content="1000" />
 
-        <meta name="twitter:card" content="summary" />
+        <meta property="og:image" content="${LARGE_IMAGE}" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="628" />
+
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="${pageTitle}" />
         <meta name="twitter:description" content="${pageDescription}" />
-        <meta name="twitter:image" content="${DEFAULT_IMAGE}" />
+        <meta name="twitter:image" content="${LARGE_IMAGE}" />
       </head>
       <body>
         <p>Redirecting to discussion...</p>
