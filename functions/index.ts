@@ -217,6 +217,11 @@ export const sharePost = onRequest(async (req, res) => {
     const rawContent = data.postContent || "";
     const cleanContent = escapeHtml(rawContent);
 
+    // prepare author ID
+    const rawUserId = data.userId || "";
+    const authorDisplay =
+      rawUserId.length > 5 ? `${rawUserId.slice(0, 5)}...` : rawUserId;
+
     // increased limit to 200 chars for better iMessage utilization
     const maxLength = 200;
     const contentPreview =
@@ -224,10 +229,7 @@ export const sharePost = onRequest(async (req, res) => {
         ? `${cleanContent.slice(0, maxLength)}...`
         : cleanContent;
 
-    // PAGE TITLE (Bold Text): The interaction stats with bullet
-    const pageTitle = `${agreedCount} agreed • ${dissentedCount} dissented`;
-
-    // PAGE DESCRIPTION (Gray/Normal Text): The post content
+    const pageTitle = `@${authorDisplay} • ${agreedCount} agreed • ${dissentedCount} dissented`;
     const pageDescription = `“${contentPreview}”`;
 
     const shareUrl = `${DOMAIN}/share?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
