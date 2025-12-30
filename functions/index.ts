@@ -19,7 +19,7 @@ interface InteractionNode {
 }
 
 const DOMAIN = "https://theopendissent.com";
-const DEFAULT_IMAGE = `${DOMAIN}/favicon.png`;
+const DEFAULT_IMAGE = `${DOMAIN}/favicon.jpg`;
 
 const escapeHtml = (unsafe: string) => {
   return unsafe
