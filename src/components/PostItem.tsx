@@ -5,9 +5,6 @@ import { useModal } from "../context/ModalContext";
 import { usePostActions } from "../hooks/usePostActions";
 import { ActionMenu } from "./ActionMenu";
 
-/**
- * displays a post with a stance slider and a reactive discussion nudge.
- */
 export const PostItem = memo(
   ({
     post,
@@ -46,28 +43,24 @@ export const PostItem = memo(
     );
     const formattedEditTime = editedAt ? timeAgo(new Date(editedAt)) : null;
 
-    // trigger the nudge animation only if transitioning from neutral
     const onStanceClick = (
       e: React.MouseEvent,
       type: "agreed" | "dissented",
     ) => {
-      // capture state BEFORE the update processes
       const wasNeutral =
         !interactionState.agreed && !interactionState.dissented;
 
-      // Determine what the NEXT stance will be for the parent callback
+      // Calculate next state for parent callback
       let nextStance: "agreed" | "dissented" | null = type;
       if (type === "agreed" && interactionState.agreed) nextStance = null;
       if (type === "dissented" && interactionState.dissented) nextStance = null;
 
-      // Notify parent immediately (Optimistic UI for PostInput)
       if (onStanceChange) {
         onStanceChange(nextStance);
       }
 
       handleInteraction(e, type);
 
-      // only jiggle if we started from a neutral stance
       if (wasNeutral) {
         setIsJiggling(false);
         setTimeout(() => setIsJiggling(true), 10);
@@ -150,10 +143,8 @@ export const PostItem = memo(
           </p>
         )}
 
-        {/* interaction row */}
         <div className="flex items-center justify-between pt-3 border-t border-border-subtle">
           <div className="relative flex items-center bg-slate-50 p-0.5 rounded-full border border-slate-100">
-            {/* interaction pill: centers itself when neutral */}
             <div
               className={`absolute h-7 rounded-full transition-all duration-300 cubic-bezier(0.34, 1.56, 0.64, 1) z-0
                 ${interactionState.agreed ? "translate-x-0 bg-logo-green" : ""}
@@ -163,7 +154,6 @@ export const PostItem = memo(
               style={{ left: "2px", width: "48%" }}
             />
 
-            {/* agree button */}
             <button
               onClick={(e: any) => onStanceClick(e, "agreed")}
               className={`relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-transform duration-100
@@ -177,7 +167,6 @@ export const PostItem = memo(
               </span>
             </button>
 
-            {/* dissent button */}
             <button
               onClick={(e: any) => onStanceClick(e, "dissented")}
               className={`relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-transform duration-100
@@ -192,7 +181,6 @@ export const PostItem = memo(
             </button>
           </div>
 
-          {/* discussion button */}
           <button
             onClick={handleViewDetails}
             disabled={disableClick}
@@ -214,7 +202,6 @@ export const PostItem = memo(
       </div>
     );
   },
-  // memo comparison
   (p, n) =>
     p.post.id === n.post.id &&
     p.post.postContent === n.post.postContent &&

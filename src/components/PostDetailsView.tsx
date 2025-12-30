@@ -5,6 +5,7 @@ import { PostInput } from "./PostInput";
 import { ReplyItem } from "./ReplyItem";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
+import { interactionStore } from "../lib/interactionStore";
 import { Post } from "../types";
 
 export const PostDetailsView = ({
@@ -16,40 +17,25 @@ export const PostDetailsView = ({
 }) => {
   const [replies, setReplies] = useState<Post[]>([]);
   const [livePost, setLivePost] = useState<Post>(initialPost);
-
-  // Local optimistic stance state
   const { user } = useAuth();
+  const { closeAllModals } = useModal();
   const uid = user?.uid;
 
-  // Initialize stance from props/server data
-  const getInitialStance = () => {
-    if (!uid || !initialPost.userInteractions) return null;
-    if (initialPost.userInteractions.agreed?.[uid]) return "agreed";
-    if (initialPost.userInteractions.dissented?.[uid]) return "dissented";
+  // Initialize input stance from the global store (instant sync on load)
+  const getStoreStance = () => {
+    if (!uid) return null;
+    const data = interactionStore.get(initialPost.id); // Get from store
+    if (data.agreed[uid]) return "agreed";
+    if (data.dissented[uid]) return "dissented";
     return null;
   };
 
   const [localStance, setLocalStance] = useState<"agreed" | "dissented" | null>(
-    getInitialStance,
+    getStoreStance,
   );
 
-  const { closeAllModals } = useModal();
-
-  // Sync local stance if server data changes (and we aren't mid-interaction)
-  useEffect(() => {
-    if (!livePost || !uid) return;
-    const serverStance = livePost.userInteractions?.agreed?.[uid]
-      ? "agreed"
-      : livePost.userInteractions?.dissented?.[uid]
-        ? "dissented"
-        : null;
-
-    // Only update if we don't have a local override or if we want to ensure sync
-    // For now, we trust the server eventually catches up, but we can sync here
-    setLocalStance(serverStance);
-  }, [livePost, uid]);
-
-  // listen for live post updates
+  // Listen for LIVE post updates (content edits, replies, etc.)
+  // Interactions are handled by the Store, but we still need this for other fields
   useEffect(() => {
     const unsubscribe = subscribeToPost(initialPost.id, (post) => {
       if (post) {
@@ -61,12 +47,11 @@ export const PostDetailsView = ({
     return () => unsubscribe();
   }, [initialPost.id, closeAllModals]);
 
-  // listen for replies and handle auto-scroll
+  // Subscribe to replies
   useEffect(() => {
     const unsubscribe = subscribeToReplies(initialPost.id, (list) => {
       setReplies(list);
 
-      // handle auto-scroll to highlighted reply
       if (highlightReplyId) {
         setTimeout(() => {
           const element = document.getElementById(`reply-${highlightReplyId}`);
@@ -81,6 +66,9 @@ export const PostDetailsView = ({
 
   return (
     <div className="flex flex-col">
+      {/* We pass the livePost, but the internal usePostActions hook
+         will override the interactions with the Global Store data
+      */}
       <PostItem
         post={livePost}
         disableClick={true}
