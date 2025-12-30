@@ -193,7 +193,6 @@ export const sharePost = onRequest(async (req, res) => {
   }
 
   const db = admin.database();
-  // Determine path logic...
   const dbPath = parentId ? `replies/${parentId}/${postId}` : `posts/${postId}`;
 
   try {
@@ -205,55 +204,63 @@ export const sharePost = onRequest(async (req, res) => {
       return;
     }
 
-    // 1. Prepare Content
+    // 1. Calculate Interaction Counts
+    const interactions = data.userInteractions || {};
+    const agreedCount = interactions.agreed
+      ? Object.keys(interactions.agreed).length
+      : 0;
+    const dissentedCount = interactions.dissented
+      ? Object.keys(interactions.dissented).length
+      : 0;
+
+    // 2. Prepare Text Fields
+    // Sanitize content
     const rawContent = data.postContent || "";
-    // Use the helper to sanitize special chars
     const cleanContent = escapeHtml(rawContent);
-    const previewText =
+    const contentPreview =
       cleanContent.length > 80
         ? `${cleanContent.slice(0, 77)}...`
         : cleanContent;
 
-    const title = "The Open Dissent";
+    // PAGE TITLE (The Bold Text): The interaction stats
+    const pageTitle = `${agreedCount} agreed, ${dissentedCount} dissented`;
 
-    // 2. Construct ABSOLUTE URLs
-    // iMessage requires the full https:// link for the crawler
+    // PAGE DESCRIPTION (The Gray/Small Text): The post content
+    const pageDescription = contentPreview;
+
+    // 3. URLs
     const shareUrl = `${DOMAIN}/share?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
     const appUrl = `${DOMAIN}/?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
 
-    // 3. Return HTML with Rich Meta Tags
     const html = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="utf-8">
-        <title>${title}</title>
+        <title>${pageTitle}</title>
 
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="The Open Dissent" />
-        <meta property="og:title" content="${title}" />
-        <meta property="og:description" content="${previewText}" />
         <meta property="og:url" content="${shareUrl}" />
         <meta property="og:image" content="${DEFAULT_IMAGE}" />
 
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="${title}" />
-        <meta name="twitter:description" content="${previewText}" />
-        <meta name="twitter:image" content="${DEFAULT_IMAGE}" />
+        <meta property="og:title" content="${pageTitle}" />
+        <meta property="og:description" content="${pageDescription}" />
 
-        <meta name="apple-mobile-web-app-title" content="Open Dissent">
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="${pageTitle}" />
+        <meta name="twitter:description" content="${pageDescription}" />
+        <meta name="twitter:image" content="${DEFAULT_IMAGE}" />
       </head>
       <body>
         <p>Redirecting to discussion...</p>
         <script>
-          // Immediate client-side redirect to the SPA
           window.location.href = "${appUrl}";
         </script>
       </body>
       </html>
     `;
 
-    // Cache for 1 hour
     res.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
     res.send(html);
   } catch (error) {
