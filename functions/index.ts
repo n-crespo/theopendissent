@@ -217,7 +217,7 @@ export const sharePost = onRequest(async (req, res) => {
     const cleanContent = escapeHtml(rawContent);
 
     // increased limit to 200 chars for better iMessage utilization
-    const maxLength = 300;
+    const maxLength = 200;
     const contentPreview =
       cleanContent.length > maxLength
         ? `${cleanContent.slice(0, maxLength)}...`
