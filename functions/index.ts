@@ -1,6 +1,6 @@
 require("firebase-functions/logger/compat");
 import { onValueWritten } from "firebase-functions/v2/database";
-import { HttpsError } from "firebase-functions/v2/https";
+import { HttpsError, onRequest } from "firebase-functions/v2/https";
 import {
   AuthBlockingEvent,
   beforeUserCreated,
@@ -166,3 +166,87 @@ export const onReplyDeletedCleanup = onValueWritten(
     );
   },
 );
+
+/**
+ * Serves dynamic HTML with Open Graph tags for iMessage/Social previews.
+ * Usage: https://site.com/share?s=<postId>&p=<parentId>
+ */
+export const sharePost = onRequest(async (req, res) => {
+  const postId = req.query.s as string;
+  const parentId = req.query.p as string; // Optional (for replies)
+
+  if (!postId) {
+    res.redirect("/"); // Fallback to home if no ID
+    return;
+  }
+
+  const db = admin.database();
+  let dbPath: string;
+
+  // Determine path: is it a reply or a main post?
+  if (parentId) {
+    dbPath = `replies/${parentId}/${postId}`;
+  } else {
+    dbPath = `posts/${postId}`;
+  }
+
+  try {
+    const snapshot = await db.ref(dbPath).once("value");
+    const data = snapshot.val();
+
+    if (!data) {
+      // Content not found, just redirect to home
+      res.redirect("/");
+      return;
+    }
+
+    // Prepare content for the preview
+    const rawContent = data.postContent || "";
+    const cleanContent = rawContent.replace(/"/g, "&quot;"); // Simple sanitize
+    const previewText =
+      cleanContent.length > 80 // add dots if too long
+        ? `${cleanContent.slice(0, 77)}...`
+        : cleanContent;
+
+    const title = "The Open Dissent"; // Or dynamic based on user?
+
+    // Construct the destination URL for the actual user (The SPA location)
+    // We pass the params back so the React app knows what to open
+    const appUrl = `/?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
+
+    // Return the HTML with Meta Tags
+    // The <script> at the bottom immediately redirects humans to the App
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title>${title}</title>
+
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="${title}" />
+        <meta property="og:description" content="${previewText}" />
+        <meta property="og:site_name" content="The Open Dissent" />
+
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="${title}" />
+        <meta name="twitter:description" content="${previewText}" />
+
+        </head>
+      <body>
+        <p>Redirecting to discussion...</p>
+        <script>
+          window.location.href = "${appUrl}";
+        </script>
+      </body>
+      </html>
+    `;
+
+    // Cache the preview for 1 hour to speed up subsequent shares
+    res.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
+    res.send(html);
+  } catch (error) {
+    console.error("Error serving share meta:", error);
+    res.redirect("/");
+  }
+});

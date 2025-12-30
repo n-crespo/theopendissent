@@ -12,6 +12,7 @@ export const useShare = () => {
   const sharePost = useCallback(async (post: Post) => {
     // 1. Construct the Deep Link
     const url = new URL(window.location.origin);
+    url.pathname = "/share";
 
     // Logic: If sharing a reply, 's' is the reply ID, 'p' is parent ID.
     // If sharing a main post, 's' is the post ID.
