@@ -242,7 +242,6 @@ export const sharePost = onRequest(async (req, res) => {
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="The Open Dissent" />
         <meta property="og:url" content="${shareUrl}" />
-        <meta property="og:image" content="${DEFAULT_IMAGE}" />
 
         <meta property="og:title" content="${pageTitle}" />
         <meta property="og:description" content="${pageDescription}" />
@@ -250,7 +249,6 @@ export const sharePost = onRequest(async (req, res) => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="${pageTitle}" />
         <meta name="twitter:description" content="${pageDescription}" />
-        <meta name="twitter:image" content="${DEFAULT_IMAGE}" />
       </head>
       <body>
         <p>Redirecting to discussion...</p>
