@@ -26,6 +26,7 @@ module.exports = {
     "quotes": ["error", "double"],
     "object-curly-spacing": ["error", "always"], // REQUIRE spaces inside braces e.g. { key: value }
     "import/no-unresolved": 0,
+    "operator-linebreak": "off",
     "indent": ["error", 2],
     "max-len": "off",
   },
