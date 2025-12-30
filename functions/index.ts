@@ -227,7 +227,7 @@ export const sharePost = onRequest(async (req, res) => {
     const pageTitle = `${agreedCount} agreed • ${dissentedCount} dissented`;
 
     // PAGE DESCRIPTION (Gray/Normal Text): The post content
-    const pageDescription = `"${contentPreview}"`;
+    const pageDescription = `“${contentPreview}”`;
 
     const shareUrl = `${DOMAIN}/share?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
     const appUrl = `${DOMAIN}/?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
