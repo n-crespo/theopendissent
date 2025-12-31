@@ -16,48 +16,40 @@ export const DiscoveryRail = () => {
             <InstallPwaChip />
           </div>
 
+          {/* Instagram */}
           <div className="snap-start shrink-0">
             <Chip
-              as="button"
-              onClick={() => console.log("Clicked Trending")}
-              icon={<i className="bi bi-graph-up-arrow text-logo-blue"></i>}
+              as="a"
+              href="https://www.instagram.com/theopendissent/"
+              target="_blank"
+              rel="noopener noreferrer"
+              icon={<i className="bi bi-instagram text-[#E1306C]"></i>}
+              className="hover:border-[#E1306C]/40 transition-colors"
             >
-              Trending: #TechRegulation
+              Instagram
             </Chip>
           </div>
 
+          {/* LinkedIn */}
           <div className="snap-start shrink-0">
             <Chip
-              icon={<i className="bi bi-exclamation-circle text-logo-red"></i>}
+              as="a"
+              href="https://www.linkedin.com/company/the-open-dissent"
+              target="_blank"
+              rel="noopener noreferrer"
+              icon={<i className="bi bi-linkedin text-[#0077B5]"></i>}
+              className="hover:border-[#0077B5]/40 transition-colors"
             >
-              Live Debate: 8:00 PM EST
+              LinkedIn
             </Chip>
           </div>
 
-          <div className="snap-start shrink-0">
-            <Chip
-              as="button"
-              icon={<i className="bi bi-hash text-slate-400"></i>}
-            >
-              Politics
-            </Chip>
-          </div>
-
-          <div className="snap-start shrink-0">
-            <Chip
-              as="button"
-              icon={<i className="bi bi-hash text-slate-400"></i>}
-            >
-              Economy
-            </Chip>
-          </div>
-
-          {/* Spacer for right-side fade visibility if needed */}
+          {/* Spacer for right-side fade visibility */}
           <div className="w-4 shrink-0"></div>
         </div>
 
         {/* Fade / Shadow Overlay - only visible when content overflows right */}
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-linear-to-l from-logo-offwhite to-transparent z-10 opacity-0 transition-opacity" />
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-linear-to-l from-logo-offwhite to-transparent z-10 opacity-100 transition-opacity" />
       </div>
     </div>
   );

@@ -1,12 +1,13 @@
-import { ReactNode } from "react";
+import { ReactNode, HTMLAttributes } from "react";
 
-interface ChipProps {
+interface ChipProps extends HTMLAttributes<HTMLElement> {
   children: ReactNode;
-  icon?: ReactNode; // Optional left-side icon
-  onClick?: () => void;
-  className?: string;
-  as?: "div" | "button" | "a"; // Polymorphic prop
+  icon?: ReactNode;
+  as?: "div" | "button" | "a";
+  // Explicitly add anchor props that aren't in generic HTMLAttributes
   href?: string;
+  target?: string;
+  rel?: string;
 }
 
 export const Chip = ({

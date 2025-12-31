@@ -27,7 +27,7 @@ export const InstallPwaChip = () => {
       as="button"
       icon={<i className="bi bi-download text-slate-500"></i>}
       onClick={handleInstallClick}
-      className="cursor-pointer "
+      className="cursor-pointer"
     >
       Install App
     </Chip>
