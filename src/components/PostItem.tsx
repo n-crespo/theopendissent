@@ -158,7 +158,7 @@ export const PostItem = memo(
             {/* agree button */}
             <button
               onClick={(e: any) => onStanceClick(e, "agreed")}
-              className={`relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-all duration-200
+              className={`cursor-pointer relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-all duration-200
                 ${interactionState.agreed ? "text-white" : "text-slate-400 hover:text-logo-green"}`}
             >
               <i
@@ -172,7 +172,7 @@ export const PostItem = memo(
             {/* dissent button */}
             <button
               onClick={(e: any) => onStanceClick(e, "dissented")}
-              className={`relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-all duration-200
+              className={`cursor-pointer relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-all duration-200
                 ${interactionState.dissented ? "text-white" : "text-slate-400 hover:text-logo-red"}`}
             >
               <i
@@ -187,12 +187,12 @@ export const PostItem = memo(
           <button
             onClick={handleViewDetails}
             disabled={disableClick}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full origin-center active:scale-95 transition-all
+            className={`cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-full origin-center active:scale-95 transition-all
               ${isJiggling ? "animate-jiggle shadow-md ring-2 ring-logo-blue/10" : ""}
               ${disableClick ? "cursor-default text-logo-blue" : "text-slate-400 hover:bg-slate-50 hover:text-logo-blue"}`}
           >
             <i
-              className={`bi ${disableClick ? "bi-chat-left-text-fill" : "bi-chat-left-text"} text-[14px]`}
+              className={`bi ${disableClick ? "bi-chat-left-text-fill" : "bi-chat-left-text"} text-[14px] mt-1`}
             ></i>
             <span className="text-[13px] font-bold">
               {localMetrics.replyCount}
