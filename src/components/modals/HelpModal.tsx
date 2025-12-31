@@ -59,20 +59,6 @@ export const HelpModal = () => {
         </a>
       </div>
 
-      <h4 className="text-base font-semibold mb-4 border-b border-border-subtle pb-1.5 text-slate-900">
-        How to Interact
-      </h4>
-      <ul className="space-y-4 mb-8 px-1">
-        <li className="flex items-center gap-4">
-          <i className="bi bi-check-square text-agree text-xl"></i>
-          <span className="text-sm font-medium italic">Agreed!</span>
-        </li>
-        <li className="flex items-center gap-4">
-          <i className="bi bi-x-square text-dissent text-xl"></i>
-          <span className="text-sm font-medium italic">Dissent!</span>
-        </li>
-      </ul>
-
       <div className="pt-6 border-t border-border-subtle">
         <h4 className="text-base font-semibold mb-4 text-slate-900">
           Install as an App
