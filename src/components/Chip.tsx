@@ -27,7 +27,7 @@ export const Chip = ({
         bg-white border border-border-subtle
         py-1.5 pl-1.5 pr-4
         transition-all duration-300
-        hover:border-slate-300
+
         cursor-default ${onClick || as === "a" ? "cursor-pointer active:scale-95" : ""}
         ${className}
       `}
@@ -35,7 +35,7 @@ export const Chip = ({
     >
       {/* Optional Icon Slot - Styled like PostItem avatar */}
       {icon && (
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 border border-slate-200/50 group-hover:bg-slate-200 transition-colors">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 border border-slate-200/50 transition-colors">
           {icon}
         </div>
       )}
