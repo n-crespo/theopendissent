@@ -14,7 +14,10 @@ export const Header = () => {
       <div className="mx-auto flex max-w-125 items-center justify-between px-0 py-0">
         {/* LEFT: Info Button */}
         <div className="flex w-20 items-center justify-start pl-2">
-          <button className={pillButtonStyle} onClick={() => openModal("help")}>
+          <button
+            className={pillButtonStyle}
+            onClick={() => openModal("about")}
+          >
             <span className="text-[15px] font-bold whitespace-nowrap px-1">
               ?
             </span>

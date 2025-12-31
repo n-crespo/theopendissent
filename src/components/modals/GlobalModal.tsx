@@ -1,6 +1,7 @@
 import { useModal } from "../../context/ModalContext";
 import { SignInModal } from "./SignInModal";
-import { HelpModal } from "./HelpModal";
+import { AboutModal } from "./AboutModal";
+import { InstallInstructionsModal } from "./InstallInstructionsModal";
 import { LogoutModal } from "./LogoutModal";
 import { PostDetailsView } from "../PostDetailsView";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
@@ -47,7 +48,12 @@ export const GlobalModal = () => {
             {/* content area */}
             <div className="custom-scrollbar overflow-y-auto p-8 pt-0 text-left">
               {modal.type === "signin" && <SignInModal />}
-              {modal.type === "help" && <HelpModal />}
+              {/* Updated from help to about */}
+              {modal.type === "about" && <AboutModal />}
+              {/* New modal type */}
+              {modal.type === "installInstructions" && (
+                <InstallInstructionsModal />
+              )}
               {modal.type === "logout" && <LogoutModal />}
               {modal.type === "postDetails" && (
                 <PostDetailsView

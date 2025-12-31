@@ -2,7 +2,8 @@ import { createContext, useContext, useState, ReactNode } from "react";
 
 type ModalType =
   | "signin"
-  | "help"
+  | "about" // renamed from help
+  | "installInstructions" // new type for iOS popup
   | "logout"
   | "postDetails"
   | "deleteConfirm"

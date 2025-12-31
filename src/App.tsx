@@ -4,7 +4,7 @@ import { PostInput } from "./components/PostInput";
 import { PostList } from "./components/PostList";
 import { GlobalModal } from "./components/modals/GlobalModal";
 import { Footer } from "./components/Footer";
-import { ListenPill } from "./components/ListenPill";
+import { DiscoveryRail } from "./components/DiscoveryRail";
 import { useDeepLinkHandler } from "./hooks/useDeepLinkHandler";
 
 export default function App() {
@@ -23,14 +23,19 @@ export default function App() {
       <Header />
 
       <main>
-        <ListenPill />
-
-        <div className="mx-auto flex max-w-125 flex-col gap-5 px-4">
+        {/* Moved DiscoveryRail INSIDE this container.
+          The container adds padding (px-4).
+          The Rail's negative margin (-mx-4) pulls it back out to the edge.
+          Result: Perfect alignment of the first chip with the Input box.
+        */}
+        <div className="mx-auto flex max-w-125 flex-col gap-3 px-2">
+          <DiscoveryRail />
           <PostInput />
           <PostList />
         </div>
       </main>
 
+      {/* Scroll to top button */}
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         className={`fixed z-99 flex items-center justify-center rounded-full border-none text-white shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 cubic-bezier-[0.4,0,0.2,1] cursor-pointer

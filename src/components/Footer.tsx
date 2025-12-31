@@ -11,37 +11,6 @@ export const Footer = () => {
   return (
     <footer className="mt-5 flex flex-col items-center border-t border-slate-200 py-10 pb-5">
       <div className="flex flex-col items-center gap-4">
-        {/* podcast row */}
-        <div className="flex items-center gap-3 text-sm text-gray-custom">
-          <span>Listen on</span>
-          <div className="flex gap-3">
-            <a
-              href="https://open.spotify.com/show/471WfoA8k9zORQPQbLynw2?si=81fb44fe7dd945bf"
-              target="_blank"
-              rel="noreferrer"
-              className="group"
-            >
-              <img
-                src={spotifyLogo}
-                alt="Spotify"
-                className="h-7 w-7 rounded-md transition-all duration-200 group-hover:-translate-y-0.5"
-              />
-            </a>
-            <a
-              href="https://podcasts.apple.com/hr/podcast/the-open-dissent/id1860727185"
-              target="_blank"
-              rel="noreferrer"
-              className="group"
-            >
-              <img
-                src={appleLogo}
-                alt="Apple Podcasts"
-                className="h-7 w-7 rounded-md transition-all duration-200 group-hover:-translate-y-0.5"
-              />
-            </a>
-          </div>
-        </div>
-
         {/* legal row */}
         <div className="flex items-center gap-2 text-[13px] text-gray-custom">
           <p>© 2025 The Open Dissent</p>
