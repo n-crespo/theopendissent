@@ -45,7 +45,11 @@ export const Header = () => {
               onClick={() => openModal("logout")}
               title={`Signed in as ${user.email?.split("@")[0]}`}
             >
-              <i className="bi bi-box-arrow-right text-[30px] font-black"></i>
+              <img
+                src={headIconUrl}
+                alt="Head Icon"
+                className="h-[90%] max-h-15 w-auto"
+              />
             </button>
           ) : (
             <button
@@ -53,11 +57,7 @@ export const Header = () => {
               onClick={() => openModal("signin")}
               title="Sign In"
             >
-              <img
-                src={headIconUrl}
-                alt="Head Icon"
-                className="h-[90%] max-h-15 w-auto"
-              />
+              <i className="bi bi-box-arrow-right text-[30px] font-black"></i>
             </button>
           )}
         </div>
