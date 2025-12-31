@@ -1,6 +1,4 @@
-import headIconUrl from "../assets/icons/head.svg";
 import logoUrl from "../assets/Flat-Logo.svg";
-import helpIconUrl from "../assets/icons/help.svg";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
 
@@ -8,56 +6,58 @@ export const Header = () => {
   const { user, loading } = useAuth();
   const { openModal } = useModal();
 
+  const pillButtonStyle =
+    "group flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-logo-offwhite text-slate-600 hover:text-slate-900 transition-all active:scale-95 cursor-pointer";
+
   return (
     <header className="sticky top-0 z-50 rounded-b-lg border-b border-slate-200 bg-logo-offwhite">
       <div className="mx-auto flex max-w-125 items-center justify-between px-0 py-0">
-        {/* help button */}
-        <button
-          className="flex h-12.5 w-auto cursor-pointer items-center justify-center border-none bg-logo-offwhite p-2.5 text-slate-800"
-          onClick={() => openModal("help")}
-        >
+        {/* LEFT: Info Button */}
+        <div className="flex w-20 items-center justify-start pl-2">
+          <button className={pillButtonStyle} onClick={() => openModal("help")}>
+            <span className="text-[15px] font-bold whitespace-nowrap px-1">
+              ?
+            </span>
+          </button>
+        </div>
+
+        {/* CENTER: Main Logo */}
+        {/* h-12.5 (50px) fixes the header height */}
+        <div className="flex h-12.5 items-center justify-center">
           <img
-            src={helpIconUrl}
-            alt="Help Icon"
-            className="h-[90%] max-h-15 w-auto"
+            src={logoUrl}
+            alt="App Icon"
+            className="h-full w-auto max-w-[60vw] object-contain"
+            draggable="false"
           />
-        </button>
+        </div>
 
-        {/* main logo */}
-        <img
-          src={logoUrl}
-          alt="App Icon"
-          className="m-0 h-full w-auto max-w-[85vw]"
-          draggable="false"
-        />
-
+        {/* RIGHT: Auth Section */}
         <div
           id="auth-section"
-          className="flex w-12.5 items-center justify-center"
+          className="flex w-20 items-center justify-end pr-2"
         >
           {loading ? (
-            <div className="flex h-12.5 items-center justify-center p-2.5 opacity-50">
+            <div className="flex items-center justify-center opacity-50">
               <i className="bi bi-three-dots text-slate-400"></i>
             </div>
           ) : user ? (
             <button
-              className="group flex h-12.5 w-auto cursor-pointer items-center justify-center border-none bg-logo-offwhite p-2.5 transition-colors hover:rounded-lg"
               onClick={() => openModal("logout")}
               title={`Signed in as ${user.email?.split("@")[0]}`}
+              className={pillButtonStyle}
             >
-              <img
-                src={headIconUrl}
-                alt="Head Icon"
-                className="h-[90%] max-h-15 w-auto"
-              />
+              <i className="bi bi-person-fill text-[16px]"></i>
             </button>
           ) : (
+            // not logged in
             <button
-              className="flex h-12.5 w-auto cursor-pointer items-center justify-center border-none bg-logo-offwhite p-2.5 text-slate-800"
+              className={pillButtonStyle}
               onClick={() => openModal("signin")}
-              title="Sign In"
             >
-              <i className="bi bi-box-arrow-right text-[30px] font-black"></i>
+              <span className="text-[13px] font-bold whitespace-nowrap">
+                Sign In
+              </span>
             </button>
           )}
         </div>
