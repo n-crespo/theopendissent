@@ -43,17 +43,11 @@ export const PostList = () => {
     <div className="flex flex-col">
       {/* priority injection for shared content */}
       {injectedPost && (
-        <PostItem
-          key={`injected-${injectedPost.id}`}
-          post={injectedPost}
-          highlighted={true}
-        />
+        <PostItem key={`injected-${injectedPost.id}`} post={injectedPost} />
       )}
-
       {filteredPosts.map((post) => (
         <PostItem key={post.id} post={post} />
       ))}
-
       {hasMore && (
         <button
           className="mx-auto my-8 block cursor-pointer border bg-white px-8 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 hover:shadow-md disabled:opacity-50"
