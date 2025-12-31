@@ -4,6 +4,7 @@ import { PostInput } from "./components/PostInput";
 import { PostList } from "./components/PostList";
 import { GlobalModal } from "./components/modals/GlobalModal";
 import { Footer } from "./components/Footer";
+import { ListenPill } from "./components/ListenPill";
 import { useDeepLinkHandler } from "./hooks/useDeepLinkHandler";
 
 export default function App() {
@@ -21,7 +22,9 @@ export default function App() {
     <div className="min-h-screen bg-logo-offwhite">
       <Header />
 
-      <main className="py-5">
+      <main>
+        <ListenPill />
+
         <div className="mx-auto flex max-w-125 flex-col gap-5 px-4">
           <PostInput />
           <PostList />
