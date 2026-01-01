@@ -3,10 +3,8 @@
  * Renamed from HelpModal.
  */
 export const AboutModal = () => {
-  const spotifyLogo =
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/2048px-Spotify_logo_without_text.svg.png";
-  const appleLogo =
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Podcasts_%28iOS%29.svg/2048px-Podcasts_%28iOS%29.svg.png";
+  const spotifyLogo = "spotify_logo.png";
+  const appleLogo = "apple_podcasts_logo.png";
 
   return (
     <div className="flex flex-col text-slate-700">

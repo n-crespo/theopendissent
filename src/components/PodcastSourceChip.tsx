@@ -1,9 +1,7 @@
 import { Chip } from "./Chip";
 
-const spotifyLogo =
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/2048px-Spotify_logo_without_text.svg.png";
-const appleLogo =
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Podcasts_%28iOS%29.svg/2048px-Podcasts_%28iOS%29.svg.png";
+const spotifyLogo = "spotify_logo.png";
+const appleLogo = "apple_podcasts_logo.png";
 
 const logoStyle =
   "h-5 w-5 rounded-md transition-all duration-200 hover:scale-110 opacity-90 hover:opacity-100";
@@ -12,7 +10,7 @@ export const PodcastSourceChip = () => {
   return (
     <Chip icon={<i className="bi bi-broadcast text-[14px] leading-none"></i>}>
       <div className="flex items-center gap-3">
-        <span>Listen on:</span>
+        <span>Listen! on:</span>
         <div
           className="flex items-center gap-2"
           onClick={(e) => e.stopPropagation()}
