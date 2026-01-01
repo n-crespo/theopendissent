@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from "framer-motion";
 import { useModal } from "../../context/ModalContext";
 import { SignInModal } from "./SignInModal";
 import { AboutModal } from "./AboutModal";
@@ -9,28 +10,39 @@ import { ConfirmPostModal } from "./ConfirmPostModal";
 
 /**
  * Manages the visibility and content of the application's central modal system.
- * supports stacked modals by mapping over the modalStack.
+ * Uses Framer Motion for entry/exit and automatic layout resizing.
  */
 export const GlobalModal = () => {
   const { modalStack, closeModal } = useModal();
 
-  if (modalStack.length === 0) return null;
-
   return (
-    <>
+    <AnimatePresence mode="popLayout">
       {modalStack.map((modal, index) => (
-        <div
+        <motion.div
           key={`${modal.type}-${index}`}
-          className="fixed inset-0 flex items-center justify-center bg-black/40 p-2 transition-opacity duration-300"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 flex items-center justify-center bg-black/40 p-2"
           style={{ zIndex: 1000 + index }}
           onClick={closeModal}
         >
-          <div
-            className="relative flex min-h-[83vh] max-h-[83vh] w-full max-w-120 flex-col overflow-hidden bg-white transition-all animate-in fade-in zoom-in-[0.98] duration-200"
+          <motion.div
+            layout
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{
+              type: "tween",
+              damping: 22,
+              stiffness: 350,
+              layout: { duration: 0.35 }, // Controls the resize speed
+            }}
+            className="relative flex min-h-[23vh] max-h-[83vh] w-full max-w-120 flex-col overflow-hidden bg-white shadow-[var(--shadow-modal)]"
             style={{
               borderRadius: "var(--radius-modal)",
               border: "1px solid var(--color-border-subtle)",
-              boxShadow: "var(--shadow-modal)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -48,9 +60,7 @@ export const GlobalModal = () => {
             {/* content area */}
             <div className="custom-scrollbar overflow-y-auto p-5 pt-0 text-left">
               {modal.type === "signin" && <SignInModal />}
-              {/* Updated from help to about */}
               {modal.type === "about" && <AboutModal />}
-              {/* New modal type */}
               {modal.type === "installInstructions" && (
                 <InstallInstructionsModal />
               )}
@@ -76,9 +86,9 @@ export const GlobalModal = () => {
                 />
               )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       ))}
-    </>
+    </AnimatePresence>
   );
 };
