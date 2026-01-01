@@ -39,7 +39,7 @@ export const GlobalModal = () => {
               stiffness: 250,
               layout: { duration: 0.35 }, // Controls the resize speed
             }}
-            className="relative flex min-h-[23vh] max-h-[83vh] w-full max-w-120 flex-col overflow-hidden bg-white shadow-[var(--shadow-modal)]"
+            className="relative flex min-h-[23vh] max-h-[83vh] w-full max-w-120 flex-col overflow-hidden bg-white shadow-(--shadow-modal)"
             style={{
               borderRadius: "var(--radius-modal)",
               border: "1px solid var(--color-border-subtle)",
