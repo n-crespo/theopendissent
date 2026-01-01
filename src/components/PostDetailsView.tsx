@@ -16,15 +16,17 @@ export const PostDetailsView = ({
   highlightReplyId?: string | null;
 }) => {
   const [replies, setReplies] = useState<Post[]>([]);
+  // add loading state
+  const [isLoadingReplies, setIsLoadingReplies] = useState(true);
+
   const [livePost, setLivePost] = useState<Post>(initialPost);
   const { user } = useAuth();
   const { closeAllModals } = useModal();
   const uid = user?.uid;
 
-  // Initialize input stance from the global store (instant sync on load)
   const getStoreStance = () => {
     if (!uid) return null;
-    const data = interactionStore.get(initialPost.id); // Get from store
+    const data = interactionStore.get(initialPost.id);
     if (data.agreed[uid]) return "agreed";
     if (data.dissented[uid]) return "dissented";
     return null;
@@ -34,8 +36,6 @@ export const PostDetailsView = ({
     getStoreStance,
   );
 
-  // Listen for LIVE post updates (content edits, replies, etc.)
-  // Interactions are handled by the Store, but we still need this for other fields
   useEffect(() => {
     const unsubscribe = subscribeToPost(initialPost.id, (post) => {
       if (post) {
@@ -47,10 +47,13 @@ export const PostDetailsView = ({
     return () => unsubscribe();
   }, [initialPost.id, closeAllModals]);
 
-  // Subscribe to replies
   useEffect(() => {
+    // reset loading on id change
+    setIsLoadingReplies(true);
+
     const unsubscribe = subscribeToReplies(initialPost.id, (list) => {
       setReplies(list);
+      setIsLoadingReplies(false); // data received
 
       if (highlightReplyId) {
         setTimeout(() => {
@@ -66,9 +69,6 @@ export const PostDetailsView = ({
 
   return (
     <div className="flex flex-col">
-      {/* We pass the livePost, but the internal usePostActions hook
-         will override the interactions with the Global Store data
-      */}
       <PostItem
         post={livePost}
         disableClick={true}
@@ -87,7 +87,14 @@ export const PostDetailsView = ({
           <div className="h-px bg-border-subtle grow ml-4 opacity-50"></div>
         </div>
 
-        {replies.length > 0 ? (
+        {/* loading state prevents the 'empty' flash */}
+        {isLoadingReplies ? (
+          <div className="flex flex-col gap-4 animate-pulse">
+            {/* dummy skeletons to hold layout height */}
+            <div className="h-24 bg-slate-50 rounded-xl border border-slate-100"></div>
+            <div className="h-24 bg-slate-50 rounded-xl border border-slate-100"></div>
+          </div>
+        ) : replies.length > 0 ? (
           <div className="flex flex-col gap-4">
             {replies.map((reply) => (
               <div key={reply.id} id={`reply-${reply.id}`}>
