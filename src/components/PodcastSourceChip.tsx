@@ -10,7 +10,7 @@ export const PodcastSourceChip = () => {
   return (
     <Chip icon={<i className="bi bi-broadcast text-[14px] leading-none"></i>}>
       <div className="flex items-center gap-3">
-        <span>Listen! on:</span>
+        <span>Listen on:</span>
         <div
           className="flex items-center gap-2"
           onClick={(e) => e.stopPropagation()}
