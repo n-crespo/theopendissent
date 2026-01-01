@@ -75,14 +75,14 @@ export const PostDetailsView = ({
         onStanceChange={setLocalStance}
       />
 
-      <div className="mb-10">
+      <div className="mb-6">
         <PostInput parentPostId={livePost.id} currentStance={localStance} />
       </div>
 
       <div className="pr-1">
         <div className="flex items-center justify-between mb-6">
           <h4 className="text-[11px] font-bold tracking-widest uppercase text-slate-400">
-            Discussion
+            Replies
           </h4>
           <div className="h-px bg-border-subtle grow ml-4 opacity-50"></div>
         </div>

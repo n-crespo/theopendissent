@@ -21,12 +21,12 @@ export const GlobalModal = () => {
       {modalStack.map((modal, index) => (
         <div
           key={`${modal.type}-${index}`}
-          className="fixed inset-0 flex items-center justify-center bg-black/40 p-4 transition-opacity duration-300"
+          className="fixed inset-0 flex items-center justify-center bg-black/40 p-2 transition-opacity duration-300"
           style={{ zIndex: 1000 + index }}
           onClick={closeModal}
         >
           <div
-            className="relative flex max-h-[90vh] w-full max-w-120 flex-col overflow-hidden bg-white transition-all animate-in fade-in zoom-in-[0.98] duration-200"
+            className="relative flex min-h-[83vh] max-h-[83vh] w-full max-w-120 flex-col overflow-hidden bg-white transition-all animate-in fade-in zoom-in-[0.98] duration-200"
             style={{
               borderRadius: "var(--radius-modal)",
               border: "1px solid var(--color-border-subtle)",
@@ -46,7 +46,7 @@ export const GlobalModal = () => {
             </div>
 
             {/* content area */}
-            <div className="custom-scrollbar overflow-y-auto p-8 pt-0 text-left">
+            <div className="custom-scrollbar overflow-y-auto p-5 pt-0 text-left">
               {modal.type === "signin" && <SignInModal />}
               {/* Updated from help to about */}
               {modal.type === "about" && <AboutModal />}
