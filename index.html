@@ -6,6 +6,10 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"
     />
+    <meta
+      name="description"
+      content="An open platform for anonymous political discussion. Join the conversation today."
+    />
     <title>The Open Dissent</title>
 
     <link rel="stylesheet" href="/src/styles/index.css" />
@@ -35,7 +39,15 @@
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+      media="print"
+      onload="this.media = 'all'"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+      />
+    </noscript>
 
     <meta property="og:title" content="The Open Dissent" />
     <meta property="og:website" content="article" />
@@ -44,7 +56,7 @@
       property="og:description"
       content="An open platform for anonymous political discussion."
     />
-    <meta property="og:image" content="/src/assets/Flat-Logo.svg" />
+    <meta property="og:image" content="/og-image.png" />
   </head>
   <body>
     <div id="root"></div>
