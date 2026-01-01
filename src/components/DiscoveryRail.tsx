@@ -1,8 +1,12 @@
 import { Chip } from "./Chip";
 import { PodcastSourceChip } from "./PodcastSourceChip";
 import { InstallPwaChip } from "./InstallPwaChip";
+import { usePwa } from "../context/PwaContext";
 
 export const DiscoveryRail = () => {
+  const { deferredPrompt } = usePwa();
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
   return (
     <div className="w-full mx-auto">
       <div className="relative group">
@@ -11,10 +15,11 @@ export const DiscoveryRail = () => {
           <div className="snap-start shrink-0">
             <PodcastSourceChip />
           </div>
-
-          <div className="snap-start shrink-0">
-            <InstallPwaChip />
-          </div>
+          {(deferredPrompt || isIOS) && (
+            <div className="snap-start shrink-0">
+              <InstallPwaChip />
+            </div>
+          )}
 
           {/* Instagram */}
           <div className="snap-start shrink-0">
@@ -29,7 +34,6 @@ export const DiscoveryRail = () => {
               Instagram
             </Chip>
           </div>
-
           {/* LinkedIn */}
           <div className="snap-start shrink-0">
             <Chip
@@ -43,7 +47,6 @@ export const DiscoveryRail = () => {
               LinkedIn
             </Chip>
           </div>
-
           {/* Spacer for right-side fade visibility */}
           <div className="w-4 shrink-0"></div>
         </div>
