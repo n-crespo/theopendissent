@@ -108,7 +108,7 @@ export const PostDetailsView = ({
         ) : (
           <div className="text-center py-16 bg-bg-preview rounded-(--radius-input) border border-dashed border-border-subtle">
             <p className="text-sm text-slate-400 italic font-medium">
-              No dissenters or supporters yet.
+              No replies yet, you can be the first!
             </p>
           </div>
         )}
