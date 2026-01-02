@@ -30,12 +30,8 @@ export const LogoutModal = () => {
           <div className="font-semibold text-logo-blue text-base">
             {user.displayName || "UCLA Student"}
           </div>
-          <div className="text-xs text-slate-500 italic mt-0.5">
-            {user.email}
-          </div>
-          <div className="text-xs text-slate-500 italic mt-0.5">
-            ID: {user.uid}
-          </div>
+          <div className="text-xs text-slate-500 mt-0.5">{user.email}</div>
+          <div className="text-xs text-slate-500 mt-0.5">ID: {user.uid}</div>
         </div>
       )}
 
