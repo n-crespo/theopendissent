@@ -33,6 +33,9 @@ export const LogoutModal = () => {
           <div className="text-xs text-slate-500 italic mt-0.5">
             {user.email}
           </div>
+          <div className="text-xs text-slate-500 italic mt-0.5">
+            ID: {user.uid}
+          </div>
         </div>
       )}
 
