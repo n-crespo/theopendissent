@@ -32,7 +32,7 @@ export const GlobalModal = () => {
   // if (modalStack.length === 0) return null;
 
   return (
-    <AnimatePresence mode="popLayout">
+    <AnimatePresence>
       {modalStack.map((modal, index) => (
         <motion.div
           key={`${modal.type}-${index}`}
