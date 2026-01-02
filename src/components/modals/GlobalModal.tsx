@@ -7,6 +7,7 @@ import { LogoutModal } from "./LogoutModal";
 import { PostDetailsView } from "../PostDetailsView";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { ConfirmPostModal } from "./ConfirmPostModal";
+import { useEffect } from "react";
 
 /**
  * Manages the visibility and content of the application's central modal system.
@@ -14,6 +15,21 @@ import { ConfirmPostModal } from "./ConfirmPostModal";
  */
 export const GlobalModal = () => {
   const { modalStack, closeModal } = useModal();
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && modalStack.length > 0) {
+        // Prevent generic browser stop actions if necessary
+        e.preventDefault();
+        closeModal();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [modalStack, closeModal]);
+
+  // if (modalStack.length === 0) return null;
 
   return (
     <AnimatePresence mode="popLayout">
