@@ -4,71 +4,89 @@ import { ScrollableRail } from "../components/ui/ScrollableRail";
 import { Chip } from "../components/ui/Chip";
 import { PostListView } from "../components/PostListView";
 import { ProfileReplyItem } from "../components/ProfileReplyItem";
+import { LoadingDots } from "../components/ui/LoadingDots";
 import { useAuth } from "../context/AuthContext";
 import { useUserActivity } from "../hooks/useUserActivity";
-import { LoadingDots } from "../components/ui/LoadingDots";
+import { useUserCounts } from "../hooks/useUserCounts";
+import { formatCompactNumber } from "../utils";
 
 type FilterType = "posts" | "replies" | "agreed" | "dissented";
 
 export const Profile = () => {
   const { user } = useAuth();
   const [filter, setFilter] = useState<FilterType>("posts");
+
+  // Data hooks
   const { posts, loading } = useUserActivity(user?.uid, filter);
+  const counts = useUserCounts(user?.uid); // Fetch counts
 
   return (
     <div className="mx-auto flex max-w-125 flex-col gap-3 px-2">
+      <div className="py-4 text-center">
+        <h1 className="text-2xl font-bold text-slate-800">Your Profile</h1>
+      </div>
+
       <ScrollableRail>
         <Chip
           isActive={filter === "posts"}
           onClick={() => setFilter("posts")}
           icon={<i className="bi bi-file-text"></i>}
         >
-          Posts
+          Posts{" "}
+          <span className="opacity-60 ml-0.5">
+            ({formatCompactNumber(counts.posts)})
+          </span>
         </Chip>
         <Chip
           isActive={filter === "replies"}
           onClick={() => setFilter("replies")}
           icon={<i className="bi bi-chat-left-text"></i>}
         >
-          Replies
+          Replies{" "}
+          <span className="opacity-60 ml-0.5">
+            ({formatCompactNumber(counts.replies)})
+          </span>
         </Chip>
         <Chip
           isActive={filter === "agreed"}
           onClick={() => setFilter("agreed")}
           icon={<i className="bi bi-check-circle"></i>}
         >
-          Agreed
+          Agreed{" "}
+          <span className="opacity-60 ml-0.5">
+            ({formatCompactNumber(counts.agreed)})
+          </span>
         </Chip>
         <Chip
           isActive={filter === "dissented"}
           onClick={() => setFilter("dissented")}
           icon={<i className="bi bi-x-circle"></i>}
         >
-          Dissented
+          Dissented{" "}
+          <span className="opacity-60 ml-0.5">
+            ({formatCompactNumber(counts.dissented)})
+          </span>
         </Chip>
       </ScrollableRail>
 
-      {/* Animation Wrapper
-         mode="wait" ensures the old content fades out BEFORE new content fades in
-      */}
+      {/* Content Area */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={filter} // Changing key triggers the animation
+          key={filter}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="min-h-50" // Min-height prevents layout collapse during loading
+          className="min-h-50"
         >
           {loading ? (
-            <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
+            <div className="py-12 flex flex-col items-center justify-center gap-4 text-slate-400">
               <LoadingDots className="scale-150" />
               <span className="text-sm font-medium">Loading {filter}...</span>
             </div>
           ) : (
             <>
               {filter === "replies" ? (
-                // REPLIES VIEW
                 <div className="flex flex-col gap-4">
                   {posts.map((reply) => (
                     <ProfileReplyItem key={reply.id} reply={reply} />
@@ -82,11 +100,10 @@ export const Profile = () => {
                   )}
                 </div>
               ) : (
-                // STANDARD VIEW
                 <>
                   <PostListView
                     posts={posts}
-                    loading={false} // Loading handled by parent now
+                    loading={false}
                     hasMore={false}
                     onLoadMore={() => {}}
                   />
