@@ -81,7 +81,8 @@ export const removeInteraction = (
 ) => setInteraction(postId, uid, type, null, parentPostId);
 
 /**
- * creates a new post or a reply.
+ * creates a new post or a reply. also writes an index to users/{uid} for
+ * performant profile querying.
  */
 export const createPost = async (
   userId: string,
@@ -107,8 +108,12 @@ export const createPost = async (
 
   if (parentPostId) {
     updates[`replies/${parentPostId}/${newKey}`] = postData;
+    // Store reference in user's profile: users/UID/replies/PARENT_ID/REPLY_ID = true
+    updates[`users/${userId}/replies/${parentPostId}/${newKey}`] = true;
   } else {
     updates[`posts/${newKey}`] = postData;
+    // Store reference in user's profile: users/UID/posts/POST_ID = true
+    updates[`users/${userId}/posts/${newKey}`] = true;
   }
 
   return update(ref(db), updates);
@@ -137,15 +142,25 @@ export const updatePost = async (
 /**
  * removes a post or reply and cleans up all associated references atomically.
  */
-export const deletePost = async (postId: string, parentPostId?: string) => {
+export const deletePost = async (
+  postId: string,
+  userId: string, // need userId to find the reference in users/ node
+  parentPostId?: string,
+) => {
   try {
     const updates: Record<string, any> = {};
 
     if (parentPostId) {
+      // Remove data
       updates[`replies/${parentPostId}/${postId}`] = null;
+      // Remove user reference
+      updates[`users/${userId}/replies/${parentPostId}/${postId}`] = null;
     } else {
+      // Remove data
       updates[`posts/${postId}`] = null;
-      updates[`replies/${postId}`] = null;
+      updates[`replies/${postId}`] = null; // Delete all replies to this post
+      // Remove user reference
+      updates[`users/${userId}/posts/${postId}`] = null;
     }
 
     await update(ref(db), updates);
