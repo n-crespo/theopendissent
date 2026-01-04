@@ -430,3 +430,46 @@ export const getUserActivity = async (
     return [];
   }
 };
+
+/**
+ * Fetches count of items for all profile tabs.
+ * Uses the index nodes (users/{uid}/...) to avoid downloading full post content.
+ */
+export const getUserCounts = async (userId: string) => {
+  try {
+    const userRef = `users/${userId}`;
+
+    // Fetch all 3 index nodes in parallel
+    const [postsSnap, repliesSnap, interactionsSnap] = await Promise.all([
+      get(ref(db, `${userRef}/posts`)),
+      get(ref(db, `${userRef}/replies`)),
+      get(ref(db, `${userRef}/postInteractions`)),
+    ]);
+
+    // Posts Count
+    const posts = postsSnap.exists() ? Object.keys(postsSnap.val()).length : 0;
+
+    // Replies Count (Nested: parentId -> replyId)
+    let replies = 0;
+    if (repliesSnap.exists()) {
+      const repliesData = repliesSnap.val();
+      Object.values(repliesData).forEach((thread: any) => {
+        replies += Object.keys(thread).length;
+      });
+    }
+
+    // Interactions Count
+    const interactionsData = interactionsSnap.val() || {};
+    const agreed = interactionsData.agreed
+      ? Object.keys(interactionsData.agreed).length
+      : 0;
+    const dissented = interactionsData.dissented
+      ? Object.keys(interactionsData.dissented).length
+      : 0;
+
+    return { posts, replies, agreed, dissented };
+  } catch (error) {
+    console.error("Error fetching user counts:", error);
+    return { posts: 0, replies: 0, agreed: 0, dissented: 0 };
+  }
+};
