@@ -68,3 +68,10 @@ export function timeAgo(date: Date, locale: string = "en"): string {
 
   return rtf.format(0 - value, unit);
 }
+
+export const formatCompactNumber = (number: number) => {
+  return Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(number);
+};
