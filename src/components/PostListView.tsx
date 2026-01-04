@@ -19,7 +19,7 @@ export const PostListView = ({
 }: PostListViewProps) => {
   return (
     <div className="flex flex-col">
-      <AnimatePresence mode="popLayout">
+      <AnimatePresence mode="popLayout" initial={false}>
         {/* Priority/Highlighted Post */}
         {highlightedPost && (
           <motion.div
@@ -39,36 +39,27 @@ export const PostListView = ({
         )}
 
         {/* Standard List */}
-        {posts.map((post, index) => {
-          // Indexes 0-3 animate immediately so the page is never empty.
-          // Index 4+ wait for the scroll event.
-          const isAboveFold = index < 4;
-
-          return (
-            <motion.div
-              layout
-              key={post.id}
-              initial={{ opacity: 0, y: 40 }} // Start lower for a dramatic "rise"
-              // Conditional Animation Trigger
-              animate={isAboveFold ? { opacity: 1, y: 0 } : undefined}
-              whileInView={!isAboveFold ? { opacity: 1, y: 0 } : undefined}
-              // Trigger slightly before the element fully enters the screen
-              viewport={{ once: true, margin: "0px 0px -100px 0px" }}
-              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            >
-              <PostItem post={post} />
-            </motion.div>
-          );
-        })}
+        {posts.map((post) => (
+          <motion.div
+            layout
+            key={post.id}
+            // CHANGED: We use 'animate' instead of 'whileInView' to force visibility
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+            transition={{ duration: 0.3 }}
+          >
+            <PostItem post={post} />
+          </motion.div>
+        ))}
       </AnimatePresence>
 
       {/* Load More Button */}
       {hasMore && (
         <motion.div
           initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
         >
           <button
             className="mx-auto my-8 block cursor-pointer border bg-white px-8 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 hover:shadow-md disabled:opacity-50"
