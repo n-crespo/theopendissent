@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
+import { Routes, Route, Outlet } from "react-router-dom";
 import { Header } from "./components/Header";
-import { PostInput } from "./components/PostInput";
-import { PostList } from "./components/PostList";
-import { GlobalModal } from "./components/modals/GlobalModal";
 import { Footer } from "./components/Footer";
-import { DiscoveryRail } from "./components/DiscoveryRail";
+import { GlobalModal } from "./components/modals/GlobalModal";
 import { useDeepLinkHandler } from "./hooks/useDeepLinkHandler";
 
-export default function App() {
-  const [showScrollTop, setShowScrollTop] = useState(false);
+// Import Pages
+import { Home } from "./pages/Home";
+import { Profile } from "./pages/Profile";
 
+function Layout() {
+  const [showScrollTop, setShowScrollTop] = useState(false);
   useDeepLinkHandler();
 
   useEffect(() => {
@@ -23,16 +24,8 @@ export default function App() {
       <Header />
 
       <main>
-        {/* Moved DiscoveryRail INSIDE this container.
-          The container adds padding (px-4).
-          The Rail's negative margin (-mx-4) pulls it back out to the edge.
-          Result: Perfect alignment of the first chip with the Input box.
-        */}
-        <div className="mx-auto flex max-w-125 flex-col gap-3 px-2">
-          <DiscoveryRail />
-          <PostInput />
-          <PostList />
-        </div>
+        {/* The Outlet renders the current route (Home or Profile) */}
+        <Outlet />
       </main>
 
       {/* Scroll to top button */}
@@ -55,5 +48,16 @@ export default function App() {
       <GlobalModal />
       <Footer />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Home />} />
+        <Route path="profile" element={<Profile />} />
+      </Route>
+    </Routes>
   );
 }
