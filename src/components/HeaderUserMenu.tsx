@@ -14,6 +14,10 @@ export const HeaderUserMenu = () => {
     navigate("/profile");
   };
 
+  const handleFeedback = () => {
+    window.open("https://forms.gle/EA1DcFzigrmjRqZK8", "_blank");
+  };
+
   return (
     <DropdownMenu
       align="right"
@@ -26,6 +30,9 @@ export const HeaderUserMenu = () => {
     >
       <MenuItem icon="bi-house-door" label="Home" onClick={handleHome} />
       <MenuItem icon="bi-person" label="Profile" onClick={handleProfile} />
+
+      {/* New Feedback Item */}
+      <MenuItem icon="bi-chat-text" label="Feedback" onClick={handleFeedback} />
 
       <MenuSeparator />
 
