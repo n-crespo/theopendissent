@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ScrollableRail } from "../components/ui/ScrollableRail";
 import { Chip } from "../components/ui/Chip";
 import { PostListView } from "../components/PostListView";
+import { ProfileReplyItem } from "../components/ProfileReplyItem";
 import { useAuth } from "../context/AuthContext";
 import { useUserActivity } from "../hooks/useUserActivity";
 
@@ -10,8 +12,6 @@ type FilterType = "posts" | "replies" | "agreed" | "dissented";
 export const Profile = () => {
   const { user } = useAuth();
   const [filter, setFilter] = useState<FilterType>("posts");
-
-  // The magic hook
   const { posts, loading } = useUserActivity(user?.uid, filter);
 
   return (
@@ -47,21 +47,61 @@ export const Profile = () => {
         </Chip>
       </ScrollableRail>
 
-      {/* Reusing your refactored List View */}
-      {/* Note: hasMore/onLoadMore are disabled here as we fetch all history at once for now */}
-      <PostListView
-        posts={posts}
-        loading={loading}
-        hasMore={false}
-        onLoadMore={() => {}}
-      />
+      {/* Animation Wrapper
+         mode="wait" ensures the old content fades out BEFORE new content fades in
+      */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={filter} // Changing key triggers the animation
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+          className="min-h-[200px]" // Min-height prevents layout collapse during loading
+        >
+          {loading ? (
+            <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
+              <i className="bi bi-three-dots animate-pulse text-2xl"></i>
+              <span className="text-sm font-medium">Loading {filter}...</span>
+            </div>
+          ) : (
+            <>
+              {filter === "replies" ? (
+                // REPLIES VIEW
+                <div className="flex flex-col gap-4">
+                  {posts.map((reply) => (
+                    <ProfileReplyItem key={reply.id} reply={reply} />
+                  ))}
 
-      {!loading && posts.length === 0 && (
-        <div className="py-12 text-center text-slate-400">
-          <i className="bi bi-inbox text-4xl mb-2 block opacity-50"></i>
-          <p>No activity found for {filter}.</p>
-        </div>
-      )}
+                  {posts.length === 0 && (
+                    <div className="py-12 text-center text-slate-400">
+                      <i className="bi bi-chat-square-dots text-4xl mb-2 block opacity-50"></i>
+                      <p>No replies yet.</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // STANDARD VIEW
+                <>
+                  <PostListView
+                    posts={posts}
+                    loading={false} // Loading handled by parent now
+                    hasMore={false}
+                    onLoadMore={() => {}}
+                  />
+
+                  {posts.length === 0 && (
+                    <div className="py-12 text-center text-slate-400">
+                      <i className="bi bi-inbox text-4xl mb-2 block opacity-50"></i>
+                      <p>No activity found for {filter}.</p>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };
