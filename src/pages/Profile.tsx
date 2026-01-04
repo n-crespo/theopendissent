@@ -6,6 +6,7 @@ import { PostListView } from "../components/PostListView";
 import { ProfileReplyItem } from "../components/ProfileReplyItem";
 import { useAuth } from "../context/AuthContext";
 import { useUserActivity } from "../hooks/useUserActivity";
+import { LoadingDots } from "../components/ui/LoadingDots";
 
 type FilterType = "posts" | "replies" | "agreed" | "dissented";
 
@@ -57,11 +58,11 @@ export const Profile = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="min-h-[200px]" // Min-height prevents layout collapse during loading
+          className="min-h-50" // Min-height prevents layout collapse during loading
         >
           {loading ? (
             <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
-              <i className="bi bi-three-dots animate-pulse text-2xl"></i>
+              <LoadingDots className="scale-150" />
               <span className="text-sm font-medium">Loading {filter}...</span>
             </div>
           ) : (

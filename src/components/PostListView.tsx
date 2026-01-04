@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { LoadingDots } from "./ui/LoadingDots";
 import { PostItem } from "./PostItem";
 import { Post } from "../types";
 
@@ -72,7 +73,7 @@ export const PostListView = ({
           >
             {loading ? (
               <div className="flex items-center gap-2">
-                <i className="bi bi-three-dots animate-pulse"></i>
+                <LoadingDots />
                 <span>Loading...</span>
               </div>
             ) : (
