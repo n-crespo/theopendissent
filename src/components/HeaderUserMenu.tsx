@@ -25,10 +25,16 @@ export const HeaderUserMenu = () => {
       <MenuItem icon="bi-house-door" label="Home" onClick={handleHome} />
       <MenuItem icon="bi-person" label="Profile" onClick={handleProfile} />
 
+      <MenuSeparator />
+
       {/* New Listen Item */}
       <MenuItem icon="bi-broadcast" label="Listen" onClick={handleListen} />
 
-      <MenuItem icon="bi-chat-text" label="Feedback" onClick={handleFeedback} />
+      <MenuItem
+        icon="bi-chat-text"
+        label="Send Feedback"
+        onClick={handleFeedback}
+      />
 
       <MenuSeparator />
 
