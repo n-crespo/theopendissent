@@ -4,7 +4,7 @@
  */
 export const Footer = () => {
   return (
-    <footer className="mt-0 flex flex-col items-center border-t border-slate-200 py-5">
+    <footer className="mt-3 flex flex-col items-center border-t border-slate-200 py-5">
       <div className="flex flex-col items-center gap-1">
         {/* legal row */}
         <div className="flex items-center gap-2 text-[13px] text-gray-custom">
