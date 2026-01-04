@@ -8,6 +8,10 @@ export const HeaderUserMenu = () => {
     window.location.href = "/";
   };
 
+  const handleProfile = () => {
+    console.log("Navigate to profile");
+  };
+
   return (
     <DropdownMenu
       align="right"
@@ -23,6 +27,7 @@ export const HeaderUserMenu = () => {
       }
     >
       <MenuItem icon="bi-house-door" label="Home" onClick={handleHome} />
+      <MenuItem icon="bi-person" label="Profile" onClick={handleProfile} />
 
       <MenuSeparator />
 
