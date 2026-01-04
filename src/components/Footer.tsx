@@ -8,7 +8,7 @@ export const Footer = () => {
       <div className="flex flex-col items-center gap-1">
         {/* legal row */}
         <div className="flex items-center gap-2 text-[13px] text-gray-custom">
-          <p>© 2025 The Open Dissent</p>
+          <p>© 2026 The Open Dissent</p>
           <span className="text-slate-200">•</span>
           <a
             href="https://forms.gle/EA1DcFzigrmjRqZK8"
