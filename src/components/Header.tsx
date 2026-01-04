@@ -1,13 +1,14 @@
 import logoUrl from "../assets/Flat-Logo.svg";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
+import { HeaderUserMenu } from "./HeaderUserMenu";
 
 export const Header = () => {
   const { user, loading } = useAuth();
   const { openModal } = useModal();
 
   const pillButtonStyle =
-    "group flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-logo-offwhite text-slate-600 hover:text-slate-900 transition-all active:scale-95 cursor-pointer";
+    "group flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-logo-offwhite text-slate-600 hover:text-slate-900 transition-all active:scale-95 cursor-pointer shadow-sm";
 
   return (
     <header className="sticky top-0 z-50 rounded-b-lg border-b border-slate-200 bg-logo-offwhite">
@@ -45,13 +46,8 @@ export const Header = () => {
               <i className="bi bi-three-dots text-slate-400"></i>
             </div>
           ) : user ? (
-            <button
-              onClick={() => openModal("logout")}
-              title={`Signed in as ${user.email?.split("@")[0]}`}
-              className={pillButtonStyle}
-            >
-              <i className="bi bi-person-fill text-[16px]"></i>
-            </button>
+            // Swapped the old single-purpose button for the new Menu
+            <HeaderUserMenu />
           ) : (
             // not logged in
             <button
