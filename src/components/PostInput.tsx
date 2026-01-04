@@ -125,7 +125,7 @@ export const PostInput = ({
 
           {!hasNoStance && content.length > 0 && (
             <span
-              className={`absolute right-3 -bottom-4.5 text-[10px] font-bold uppercase tracking-tight transition-colors ${
+              className={`absolute right-2 -bottom-3.5 text-[10px] font-bold uppercase tracking-tight transition-colors ${
                 isNearLimit ? "text-logo-red" : "text-slate-300"
               }`}
             >
