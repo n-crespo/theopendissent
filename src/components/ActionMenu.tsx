@@ -42,6 +42,7 @@ export const ActionMenu = ({
             onClick={onDelete}
             variant="danger"
           />
+          <MenuSeparator />
         </>
       ) : (
         <MenuItem
@@ -50,8 +51,6 @@ export const ActionMenu = ({
           onClick={() => reportPost(post.id, currentUserId)}
         />
       )}
-
-      <MenuSeparator />
 
       <MenuItem icon="bi-share" label="Share" onClick={() => sharePost(post)} />
     </DropdownMenu>
