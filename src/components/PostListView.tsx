@@ -1,9 +1,10 @@
+import { motion, AnimatePresence } from "framer-motion";
 import { PostItem } from "./PostItem";
 import { Post } from "../types";
 
 interface PostListViewProps {
   posts: Post[];
-  highlightedPost?: Post | null; // For the "injected" post logic
+  highlightedPost?: Post | null;
   loading: boolean;
   hasMore: boolean;
   onLoadMore: () => void;
@@ -18,39 +19,67 @@ export const PostListView = ({
 }: PostListViewProps) => {
   return (
     <div className="flex flex-col">
-      {/* Priority/Highlighted Post (e.g. Deep links) */}
-      {highlightedPost && (
-        <PostItem
-          key={`highlighted-${highlightedPost.id}`}
-          post={highlightedPost}
-        />
-      )}
+      <AnimatePresence mode="popLayout">
+        {/* Priority/Highlighted Post */}
+        {highlightedPost && (
+          <motion.div
+            layout
+            key={`highlighted-${highlightedPost.id}`}
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
+            className="mb-4 border-b-4 border-logo-blue/10 pb-4"
+          >
+            <div className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-logo-blue">
+              Highlight
+            </div>
+            <PostItem post={highlightedPost} />
+          </motion.div>
+        )}
 
-      {/* Standard List */}
-      {posts.map((post) => (
-        <PostItem key={post.id} post={post} />
-      ))}
+        {/* Standard List */}
+        {posts.map((post, index) => (
+          <motion.div
+            layout
+            key={post.id}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }} // Only animate once
+            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+            transition={{ duration: 0.3, delay: index < 5 ? index * 0.05 : 0 }} // Stagger first few
+          >
+            <PostItem post={post} />
+          </motion.div>
+        ))}
+      </AnimatePresence>
 
       {/* Load More Button */}
       {hasMore && (
-        <button
-          className="mx-auto my-8 block cursor-pointer border bg-white px-8 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 hover:shadow-md disabled:opacity-50"
-          style={{
-            borderRadius: "var(--radius-button)",
-            borderColor: "var(--color-border-subtle)",
-          }}
-          onClick={onLoadMore}
-          disabled={loading}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
         >
-          {loading ? (
-            <div className="flex items-center gap-2">
-              <i className="bi bi-three-dots animate-pulse"></i>
-              <span>Loading...</span>
-            </div>
-          ) : (
-            "Load More"
-          )}
-        </button>
+          <button
+            className="mx-auto my-8 block cursor-pointer border bg-white px-8 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 hover:shadow-md disabled:opacity-50"
+            style={{
+              borderRadius: "var(--radius-button)",
+              borderColor: "var(--color-border-subtle)",
+            }}
+            onClick={onLoadMore}
+            disabled={loading}
+          >
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <i className="bi bi-three-dots animate-pulse"></i>
+                <span>Loading...</span>
+              </div>
+            ) : (
+              "Load More"
+            )}
+          </button>
+        </motion.div>
       )}
     </div>
   );
