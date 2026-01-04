@@ -17,6 +17,9 @@ export const useUserActivity = (
     }
 
     let isMounted = true;
+
+    // fix: Clear previous data immediately to prevent UI flash
+    setPosts([]);
     setLoading(true);
 
     getUserActivity(userId, filter)
@@ -34,7 +37,7 @@ export const useUserActivity = (
     return () => {
       isMounted = false;
     };
-  }, [userId, filter]);
+  }, [userId, filter]); // Dependencies trigger re-run on change
 
   return { posts, loading };
 };
