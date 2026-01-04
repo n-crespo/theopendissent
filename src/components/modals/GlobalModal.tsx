@@ -7,6 +7,7 @@ import { LogoutModal } from "./LogoutModal";
 import { PostDetailsView } from "./PostDetailsView";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { ConfirmPostModal } from "./ConfirmPostModal";
+import { ListenModal } from "./ListenModal";
 import { useEffect } from "react";
 
 /**
@@ -101,6 +102,7 @@ export const GlobalModal = () => {
                   onClose={closeModal}
                 />
               )}
+              {modal.type === "listen" && <ListenModal />}
             </div>
           </motion.div>
         </motion.div>

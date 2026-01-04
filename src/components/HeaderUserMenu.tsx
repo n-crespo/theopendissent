@@ -6,17 +6,11 @@ export const HeaderUserMenu = () => {
   const { openModal } = useModal();
   const navigate = useNavigate();
 
-  const handleHome = () => {
-    navigate("/");
-  };
-
-  const handleProfile = () => {
-    navigate("/profile");
-  };
-
-  const handleFeedback = () => {
+  const handleHome = () => navigate("/");
+  const handleProfile = () => navigate("/profile");
+  const handleListen = () => openModal("listen");
+  const handleFeedback = () =>
     window.open("https://forms.gle/EA1DcFzigrmjRqZK8", "_blank");
-  };
 
   return (
     <DropdownMenu
@@ -31,7 +25,9 @@ export const HeaderUserMenu = () => {
       <MenuItem icon="bi-house-door" label="Home" onClick={handleHome} />
       <MenuItem icon="bi-person" label="Profile" onClick={handleProfile} />
 
-      {/* New Feedback Item */}
+      {/* New Listen Item */}
+      <MenuItem icon="bi-broadcast" label="Listen" onClick={handleListen} />
+
       <MenuItem icon="bi-chat-text" label="Feedback" onClick={handleFeedback} />
 
       <MenuSeparator />
