@@ -369,7 +369,7 @@ export const getUserActivity = async (
   filter: "posts" | "replies" | "agreed" | "dissented",
 ): Promise<Post[]> => {
   try {
-    // 1. Determine where to look for the IDs
+    // Determine where to look for the IDs
     let indexRef;
     if (filter === "posts") {
       indexRef = ref(db, `users/${userId}/posts`);
@@ -385,22 +385,28 @@ export const getUserActivity = async (
     const data = snapshot.val();
     const promises: Promise<Post | null>[] = [];
 
-    // 2. Iterate keys and queue up fetches
+    // Iterate keys and queue up fetches
     if (filter === "posts") {
-      // data is { postId: true, postId2: true }
       Object.keys(data).forEach((postId) => {
-        promises.push(getPostById(postId)); // No parentId needed for top-level
+        promises.push(getPostById(postId));
       });
     } else if (filter === "replies") {
-      // data is { parentId: { replyId: true, replyId2: true } }
+      // data is { parentId: { replyId: true } }
       Object.entries(data).forEach(([parentId, repliesObj]: [string, any]) => {
         Object.keys(repliesObj).forEach((replyId) => {
-          promises.push(getPostById(replyId, parentId));
+          // Fetch Reply AND Parent
+          const fetchWithParent = async () => {
+            const reply = await getPostById(replyId, parentId);
+            if (!reply) return null;
+            const parent = await getPostById(parentId);
+            // Attach parent to the reply object (we'll handle type info in the UI)
+            return { ...reply, parentPost: parent || undefined };
+          };
+          promises.push(fetchWithParent());
         });
       });
     } else {
       // filter is "agreed" or "dissented"
-      // data is { postId: "top" } OR { replyId: "parentId" }
       Object.entries(data).forEach(
         ([itemId, parentReference]: [string, any]) => {
           const parentId =
@@ -410,10 +416,10 @@ export const getUserActivity = async (
       );
     }
 
-    // 3. Resolve all fetches and clean up nulls (deleted posts)
+    // Resolve all fetches and clean up nulls
     const results = await Promise.all(promises);
 
-    // 4. Filter nulls and sort by timestamp descending (newest first)
+    // Filter nulls and sort by timestamp descending
     return results
       .filter((post): post is Post => post !== null)
       .sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
