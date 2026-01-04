@@ -1,15 +1,17 @@
+import { useNavigate } from "react-router-dom";
 import { useModal } from "../context/ModalContext";
 import { DropdownMenu, MenuItem, MenuSeparator } from "./ui/DropdownMenu";
 
 export const HeaderUserMenu = () => {
   const { openModal } = useModal();
+  const navigate = useNavigate();
 
   const handleHome = () => {
-    window.location.href = "/";
+    navigate("/");
   };
 
   const handleProfile = () => {
-    console.log("Navigate to profile");
+    navigate("/profile");
   };
 
   return (
@@ -17,10 +19,6 @@ export const HeaderUserMenu = () => {
       align="right"
       width="w-48"
       trigger={
-        // Updated to match PostItem profile style:
-        // - rounded-md (instead of rounded-full)
-        // - bg-slate-100 (instead of bg-logo-offwhite)
-        // - border-slate-200/50
         <div className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-slate-200/50 bg-slate-100 text-slate-500 transition-all shadow-sm active:scale-95">
           <i className="bi bi-person-fill text-lg"></i>
         </div>
