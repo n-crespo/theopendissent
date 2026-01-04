@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import logoUrl from "../assets/Flat-Logo.svg";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
@@ -11,7 +12,7 @@ export const Header = () => {
     "group flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-logo-offwhite text-slate-600 hover:text-slate-900 transition-all active:scale-95 cursor-pointer shadow-sm";
 
   return (
-    <header className="sticky top-0 z-50 rounded-b-lg border-b border-slate-200 bg-logo-offwhite">
+    <header className="sticky top-0 mb-3 z-50 rounded-b-lg border-b border-slate-200 bg-logo-offwhite">
       <div className="mx-auto flex max-w-125 items-center justify-between px-0 py-0">
         {/* LEFT: Info Button */}
         <div className="flex w-20 items-center justify-start pl-2">
@@ -25,16 +26,16 @@ export const Header = () => {
           </button>
         </div>
 
-        {/* CENTER: Main Logo */}
+        {/* CENTER: Main Logo (Now clickable) */}
         {/* h-12.5 (50px) fixes the header height */}
-        <div className="flex h-12.5 items-center justify-center">
+        <Link to="/" className="flex h-12.5 items-center justify-center">
           <img
             src={logoUrl}
             alt="App Icon"
             className="h-full w-auto max-w-[60vw] object-contain"
             draggable="false"
           />
-        </div>
+        </Link>
 
         {/* RIGHT: Auth Section */}
         <div
@@ -46,10 +47,8 @@ export const Header = () => {
               <i className="bi bi-three-dots text-slate-400"></i>
             </div>
           ) : user ? (
-            // Swapped the old single-purpose button for the new Menu
             <HeaderUserMenu />
           ) : (
-            // not logged in
             <button
               className={pillButtonStyle}
               onClick={() => openModal("signin")}
