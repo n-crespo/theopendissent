@@ -357,3 +357,68 @@ export const getDeepLinkData = async (
 
   return { displayPost: targetPost, highlightReplyId: null };
 };
+
+/**
+ * Fetches lists of content based on user profile filters.
+ * Handles the "Fan-out" reading:
+ * 1. Get list of IDs from users/{uid}
+ * 2. Fetch actual content for each ID in parallel
+ */
+export const getUserActivity = async (
+  userId: string,
+  filter: "posts" | "replies" | "agreed" | "dissented",
+): Promise<Post[]> => {
+  try {
+    // 1. Determine where to look for the IDs
+    let indexRef;
+    if (filter === "posts") {
+      indexRef = ref(db, `users/${userId}/posts`);
+    } else if (filter === "replies") {
+      indexRef = ref(db, `users/${userId}/replies`);
+    } else {
+      indexRef = ref(db, `users/${userId}/postInteractions/${filter}`);
+    }
+
+    const snapshot = await get(indexRef);
+    if (!snapshot.exists()) return [];
+
+    const data = snapshot.val();
+    const promises: Promise<Post | null>[] = [];
+
+    // 2. Iterate keys and queue up fetches
+    if (filter === "posts") {
+      // data is { postId: true, postId2: true }
+      Object.keys(data).forEach((postId) => {
+        promises.push(getPostById(postId)); // No parentId needed for top-level
+      });
+    } else if (filter === "replies") {
+      // data is { parentId: { replyId: true, replyId2: true } }
+      Object.entries(data).forEach(([parentId, repliesObj]: [string, any]) => {
+        Object.keys(repliesObj).forEach((replyId) => {
+          promises.push(getPostById(replyId, parentId));
+        });
+      });
+    } else {
+      // filter is "agreed" or "dissented"
+      // data is { postId: "top" } OR { replyId: "parentId" }
+      Object.entries(data).forEach(
+        ([itemId, parentReference]: [string, any]) => {
+          const parentId =
+            parentReference === "top" ? undefined : parentReference;
+          promises.push(getPostById(itemId, parentId));
+        },
+      );
+    }
+
+    // 3. Resolve all fetches and clean up nulls (deleted posts)
+    const results = await Promise.all(promises);
+
+    // 4. Filter nulls and sort by timestamp descending (newest first)
+    return results
+      .filter((post): post is Post => post !== null)
+      .sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
+  } catch (error) {
+    console.error(`Error fetching user activity for ${filter}:`, error);
+    return [];
+  }
+};
