@@ -7,10 +7,9 @@ export const PodcastSourceChip = () => {
   return (
     <Chip
       icon={
-        <i className="bi bi-broadcast text-[14px] leading-none text-purple-600"></i>
+        <i className="bi bi-broadcast text-[14px] leading-none text-logo-red"></i>
       }
       onClick={() => openModal("listen")}
-      className="hover:border-purple-300 transition-colors"
     >
       Listen In!
     </Chip>
