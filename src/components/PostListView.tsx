@@ -19,7 +19,7 @@ export const PostListView = ({
 }: PostListViewProps) => {
   return (
     <div className="flex flex-col">
-      <AnimatePresence mode="popLayout" initial={false}>
+      <AnimatePresence mode="popLayout">
         {/* Priority/Highlighted Post */}
         {highlightedPost && (
           <motion.div
