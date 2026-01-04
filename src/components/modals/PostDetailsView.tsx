@@ -68,9 +68,7 @@ export const PostDetailsView = ({
 
   return (
     <div className="flex flex-col">
-      {/* PART 1: Main Post & Input
-         Rendered IMMEDIATELY. No waiting. No flash. 
-      */}
+      {/* PART 1: Main Post & Input */}
       <PostItem
         post={livePost}
         disableClick={true}
@@ -89,7 +87,7 @@ export const PostDetailsView = ({
           <div className="h-px bg-border-subtle grow ml-4 opacity-50"></div>
         </div>
 
-        {/* PART 2: Replies Area
+        {/* Replies Area
            Uses Skeletons to reserve space immediately (preventing the "jump").
            Uses AnimatePresence to crossfade smoothly when real data arrives.
         */}
