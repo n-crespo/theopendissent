@@ -398,8 +398,11 @@ export const getUserActivity = async (
           const fetchWithParent = async () => {
             const reply = await getPostById(replyId, parentId);
             if (!reply) return null;
+
+            // Fetch parent for context
             const parent = await getPostById(parentId);
-            // Attach parent to the reply object (we'll handle type info in the UI)
+            // Attach parent to the reply object
+            // We cast as any or extend the type locally in the component
             return { ...reply, parentPost: parent || undefined };
           };
           promises.push(fetchWithParent());
@@ -416,7 +419,6 @@ export const getUserActivity = async (
       );
     }
 
-    // Resolve all fetches and clean up nulls
     const results = await Promise.all(promises);
 
     // Filter nulls and sort by timestamp descending
