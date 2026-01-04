@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { subscribeToPost, subscribeToReplies } from "../../lib/firebase";
 import { PostItem } from "../PostItem";
 import { PostInput } from "../PostInput";
@@ -16,7 +17,8 @@ export const PostDetailsView = ({
   highlightReplyId?: string | null;
 }) => {
   const [replies, setReplies] = useState<Post[]>([]);
-  // add loading state
+
+  // Start loading immediately so we render Skeletons on the very first frame
   const [isLoadingReplies, setIsLoadingReplies] = useState(true);
 
   const [livePost, setLivePost] = useState<Post>(initialPost);
@@ -36,30 +38,27 @@ export const PostDetailsView = ({
     getStoreStance,
   );
 
+  // 1. Subscribe to Post updates
   useEffect(() => {
     const unsubscribe = subscribeToPost(initialPost.id, (post) => {
-      if (post) {
-        setLivePost(post);
-      } else {
-        closeAllModals();
-      }
+      if (post) setLivePost(post);
+      else closeAllModals();
     });
     return () => unsubscribe();
   }, [initialPost.id, closeAllModals]);
 
+  // 2. Subscribe to Replies
   useEffect(() => {
-    // reset loading on id change
     setIsLoadingReplies(true);
-
     const unsubscribe = subscribeToReplies(initialPost.id, (list) => {
       setReplies(list);
-      setIsLoadingReplies(false); // data received
+      setIsLoadingReplies(false);
 
       if (highlightReplyId) {
         setTimeout(() => {
           const element = document.getElementById(`reply-${highlightReplyId}`);
           element?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 100);
+        }, 300);
       }
     });
     return () => unsubscribe();
@@ -69,6 +68,9 @@ export const PostDetailsView = ({
 
   return (
     <div className="flex flex-col">
+      {/* PART 1: Main Post & Input
+         Rendered IMMEDIATELY. No waiting. No flash. 
+      */}
       <PostItem
         post={livePost}
         disableClick={true}
@@ -87,31 +89,81 @@ export const PostDetailsView = ({
           <div className="h-px bg-border-subtle grow ml-4 opacity-50"></div>
         </div>
 
-        {/* loading state prevents the 'empty' flash */}
-        {isLoadingReplies ? (
-          <div className="flex flex-col gap-4 animate-pulse">
-            {/* dummy skeletons to hold layout height */}
-            <div className="h-24 bg-slate-50 rounded-xl border border-slate-100"></div>
-            <div className="h-24 bg-slate-50 rounded-xl border border-slate-100"></div>
-          </div>
-        ) : replies.length > 0 ? (
-          <div className="flex flex-col gap-4">
-            {replies.map((reply) => (
-              <div key={reply.id} id={`reply-${reply.id}`}>
-                <ReplyItem
-                  reply={reply}
-                  highlighted={highlightReplyId === reply.id}
-                />
+        {/* PART 2: Replies Area
+           Uses Skeletons to reserve space immediately (preventing the "jump").
+           Uses AnimatePresence to crossfade smoothly when real data arrives.
+        */}
+        <AnimatePresence mode="popLayout">
+          {isLoadingReplies ? (
+            <motion.div
+              key="skeletons"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col gap-4"
+            >
+              {/* Skeleton 1 - Mimics a reply to hold space */}
+              <div className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-md bg-slate-100"></div>
+                  <div className="flex flex-col gap-1">
+                    <div className="h-3 w-24 rounded-full bg-slate-100"></div>
+                    <div className="h-2 w-16 rounded-full bg-slate-50"></div>
+                  </div>
+                </div>
+                <div className="h-4 w-3/4 rounded-full bg-slate-50"></div>
+                <div className="h-4 w-1/2 rounded-full bg-slate-50"></div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16 bg-bg-preview rounded-(--radius-input) border border-dashed border-border-subtle">
-            <p className="text-sm text-slate-400 italic font-medium">
-              No replies yet, you can be the first!
-            </p>
-          </div>
-        )}
+
+              {/* Skeleton 2 */}
+              <div className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-white p-4 shadow-sm opacity-60">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-md bg-slate-100"></div>
+                  <div className="flex flex-col gap-1">
+                    <div className="h-3 w-20 rounded-full bg-slate-100"></div>
+                    <div className="h-2 w-12 rounded-full bg-slate-50"></div>
+                  </div>
+                </div>
+                <div className="h-4 w-full rounded-full bg-slate-50"></div>
+              </div>
+            </motion.div>
+          ) : replies.length > 0 ? (
+            <motion.div
+              key="content"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col gap-4"
+            >
+              {replies.map((reply) => (
+                <div
+                  key={reply.id}
+                  id={`reply-${reply.id}`}
+                  className={
+                    highlightReplyId === reply.id ? "z-10 relative" : ""
+                  }
+                >
+                  <ReplyItem
+                    reply={reply}
+                    highlighted={highlightReplyId === reply.id}
+                  />
+                </div>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+              className="text-center py-16 bg-bg-preview rounded-(--radius-input) border border-dashed border-border-subtle"
+            >
+              <p className="text-sm text-slate-400 italic font-medium">
+                No replies yet, you can be the first!
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

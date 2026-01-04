@@ -20,7 +20,6 @@ export const GlobalModal = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && modalStack.length > 0) {
-        // Prevent generic browser stop actions if necessary
         e.preventDefault();
         closeModal();
       }
@@ -30,83 +29,98 @@ export const GlobalModal = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [modalStack, closeModal]);
 
-  // if (modalStack.length === 0) return null;
-
   return (
     <AnimatePresence>
-      {modalStack.map((modal, index) => (
-        <motion.div
-          key={`${modal.type}-${index}`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 flex items-center justify-center bg-black/40 p-2"
-          style={{ zIndex: 1000 + index }}
-          onClick={closeModal}
-        >
-          <motion.div
-            layout
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{
-              type: "tween",
-              damping: 22,
-              stiffness: 250,
-              layout: { duration: 0.35 }, // Controls the resize speed
-            }}
-            className="relative flex min-h-[23vh] max-h-[83vh] w-full max-w-120 flex-col overflow-hidden bg-white shadow-(--shadow-modal)"
-            style={{
-              borderRadius: "var(--radius-modal)",
-              border: "1px solid var(--color-border-subtle)",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* small fixed header */}
-            <div className="sticky top-0 z-50 flex h-10 w-full shrink-0 items-center justify-end bg-white/80 backdrop-blur-sm px-1">
-              <button
-                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100"
-                onClick={closeModal}
-                aria-label="Close"
-              >
-                <i className="bi bi-x-lg text-lg"></i>
-              </button>
-            </div>
+      {modalStack.map((modal, index) => {
+        // 1. Determine if this specific modal should fill the screen height
+        const isFullHeight = modal.type === "postDetails";
 
-            {/* content area */}
-            <div className="custom-scrollbar overflow-y-auto p-5 pt-0 text-left">
-              {modal.type === "signin" && <SignInModal />}
-              {modal.type === "about" && <AboutModal />}
-              {modal.type === "installInstructions" && (
-                <InstallInstructionsModal />
-              )}
-              {modal.type === "logout" && <LogoutModal />}
-              {modal.type === "postDetails" && (
-                <PostDetailsView
-                  post={modal.payload.post || modal.payload}
-                  highlightReplyId={modal.payload.highlightReplyId}
-                />
-              )}
-              {modal.type === "deleteConfirm" && (
-                <ConfirmDeleteModal
-                  itemName={modal.payload?.name || "this item"}
-                  onConfirm={modal.payload?.onConfirm}
-                  onClose={closeModal}
-                />
-              )}
-              {modal.type === "confirmPost" && (
-                <ConfirmPostModal
-                  content={modal.payload?.content}
-                  onConfirm={modal.payload?.onConfirm}
-                  onClose={closeModal}
-                />
-              )}
-              {modal.type === "listen" && <ListenModal />}
-            </div>
+        return (
+          <motion.div
+            key={`${modal.type}-${index}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 flex items-center justify-center bg-black/40 p-2"
+            style={{ zIndex: 1000 + index }}
+            onClick={closeModal}
+          >
+            <motion.div
+              layout
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{
+                type: "tween",
+                damping: 22,
+                stiffness: 250,
+                layout: { duration: 0.35 },
+              }}
+              // conditionally apply height classes
+              // If postDetails, force h-[83vh]
+              // Otherwise, use min/max auto-sizing.
+              className={`
+                relative flex w-full max-w-120 flex-col overflow-hidden bg-white shadow-(--shadow-modal)
+                ${isFullHeight ? "h-[83vh]" : "min-h-[23vh] max-h-[83vh]"}
+              `}
+              style={{
+                borderRadius: "var(--radius-modal)",
+                border: "1px solid var(--color-border-subtle)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="sticky top-0 z-50 flex h-10 w-full shrink-0 items-center justify-end bg-white/80 backdrop-blur-sm px-1">
+                <button
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100"
+                  onClick={closeModal}
+                  aria-label="Close"
+                >
+                  <i className="bi bi-x-lg text-lg"></i>
+                </button>
+              </div>
+
+              {/* Content Area */}
+              {/* 3. Add 'flex-1' and 'h-full' so the internal scrollbar area fills the fixed height */}
+              <div
+                className={`
+                  custom-scrollbar overflow-y-auto p-5 pt-0 text-left
+                  ${isFullHeight ? "flex-1 h-full" : ""}
+                `}
+              >
+                {modal.type === "signin" && <SignInModal />}
+                {modal.type === "about" && <AboutModal />}
+                {modal.type === "installInstructions" && (
+                  <InstallInstructionsModal />
+                )}
+                {modal.type === "logout" && <LogoutModal />}
+                {modal.type === "postDetails" && (
+                  <PostDetailsView
+                    post={modal.payload.post || modal.payload}
+                    highlightReplyId={modal.payload.highlightReplyId}
+                  />
+                )}
+                {modal.type === "deleteConfirm" && (
+                  <ConfirmDeleteModal
+                    itemName={modal.payload?.name || "this item"}
+                    onConfirm={modal.payload?.onConfirm}
+                    onClose={closeModal}
+                  />
+                )}
+                {modal.type === "confirmPost" && (
+                  <ConfirmPostModal
+                    content={modal.payload?.content}
+                    onConfirm={modal.payload?.onConfirm}
+                    onClose={closeModal}
+                  />
+                )}
+                {modal.type === "listen" && <ListenModal />}
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      ))}
+        );
+      })}
     </AnimatePresence>
   );
 };
