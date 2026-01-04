@@ -45,11 +45,14 @@ export const ActionMenu = ({
           <MenuSeparator />
         </>
       ) : (
-        <MenuItem
-          icon="bi-flag"
-          label="Report"
-          onClick={() => reportPost(post.id, currentUserId)}
-        />
+        // only show Report if user is logged in (currentUserId exists)
+        currentUserId && (
+          <MenuItem
+            icon="bi-flag"
+            label="Report"
+            onClick={() => reportPost(post.id, currentUserId)}
+          />
+        )
       )}
 
       <MenuItem icon="bi-share" label="Share" onClick={() => sharePost(post)} />
