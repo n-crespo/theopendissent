@@ -32,7 +32,7 @@ export const SignInModal = () => {
         </p>
         <p className="text-center text-sm text-slate-500 leading-relaxed">
           Unsure? Tap
-          <span className="text-[15px] font-bold whitespace-nowrap px-2 rounded-full border mx-1">
+          <span className="text-[15px] font-bold whitespace-nowrap px-2 rounded-full border mx-1 bg-logo-offwhite border-slate-200 shadow-sm">
             ?
           </span>
           in the top left to learn more.
