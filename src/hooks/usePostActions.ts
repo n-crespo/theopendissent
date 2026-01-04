@@ -87,11 +87,12 @@ export const usePostActions = (post: Post) => {
 
   const handleDeleteTrigger = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!uid) return openModal("signin");
     openModal("deleteConfirm", {
       name: post.postContent || "this post",
       onConfirm: async () => {
         try {
-          await deletePost(post.id, post.parentPostId);
+          await deletePost(post.id, uid, post.parentPostId);
         } catch (error) {
           console.error("failed to delete:", error);
         }
