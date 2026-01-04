@@ -1,4 +1,4 @@
-import { Chip } from "./Chip";
+import { Chip } from "./ui/Chip";
 import { PodcastSourceChip } from "./PodcastSourceChip";
 import { InstallPwaChip } from "./InstallPwaChip";
 import { usePwa } from "../context/PwaContext";

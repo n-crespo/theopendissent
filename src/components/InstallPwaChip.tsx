@@ -1,6 +1,6 @@
 import { usePwa } from "../context/PwaContext";
 import { useModal } from "../context/ModalContext";
-import { Chip } from "./Chip";
+import { Chip } from "./ui/Chip";
 
 /**
  * Renders a chip to install the PWA.

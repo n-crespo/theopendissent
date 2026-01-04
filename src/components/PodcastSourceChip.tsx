@@ -1,4 +1,4 @@
-import { Chip } from "./Chip";
+import { Chip } from "./ui/Chip";
 
 const spotifyLogo = "spotify_logo.png";
 const appleLogo = "apple_podcasts_logo.png";

@@ -1,5 +1,5 @@
 import { useModal } from "../context/ModalContext";
-import { DropdownMenu, MenuItem, MenuSeparator } from "./DropdownMenu";
+import { DropdownMenu, MenuItem, MenuSeparator } from "./ui/DropdownMenu";
 
 export const HeaderUserMenu = () => {
   const { openModal } = useModal();

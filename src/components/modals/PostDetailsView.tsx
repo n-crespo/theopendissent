@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { subscribeToPost, subscribeToReplies } from "../lib/firebase";
-import { PostItem } from "./PostItem";
-import { PostInput } from "./PostInput";
-import { ReplyItem } from "./ReplyItem";
-import { useAuth } from "../context/AuthContext";
-import { useModal } from "../context/ModalContext";
-import { interactionStore } from "../lib/interactionStore";
-import { Post } from "../types";
+import { subscribeToPost, subscribeToReplies } from "../../lib/firebase";
+import { PostItem } from "../PostItem";
+import { PostInput } from "../PostInput";
+import { ReplyItem } from "../ReplyItem";
+import { useAuth } from "../../context/AuthContext";
+import { useModal } from "../../context/ModalContext";
+import { interactionStore } from "../../lib/interactionStore";
+import { Post } from "../../types";
 
 export const PostDetailsView = ({
   post: initialPost,

@@ -4,7 +4,7 @@ import { SignInModal } from "./SignInModal";
 import { AboutModal } from "./AboutModal";
 import { InstallInstructionsModal } from "./InstallInstructionsModal";
 import { LogoutModal } from "./LogoutModal";
-import { PostDetailsView } from "../PostDetailsView";
+import { PostDetailsView } from "./PostDetailsView";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { ConfirmPostModal } from "./ConfirmPostModal";
 import { useEffect } from "react";
