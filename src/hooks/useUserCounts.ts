@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { getUserCounts } from "../lib/firebase";
+import { subscribeToUserCounts, UserCounts } from "../lib/firebase";
 
 export const useUserCounts = (userId: string | undefined) => {
-  const [counts, setCounts] = useState({
+  const [counts, setCounts] = useState<UserCounts>({
     posts: 0,
     replies: 0,
     agreed: 0,
@@ -10,17 +10,17 @@ export const useUserCounts = (userId: string | undefined) => {
   });
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setCounts({ posts: 0, replies: 0, agreed: 0, dissented: 0 });
+      return;
+    }
 
-    let isMounted = true;
-
-    getUserCounts(userId).then((data) => {
-      if (isMounted) setCounts(data);
+    // The subscription function returns the cleanup function directly
+    const unsubscribe = subscribeToUserCounts(userId, (newCounts) => {
+      setCounts(newCounts);
     });
 
-    return () => {
-      isMounted = false;
-    };
+    return () => unsubscribe();
   }, [userId]);
 
   return counts;

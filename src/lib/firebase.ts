@@ -33,6 +33,13 @@ const firebaseConfig = {
   appId: "1:772131437162:web:29b3407e82adeb28942813",
 };
 
+export interface UserCounts {
+  posts: number;
+  replies: number;
+  agreed: number;
+  dissented: number;
+}
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
@@ -207,13 +214,20 @@ export const getPostById = async (
 };
 
 /**
- * subscribes to updates for a single post.
+ * subscribes to updates for a single post OR a single reply.
  */
 export const subscribeToPost = (
   postId: string,
   callback: (post: Post | null) => void,
+  parentPostId?: string,
 ) => {
-  const postRef = ref(db, `posts/${postId}`);
+  // If parentPostId exists, look in replies tree. Otherwise, look in posts tree.
+  const path = parentPostId
+    ? `replies/${parentPostId}/${postId}`
+    : `posts/${postId}`;
+
+  const postRef = ref(db, path);
+
   return onValue(postRef, (snapshot) => {
     if (snapshot.exists()) {
       const data = snapshot.val();
@@ -472,4 +486,62 @@ export const getUserCounts = async (userId: string) => {
     console.error("Error fetching user counts:", error);
     return { posts: 0, replies: 0, agreed: 0, dissented: 0 };
   }
+};
+
+/**
+ * Subscribes to posts, replies, and interactions counts for a user.
+ * Aggregates updates from 3 different listeners into a single callback.
+ */
+export const subscribeToUserCounts = (
+  userId: string,
+  callback: (counts: UserCounts) => void,
+) => {
+  const userRef = `users/${userId}`;
+
+  // Local cache to hold the latest values from each listener
+  const currentCounts: UserCounts = {
+    posts: 0,
+    replies: 0,
+    agreed: 0,
+    dissented: 0,
+  };
+
+  // Helper to trigger the callback with a copy of current data
+  const emit = () => callback({ ...currentCounts });
+
+  // 1. Posts Listener
+  const postsUnsub = onValue(ref(db, `${userRef}/posts`), (snapshot) => {
+    currentCounts.posts = snapshot.size;
+    emit();
+  });
+
+  // 2. Replies Listener (Nested counting)
+  const repliesUnsub = onValue(ref(db, `${userRef}/replies`), (snapshot) => {
+    let total = 0;
+    snapshot.forEach((threadSnap) => {
+      total += threadSnap.size;
+    });
+    currentCounts.replies = total;
+    emit();
+  });
+
+  // 3. Interactions Listener
+  const interactionsUnsub = onValue(
+    ref(db, `${userRef}/postInteractions`),
+    (snapshot) => {
+      const data = snapshot.val() || {};
+      currentCounts.agreed = data.agreed ? Object.keys(data.agreed).length : 0;
+      currentCounts.dissented = data.dissented
+        ? Object.keys(data.dissented).length
+        : 0;
+      emit();
+    },
+  );
+
+  // Return a master unsubscribe function
+  return () => {
+    postsUnsub();
+    repliesUnsub();
+    interactionsUnsub();
+  };
 };

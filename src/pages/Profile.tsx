@@ -16,9 +16,9 @@ export const Profile = () => {
   const { user } = useAuth();
   const [filter, setFilter] = useState<FilterType>("posts");
 
-  // Data hooks
+  // Hook now handles auto-updates (deletes/edits) internally!
   const { posts, loading } = useUserActivity(user?.uid, filter);
-  const counts = useUserCounts(user?.uid); // Fetch counts
+  const counts = useUserCounts(user?.uid);
 
   return (
     <div className="mx-auto flex max-w-125 flex-col gap-3 px-2">
@@ -70,56 +70,65 @@ export const Profile = () => {
       </ScrollableRail>
 
       {/* Content Area */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={filter}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="min-h-50"
-        >
-          {loading ? (
-            <div className="py-12 flex flex-col items-center justify-center gap-4 text-slate-400">
-              <LoadingDots className="scale-150" />
-              <span className="text-sm font-medium">Loading {filter}...</span>
-            </div>
-          ) : (
-            <>
-              {filter === "replies" ? (
-                <div className="flex flex-col gap-4">
+      {/* Note: Removed 'mode="wait"' from here so the list updates flow naturally */}
+      <div className="min-h-50">
+        {loading ? (
+          <div className="py-12 flex flex-col items-center justify-center gap-4 text-slate-400">
+            <LoadingDots className="scale-150" />
+            <span className="text-sm font-medium">Loading {filter}...</span>
+          </div>
+        ) : (
+          <>
+            {filter === "replies" ? (
+              <div className="flex flex-col gap-4">
+                {/* ADDED: AnimatePresence for Replies */}
+                <AnimatePresence mode="popLayout">
                   {posts.map((reply) => (
-                    <ProfileReplyItem key={reply.id} reply={reply} />
+                    <motion.div
+                      layout
+                      key={reply.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{
+                        opacity: 0,
+                        scale: 0.95,
+                        transition: { duration: 0.2 },
+                      }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ProfileReplyItem reply={reply} />
+                    </motion.div>
                   ))}
+                </AnimatePresence>
 
-                  {posts.length === 0 && (
-                    <div className="py-12 text-center text-slate-400">
-                      <i className="bi bi-chat-square-dots text-4xl mb-2 block opacity-50"></i>
-                      <p>No replies yet.</p>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <PostListView
-                    posts={posts}
-                    loading={false}
-                    hasMore={false}
-                    onLoadMore={() => {}}
-                  />
+                {posts.length === 0 && (
+                  <div className="py-12 text-center text-slate-400">
+                    <i className="bi bi-chat-square-dots text-4xl mb-2 block opacity-50"></i>
+                    <p>No replies yet.</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* PostListView already handles animation internally */}
+                <PostListView
+                  posts={posts}
+                  loading={false}
+                  hasMore={false}
+                  onLoadMore={() => {}}
+                />
 
-                  {posts.length === 0 && (
-                    <div className="py-12 text-center text-slate-400">
-                      <i className="bi bi-inbox text-4xl mb-2 block opacity-50"></i>
-                      <p>No activity found for {filter}.</p>
-                    </div>
-                  )}
-                </>
-              )}
-            </>
-          )}
-        </motion.div>
-      </AnimatePresence>
+                {posts.length === 0 && (
+                  <div className="py-12 text-center text-slate-400">
+                    <i className="bi bi-inbox text-4xl mb-2 block opacity-50"></i>
+                    <p>No activity found for {filter}.</p>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };
