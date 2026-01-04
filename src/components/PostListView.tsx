@@ -39,27 +39,36 @@ export const PostListView = ({
         )}
 
         {/* Standard List */}
-        {posts.map((post, index) => (
-          <motion.div
-            layout
-            key={post.id}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }} // Only animate once
-            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-            transition={{ duration: 0.3, delay: index < 5 ? index * 0.05 : 0 }} // Stagger first few
-          >
-            <PostItem post={post} />
-          </motion.div>
-        ))}
+        {posts.map((post, index) => {
+          // Indexes 0-3 animate immediately so the page is never empty.
+          // Index 4+ wait for the scroll event.
+          const isAboveFold = index < 4;
+
+          return (
+            <motion.div
+              layout
+              key={post.id}
+              initial={{ opacity: 0, y: 40 }} // Start lower for a dramatic "rise"
+              // Conditional Animation Trigger
+              animate={isAboveFold ? { opacity: 1, y: 0 } : undefined}
+              whileInView={!isAboveFold ? { opacity: 1, y: 0 } : undefined}
+              // Trigger slightly before the element fully enters the screen
+              viewport={{ once: true, margin: "0px 0px -100px 0px" }}
+              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              <PostItem post={post} />
+            </motion.div>
+          );
+        })}
       </AnimatePresence>
 
       {/* Load More Button */}
       {hasMore && (
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
         >
           <button
             className="mx-auto my-8 block cursor-pointer border bg-white px-8 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 hover:shadow-md disabled:opacity-50"
