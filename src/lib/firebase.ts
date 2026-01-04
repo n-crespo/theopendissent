@@ -255,8 +255,8 @@ export const subscribeToReplies = (
         replyCount: val.replyCount || 0,
         userInteractions: val.userInteractions || { agreed: {}, dissented: {} },
       }))
-      // sort by timestamp ascending for conversation flow
-      .sort((a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0));
+      // sort by timestamp descending (Newest First)
+      .sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
 
     callback(list);
   });
