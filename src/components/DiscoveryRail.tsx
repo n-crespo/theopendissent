@@ -15,13 +15,13 @@ export const DiscoveryRail = () => {
         <PodcastSourceChip />
       </div>
 
+      <JoinTeamChip />
+
       {(deferredPrompt || isIOS) && (
         <div className="snap-start shrink-0">
           <InstallPwaChip />
         </div>
       )}
-
-      <JoinTeamChip />
 
       {/* Instagram */}
       <div className="snap-start shrink-0">
