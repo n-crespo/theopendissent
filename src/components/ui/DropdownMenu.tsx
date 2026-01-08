@@ -8,7 +8,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
-// 1. Create a Context to allow items to close the menu
+// Create a Context to allow items to close the menu
 const DropdownContext = createContext<{ close: () => void } | null>(null);
 
 interface DropdownMenuProps {
@@ -112,7 +112,7 @@ export const MenuItem = ({
   onClick: (e: React.MouseEvent) => void;
   variant?: "default" | "danger";
 }) => {
-  // 3. Consume the context
+  // Consume the context
   const context = useContext(DropdownContext);
 
   const handleClick = (e: React.MouseEvent) => {

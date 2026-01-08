@@ -15,14 +15,14 @@ export const useUserActivity = (userId?: string, filter?: string) => {
     let isMounted = true;
     setLoading(true);
 
-    // 1. Initial Fetch
+    // Initial Fetch
     getUserActivity(userId, filter as any).then((initialData) => {
       if (!isMounted) return;
 
       setPosts(initialData);
       setLoading(false);
 
-      // 2. "Go Live" - Subscribe to every item found
+      // "Go Live" - Subscribe to every item found
       initialData.forEach((post) => {
         // Prevent duplicate subscriptions
         if (subscriptions.current[post.id]) return;

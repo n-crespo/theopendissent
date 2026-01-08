@@ -509,13 +509,13 @@ export const subscribeToUserCounts = (
   // Helper to trigger the callback with a copy of current data
   const emit = () => callback({ ...currentCounts });
 
-  // 1. Posts Listener
+  // Posts Listener
   const postsUnsub = onValue(ref(db, `${userRef}/posts`), (snapshot) => {
     currentCounts.posts = snapshot.size;
     emit();
   });
 
-  // 2. Replies Listener (Nested counting)
+  // Replies Listener (Nested counting)
   const repliesUnsub = onValue(ref(db, `${userRef}/replies`), (snapshot) => {
     let total = 0;
     snapshot.forEach((threadSnap) => {
@@ -525,7 +525,7 @@ export const subscribeToUserCounts = (
     emit();
   });
 
-  // 3. Interactions Listener
+  // Interactions Listener
   const interactionsUnsub = onValue(
     ref(db, `${userRef}/postInteractions`),
     (snapshot) => {

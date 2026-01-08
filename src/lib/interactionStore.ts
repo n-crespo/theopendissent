@@ -48,8 +48,8 @@ class InteractionStore {
     const currentState = this.get(postId);
 
     // Check if we are in a "Protected State"
-    // 1. Is a debounce timer running?
-    // 2. OR, did we click recently (within 2 seconds)?
+    // Is a debounce timer running?
+    // OR, did we click recently (within 2 seconds)?
     const isDebouncing = !!this.pendingDebounce[postId];
     const isLocked =
       this.optimisticLocks[postId] && Date.now() < this.optimisticLocks[postId];
@@ -102,7 +102,7 @@ class InteractionStore {
     const current = this.state[postId];
     const otherType = type === "agreed" ? "dissented" : "agreed";
 
-    // 1. Optimistic Update
+    // Optimistic Update
     const next = {
       agreed: { ...current.agreed },
       dissented: { ...current.dissented },
@@ -126,7 +126,7 @@ class InteractionStore {
 
     this.notify(postId);
 
-    // 2. Sync Logic
+    // Sync Logic
     if (this.pendingDebounce[postId]) {
       clearTimeout(this.pendingDebounce[postId]);
     }

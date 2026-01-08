@@ -21,7 +21,7 @@ export const usePostActions = (post: Post) => {
   const [editContent, setEditContent] = useState(post.postContent);
   const [isSaving, setIsSaving] = useState(false);
 
-  // 1. Sync Server Props -> Store (With User Protection)
+  // Sync Server Props -> Store (With User Protection)
   useEffect(() => {
     if (post.userInteractions) {
       // We pass 'uid' here so the store knows to merge CAREFULLY
@@ -29,7 +29,7 @@ export const usePostActions = (post: Post) => {
     }
   }, [post.id, post.userInteractions, uid]);
 
-  // 2. Sync Store -> Local State
+  // Sync Store -> Local State
   useEffect(() => {
     return interactionStore.subscribe(post.id, (newData) => {
       setLocalInteractions(newData);

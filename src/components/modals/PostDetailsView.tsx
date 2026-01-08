@@ -36,7 +36,7 @@ export const PostDetailsView = ({
     getStoreStance,
   );
 
-  // 1. Subscribe to Post updates
+  // Subscribe to Post updates
   useEffect(() => {
     const unsubscribe = subscribeToPost(initialPost.id, (post) => {
       if (post) setLivePost(post);
@@ -45,7 +45,7 @@ export const PostDetailsView = ({
     return () => unsubscribe();
   }, [initialPost.id, closeAllModals]);
 
-  // 2. Subscribe to Replies
+  // Subscribe to Replies
   useEffect(() => {
     setIsLoadingReplies(true);
     const unsubscribe = subscribeToReplies(initialPost.id, (list) => {
@@ -85,8 +85,8 @@ export const PostDetailsView = ({
           <div className="ml-4 h-px grow bg-border-subtle opacity-50"></div>
         </div>
 
-        {/* REPLIES AREA 
-            1. We added 'flex flex-col gap-4' here to handle spacing for all children 
+        {/* REPLIES AREA
+            1. We added 'flex flex-col gap-4' here to handle spacing for all children
         */}
         <div className="flex flex-col gap-4">
           <AnimatePresence mode="popLayout">

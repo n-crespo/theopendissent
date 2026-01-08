@@ -10,7 +10,7 @@ export const useShare = () => {
   // const { showToast } = useToast();
 
   const sharePost = useCallback(async (post: Post) => {
-    // 1. Construct the Deep Link
+    // Construct the Deep Link
     const url = new URL(window.location.origin);
     url.pathname = "/share";
 
@@ -31,7 +31,7 @@ export const useShare = () => {
       url: shareUrl,
     };
 
-    // 2. Native Share API (Mobile)
+    // Native Share API (Mobile)
     if (navigator.share && navigator.canShare?.(shareData)) {
       try {
         await navigator.share(shareData);
@@ -42,7 +42,7 @@ export const useShare = () => {
         }
       }
     } else {
-      // 3. Desktop / Fallback (Clipboard)
+      // Desktop / Fallback (Clipboard)
       try {
         await navigator.clipboard.writeText(shareUrl);
         // showToast("Link copied to clipboard!");
