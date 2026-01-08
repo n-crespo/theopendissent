@@ -25,7 +25,7 @@ export const InstallPwaChip = () => {
   return (
     <Chip
       as="button"
-      icon={<i className="bi bi-download text-logo-blue"></i>}
+      icon={<i className="bi bi-download text-logo-green"></i>}
       onClick={handleInstallClick}
       className="cursor-pointer"
     >
