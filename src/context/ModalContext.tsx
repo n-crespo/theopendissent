@@ -9,6 +9,7 @@ type ModalType =
   | "deleteConfirm"
   | "confirmPost"
   | "listen"
+  | "joinTeam"
   | null;
 
 interface ModalInstance {

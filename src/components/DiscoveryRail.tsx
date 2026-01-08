@@ -3,6 +3,7 @@ import { PodcastSourceChip } from "./PodcastSourceChip";
 import { InstallPwaChip } from "./InstallPwaChip";
 import { usePwa } from "../context/PwaContext";
 import { ScrollableRail } from "./ui/ScrollableRail";
+import { JoinTeamChip } from "./JoinTeamChip";
 
 export const DiscoveryRail = () => {
   const { deferredPrompt } = usePwa();
@@ -19,6 +20,8 @@ export const DiscoveryRail = () => {
           <InstallPwaChip />
         </div>
       )}
+
+      <JoinTeamChip />
 
       {/* Instagram */}
       <div className="snap-start shrink-0">
