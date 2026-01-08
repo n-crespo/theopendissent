@@ -33,7 +33,7 @@ export const GlobalModal = () => {
   return (
     <AnimatePresence>
       {modalStack.map((modal, index) => {
-        // 1. Determine if this specific modal should fill the screen height
+        // Determine if this specific modal should fill the screen height
         const isFullHeight = modal.type === "postDetails";
 
         return (
