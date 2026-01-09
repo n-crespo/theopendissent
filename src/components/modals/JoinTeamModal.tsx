@@ -16,8 +16,8 @@ export const JoinTeamModal = () => {
 
       <p className="mb-8 max-w-xs text-center text-sm text-slate-500 leading-relaxed">
         We have open positions in <strong>Research</strong>,{" "}
-        <strong>Marketing</strong>, and <strong>Design</strong>. If you are
-        interested, submit the form below.
+        <strong>Marketing</strong>, <strong>Media</strong>, and{" "}
+        <strong>Design</strong>. If you are interested, submit the form below.
       </p>
 
       <div className="flex w-full max-w-xs flex-col gap-3">
