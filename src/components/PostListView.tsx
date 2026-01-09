@@ -30,11 +30,8 @@ export const PostListView = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
-            className="mb-4 border-b-4 border-logo-blue/10 pb-4"
+            // className=""
           >
-            <div className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-logo-blue">
-              Highlight
-            </div>
             <PostItem post={highlightedPost} />
           </motion.div>
         )}

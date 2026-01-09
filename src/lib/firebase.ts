@@ -123,7 +123,8 @@ export const createPost = async (
     updates[`users/${userId}/posts/${newKey}`] = true;
   }
 
-  return update(ref(db), updates);
+  update(ref(db), updates);
+  return newKey;
 };
 
 /**

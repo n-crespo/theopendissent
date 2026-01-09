@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { createPost } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
+import { pinPostToTop } from "../hooks/usePosts";
 
 interface PostInputProps {
   parentPostId?: string;
@@ -70,12 +71,14 @@ export const PostInput = ({
       onConfirm: async () => {
         setIsPosting(true);
         try {
-          await createPost(
+          const newKey = await createPost(
             user.uid,
             trimmedContent,
             parentPostId,
             currentStance || undefined,
           );
+
+          if (newKey) pinPostToTop(newKey);
           setContent("");
           closeModal();
         } catch (error) {
