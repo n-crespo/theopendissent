@@ -12,15 +12,18 @@ export const AboutModal = () => {
       </h2>
 
       <p className="leading-relaxed mb-8 text-center px-2">
-        The Open Dissent is an open platform for{" "}
-        <strong className="font-bold text-logo-blue">
-          anonymous political discussion
-        </strong>
-        .
+        The Open Dissent is a platform for{" "}
+        <strong>anonymous political debate</strong>.
         <br />
         <br />
-        Post your thoughts to have a chance to be invited to The Open Dissent's
-        debate-style show!
+        We believe ideas should stand on their own merit. That means no public
+        profiles and <strong>no engagement algorithms</strong>. Our feed is
+        shuffled to ensure you see a diverse range of opinions, not just the
+        loudest ones.
+        <br />
+        <br />
+        Post your thoughts today for a chance to be featured on our debate-style
+        show!
       </p>
 
       {/* podcast links */}
