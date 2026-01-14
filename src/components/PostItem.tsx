@@ -36,7 +36,15 @@ export const PostItem = memo(
 
     const [isJiggling, setIsJiggling] = useState(false);
     const isOwner = uid === userId;
-    const hasStance = interactionState.agreed || interactionState.dissented;
+
+    // Enforce visual exclusivity.
+    // If somehow both agreed/dissented are true, prioritize 'dissented'.
+    // or just pick one so the UI doesn't break.
+    const activeStance = interactionState.dissented
+      ? "dissented"
+      : interactionState.agreed
+        ? "agreed"
+        : null;
 
     const formattedTime = timeAgo(
       new Date(typeof timestamp === "number" ? timestamp : 0),
@@ -47,13 +55,11 @@ export const PostItem = memo(
       e: React.MouseEvent,
       type: "agreed" | "dissented",
     ) => {
-      const wasNeutral =
-        !interactionState.agreed && !interactionState.dissented;
+      const wasNeutral = !activeStance;
 
       // Calculate next state for parent callback
       let nextStance: "agreed" | "dissented" | null = type;
-      if (type === "agreed" && interactionState.agreed) nextStance = null;
-      if (type === "dissented" && interactionState.dissented) nextStance = null;
+      if (type === activeStance) nextStance = null;
 
       if (onStanceChange) {
         onStanceChange(nextStance);
@@ -76,7 +82,11 @@ export const PostItem = memo(
 
     return (
       <div
-        className={`bg-white p-4 mb-4 border border-border-subtle rounded-(--radius-modal) transition-all duration-200 ${parentPostId ? "ml-4 border-l-4 border-l-slate-200 scale-[0.99]" : "shadow-sm"}`}
+        className={`bg-white p-4 mb-4 border border-border-subtle rounded-(--radius-modal) transition-all duration-200 ${
+          parentPostId
+            ? "ml-4 border-l-4 border-l-slate-200 scale-[0.99]"
+            : "shadow-sm"
+        }`}
       >
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
@@ -148,9 +158,9 @@ export const PostItem = memo(
           <div className="relative flex items-center bg-slate-50 p-0.5 rounded-full border border-slate-100">
             <div
               className={`absolute h-7 rounded-full transition-all duration-300 cubic-bezier(0.34, 1.56, 0.64, 1) z-0
-                ${interactionState.agreed ? "translate-x-0 bg-logo-green" : ""}
-                ${interactionState.dissented ? "translate-x-[102%] bg-logo-red" : ""}
-                ${!hasStance ? "translate-x-[51%] opacity-0 scale-50" : "opacity-100 scale-100"}
+                ${activeStance === "agreed" ? "translate-x-0 bg-logo-green" : ""}
+                ${activeStance === "dissented" ? "translate-x-[102%] bg-logo-red" : ""}
+                ${!activeStance ? "translate-x-[51%] opacity-0 scale-50" : "opacity-100 scale-100"}
               `}
               style={{ left: "2px", width: "48%" }}
             />
@@ -159,10 +169,10 @@ export const PostItem = memo(
             <button
               onClick={(e: any) => onStanceClick(e, "agreed")}
               className={`cursor-pointer relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-all duration-200
-                ${interactionState.agreed ? "text-white" : "text-slate-400 hover:text-logo-green"}`}
+                ${activeStance === "agreed" ? "text-white" : "text-slate-400 hover:text-logo-green"}`}
             >
               <i
-                className={`bi bi-check-lg text-[16px] transition-transform ${interactionState.agreed ? "scale-120" : "scale-100"}`}
+                className={`bi bi-check-lg text-[16px] transition-transform ${activeStance === "agreed" ? "scale-120" : "scale-100"}`}
               ></i>
               <span className="text-[12px] font-bold">
                 {localMetrics.agreedCount}
@@ -173,10 +183,10 @@ export const PostItem = memo(
             <button
               onClick={(e: any) => onStanceClick(e, "dissented")}
               className={`cursor-pointer relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-all duration-200
-                ${interactionState.dissented ? "text-white" : "text-slate-400 hover:text-logo-red"}`}
+                ${activeStance === "dissented" ? "text-white" : "text-slate-400 hover:text-logo-red"}`}
             >
               <i
-                className={`bi bi-x-lg text-[14px] transition-transform ${interactionState.dissented ? "scale-110" : "scale-100"}`}
+                className={`bi bi-x-lg text-[14px] transition-transform ${activeStance === "dissented" ? "scale-110" : "scale-100"}`}
               ></i>
               <span className="text-[12px] font-bold">
                 {localMetrics.dissentedCount}
