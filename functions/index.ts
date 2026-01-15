@@ -86,6 +86,7 @@ export const updateReplyCount = onValueWritten(
   },
 );
 
+// restricts user's to @g.ucla.edu emails/more
 const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
   const user = event.data;
   const email = user?.email || "no-email";
