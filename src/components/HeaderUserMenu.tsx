@@ -27,7 +27,7 @@ export const HeaderUserMenu = () => {
 
       <MenuSeparator />
 
-      <MenuItem icon="bi-broadcast" label="Listen" onClick={handleListen} />
+      <MenuItem icon="bi-broadcast-pin" label="Listen" onClick={handleListen} />
 
       <MenuSeparator />
 

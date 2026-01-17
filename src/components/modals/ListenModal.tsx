@@ -6,8 +6,8 @@ export const ListenModal = () => {
   return (
     <div className="flex flex-col items-center justify-center p-8 pt-4 text-center">
       {/* Icon Header */}
-      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 shadow-inner border border-slate-100">
-        <i className="bi bi-broadcast text-4xl"></i>
+      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-50 text-logo-blue shadow-inner border border-slate-100">
+        <i className="bi bi-broadcast-pin text-4xl"></i>
       </div>
 
       <h2 className="mb-2 text-2xl font-bold text-slate-800">

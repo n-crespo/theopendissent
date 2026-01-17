@@ -7,7 +7,7 @@ export const PodcastSourceChip = () => {
   return (
     <Chip
       icon={
-        <i className="bi bi-broadcast text-[14px] leading-none text-logo-red"></i>
+        <i className="bi bi-broadcast-pin text-[14px] leading-none text-logo-blue"></i>
       }
       onClick={() => openModal("listen")}
     >

@@ -29,7 +29,7 @@ export const InstallPwaChip = () => {
       onClick={handleInstallClick}
       className="cursor-pointer"
     >
-      Install
+      Install App
     </Chip>
   );
 };
