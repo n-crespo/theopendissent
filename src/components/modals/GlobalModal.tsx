@@ -83,7 +83,7 @@ export const GlobalModal = () => {
               </div>
 
               {/* Content Area */}
-              {/* 3. Add 'flex-1' and 'h-full' so the internal scrollbar area fills the fixed height */}
+              {/* 'flex-1' and 'h-full' so the internal scrollbar area fills the fixed height */}
               <div
                 className={`
                   custom-scrollbar overflow-y-auto p-5 pt-0 text-left

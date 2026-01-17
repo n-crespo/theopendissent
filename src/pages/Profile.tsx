@@ -81,7 +81,7 @@ export const Profile = () => {
           <>
             {filter === "replies" ? (
               <div className="flex flex-col gap-4">
-                {/* ADDED: AnimatePresence for Replies */}
+                {/* AnimatePresence for Replies */}
                 <AnimatePresence mode="popLayout">
                   {posts.map((reply) => (
                     <motion.div

@@ -86,7 +86,7 @@ export const PostDetailsView = ({
         </div>
 
         {/* REPLIES AREA
-            1. We added 'flex flex-col gap-4' here to handle spacing for all children
+            'flex flex-col gap-4' here to handle spacing for all children
         */}
         <div className="flex flex-col gap-4">
           <AnimatePresence mode="popLayout">
