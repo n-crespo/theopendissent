@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollableRail } from "../components/ui/ScrollableRail";
 import { Chip } from "../components/ui/Chip";
@@ -14,11 +15,22 @@ type FilterType = "posts" | "replies" | "agreed" | "dissented";
 
 export const Profile = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<FilterType>("posts");
+
+  // If user becomes null (logging out) or is null (direct access), kick to home.
+  useEffect(() => {
+    if (!user) {
+      navigate("/", { replace: true });
+    }
+  }, [user, navigate]);
 
   // Hook now handles auto-updates (deletes/edits) internally!
   const { posts, loading } = useUserActivity(user?.uid, filter);
   const counts = useUserCounts(user?.uid);
+
+  // prevent rendering if not logged in
+  if (!user) return null;
 
   return (
     <div className="mx-auto flex max-w-125 flex-col gap-3 px-2">
