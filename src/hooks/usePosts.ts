@@ -1,13 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { subscribeToFeed } from "../lib/firebase";
 import { Post } from "../types";
+import { SortOption } from "../context/FeedSortContext";
 
-// MODULE-LEVEL CACHE
+// MODULE-LEVEL CACHE (Preserves shuffle order across navigations)
 const weightMap = new Map<string, number>();
 
-/**
- * Assigns a random weight (0 to 1) if one doesn't exist.
- */
 const getPostWeight = (postId: string) => {
   if (!weightMap.has(postId)) {
     weightMap.set(postId, Math.random());
@@ -15,28 +13,23 @@ const getPostWeight = (postId: string) => {
   return weightMap.get(postId)!;
 };
 
-/**
- * Forces the weight of a post to -1 so its pinned at the top.
- */
 export const pinPostToTop = (postId: string) => {
   weightMap.set(postId, -1);
 };
 
-export const usePosts = (initialLimit: number = 20) => {
+export const usePosts = (initialLimit: number = 20, sortType: SortOption) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentLimit, setCurrentLimit] = useState(initialLimit);
-
-  const isShuffleDisabled = useRef(
-    import.meta.env.DEV && localStorage.getItem("disable_shuffle") === "true",
-  ).current;
 
   useEffect(() => {
     setLoading(true);
     const unsubscribe = subscribeToFeed(currentLimit, (postsArray) => {
       let finalPosts = postsArray;
 
-      if (!isShuffleDisabled) {
+      // Only apply shuffle if the sort type is 'random'
+      // Otherwise, we accept the default chronological order from Firebase
+      if (sortType === "random") {
         finalPosts = [...postsArray].sort((a, b) => {
           const weightA = getPostWeight(a.id);
           const weightB = getPostWeight(b.id);
@@ -49,7 +42,7 @@ export const usePosts = (initialLimit: number = 20) => {
     });
 
     return () => unsubscribe();
-  }, [currentLimit, isShuffleDisabled]);
+  }, [currentLimit, sortType]);
 
   const loadMore = () => {
     setCurrentLimit((prev) => prev + 20);

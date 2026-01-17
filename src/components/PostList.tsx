@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { usePosts } from "../hooks/usePosts";
+import { useFeedSort } from "../context/FeedSortContext";
 import { getPostById } from "../lib/firebase";
 import { Post } from "../types";
 import { PostListView } from "./PostListView";
@@ -8,7 +9,8 @@ import { PostListView } from "./PostListView";
  * Smart container: Handles data fetching and deep-link logic for the main feed.
  */
 export const PostList = () => {
-  const { posts, loading, loadMore, currentLimit } = usePosts(20);
+  const { sortType } = useFeedSort();
+  const { posts, loading, loadMore, currentLimit } = usePosts(20, sortType);
   const [injectedPost, setInjectedPost] = useState<Post | null>(null);
 
   useEffect(() => {

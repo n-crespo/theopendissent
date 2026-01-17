@@ -4,6 +4,7 @@ import { InstallPwaChip } from "./InstallPwaChip";
 import { usePwa } from "../context/PwaContext";
 import { ScrollableRail } from "./ui/ScrollableRail";
 import { JoinTeamChip } from "./JoinTeamChip";
+import { SortChip } from "./SortChip";
 
 export const DiscoveryRail = () => {
   const { deferredPrompt } = usePwa();
@@ -11,6 +12,10 @@ export const DiscoveryRail = () => {
 
   return (
     <ScrollableRail>
+      <div className="snap-start shrink-0">
+        <SortChip />
+      </div>
+
       <div className="snap-start shrink-0">
         <PodcastSourceChip />
       </div>
