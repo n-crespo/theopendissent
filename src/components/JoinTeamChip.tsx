@@ -10,7 +10,7 @@ export const JoinTeamChip = () => {
       onClick={() => openModal("joinTeam")}
       icon={<i className="bi bi-rocket-takeoff text-logo-blue"></i>}
     >
-      Join the Team
+      Join the Team!
     </Chip>
   );
 };
