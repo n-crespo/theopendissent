@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await signInWithGoogle();
     } catch (error) {
       // errors are handled inside signInWithGoogle or caught here
-      console.error("context sign-in error:", error);
+      throw error;
     }
   };
 

@@ -337,12 +337,6 @@ export const signInWithGoogle = async () => {
   } catch (error: any) {
     // sign user out locally to clear partially authenticated state
     await auth.signOut();
-    if (error.code === "auth/internal-error") {
-      alert(
-        "Sorry... only @g.ucla.edu emails are allowed to sign up right now.",
-      );
-    }
-    console.error("sign-in failed:", error.message);
     throw error;
   }
 };
