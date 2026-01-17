@@ -3,7 +3,7 @@ import { PodcastSourceChip } from "./PodcastSourceChip";
 import { InstallPwaChip } from "./InstallPwaChip";
 import { usePwa } from "../context/PwaContext";
 import { ScrollableRail } from "./ui/ScrollableRail";
-import { JoinTeamChip } from "./JoinTeamChip";
+// import { JoinTeamChip } from "./JoinTeamChip";
 import { SortChip } from "./SortChip";
 
 export const DiscoveryRail = () => {
@@ -20,7 +20,7 @@ export const DiscoveryRail = () => {
         <PodcastSourceChip />
       </div>
 
-      <JoinTeamChip />
+      {/* <JoinTeamChip />*/}
 
       {(deferredPrompt || isIOS) && (
         <div className="snap-start shrink-0">

@@ -27,8 +27,15 @@ export const HeaderUserMenu = () => {
 
       <MenuSeparator />
 
-      {/* New Listen Item */}
       <MenuItem icon="bi-broadcast" label="Listen" onClick={handleListen} />
+
+      <MenuSeparator />
+
+      <MenuItem
+        icon="bi-rocket-takeoff"
+        label="Join the Team"
+        onClick={() => openModal("joinTeam")}
+      />
 
       <MenuItem
         icon="bi-chat-text"
