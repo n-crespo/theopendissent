@@ -35,7 +35,7 @@ export const SignInModal = () => {
   return (
     <div className="flex flex-col">
       <h2 className="text-xl font-semibold mb-6 text-slate-900 text-center">
-        Sign in
+        Sign In
       </h2>
 
       <div className="mb-8 space-y-4 px-2">
