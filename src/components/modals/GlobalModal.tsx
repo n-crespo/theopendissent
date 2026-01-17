@@ -10,6 +10,7 @@ import { ConfirmPostModal } from "./ConfirmPostModal";
 import { ListenModal } from "./ListenModal";
 import { useEffect } from "react";
 import { JoinTeamModal } from "./JoinTeamModal";
+import { SocialsModal } from "./SocialsModal";
 
 /**
  * Manages the visibility and content of the application's central modal system.
@@ -118,6 +119,7 @@ export const GlobalModal = () => {
                 )}
                 {modal.type === "listen" && <ListenModal />}
                 {modal.type === "joinTeam" && <JoinTeamModal />}
+                {modal.type === "socials" && <SocialsModal />}
               </div>
             </motion.div>
           </motion.div>

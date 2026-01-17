@@ -10,6 +10,7 @@ type ModalType =
   | "confirmPost"
   | "listen"
   | "joinTeam"
+  | "socials"
   | null;
 
 interface ModalInstance {
