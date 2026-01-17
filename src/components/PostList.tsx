@@ -14,6 +14,11 @@ export const PostList = () => {
   const [injectedPost, setInjectedPost] = useState<Post | null>(null);
 
   useEffect(() => {
+    // When sort changes, scroll to top of feed
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [sortType]);
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sharedId = params.get("s");
 
