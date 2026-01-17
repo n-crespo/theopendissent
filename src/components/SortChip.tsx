@@ -17,9 +17,8 @@ export const SortChip = () => {
       trigger={
         // The Chip acts as the trigger button
         <Chip
-          // isActive={true} // Always dark to stand out as a control
           icon={<i className={`bi ${iconClass}`}></i>}
-          className="transition-colors text-logo-green"
+          className="transition-colors text-logo-green active:scale-100"
         >
           {label}{" "}
           <i className="bi bi-chevron-down ml-1 opacity-50 text-[10px]"></i>
