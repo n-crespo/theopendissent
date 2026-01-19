@@ -11,6 +11,8 @@ on:
       - "firebase.json"
       - ".firebaserc"
 
+  workflow_dispatch:
+
 jobs:
   deploy_backend:
     runs-on: ubuntu-latest
