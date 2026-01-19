@@ -151,34 +151,85 @@ const cleanupUserInteractions = async (
 };
 
 /**
- * cleanup for top-level posts.
+ * Cleanup for top-level posts.
+ * Includes cascading delete of replies and cleaning up user reply references.
  */
 export const onPostDeletedCleanup = onValueWritten(
   "/posts/{postId}",
   async (event) => {
+    // only run on delete
     if (event.data.after.exists() || !event.data.before.exists()) return;
+
+    const { postId } = event.params;
     const postData = event.data.before.val();
-    // pass the ID and the interaction sub-node
-    await cleanupUserInteractions(
-      event.params.postId,
-      postData.userInteractions,
-    );
+    const db = admin.database();
+
+    await cleanupUserInteractions(postId, postData.userInteractions);
+
+    // fetch all child replies to perform cascading cleanup
+    const repliesSnapshot = await db.ref(`replies/${postId}`).once("value");
+
+    if (repliesSnapshot.exists()) {
+      const updates: Record<string, null> = {};
+      const types = ["agreed", "dissented"] as const;
+
+      repliesSnapshot.forEach((replySnap) => {
+        const replyId = replySnap.key;
+
+        // safe check to satisfy typescript-eslint/no-non-null-assertion
+        if (!replyId) return;
+
+        const replyVal = replySnap.val();
+
+        // remove the reply from the author's user profile
+        if (replyVal.userId) {
+          updates[`users/${replyVal.userId}/replies/${postId}/${replyId}`] =
+            null;
+        }
+
+        // clean up interactions on this reply so those users don't have broken links
+        if (replyVal.userInteractions) {
+          types.forEach((type) => {
+            const group = replyVal.userInteractions[type];
+            if (group) {
+              Object.keys(group).forEach((uid) => {
+                updates[`users/${uid}/postInteractions/${type}/${replyId}`] =
+                  null;
+              });
+            }
+          });
+        }
+      });
+
+      // finally, delete the entire replies node for this post
+      updates[`replies/${postId}`] = null;
+
+      await db.ref().update(updates);
+    }
   },
 );
 
 /**
- * cleanup for individual replies.
+ * Cleanup for individual replies.
+ * Now also removes the reply reference from the user's profile.
  */
 export const onReplyDeletedCleanup = onValueWritten(
   "/replies/{parentId}/{replyId}",
   async (event) => {
     if (event.data.after.exists() || !event.data.before.exists()) return;
+
+    const { parentId, replyId } = event.params;
     const replyData = event.data.before.val();
-    // pass the ID and the interaction sub-node
-    await cleanupUserInteractions(
-      event.params.replyId,
-      replyData.userInteractions,
-    );
+
+    await cleanupUserInteractions(replyId, replyData.userInteractions);
+
+    // remove the reply reference from the author's profile
+    if (replyData.userId) {
+      await admin
+        .database()
+        .ref(`users/${replyData.userId}/replies/${parentId}/${replyId}`)
+        .remove();
+    }
   },
 );
 
