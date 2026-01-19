@@ -18,7 +18,10 @@ interface InteractionNode {
   dissented?: Record<string, boolean>;
 }
 
-const DOMAIN = "https://theopendissent.com";
+const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
+const DOMAIN = isEmulator
+  ? "http://127.0.0.1:5173"
+  : "https://theopendissent.com";
 const DEFAULT_IMAGE = `${DOMAIN}/favicon.jpg`;
 const LARGE_IMAGE = `${DOMAIN}/share-card.jpg`;
 
