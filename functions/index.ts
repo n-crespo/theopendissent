@@ -89,6 +89,11 @@ export const updateReplyCount = onValueWritten(
   },
 );
 
+const WHITELISTED_EMAILS = [
+  "naniktagore23@gmail.com",
+  "juliandcrespo@gmail.com",
+];
+
 // restricts user's to @g.ucla.edu emails/more
 const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
   const user = event.data;
@@ -96,7 +101,7 @@ const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
 
   console.log(`checking authorization for: [${email}]`);
 
-  if (email == "naniktagore23@gmail.com") return;
+  if (WHITELISTED_EMAILS.includes(email)) return;
   if (!email.toLowerCase().trim().endsWith("@g.ucla.edu")) {
     console.error(`auth blocked for: ${email}`);
     throw new HttpsError(
