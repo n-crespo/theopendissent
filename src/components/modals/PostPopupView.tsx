@@ -9,7 +9,7 @@ import { useModal } from "../../context/ModalContext";
 import { interactionStore } from "../../lib/interactionStore";
 import { Post } from "../../types";
 
-export const PostDetailsView = ({
+export const PostPopupView = ({
   post: initialPost,
   highlightReplyId,
 }: {

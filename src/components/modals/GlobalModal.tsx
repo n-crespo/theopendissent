@@ -4,7 +4,7 @@ import { SignInModal } from "./SignInModal";
 import { AboutModal } from "./AboutModal";
 import { InstallInstructionsModal } from "./InstallInstructionsModal";
 import { LogoutModal } from "./LogoutModal";
-import { PostDetailsView } from "./PostDetailsView";
+import { PostPopupView } from "./PostPopupView";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { ConfirmPostModal } from "./ConfirmPostModal";
 import { ListenModal } from "./ListenModal";
@@ -98,7 +98,7 @@ export const GlobalModal = () => {
                 )}
                 {modal.type === "logout" && <LogoutModal />}
                 {modal.type === "postDetails" && (
-                  <PostDetailsView
+                  <PostPopupView
                     post={modal.payload.post || modal.payload}
                     highlightReplyId={modal.payload.highlightReplyId}
                   />
