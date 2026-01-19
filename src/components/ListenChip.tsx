@@ -1,7 +1,7 @@
 import { Chip } from "./ui/Chip";
 import { useModal } from "../context/ModalContext";
 
-export const PodcastSourceChip = () => {
+export const ListenChip = () => {
   const { openModal } = useModal();
 
   return (

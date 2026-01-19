@@ -1,4 +1,4 @@
-import { PodcastSourceChip } from "./PodcastSourceChip";
+import { ListenChip } from "./ListenChip";
 import { InstallPwaChip } from "./InstallPwaChip";
 import { usePwa } from "../context/PwaContext";
 import { ScrollableRail } from "./ui/ScrollableRail";
@@ -16,7 +16,7 @@ export const DiscoveryRail = () => {
       </div>
 
       <div className="snap-start shrink-0">
-        <PodcastSourceChip />
+        <ListenChip />
       </div>
 
       {(deferredPrompt || isIOS) && (

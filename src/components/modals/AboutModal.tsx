@@ -1,4 +1,4 @@
-import { PodcastSourceChip } from "../PodcastSourceChip";
+import { ListenChip } from "../ListenChip";
 
 /**
  * General information about the platform and links to external media.
@@ -28,7 +28,7 @@ export const AboutModal = () => {
 
       {/* podcast links */}
       <div className="shrink-0 flex items-center justify-center">
-        <PodcastSourceChip />
+        <ListenChip />
       </div>
     </div>
   );
