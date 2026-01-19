@@ -77,7 +77,7 @@ export const PostItem = memo(
     const handleViewDetails = (e: React.MouseEvent) => {
       e.stopPropagation();
       if (disableClick || isEditing) return;
-      openModal("postDetails", post);
+      openModal("postPopup", post);
     };
 
     return (

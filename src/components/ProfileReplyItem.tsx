@@ -10,8 +10,8 @@ export const ProfileReplyItem = ({ reply }: { reply: ReplyWithParent }) => {
 
   const handleOpenContext = () => {
     if (reply.parentPost) {
-      // Opens the PostPopupView for the PARENT, but tells it to highlight THIS reply
-      openModal("postDetails", {
+      // Opens the PostPopupModal for the PARENT, but tells it to highlight THIS reply
+      openModal("postPopup", {
         post: reply.parentPost,
         highlightReplyId: reply.id,
       });

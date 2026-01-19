@@ -4,7 +4,7 @@ import { SignInModal } from "./SignInModal";
 import { AboutModal } from "./AboutModal";
 import { InstallPwaModal } from "./InstallPwaModal";
 import { LogoutModal } from "./LogoutModal";
-import { PostPopupView } from "./PostPopupView";
+import { PostPopupModal } from "./PostPopupModal";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { ConfirmPostModal } from "./ConfirmPostModal";
 import { ListenModal } from "./ListenModal";
@@ -35,7 +35,7 @@ export const GlobalModal = () => {
     <AnimatePresence>
       {modalStack.map((modal, index) => {
         // Determine if this specific modal should fill the screen height
-        const isFullHeight = modal.type === "postDetails";
+        const isFullHeight = modal.type === "postPopup";
 
         return (
           <motion.div
@@ -60,7 +60,7 @@ export const GlobalModal = () => {
                 layout: { duration: 0.35 },
               }}
               // conditionally apply height classes
-              // If postDetails, force h-[83vh]
+              // If postPopup, force h-[83vh]
               // Otherwise, use min/max auto-sizing.
               className={`
                 relative flex w-full max-w-120 flex-col overflow-hidden bg-white shadow-(--shadow-modal)
@@ -95,8 +95,8 @@ export const GlobalModal = () => {
                 {modal.type === "about" && <AboutModal />}
                 {modal.type === "installPwa" && <InstallPwaModal />}
                 {modal.type === "logout" && <LogoutModal />}
-                {modal.type === "postDetails" && (
-                  <PostPopupView
+                {modal.type === "postPopup" && (
+                  <PostPopupModal
                     post={modal.payload.post || modal.payload}
                     highlightReplyId={modal.payload.highlightReplyId}
                   />

@@ -62,7 +62,7 @@
   /* --animate-jiggle: bounceJiggle 0.5s infinite alternate; */
 }
 
-/* Scrollbar styling for PostPopUpView */
+/* Scrollbar styling for PostPopupModal */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #e2e8f0 transparent; /* slate-200 */

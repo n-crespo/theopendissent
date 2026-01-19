@@ -27,7 +27,7 @@ export const useDeepLinkHandler = () => {
       const data = await getDeepLinkData(sharedId, parentId);
       if (!data) return;
 
-      openModal("postDetails", {
+      openModal("postPopup", {
         post: data.displayPost,
         highlightReplyId: data.highlightReplyId,
       });
