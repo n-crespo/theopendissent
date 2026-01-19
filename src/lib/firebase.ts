@@ -1,7 +1,6 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { Post } from "../types/index.ts";
 
+import { initializeApp } from "firebase/app";
 import {
   getDatabase,
   ref,
@@ -15,13 +14,17 @@ import {
   orderByChild,
   limitToLast,
 } from "firebase/database";
-
 import {
   onAuthStateChanged,
   signInWithPopup,
   signOut,
   User,
+  GoogleAuthProvider,
+  getAuth,
 } from "firebase/auth";
+
+import { connectAuthEmulator } from "firebase/auth";
+import { connectDatabaseEmulator } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -43,6 +46,13 @@ export interface UserCounts {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
+
+if (import.meta.env.DEV) {
+  connectAuthEmulator(auth, "http://127.0.0.1:9099");
+  connectDatabaseEmulator(db, "127.0.0.1", 9000);
+  console.log("connected to firebase emulators");
+}
+
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
   login_hint: "user@g.ucla.edu",
