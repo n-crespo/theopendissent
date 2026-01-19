@@ -24,13 +24,13 @@ import {
 } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBqrAeqFnJLS8GRVR1LJvlUJ_TYao-EPe0",
-  authDomain: "auth.theopendissent.com",
-  databaseURL: "https://test-app-d0afd-default-rtdb.firebaseio.com",
-  projectId: "test-app-d0afd",
-  storageBucket: "test-app-d0afd.firebasestorage.app",
-  messagingSenderId: "772131437162",
-  appId: "1:772131437162:web:29b3407e82adeb28942813",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DB_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 export interface UserCounts {
