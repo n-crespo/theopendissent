@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { createPost } from "../lib/firebase";
-import { useAuth } from "../context/AuthContext";
-import { useModal } from "../context/ModalContext";
-import { pinPostToTop } from "../hooks/usePosts";
+import { createPost } from "../../lib/firebase";
+import { useAuth } from "../../context/AuthContext";
+import { useModal } from "../../context/ModalContext";
+import { pinPostToTop } from "../../hooks/usePosts";
 
 interface PostInputProps {
   parentPostId?: string;

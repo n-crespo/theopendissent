@@ -1,6 +1,6 @@
 import { DiscoveryRail } from "../components/discovery/DiscoveryRail";
-import { PostInput } from "../components/PostInput";
-import { PostList } from "../components/PostList";
+import { PostInput } from "../components/feed/PostInput";
+import { PostList } from "../components/feed/PostList";
 import { FeedSortProvider } from "../context/FeedSortContext";
 
 export const Home = () => {

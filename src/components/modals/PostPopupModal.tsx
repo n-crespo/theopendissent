@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { subscribeToPost, subscribeToReplies } from "../../lib/firebase";
-import { PostItem } from "../PostItem";
-import { PostInput } from "../PostInput";
-import { ReplyItem } from "../ReplyItem";
+import { PostItem } from "../feed/PostItem";
+import { PostInput } from "../feed/PostInput";
+import { ReplyItem } from "../feed/ReplyItem";
 import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
 import { interactionStore } from "../../lib/interactionStore";

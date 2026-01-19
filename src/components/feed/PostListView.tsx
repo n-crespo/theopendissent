@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { LoadingDots } from "./ui/LoadingDots";
+import { LoadingDots } from "../ui/LoadingDots";
 import { PostItem } from "./PostItem";
-import { Post } from "../types";
+import { Post } from "../../types";
 
 interface PostListViewProps {
   posts: Post[];

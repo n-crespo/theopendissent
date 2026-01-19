@@ -1,6 +1,6 @@
 import { ReplyItem } from "./ReplyItem";
-import { Post } from "../types";
-import { useModal } from "../context/ModalContext";
+import { Post } from "../../types";
+import { useModal } from "../../context/ModalContext";
 
 // Extend Post type locally to include the injected parentPost
 type ReplyWithParent = Post & { parentPost?: Post };

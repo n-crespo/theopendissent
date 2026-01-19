@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { usePosts } from "../hooks/usePosts";
-import { useFeedSort } from "../context/FeedSortContext";
-import { getPostById } from "../lib/firebase";
-import { Post } from "../types";
+import { usePosts } from "../../hooks/usePosts";
+import { useFeedSort } from "../../context/FeedSortContext";
+import { getPostById } from "../../lib/firebase";
+import { Post } from "../../types";
 import { PostListView } from "./PostListView";
 
 /**

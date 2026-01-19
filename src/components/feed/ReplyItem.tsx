@@ -1,7 +1,7 @@
-import { timeAgo } from "../utils";
-import { usePostActions } from "../hooks/usePostActions";
-import { ActionMenu } from "./layout/ActionMenu";
-import { Post } from "../types";
+import { timeAgo } from "../../utils";
+import { usePostActions } from "../../hooks/usePostActions";
+import { ActionMenu } from "../layout/ActionMenu";
+import { Post } from "../../types";
 
 /**
  * ReplyItem to match PostItem consistency.
