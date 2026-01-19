@@ -1,6 +1,6 @@
-import { useFeedSort } from "../context/FeedSortContext";
-import { DropdownMenu, MenuItem } from "./ui/DropdownMenu";
-import { Chip } from "./ui/Chip";
+import { useFeedSort } from "../../../context/FeedSortContext";
+import { DropdownMenu, MenuItem } from "../../ui/DropdownMenu";
+import { Chip } from "../../ui/Chip";
 
 export const SortChip = () => {
   const { sortType, setSortType } = useFeedSort();

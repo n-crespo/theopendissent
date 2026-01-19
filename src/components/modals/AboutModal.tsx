@@ -1,4 +1,4 @@
-import { ListenChip } from "../ListenChip";
+import { ListenChip } from "../discovery/chips/ListenChip";
 
 /**
  * General information about the platform and links to external media.

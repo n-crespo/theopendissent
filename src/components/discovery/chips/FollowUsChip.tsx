@@ -1,5 +1,5 @@
-import { Chip } from "./ui/Chip";
-import { useModal } from "../context/ModalContext";
+import { Chip } from "../../ui/Chip";
+import { useModal } from "../../../context/ModalContext";
 
 export const FollowUsChip = () => {
   const { openModal } = useModal();

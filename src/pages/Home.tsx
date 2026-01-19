@@ -1,4 +1,4 @@
-import { DiscoveryRail } from "../components/DiscoveryRail";
+import { DiscoveryRail } from "../components/discovery/DiscoveryRail";
 import { PostInput } from "../components/PostInput";
 import { PostList } from "../components/PostList";
 import { FeedSortProvider } from "../context/FeedSortContext";
