@@ -118,10 +118,13 @@ export const beforecreated = beforeUserCreated(async (event) => {
     createdAt: Date.now(),
   };
   await admin.database().ref(`users/${user?.uid}`).set(newUserProfile);
+
+  return {}; // success
 });
 
 export const beforesignedin = beforeUserSignedIn((event) => {
   uclaOnlyAuth(event);
+  return {}; // success
 });
 
 /**
