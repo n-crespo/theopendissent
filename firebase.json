@@ -15,5 +15,18 @@
       "predeploy": ["pnpm --dir \"$RESOURCE_DIR\" run build"],
       "source": "functions"
     }
-  ]
+  ],
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "database": {
+      "port": 9000
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    },
+    "singleProjectMode": true
+  }
 }
