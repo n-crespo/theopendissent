@@ -2,7 +2,7 @@
  * Modal showing specific instructions for iOS installation
  * since iOS doesn't support the native install prompt event.
  */
-export const InstallInstructionsModal = () => {
+export const InstallPwaModal = () => {
   return (
     <div className="flex flex-col text-slate-700">
       <h2 className="text-xl font-semibold mb-6 text-slate-900 text-center">

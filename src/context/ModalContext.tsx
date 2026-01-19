@@ -3,7 +3,7 @@ import { createContext, useContext, useState, ReactNode } from "react";
 type ModalType =
   | "signin"
   | "about" // renamed from help
-  | "installInstructions"
+  | "installPwa"
   | "logout"
   | "postDetails"
   | "deleteConfirm"

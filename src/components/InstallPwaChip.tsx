@@ -18,7 +18,7 @@ export const InstallPwaChip = () => {
     if (deferredPrompt) {
       install();
     } else if (isIOS) {
-      openModal("installInstructions");
+      openModal("installPwa");
     }
   };
 
