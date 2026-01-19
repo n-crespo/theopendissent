@@ -112,7 +112,7 @@ export const beforecreated = beforeUserCreated(async (event) => {
   const newUserProfile = {
     email: user?.email,
     displayName: user?.displayName,
-    createdAt: admin.database.ServerValue.TIMESTAMP,
+    createdAt: Date.now(),
   };
   await admin.database().ref(`users/${user?.uid}`).set(newUserProfile);
 });
