@@ -6,4 +6,5 @@ onlyBuiltDependencies:
   - '@firebase/util'
   - esbuild
   - protobufjs
+  - re2
   - unrs-resolver
