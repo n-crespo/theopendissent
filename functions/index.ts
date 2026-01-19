@@ -23,7 +23,7 @@ const DOMAIN = isEmulator
   ? "http://127.0.0.1:5173"
   : "https://theopendissent.com";
 const DEFAULT_IMAGE = `${DOMAIN}/favicon.jpg`;
-const LARGE_IMAGE = `${DOMAIN}/share-card.jpg`;
+const LARGE_IMAGE = `${DOMAIN}/share-card-logo.jpg`;
 
 const escapeHtml = (unsafe: string) => {
   return unsafe
