@@ -1,3 +1,6 @@
 node_modules
 firebase-debug.log
 .env
+database-debug.log
+firebase-data/
+firebase-export-*/
