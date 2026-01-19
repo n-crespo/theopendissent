@@ -1,7 +1,5 @@
 {
   "projects": {
-    "default": "test-app-d0afd",
-    "dev": "test-app-d0afd",
-    "prod": "the-open-dissent-prod"
+    "default": "the-open-dissent-prod"
   }
 }
