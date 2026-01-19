@@ -217,7 +217,7 @@ export const onPostDeletedCleanup = onValueWritten(
 
 /**
  * Cleanup for individual replies.
- * Now also removes the reply reference from the user's profile.
+ * Also removes reply reference from the user's profile.
  */
 export const onReplyDeletedCleanup = onValueWritten(
   "/replies/{parentId}/{replyId}",
