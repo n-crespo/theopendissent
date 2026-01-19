@@ -119,7 +119,7 @@ export const GlobalModal = () => {
                 )}
                 {modal.type === "listen" && <ListenModal />}
                 {modal.type === "joinTeam" && <JoinTeamModal />}
-                {modal.type === "socials" && <SocialsModal />}
+                {modal.type === "followUs" && <SocialsModal />}
               </div>
             </motion.div>
           </motion.div>

@@ -3,7 +3,7 @@ import { InstallPwaChip } from "./InstallPwaChip";
 import { usePwa } from "../context/PwaContext";
 import { ScrollableRail } from "./ui/ScrollableRail";
 import { SortChip } from "./SortChip";
-import { SocialsChip } from "./SocialsChip";
+import { FollowUsChip } from "./FollowUsChip";
 
 export const DiscoveryRail = () => {
   const { deferredPrompt } = usePwa();
@@ -26,7 +26,7 @@ export const DiscoveryRail = () => {
       )}
 
       <div className="snap-start shrink-0">
-        <SocialsChip />
+        <FollowUsChip />
       </div>
     </ScrollableRail>
   );
