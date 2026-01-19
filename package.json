@@ -28,8 +28,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "functions:watch": "npm run --prefix functions build:watch",
-    "emulate": "firebase emulators:start --project=the-open-dissent-prod --import=./firebase-data",
-    "emulate:save": "firebase emulators:start --project=the-open-dissent-prod --import=./firebase-data --export-on-exit=./firebase-data-new"
+    "emulate:new": "firebase emulators:start --project=the-open-dissent-prod --export-on-exit=./firebase-data",
+    "emulate": "firebase emulators:start --project=the-open-dissent-prod --import=./firebase-data --export-on-exit=./firebase-data"
   },
   "repository": {
     "type": "git",
