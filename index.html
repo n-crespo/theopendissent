@@ -57,10 +57,71 @@
       content="An open platform for anonymous political discussion."
     />
     <meta property="og:image" content="/og-image.png" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f8f2e8;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+      }
+
+      /* Center the loading content */
+      .app-loader {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        width: 100vw;
+        color: #64748b; /* Slate-500 equivalent */
+      }
+
+      /* Simple CSS Spinner */
+      .loader-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #e2e8f0;
+        border-top: 3px solid #334155; /* Dark slate */
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* The Link Google Needs */
+      .bot-link {
+        position: absolute;
+        bottom: 20px;
+        font-size: 11px;
+        color: #94a3b8;
+        text-decoration: none;
+      }
+      .bot-link:hover {
+        text-decoration: underline;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="app-loader">
+        <div class="loader-spinner"></div>
+        <h1 style="font-size: 18px; font-weight: 600; color: #334155">
+          The Open Dissent
+        </h1>
 
+        <a href="/privacy" class="bot-link">Privacy Policy</a>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
