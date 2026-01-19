@@ -27,7 +27,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "emulate": "concurrently --kill-others \"npm run --prefix functions build:watch\" \"firebase emulators:start --import=./firebase-data --export-on-exit=./firebase-data\""
+    "functions:watch": "npm run --prefix functions build:watch",
+    "emulate": "firebase emulators:start --project=the-open-dissent-prod --import=./firebase-data",
+    "emulate:save": "firebase emulators:start --project=the-open-dissent-prod --import=./firebase-data --export-on-exit=./firebase-data-new"
   },
   "repository": {
     "type": "git",
