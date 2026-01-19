@@ -1,17 +1,30 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Routes, Route, Outlet, useLocation } from "react-router-dom";
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
 import { GlobalModal } from "./components/modals/GlobalModal";
 import { useDeepLinkHandler } from "./hooks/useDeepLinkHandler";
 
-// Import Pages
+// pages
 import { Home } from "./pages/Home";
 import { Profile } from "./pages/Profile";
+import { Privacy } from "./pages/Privacy";
+import { Terms } from "./pages/Terms";
 
 function Layout() {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const { pathname } = useLocation();
+
   useDeepLinkHandler();
+
+  // reset scroll position when the route changes
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
+  }, [pathname]);
 
   useEffect(() => {
     const handleScroll = () => setShowScrollTop(window.scrollY > 400);
@@ -24,7 +37,6 @@ function Layout() {
       <Header />
 
       <main>
-        {/* The Outlet renders the current route (Home or Profile) */}
         <Outlet />
       </main>
 
@@ -58,6 +70,8 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="share" element={<Home />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="privacy" element={<Privacy />} />
+        <Route path="terms" element={<Terms />} />
       </Route>
     </Routes>
   );
