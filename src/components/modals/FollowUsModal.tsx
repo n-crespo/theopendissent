@@ -1,6 +1,6 @@
 import { useModal } from "../../context/ModalContext";
 
-export const SocialsModal = () => {
+export const FollowUsModal = () => {
   const { closeModal } = useModal();
 
   return (
