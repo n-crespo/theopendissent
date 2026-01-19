@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import logoUrl from "../assets/Flat-Logo.svg";
-import { useAuth } from "../context/AuthContext";
-import { useModal } from "../context/ModalContext";
+import logoUrl from "../../assets/Flat-Logo.svg";
+import { useAuth } from "../../context/AuthContext";
+import { useModal } from "../../context/ModalContext";
 import { HeaderUserMenu } from "./HeaderUserMenu";
 
 export const Header = () => {

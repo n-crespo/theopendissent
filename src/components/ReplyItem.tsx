@@ -1,6 +1,6 @@
 import { timeAgo } from "../utils";
 import { usePostActions } from "../hooks/usePostActions";
-import { ActionMenu } from "./ActionMenu";
+import { ActionMenu } from "./layout/ActionMenu";
 import { Post } from "../types";
 
 /**

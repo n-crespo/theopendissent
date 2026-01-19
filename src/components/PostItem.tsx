@@ -3,7 +3,7 @@ import { Post } from "../types";
 import { timeAgo } from "../utils";
 import { useModal } from "../context/ModalContext";
 import { usePostActions } from "../hooks/usePostActions";
-import { ActionMenu } from "./ActionMenu";
+import { ActionMenu } from "./layout/ActionMenu";
 
 export const PostItem = memo(
   ({

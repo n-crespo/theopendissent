@@ -1,7 +1,7 @@
-import { Post } from "../types";
-import { useShare } from "../hooks/useShare";
-import { useReport } from "../hooks/useReport";
-import { DropdownMenu, MenuItem, MenuSeparator } from "./ui/DropdownMenu";
+import { Post } from "../../types";
+import { useShare } from "../../hooks/useShare";
+import { useReport } from "../../hooks/useReport";
+import { DropdownMenu, MenuItem, MenuSeparator } from "../ui/DropdownMenu";
 
 interface ActionMenuProps {
   post: Post;
