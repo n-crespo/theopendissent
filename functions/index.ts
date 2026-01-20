@@ -7,6 +7,7 @@ import {
   beforeUserSignedIn,
 } from "firebase-functions/v2/identity";
 import * as admin from "firebase-admin";
+import { defineString } from "firebase-functions/params";
 
 admin.initializeApp();
 
@@ -89,10 +90,13 @@ export const updateReplyCount = onValueWritten(
   },
 );
 
-const WHITELISTED_EMAILS = [
-  "naniktagore23@gmail.com",
-  "juliandcrespo@gmail.com",
-];
+// whitelisted email list
+const WHITELISTED_EMAILS_PARAM = defineString("WHITELISTED_EMAILS");
+const getWhitelistedEmails = (): string[] => {
+  return WHITELISTED_EMAILS_PARAM.value()
+    .split(",")
+    .map((email) => email.trim());
+};
 
 // restricts user's to @g.ucla.edu emails/more
 const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
@@ -101,7 +105,10 @@ const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
 
   console.log(`checking authorization for: [${email}]`);
 
-  if (WHITELISTED_EMAILS.includes(email)) return;
+  // allow whitelisted
+  if (getWhitelistedEmails().includes(email)) return;
+
+  // reject all other invalid emails
   if (!email.toLowerCase().trim().endsWith("@g.ucla.edu")) {
     console.error(`auth blocked for: ${email}`);
     throw new HttpsError(
