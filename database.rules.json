@@ -2,7 +2,7 @@
   "rules": {
     "users": {
       "$uid": {
-        ".read": "auth != null",
+        ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && auth.uid === $uid",
         "posts": {
           "$post_id": { ".validate": "newData.val() === true" }
