@@ -79,14 +79,23 @@ export const updateReplyCount = onValueWritten(
     else if (!after && before) incrementValue = -1;
     else return;
 
-    // replyCount is a top-level field on the post
-    const postRef = admin.database().ref(`/posts/${postId}/replyCount`);
+    const db = admin.database();
+    const postRef = db.ref(`/posts/${postId}`);
 
-    return postRef.transaction((currentCount: number | null) => {
-      // treat null/undefined as 0
-      const count = currentCount || 0;
-      return Math.max(0, count + incrementValue);
-    });
+    // Check if post exists before trying to update it
+    const postSnap = await postRef.once("value");
+    if (!postSnap.exists()) {
+      console.log(`Parent post ${postId} not found. Skipping counter update.`);
+      return;
+    }
+
+    // the post exists, so we update the counter
+    return postRef
+      .child("replyCount")
+      .transaction((currentCount: number | null) => {
+        const count = currentCount || 0;
+        return Math.max(0, count + incrementValue);
+      });
   },
 );
 
