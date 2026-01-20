@@ -16,6 +16,10 @@ export const DiscoveryRail = () => {
       </div>
 
       <div className="snap-start shrink-0">
+        <FollowUsChip />
+      </div>
+
+      <div className="snap-start shrink-0">
         <ListenChip />
       </div>
 
@@ -24,10 +28,6 @@ export const DiscoveryRail = () => {
           <InstallPwaChip />
         </div>
       )}
-
-      <div className="snap-start shrink-0">
-        <FollowUsChip />
-      </div>
     </ScrollableRail>
   );
 };
