@@ -5,29 +5,42 @@
 Install dependencies and start the frontend:
 
 ```sh
-npm i
-npm run dev
+pnpm i # Install dependencies
 ```
 
-## Development Workflow
-
-Deploy database security rules
+In another terminal...
 
 ```sh
-firebase deploy --only database
+pnpm functions:watch # compile backend functions
 ```
 
-Deploy cloud/backend functions
+In another terminal...
 
 ```sh
-firebase deploy --only functions
+pnpm dev # start frontend
 ```
 
-Check cloud function logs
+In yet another terminal...
 
 ```sh
-firebase functions:log
+# IF YOU HAVEN'T RAN THIS BEFORE, USE THE FOLLOWING
+pnpm emulate:new # start backend (local emulator dev environment)
+
+# AFTER FIRST USAGE, USE THE FOLLOWING
+pnpm emulate # start backend (local emulator dev environment)
 ```
+
+Now access `localhost:4000` to see the database, cloud functions, authentication
+and logs, and `localhost:5173` to see the frontend.
+
+> [!WARNING]
+> Make sure to quit the above processes in the same order that you started them
+> so that the emulator can persist the database data properly. Otherwise the
+> `pnpm functions:watch` may prevent the emulator from completing the export
+> process.
+
+Hosting and the deployment of cloud functions/database security rules to
+production is handled via GitHub Actions.
 
 ## Database Layout
 
