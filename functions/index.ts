@@ -294,7 +294,8 @@ export const sharePost = onRequest(async (req, res) => {
       ? Object.keys(interactions.dissented).length
       : 0;
 
-    const rawContent = data.postContent || "";
+    const rawContent =
+      data.postContent || "View this discussion on The Open Dissent.";
     const cleanContent = escapeHtml(rawContent);
 
     // prepare author ID
