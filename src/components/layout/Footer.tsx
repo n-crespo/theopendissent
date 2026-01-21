@@ -40,6 +40,17 @@ export const Footer = () => {
           >
             Feedback
           </a>
+
+          <span className="text-slate-200">•</span>
+
+          <a
+            href="https://github.com/n-crespo/theopendissent"
+            target="_blank"
+            rel="noreferrer"
+            className="text-gray-custom no-underline hover:text-logo-blue hover:underline"
+          >
+            Source
+          </a>
         </div>
       </div>
     </footer>
