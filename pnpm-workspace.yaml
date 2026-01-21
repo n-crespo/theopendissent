@@ -8,3 +8,7 @@ onlyBuiltDependencies:
   - protobufjs
   - re2
   - unrs-resolver
+
+overrides:
+  diff@<4.0.4: '>=4.0.4'
+  tar@<=7.5.3: '>=7.5.4'
