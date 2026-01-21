@@ -35,9 +35,9 @@ and logs, and `localhost:5173` to see the frontend.
 
 > [!WARNING]
 > Make sure to quit the above processes in the same order that you started them
-> so that the emulator can persist the database data properly. Otherwise the
-> `pnpm functions:watch` may prevent the emulator from completing the export
-> process.
+> so that the emulator can persist the database/auth data properly. Otherwise
+> the `pnpm functions:watch` process may prevent the emulator from completing
+> the export.
 
 Hosting and the deployment of cloud functions/database security rules to
 production is handled via GitHub Actions.
