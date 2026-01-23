@@ -68,32 +68,32 @@ importers:
   functions:
     dependencies:
       firebase-admin:
-        specifier: ^13.5.0
+        specifier: ^13.6.0
         version: 13.6.0(encoding@0.1.13)
       firebase-functions:
         specifier: ^7.0.3
         version: 7.0.3(firebase-admin@13.6.0(encoding@0.1.13))
     devDependencies:
       '@typescript-eslint/eslint-plugin':
-        specifier: ^5.12.0
+        specifier: ^5.62.0
         version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^5.12.0
+        specifier: ^5.62.0
         version: 5.62.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
-        specifier: ^8.9.0
+        specifier: ^8.57.1
         version: 8.57.1
       eslint-config-google:
         specifier: ^0.14.0
         version: 0.14.0(eslint@8.57.1)
       eslint-plugin-import:
-        specifier: ^2.25.4
+        specifier: ^2.32.0
         version: 2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)
       firebase-functions-test:
-        specifier: ^3.1.0
+        specifier: ^3.4.1
         version: 3.4.1(firebase-admin@13.6.0(encoding@0.1.13))(firebase-functions@7.0.3(firebase-admin@13.6.0(encoding@0.1.13)))(jest@30.2.0(@types/node@25.0.10)(ts-node@10.9.2(@types/node@25.0.10)(typescript@5.9.3)))
       typescript:
-        specifier: ^5.7.3
+        specifier: ^5.9.3
         version: 5.9.3
 
 packages:
@@ -2233,10 +2233,6 @@ packages:
   core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
 
-  cors@2.8.5:
-    resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
-    engines: {node: '>= 0.10'}
-
   cors@2.8.6:
     resolution: {integrity: sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw==}
     engines: {node: '>= 0.10'}
@@ -3788,9 +3784,6 @@ packages:
 
   lodash.snakecase@4.1.1:
     resolution: {integrity: sha512-QZ1d4xoBHYUeuouhEq3lk3Uq7ldgyFXGBhg04+oRLnIz8o9T65Eh+8YdroUwn846zchkA9yDsDl5CVVaV2nqYw==}
-
-  lodash@4.17.21:
-    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
 
   lodash@4.17.23:
     resolution: {integrity: sha512-LgVTMpQtIopCi79SJeDiP0TfWi5CNEc/L/aRdTh3yIvmZXTnheWpKjSZhnvMl8iXbC1tFg9gdHHDMLoV7CnG+w==}
@@ -7771,11 +7764,6 @@ snapshots:
 
   core-util-is@1.0.3: {}
 
-  cors@2.8.5:
-    dependencies:
-      object-assign: 4.1.1
-      vary: 1.1.2
-
   cors@2.8.6:
     dependencies:
       object-assign: 4.1.1
@@ -8508,14 +8496,14 @@ snapshots:
       firebase-admin: 13.6.0(encoding@0.1.13)
       firebase-functions: 7.0.3(firebase-admin@13.6.0(encoding@0.1.13))
       jest: 30.2.0(@types/node@25.0.10)(ts-node@10.9.2(@types/node@25.0.10)(typescript@5.9.3))
-      lodash: 4.17.21
+      lodash: 4.17.23
       ts-deepmerge: 2.0.7
 
   firebase-functions@7.0.3(firebase-admin@13.6.0(encoding@0.1.13)):
     dependencies:
       '@types/cors': 2.8.19
       '@types/express': 4.17.25
-      cors: 2.8.5
+      cors: 2.8.6
       express: 4.22.1
       firebase-admin: 13.6.0(encoding@0.1.13)
       protobufjs: 7.5.4
@@ -9865,8 +9853,6 @@ snapshots:
   lodash.once@4.1.1: {}
 
   lodash.snakecase@4.1.1: {}
-
-  lodash@4.17.21: {}
 
   lodash@4.17.23: {}
 
