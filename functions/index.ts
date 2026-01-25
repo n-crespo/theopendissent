@@ -99,23 +99,29 @@ export const updateReplyCount = onValueWritten(
   },
 );
 
-// whitelisted email list
 const WHITELISTED_EMAILS_PARAM = defineString("WHITELISTED_EMAILS");
 const getWhitelistedEmails = (): string[] => {
-  return WHITELISTED_EMAILS_PARAM.value()
-    .split(",")
-    .map((email) => email.trim());
+  // defineString picks up the value injected during firebase deploy
+  const rawValue = WHITELISTED_EMAILS_PARAM.value() || "";
+
+  console.log(`debug: raw whitelist string is: "${rawValue}"`);
+
+  if (!rawValue) return [];
+  return rawValue.split(",").map((email) => email.trim().toLowerCase());
 };
 
 // restricts user's to @g.ucla.edu emails/more
 const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
   const user = event.data;
-  const email = user?.email || "no-email";
+  const email = (user?.email || "no-email").toLowerCase().trim();
 
   console.log(`checking authorization for: [${email}]`);
 
   // allow whitelisted
-  if (getWhitelistedEmails().includes(email)) return;
+  if (getWhitelistedEmails().includes(email)) {
+    console.log(`auth permitted via whitelist for: ${email}`);
+    return;
+  }
 
   // reject all other invalid emails
   if (!email.toLowerCase().trim().endsWith("@g.ucla.edu")) {
