@@ -43,9 +43,11 @@ jobs:
         run: |
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}' > $GOOGLE_APPLICATION_CREDENTIALS
 
-          # use --params to pass the value directly to the deployment
+          # create a project-specific env file for defineString to pick up
+          # replacing the project id manually to match your --project flag
+          echo "WHITELISTED_EMAILS=\"$WHITELISTED_EMAILS\"" > functions/.env.the-open-dissent-prod
+
           pnpm exec firebase deploy \
             --only functions,database \
             --project the-open-dissent-prod \
-            --non-interactive \
-            --params "WHITELISTED_EMAILS=$WHITELISTED_EMAILS"
+            --non-interactive
