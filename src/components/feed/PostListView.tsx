@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoadingDots } from "../ui/LoadingDots";
 import { PostItem } from "./PostItem";
@@ -18,6 +19,35 @@ export const PostListView = ({
   hasMore,
   onLoadMore,
 }: PostListViewProps) => {
+  // a ref for the element at the bottom of the list
+  const bottomBoundaryRef = useRef<HTMLDivElement>(null);
+
+  // detect when the user scrolls to the bottom
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const firstEntry = entries[0];
+        // load if the element is visible, we have more data, and we aren't already loading
+        if (firstEntry.isIntersecting && hasMore && !loading) {
+          onLoadMore();
+        }
+      },
+      {
+        threshold: 0.1, // Trigger when even a tiny bit of the loading area is visible
+        rootMargin: "100px", // Trigger 100px BEFORE user hits the bottom
+      },
+    );
+
+    const currentRef = bottomBoundaryRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) observer.unobserve(currentRef);
+    };
+  }, [hasMore, loading, onLoadMore]);
+
   return (
     <div className="flex flex-col">
       <AnimatePresence mode="popLayout">
@@ -30,7 +60,6 @@ export const PostListView = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
-            // className=""
           >
             <PostItem post={highlightedPost} />
           </motion.div>
@@ -41,7 +70,6 @@ export const PostListView = ({
           <motion.div
             layout
             key={post.id}
-            // CHANGED: We use 'animate' instead of 'whileInView' to force visibility
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
@@ -52,33 +80,28 @@ export const PostListView = ({
         ))}
       </AnimatePresence>
 
-      {/* Load More Button */}
-      {hasMore && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <button
-            className="mx-auto my-8 block cursor-pointer border bg-white px-8 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 hover:shadow-md disabled:opacity-50"
-            style={{
-              borderRadius: "var(--radius-button)",
-              borderColor: "var(--color-border-subtle)",
-            }}
-            onClick={onLoadMore}
-            disabled={loading}
+      {/* when this scrolls into view observer fires */}
+      <div
+        ref={bottomBoundaryRef}
+        className="py-8 flex flex-col items-center justify-center w-full min-h-12.5"
+      >
+        {loading && hasMore && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center gap-2 text-slate-400 text-sm font-medium"
           >
-            {loading ? (
-              <div className="flex items-center gap-2">
-                <LoadingDots />
-                <span>Loading...</span>
-              </div>
-            ) : (
-              "Load More"
-            )}
-          </button>
-        </motion.div>
-      )}
+            <LoadingDots />
+            <span>Loading older posts...</span>
+          </motion.div>
+        )}
+
+        {!hasMore && posts.length > 0 && (
+          <span className="text-slate-400 text-xs italic opacity-50">
+            You've reached the end!
+          </span>
+        )}
+      </div>
     </div>
   );
 };
