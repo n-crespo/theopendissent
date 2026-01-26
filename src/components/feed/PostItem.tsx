@@ -37,9 +37,11 @@ export const PostItem = memo(
     const [isJiggling, setIsJiggling] = useState(false);
     const isOwner = uid === userId;
 
-    // Enforce visual exclusivity.
-    // If somehow both agreed/dissented are true, prioritize 'dissented'.
-    // or just pick one so the UI doesn't break.
+    // character limit logic
+    const MAX_CHARS = 600;
+    const charsLeft = MAX_CHARS - editContent.length;
+    const isNearLimit = charsLeft < 50;
+
     const activeStance = interactionState.dissented
       ? "dissented"
       : interactionState.agreed
@@ -125,18 +127,30 @@ export const PostItem = memo(
 
         {isEditing ? (
           <div className="mb-4" onClick={(e) => e.stopPropagation()}>
-            <textarea
-              autoFocus
-              className="w-full p-3 border border-border-subtle rounded-(--radius-input) outline-none min-h-24 text-[15px]"
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              disabled={isSaving}
-            />
-            <div className="flex gap-2 mt-3">
-              <button
-                className="px-4 py-1.5 bg-logo-blue text-white rounded-(--radius-button) text-sm font-semibold"
-                onClick={handleEditSave}
+            <div className="relative">
+              <textarea
+                autoFocus
+                maxLength={MAX_CHARS}
+                className="w-full p-3 border border-border-subtle rounded-(--radius-input) outline-none min-h-24 text-[15px] focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10 transition-all mb-0"
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
                 disabled={isSaving}
+              />
+              {editContent.length > 0 && (
+                <span
+                  className={`mb-0 absolute right-2 -bottom-5 text-[10px] font-bold uppercase tracking-tight transition-colors ${
+                    isNearLimit ? "text-logo-red" : "text-slate-300"
+                  }`}
+                >
+                  {charsLeft}
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2 mt-5">
+              <button
+                className="px-4 py-1.5 bg-logo-blue text-white rounded-(--radius-button) text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleEditSave}
+                disabled={isSaving || editContent.trim().length === 0}
               >
                 {isSaving ? "Saving..." : "Save"}
               </button>
@@ -165,7 +179,6 @@ export const PostItem = memo(
               style={{ left: "2px", width: "48%" }}
             />
 
-            {/* agree button */}
             <button
               onClick={(e: any) => onStanceClick(e, "agreed")}
               className={`cursor-pointer relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-all duration-200
@@ -179,7 +192,6 @@ export const PostItem = memo(
               </span>
             </button>
 
-            {/* dissent button */}
             <button
               onClick={(e: any) => onStanceClick(e, "dissented")}
               className={`cursor-pointer relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-all duration-200
