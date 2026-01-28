@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/share",
-      "destination": "https://sharepost-ds2eg6r2sq-uc.a.run.app"
+      "destination": "https://sharepost-czrukpmajq-uc.a.run.app"
     },
     {
       "source": "/(.*)",
