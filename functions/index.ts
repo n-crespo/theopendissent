@@ -310,7 +310,7 @@ export const sharePost = onRequest(async (req, res) => {
       rawUserId.length > 5 ? `${rawUserId.slice(0, 5)}...` : rawUserId;
 
     // increased limit to 200 chars for better iMessage utilization
-    const maxLength = 200;
+    const maxLength = 300;
     const contentPreview =
       cleanContent.length > maxLength
         ? `${cleanContent.slice(0, maxLength)}...`
