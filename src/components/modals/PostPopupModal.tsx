@@ -26,9 +26,21 @@ export const PostPopupModal = ({
 
   const getStoreStance = () => {
     if (!uid) return null;
-    const data = interactionStore.get(initialPost.id);
-    if (data.agreed[uid]) return "agreed";
-    if (data.dissented[uid]) return "dissented";
+
+    // first check the global store (Optimistic updates / Feed state)
+    const storeData = interactionStore.get(initialPost.id);
+    if (storeData.agreed[uid]) return "agreed";
+    if (storeData.dissented[uid]) return "dissented";
+
+    // check the post object itself as fallback, needed for deep links
+    // if store is empty (fresh load), trust the data from the DB
+    const interactions = initialPost.userInteractions || {
+      agreed: {},
+      dissented: {},
+    };
+    if (interactions.agreed?.[uid]) return "agreed";
+    if (interactions.dissented?.[uid]) return "dissented";
+
     return null;
   };
 
