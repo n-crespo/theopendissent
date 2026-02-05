@@ -1,5 +1,9 @@
 require("firebase-functions/logger/compat");
-import { onValueDeleted, onValueWritten } from "firebase-functions/v2/database";
+import {
+  onValueCreated,
+  onValueDeleted,
+  onValueWritten,
+} from "firebase-functions/v2/database";
 import { HttpsError, onRequest } from "firebase-functions/v2/https";
 import {
   AuthBlockingEvent,
@@ -38,39 +42,36 @@ const escapeHtml = (unsafe: string) => {
 /**
  * Resolves an ID to its correct database reference by checking both posts and replies.
  * @param {string} id - The postId or replyId to find.
- * @param {string|null} [parentId] - Optional parentId to skip the search and generate path directly.
+ * @param {string|null} [providedParentId] - Optional parentId to skip the search and generate path directly.
  * @return {Promise<any>} The database reference for the given ID.
  */
 const getContentRef = async (
   id: string,
-  parentId?: string | null,
+  providedParentId?: string | null,
 ): Promise<admin.database.Reference | null> => {
   const db = admin.database();
 
-  // if parentId is provided and valid, we know exactly where it is.
-  if (parentId && parentId !== "top") {
-    return db.ref(`replies/${parentId}/${id}`);
+  // 1. use provided parentId if available
+  if (providedParentId && providedParentId !== "top") {
+    return db.ref(`replies/${providedParentId}/${id}`);
+  }
+  if (providedParentId === "top") {
+    return db.ref(`posts/${id}`);
   }
 
-  // if no parentId, check if it's a top-level post.
+  // 2. check the new metadata map (instant lookup)
+  const parentSnap = await db.ref(`content_parents/${id}`).once("value");
+  if (parentSnap.exists()) {
+    const pId = parentSnap.val();
+    return db.ref(`replies/${pId}/${id}`);
+  }
+
+  // 3. fallback to posts
   const postRef = db.ref(`posts/${id}`);
   const postSnap = await postRef.once("value");
   if (postSnap.exists()) return postRef;
 
-  // fallback: search for the grandparent in the replies tree.
-  const repliesRef = db.ref("replies");
-  const parentSearch = await repliesRef.orderByKey().once("value");
-
-  let foundRef: admin.database.Reference | null = null;
-  parentSearch.forEach((grandparentSnap) => {
-    if (grandparentSnap.hasChild(id)) {
-      foundRef = grandparentSnap.child(id).ref;
-      return true; // stop iterating
-    }
-    return false;
-  });
-
-  return foundRef;
+  return null;
 };
 
 /**
@@ -256,20 +257,23 @@ export const onReplyDeletedCleanup = onValueDeleted(
   async (event) => {
     const { parentId, replyId } = event.params;
     const replyData = event.data.val();
+    const db = admin.database();
 
     if (!replyData) return;
 
     await cleanupUserInteractions(replyId, replyData.userInteractions);
 
+    // cleanup from flat map
+    const updates: Record<string, null> = {};
+    updates[`content_parents/${replyId}`] = null;
+
     // remove the reply reference from the author's profile
-    if (replyData.userId) {
-      await admin
-        .database()
-        .ref(`users/${replyData.userId}/replies/${parentId}/${replyId}`)
-        .remove();
+    if (replyData?.userId) {
+      updates[`users/${replyData.userId}/replies/${parentId}/${replyId}`] =
+        null;
     }
 
-    console.log(`Cleaned up reply ${replyId} and user reference.`);
+    return db.ref().update(updates);
   },
 );
 
@@ -365,3 +369,40 @@ export const sharePost = onRequest(async (req, res) => {
     res.redirect(DOMAIN);
   }
 });
+
+/**
+ * handles setup tasks when a new reply is created.
+ * links the reply to the user's profile and stores path metadata.
+ */
+export const onReplyCreated = onValueCreated(
+  "/replies/{parentId}/{replyId}",
+  async (event) => {
+    const { parentId, replyId } = event.params;
+    const replyData = event.data.val();
+    const db = admin.database();
+
+    if (!replyData) return null;
+
+    const updates: Record<string, string | boolean | null> = {};
+
+    // link to user's profile
+    if (replyData.userId) {
+      updates[`users/${replyData.userId}/replies/${parentId}/${replyId}`] =
+        true;
+    }
+
+    // store path metadata for instant lookups in getContentRef
+    updates[`content_parents/${replyId}`] = parentId;
+
+    try {
+      await db.ref().update(updates);
+      console.log(
+        `successfully linked reply ${replyId} to user ${replyData.userId}`,
+      );
+    } catch (error) {
+      console.error(`failed to link reply ${replyId}:`, error);
+    }
+
+    return null;
+  },
+);
