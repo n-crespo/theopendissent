@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { usePosts } from "../../hooks/usePosts";
 import { useFeedSort } from "../../context/FeedSortContext";
 import { getPostById } from "../../lib/firebase";
@@ -23,22 +23,39 @@ export const FeedContainer = () => {
     const params = new URLSearchParams(window.location.search);
     const sharedId = params.get("s");
 
-    if (sharedId) {
-      const resolveSharedContent = async () => {
+    if (!sharedId) return;
+
+    let isMounted = true;
+
+    const resolveSharedContent = async () => {
+      try {
         const target = await getPostById(sharedId);
-        if (!target) return;
+        if (!target || !isMounted) return;
 
         // if the link is for a reply, we want to highlight its parent post in the feed
         if (target.parentPostId) {
           const parent = await getPostById(target.parentPostId);
-          if (parent) setHighlightedPost(parent);
-        } else {
+          if (parent && isMounted) setHighlightedPost(parent);
+        } else if (isMounted) {
           setHighlightedPost(target);
         }
-      };
-      resolveSharedContent();
-    }
+      } catch (error) {
+        console.error("failed to resolve deep link:", error);
+      }
+    };
+
+    resolveSharedContent();
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  // memoize the load more callback to prevent unnecessary observer re-runs
+  const handleLoadMore = useCallback(() => {
+    if (!loading) {
+      loadMore();
+    }
+  }, [loading, loadMore]);
 
   // prevent the highlighted post from appearing twice in the list
   const filteredPosts = useMemo(() => {
@@ -54,7 +71,7 @@ export const FeedContainer = () => {
       highlightedPost={highlightedPost}
       loading={loading}
       hasMore={hasMore}
-      onLoadMore={loadMore}
+      onLoadMore={handleLoadMore}
     />
   );
 };
