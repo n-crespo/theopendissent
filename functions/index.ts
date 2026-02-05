@@ -185,19 +185,22 @@ const cleanupUserInteractions = async (
 
 /**
  * Cleanup for top-level posts.
- * Focuses only on the post's own interactions and triggering the cascade.
+ * Only triggers when a post is removed.
  */
-export const onPostDeletedCleanup = onValueWritten(
+export const onPostDeletedCleanup = onValueDeleted(
   "/posts/{postId}",
   async (event) => {
-    // Only run on delete
-    if (event.data.after.exists() || !event.data.before.exists()) return;
-
     const { postId } = event.params;
-    const postData = event.data.before.val();
+
+    // event.data contains the snapshot of the data immediately BEFORE it was deleted.
+    const postData = event.data.val();
     const db = admin.database();
 
-    // clean up interactions for the post itself
+    if (!postData) return;
+
+    console.log(`Cleaning up interactions and cascading for post: ${postId}`);
+
+    // 1. Clean up interactions for the post itself
     await cleanupUserInteractions(postId, postData.userInteractions);
 
     // This deletion will automatically trigger 'onReplyDeletedCleanup'
