@@ -154,7 +154,7 @@ export const FeedItem = memo(
               >
                 <i className="bi bi-pencil-square text-[14px]"></i>
               </button>
-            ) : (
+            ) : uid ? (
               <button
                 onClick={(e) =>
                   handleAction(e, () => uid && reportPost(item.id, uid))
@@ -163,6 +163,8 @@ export const FeedItem = memo(
               >
                 <i className="bi bi-flag text-[14px]"></i>
               </button>
+            ) : (
+              <></>
             )}
           </div>
         </div>
