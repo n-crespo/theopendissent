@@ -3,7 +3,7 @@ import { subscribeToFeed } from "../lib/firebase";
 import { Post } from "../types";
 import { SortOption } from "../context/FeedSortContext";
 
-// MODULE-LEVEL CACHE (Preserves shuffle order across navigations)
+// module-level cache to preserve shuffle order across session navigations
 const weightMap = new Map<string, number>();
 
 const getPostWeight = (postId: string) => {
@@ -13,28 +13,33 @@ const getPostWeight = (postId: string) => {
   return weightMap.get(postId)!;
 };
 
+/**
+ * forces a post to the top by giving it the lowest possible weight.
+ * use this for new posts created by the user to provide immediate feedback.
+ */
 export const pinPostToTop = (postId: string) => {
   weightMap.set(postId, -1);
 };
 
+/**
+ * manages real-time feed subscriptions and integrates sorting logic.
+ */
 export const usePosts = (initialLimit: number = 20, sortType: SortOption) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentLimit, setCurrentLimit] = useState(initialLimit);
 
   useEffect(() => {
+    // ensure loading state is set when changing sort modes or increasing limits
     setLoading(true);
-    const unsubscribe = subscribeToFeed(currentLimit, (postsArray) => {
-      let finalPosts = postsArray;
 
-      // Only apply shuffle if the sort type is 'random'
-      // Otherwise, we accept the default chronological order from Firebase
+    const unsubscribe = subscribeToFeed(currentLimit, (postsArray) => {
+      // create a shallow copy to avoid mutating the original array from firebase
+      let finalPosts = [...postsArray];
+
+      // apply random sort if requested; newest is already handled by subscribeToFeed
       if (sortType === "random") {
-        finalPosts = [...postsArray].sort((a, b) => {
-          const weightA = getPostWeight(a.id);
-          const weightB = getPostWeight(b.id);
-          return weightA - weightB;
-        });
+        finalPosts.sort((a, b) => getPostWeight(a.id) - getPostWeight(b.id));
       }
 
       setPosts(finalPosts);
@@ -45,7 +50,10 @@ export const usePosts = (initialLimit: number = 20, sortType: SortOption) => {
   }, [currentLimit, sortType]);
 
   const loadMore = () => {
-    setCurrentLimit((prev) => prev + 20);
+    // guard to prevent multiple triggers while a fetch is active
+    if (!loading) {
+      setCurrentLimit((prev) => prev + 20);
+    }
   };
 
   return { posts, loading, loadMore, currentLimit };
