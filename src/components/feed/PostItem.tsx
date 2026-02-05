@@ -32,7 +32,7 @@ export const PostItem = memo(
       setEditContent,
       isSaving,
       interactionState,
-      handleInteraction,
+      toggleInteraction,
       handleEditSave,
       handleCancel,
       handleDeleteTrigger,
@@ -61,7 +61,8 @@ export const PostItem = memo(
       type: "agreed" | "dissented",
     ) => {
       if (!uid) {
-        handleInteraction(e, type); // This will trigger the sign-in modal
+        e.stopPropagation();
+        toggleInteraction(type); // This will trigger the sign-in modal
         return;
       }
 
@@ -73,7 +74,8 @@ export const PostItem = memo(
         onStanceChange(nextStance);
       }
 
-      handleInteraction(e, type);
+      e.stopPropagation();
+      toggleInteraction(type);
 
       if (wasNeutral) {
         setIsJiggling(false);

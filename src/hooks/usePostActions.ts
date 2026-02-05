@@ -48,14 +48,13 @@ export const usePostActions = (post: Post) => {
     replyCount: post.replyCount || 0,
   };
 
-  const handleInteraction = (
-    e: React.MouseEvent,
-    type: "agreed" | "dissented",
-  ) => {
-    e.stopPropagation();
-    if (!uid) return openModal("signin");
-
+  const toggleInteraction = (type: "agreed" | "dissented") => {
+    if (!uid) {
+      openModal("signin");
+      return false; // Return status so the component knows not to animate
+    }
     interactionStore.toggle(post.id, uid, type, post.parentPostId);
+    return true;
   };
 
   const handleCancel = () => {
@@ -63,7 +62,7 @@ export const usePostActions = (post: Post) => {
     setIsEditing(false);
   };
 
-  const handleEditSave = async (e: React.MouseEvent) => {
+  const saveEdit = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!editContent.trim() || editContent.trim() === post.postContent) {
       handleCancel();
@@ -109,9 +108,9 @@ export const usePostActions = (post: Post) => {
     setEditContent,
     isSaving,
     interactionState,
-    handleInteraction,
+    toggleInteraction,
     handleCancel,
-    handleEditSave,
+    saveEdit,
     handleDeleteTrigger,
   };
 };

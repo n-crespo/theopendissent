@@ -26,13 +26,13 @@ export const ReplyItem = ({
     uid,
     localMetrics,
     interactionState,
-    handleInteraction,
+    toggleInteraction,
     isEditing,
     setIsEditing,
     editContent,
     setEditContent,
     isSaving,
-    handleEditSave,
+    saveEdit,
     handleCancel,
     handleDeleteTrigger,
   } = usePostActions(reply);
@@ -65,7 +65,8 @@ export const ReplyItem = ({
   // Handle interaction click (Agreed/Dissented on this reply)
   const onStanceClick = (e: React.MouseEvent, type: "agreed" | "dissented") => {
     const wasNeutral = !activeStance;
-    handleInteraction(e, type);
+    e.stopPropagation();
+    toggleInteraction(type);
 
     if (wasNeutral) {
       setIsJiggling(false);
@@ -159,7 +160,7 @@ export const ReplyItem = ({
             onKeyDown={(e) => {
               if (e.key === "Escape") handleCancel();
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
-                handleEditSave(e as any);
+                saveEdit(e as any);
             }}
             disabled={isSaving}
           />
@@ -168,7 +169,10 @@ export const ReplyItem = ({
             <div className="flex gap-2">
               <button
                 className="px-3 py-1.5 bg-logo-blue text-white rounded-(--radius-button) text-xs font-semibold disabled:opacity-50 transition-colors hover:bg-logo-blue/90"
-                onClick={handleEditSave}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  saveEdit;
+                }}
                 disabled={isSaving}
               >
                 {isSaving ? "Saving..." : "Save"}
