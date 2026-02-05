@@ -84,7 +84,7 @@ export const FeedList = ({
             <div className="flex flex-col items-center gap-2 opacity-40">
               <div className="h-px w-12 bg-slate-300 mb-2" />
               <span className="text-slate-500 text-[11px] font-bold tracking-widest uppercase">
-                End of Discussion
+                You've reached the end!
               </span>
             </div>
           )
