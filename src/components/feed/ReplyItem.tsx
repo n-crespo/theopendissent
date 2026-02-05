@@ -150,7 +150,7 @@ export const ReplyItem = ({
 
       {/* Content Area */}
       {isEditing ? (
-        <div className="mb-2 pl-11" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-2" onClick={(e) => e.stopPropagation()}>
           <textarea
             autoFocus
             className="w-full p-3 border border-border-subtle rounded-(--radius-input) outline-none focus:ring-2 focus:ring-logo-blue/10 focus:border-logo-blue/40 transition-all resize-none min-h-20 text-[14px] text-slate-800"
@@ -198,13 +198,13 @@ export const ReplyItem = ({
           </div>
         </div>
       ) : (
-        <div className="text-[14px] text-slate-800 leading-relaxed whitespace-pre-wrap wrap-break-word pl-11 mb-2">
+        <div className="text-[14px] text-slate-800 leading-relaxed whitespace-pre-wrap wrap-break-word mb-2">
           {postContent}
         </div>
       )}
 
       {/* Footer: Interactions and Share (Aligned with content, so added pl-11 to match) */}
-      <div className="flex items-center justify-between pt-2 mt-1 border-t border-border-subtle pl-11">
+      <div className="flex items-center justify-between pt-2 mt-1 border-t border-border-subtle">
         {/* Interaction Pill */}
         <div className="relative flex items-center bg-slate-50 p-0.5 rounded-full border border-slate-100">
           <div
