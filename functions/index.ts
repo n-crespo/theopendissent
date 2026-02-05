@@ -36,66 +36,95 @@ const escapeHtml = (unsafe: string) => {
 };
 
 /**
+ * Resolves an ID to its correct database reference by checking both posts and replies.
+ * @param {string} id - The postId or replyId to find.
+ * @param {string|null} [parentId] - Optional parentId to skip the search and generate path directly.
+ * @return {Promise<any>} The database reference for the given ID.
+ */
+const getContentRef = async (
+  id: string,
+  parentId?: string | null,
+): Promise<admin.database.Reference | null> => {
+  const db = admin.database();
+
+  // if parentId is provided and valid, we know exactly where it is.
+  if (parentId && parentId !== "top") {
+    return db.ref(`replies/${parentId}/${id}`);
+  }
+
+  // if no parentId, check if it's a top-level post.
+  const postRef = db.ref(`posts/${id}`);
+  const postSnap = await postRef.once("value");
+  if (postSnap.exists()) return postRef;
+
+  // fallback: search for the grandparent in the replies tree.
+  const repliesRef = db.ref("replies");
+  const parentSearch = await repliesRef.orderByKey().once("value");
+
+  let foundRef: admin.database.Reference | null = null;
+  parentSearch.forEach((grandparentSnap) => {
+    if (grandparentSnap.hasChild(id)) {
+      foundRef = grandparentSnap.child(id).ref;
+      return true; // stop iterating
+    }
+    return false;
+  });
+
+  return foundRef;
+};
+
+/**
  * syncs user interactions from the user's private tree to the public post or reply tree.
  */
 export const syncInteractionToPost = onValueWritten(
   "/users/{userId}/postInteractions/{interactionType}/{postId}",
   async (event) => {
     const { userId, interactionType, postId } = event.params;
-    const afterValue = event.data.after.val() as string | null;
-    const beforeValue = event.data.before.val() as string | null;
     const exists = event.data.after.exists();
+    const parentId = event.data.after.val() || event.data.before.val();
 
-    // Use beforeValue for cleanup if the interaction was removed
-    const parentId = exists ? afterValue : beforeValue;
-    const db = admin.database();
+    try {
+      const contentRef = await getContentRef(postId, parentId);
+      if (!contentRef) {
+        if (exists) await event.data.after.ref.set(null); // cleanup ghost interaction
+        return null;
+      }
 
-    let rootPath: string;
-    if (parentId && parentId !== "top") {
-      rootPath = `replies/${parentId}/${postId}`;
-    } else {
-      rootPath = `posts/${postId}`;
+      await contentRef
+        .child(`userInteractions/${interactionType}/${userId}`)
+        .set(exists ? true : null);
+    } catch (error) {
+      console.error(`sync error for ${userId} on ${postId}:`, error);
     }
-
-    const targetPath = `${rootPath}/userInteractions/${interactionType}/${userId}`;
-
-    // sync marker to the target post/reply
-    return db.ref(targetPath).set(exists ? true : null);
+    return null;
   },
 );
 
 /**
- * updates the replyCount on the parent post when replies are created.
+ * updates the replyCount on the parent (Post or Reply) when replies are created/deleted.
  */
 export const updateReplyCount = onValueWritten(
-  "/replies/{postId}/{replyId}",
+  "/replies/{parentId}/{replyId}",
   async (event) => {
-    const { postId } = event.params;
-    const before = event.data.before.exists();
-    const after = event.data.after.exists();
+    const { parentId } = event.params;
+    const isCreate = event.data.after.exists() && !event.data.before.exists();
+    const isDelete = !event.data.after.exists() && event.data.before.exists();
 
-    let incrementValue = 0;
-    if (after && !before) incrementValue = 1;
-    else if (!after && before) incrementValue = -1;
-    else return;
+    if (!isCreate && !isDelete) return null;
 
-    const db = admin.database();
-    const postRef = db.ref(`/posts/${postId}`);
+    const incrementValue = isCreate ? 1 : -1;
+    const parentRef = await getContentRef(parentId);
 
-    // Check if post exists before trying to update it
-    const postSnap = await postRef.once("value");
-    if (!postSnap.exists()) {
-      console.log(`Parent post ${postId} not found. Skipping counter update.`);
-      return;
+    if (parentRef) {
+      return parentRef
+        .child("replyCount")
+        .transaction((current: number | null) => {
+          return Math.max(0, (current || 0) + incrementValue);
+        });
     }
 
-    // the post exists, so we update the counter
-    return postRef
-      .child("replyCount")
-      .transaction((currentCount: number | null) => {
-        const count = currentCount || 0;
-        return Math.max(0, count + incrementValue);
-      });
+    console.warn(`could not find parent ${parentId} to update count.`);
+    return null;
   },
 );
 
@@ -246,22 +275,14 @@ export const sharePost = onRequest(async (req, res) => {
   const postId = req.query.s as string;
   const parentId = req.query.p as string;
 
-  if (!postId) {
-    res.redirect(DOMAIN);
-    return;
-  }
-
-  const db = admin.database();
-  const dbPath = parentId ? `replies/${parentId}/${postId}` : `posts/${postId}`;
+  if (!postId) return res.redirect(DOMAIN);
 
   try {
-    const snapshot = await db.ref(dbPath).once("value");
-    const data = snapshot.val();
+    const contentRef = await getContentRef(postId, parentId);
+    const snapshot = await contentRef?.once("value");
+    const data = snapshot?.val();
 
-    if (!data) {
-      res.redirect(DOMAIN);
-      return;
-    }
+    if (!data) return res.redirect(DOMAIN);
 
     // prepare content
     const interactions = data.userInteractions || {};
