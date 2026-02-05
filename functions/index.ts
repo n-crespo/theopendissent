@@ -107,24 +107,30 @@ export const updateReplyCount = onValueWritten(
   "/replies/{parentId}/{replyId}",
   async (event) => {
     const { parentId } = event.params;
-    const isCreate = event.data.after.exists() && !event.data.before.exists();
-    const isDelete = !event.data.after.exists() && event.data.before.exists();
 
-    if (!isCreate && !isDelete) return null;
+    // determine exactly what changed
+    const created = event.data.after.exists() && !event.data.before.exists();
+    const deleted = !event.data.after.exists() && event.data.before.exists();
 
-    const incrementValue = isCreate ? 1 : -1;
-    const parentRef = await getContentRef(parentId);
+    // ignore edits to post content
+    if (!created && !deleted) return null;
 
-    if (parentRef) {
-      return parentRef
-        .child("replyCount")
-        .transaction((current: number | null) => {
-          return Math.max(0, (current || 0) + incrementValue);
-        });
+    const increment = created ? 1 : -1;
+
+    try {
+      const parentRef = await getContentRef(parentId);
+      if (!parentRef) {
+        console.warn(`orphaned reply: parent ${parentId} not found.`);
+        return null;
+      }
+
+      return parentRef.child("replyCount").transaction((current) => {
+        return Math.max(0, (current || 0) + increment);
+      });
+    } catch (error) {
+      console.error(`counter sync failed for parent ${parentId}:`, error);
+      return null;
     }
-
-    console.warn(`could not find parent ${parentId} to update count.`);
-    return null;
   },
 );
 
