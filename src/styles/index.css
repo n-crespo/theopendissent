@@ -15,7 +15,7 @@
   --radius-button: 6px;
   --radius-input: 6px;
 
-  --color-border-subtle: #e2e8f0; /* slate-200 */
+  --color-border-subtle: #f1f5f9;
   --color-bg-preview: #f8fafc80; /* slate-50 with 50% opacity */
 
   --shadow-modal: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -95,6 +95,7 @@
   --fire-bg: rgba(253, 126, 20, 0.1);
   --disagree: #dc3545;
   --disagree-bg: rgba(220, 53, 69, 0.1);
+  font-size: 15px;
 }
 
 .btn {
@@ -103,8 +104,7 @@
 
 /* generic styles  */
 body {
-  scrollbar-width: none;
-  overscroll-behavior: none;
+  letter-spacing: -0.011em;
   margin: 0;
   padding: 0;
 
@@ -113,6 +113,7 @@ body {
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 
   background-color: var(--offwhite-background);
   padding-top: env(safe-area-inset-top);
