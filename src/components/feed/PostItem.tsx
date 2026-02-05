@@ -60,6 +60,11 @@ export const PostItem = memo(
       e: React.MouseEvent,
       type: "agreed" | "dissented",
     ) => {
+      if (!uid) {
+        handleInteraction(e, type); // This will trigger the sign-in modal
+        return;
+      }
+
       const wasNeutral = !activeStance;
       let nextStance: "agreed" | "dissented" | null = type;
       if (type === activeStance) nextStance = null;
