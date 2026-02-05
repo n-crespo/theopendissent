@@ -234,16 +234,26 @@ const cleanupUserInteractions = async (
   const types = ["agreed", "dissented"] as const;
 
   types.forEach((type) => {
-    const interactionTypeGroup = interactions[type];
-    if (interactionTypeGroup) {
-      Object.keys(interactionTypeGroup).forEach((uid) => {
+    const group = interactions[type];
+    if (group) {
+      Object.keys(group).forEach((uid) => {
+        // target the user's private tree to remove the record of the interaction
         updates[`users/${uid}/postInteractions/${type}/${postId}`] = null;
       });
     }
   });
 
-  if (Object.keys(updates).length > 0) {
-    await admin.database().ref().update(updates);
+  // chunk updates to prevent payload from being too large for single Firebase write
+  const keys = Object.keys(updates);
+  if (keys.length === 0) return;
+
+  // Split into batches of 500
+  for (let i = 0; i < keys.length; i += 500) {
+    const batch: Record<string, null> = {};
+    keys.slice(i, i + 500).forEach((key) => {
+      batch[key] = null;
+    });
+    await admin.database().ref().update(batch);
   }
 };
 
