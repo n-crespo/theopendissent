@@ -11,9 +11,9 @@
 
   --color-gray-custom: #464646;
 
-  --radius-modal: 8px;
-  --radius-button: 6px;
-  --radius-input: 6px;
+  --radius-modal: 12px;
+  --radius-button: 12px;
+  --radius-input: 12px;
 
   --color-border-subtle: #f1f5f9;
   --color-bg-preview: #f8fafc80; /* slate-50 with 50% opacity */
