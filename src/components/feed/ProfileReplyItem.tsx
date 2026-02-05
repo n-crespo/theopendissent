@@ -24,7 +24,7 @@ export const ProfileReplyItem = ({ reply }: { reply: ReplyWithParent }) => {
         {reply.parentPost ? (
           <button
             onClick={handleOpenContext}
-            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-tight text-slate-400 hover:text-logo-blue transition-colors text-left"
+            className="flex items-center gap-1.5 text-[11px] font-semibold tracking-tight text-slate-400 hover:text-logo-blue transition-colors text-left"
           >
             <span>Replying to:</span>
             <span className="truncate max-w-50 normal-case font-medium text-slate-500 group-hover/reply:text-logo-blue transition-colors">
@@ -32,7 +32,7 @@ export const ProfileReplyItem = ({ reply }: { reply: ReplyWithParent }) => {
             </span>
           </button>
         ) : (
-          <span className="text-[11px] font-bold uppercase tracking-tight text-slate-300 italic">
+          <span className="text-[11px] font-semibold tracking-tight text-slate-300 italic">
             Parent post deleted
           </span>
         )}

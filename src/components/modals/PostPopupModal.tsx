@@ -72,8 +72,8 @@ export const PostPopupModal = ({
   if (!livePost) return null;
 
   return (
-    <div className="flex flex-col">
-      {/* 1. Main Post Focus */}
+    <div className="flex flex-col gap-4">
+      {/* parent post */}
       <FeedItem
         item={livePost}
         disableClick={true}
@@ -81,14 +81,12 @@ export const PostPopupModal = ({
         isReply={false}
       />
 
-      <div className="mb-6">
-        <PostInput parentPostId={livePost.id} currentStance={localStance} />
-      </div>
+      <PostInput parentPostId={livePost.id} currentStance={localStance} />
 
       <div className="pr-1">
         <div className="mb-6 flex items-center justify-between">
           <h4 className="text-[11px] font-bold tracking-widest uppercase text-slate-400">
-            Discussion
+            Replies
           </h4>
           <div className="ml-4 h-px grow bg-border-subtle opacity-50"></div>
         </div>

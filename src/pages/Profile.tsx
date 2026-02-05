@@ -28,8 +28,8 @@ export const Profile = () => {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="py-6">
+    <div className="flex flex-col gap-5">
+      <div className="pt-0">
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
           Your Profile
         </h1>
@@ -79,7 +79,7 @@ export const Profile = () => {
         ))}
       </ScrollableRail>
 
-      <div className="min-h-100 mt-2">
+      <div className="min-h-100">
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-4 text-slate-300">
             <LoadingDots className="scale-125" />
