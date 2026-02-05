@@ -113,7 +113,7 @@ export const PostInput = ({
             placeholder={activePlaceholder}
             disabled={isSubmitDisabled}
             className={`w-full resize-none border px-3 py-2.25 text-[15px] transition-all
-            outline-none block custom-scrollbar appearance-none leading-[1.6]
+            outline-none block custom-scrollbar appearance-none leading-[1.6] shadow-sm
             ${
               hasNoStance
                 ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed italic"
@@ -141,7 +141,7 @@ export const PostInput = ({
           onClick={handleSubmit}
           disabled={isSubmitDisabled}
           className={`
-            grow-2 min-w-22 h-11 flex items-center justify-center px-4 text-sm font-bold text-white transition-all duration-200
+            grow-2 min-w-22 h-11 flex items-center justify-center px-4 text-sm font-bold text-white transition-all duration-200 shadow-sm
             bg-linear-to-r from-logo-blue via-logo-green to-logo-red bg-size-[300%_100%] animate-shimmer
             ${
               isSubmitDisabled
