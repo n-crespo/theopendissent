@@ -32,7 +32,7 @@ function Layout() {
       <Header />
 
       {/* Standardized Content Container */}
-      <main className="mx-auto w-full max-w-125 px-4 pb-20">
+      <main className="mx-auto w-full max-w-125 px-4 pb-4">
         <Outlet />
       </main>
 

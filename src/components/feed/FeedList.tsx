@@ -71,7 +71,7 @@ export const FeedList = ({
 
       <div
         ref={bottomBoundaryRef}
-        className="h-40 flex items-center justify-center w-full"
+        className="mt-2 flex items-center justify-center w-full"
       >
         {loading && hasMore ? (
           <div className="flex items-center gap-3 text-slate-400 text-sm font-semibold">
@@ -81,8 +81,7 @@ export const FeedList = ({
         ) : (
           !hasMore &&
           posts.length > 0 && (
-            <div className="flex flex-col items-center gap-2 opacity-40">
-              <div className="h-px w-12 bg-slate-300 mb-2" />
+            <div className="items-center opacity-40">
               <span className="text-slate-500 text-[11px] font-bold tracking-widest uppercase">
                 You've reached the end!
               </span>
