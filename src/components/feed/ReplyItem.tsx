@@ -106,7 +106,7 @@ export const ReplyItem = ({
             <span className="text-sm font-semibold text-slate-900 leading-tight">
               {isOwner ? "You" : shortenedUid}
             </span>
-            <div className="flex items-center flex-wrap gap-1 text-[12px] text-slate-400 font-medium tracking-tight">
+            <div className="flex items-center flex-wrap gap-1 text-[10px] text-slate-400 font-medium tracking-tight">
               <span className={`${stanceText} font-semibold opacity-90`}>
                 {isAuthorAgreed ? "Agreed" : "Dissented"}
               </span>
@@ -141,7 +141,7 @@ export const ReplyItem = ({
                 className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-logo-red hover:bg-slate-50 transition-colors"
                 title="Report Reply"
               >
-                <i className="bi bi-flag-fill text-[14px]"></i>
+                <i className="bi bi-flag text-[14px]"></i>
               </button>
             )}
           </div>
