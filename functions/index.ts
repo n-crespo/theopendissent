@@ -1,5 +1,5 @@
 require("firebase-functions/logger/compat");
-import { onValueWritten } from "firebase-functions/v2/database";
+import { onValueDeleted, onValueWritten } from "firebase-functions/v2/database";
 import { HttpsError, onRequest } from "firebase-functions/v2/https";
 import {
   AuthBlockingEvent,
@@ -214,15 +214,15 @@ export const onPostDeletedCleanup = onValueDeleted(
 
 /**
  * Cleanup for individual replies.
- * Also removes reply reference from the user's profile.
+ * Only triggers when a reply is removed (manually or via cascade).
  */
-export const onReplyDeletedCleanup = onValueWritten(
+export const onReplyDeletedCleanup = onValueDeleted(
   "/replies/{parentId}/{replyId}",
   async (event) => {
-    if (event.data.after.exists() || !event.data.before.exists()) return;
-
     const { parentId, replyId } = event.params;
-    const replyData = event.data.before.val();
+    const replyData = event.data.val();
+
+    if (!replyData) return;
 
     await cleanupUserInteractions(replyId, replyData.userInteractions);
 
@@ -233,6 +233,8 @@ export const onReplyDeletedCleanup = onValueWritten(
         .ref(`users/${replyData.userId}/replies/${parentId}/${replyId}`)
         .remove();
     }
+
+    console.log(`Cleaned up reply ${replyId} and user reference.`);
   },
 );
 
