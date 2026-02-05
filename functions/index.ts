@@ -185,60 +185,27 @@ const cleanupUserInteractions = async (
 
 /**
  * Cleanup for top-level posts.
- * Includes cascading delete of replies and cleaning up user reply references.
+ * Focuses only on the post's own interactions and triggering the cascade.
  */
 export const onPostDeletedCleanup = onValueWritten(
   "/posts/{postId}",
   async (event) => {
-    // only run on delete
+    // Only run on delete
     if (event.data.after.exists() || !event.data.before.exists()) return;
 
     const { postId } = event.params;
     const postData = event.data.before.val();
     const db = admin.database();
 
+    // clean up interactions for the post itself
     await cleanupUserInteractions(postId, postData.userInteractions);
 
-    // fetch all child replies to perform cascading cleanup
-    const repliesSnapshot = await db.ref(`replies/${postId}`).once("value");
+    // This deletion will automatically trigger 'onReplyDeletedCleanup'
+    // for every child reply inside this node, handling their profile
+    // references and interaction cleanups individually.
+    await db.ref(`replies/${postId}`).remove();
 
-    if (repliesSnapshot.exists()) {
-      const updates: Record<string, null> = {};
-      const types = ["agreed", "dissented"] as const;
-
-      repliesSnapshot.forEach((replySnap) => {
-        const replyId = replySnap.key;
-
-        // safe check to satisfy typescript-eslint/no-non-null-assertion
-        if (!replyId) return;
-
-        const replyVal = replySnap.val();
-
-        // remove the reply from the author's user profile
-        if (replyVal.userId) {
-          updates[`users/${replyVal.userId}/replies/${postId}/${replyId}`] =
-            null;
-        }
-
-        // clean up interactions on this reply so those users don't have broken links
-        if (replyVal.userInteractions) {
-          types.forEach((type) => {
-            const group = replyVal.userInteractions[type];
-            if (group) {
-              Object.keys(group).forEach((uid) => {
-                updates[`users/${uid}/postInteractions/${type}/${replyId}`] =
-                  null;
-              });
-            }
-          });
-        }
-      });
-
-      // finally, delete the entire replies node for this post
-      updates[`replies/${postId}`] = null;
-
-      await db.ref().update(updates);
-    }
+    console.log(`Cascade cleanup triggered for post: ${postId}`);
   },
 );
 
