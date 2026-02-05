@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { createPost } from "../../lib/firebase";
 import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
@@ -22,49 +22,45 @@ export const PostInput = ({
   const { user, loading } = useAuth();
   const { openModal, closeModal } = useModal();
 
+  // --- Logic State ---
   const isReplyMode = !!parentPostId;
   const hasNoStance = isReplyMode && !currentStance;
+  const isSubmitDisabled =
+    loading || isPosting || hasNoStance || !content.trim();
 
   const MAX_CHARS = 600;
   const charsLeft = MAX_CHARS - content.length;
   const isNearLimit = charsLeft < 50;
 
-  /**
-   * Snaps the textarea height to fit content exactly.
-   * using 'auto' allows for an immediate shrink when text is deleted.
-   */
+  // --- Auto-resize Logic ---
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
-      // reset to auto to force the browser to recalculate scrollHeight from scratch
       textarea.style.height = "auto";
       const scrollHeight = textarea.scrollHeight;
-
-      // base height of 44px matches the h-11 button exactly
       const newHeight = Math.max(44, Math.min(scrollHeight, 240));
       textarea.style.height = `${newHeight}px`;
-
       textarea.style.overflowY = scrollHeight > 240 ? "auto" : "hidden";
     }
   }, [content]);
 
-  const defaultPlaceholder = isReplyMode
-    ? `I ${currentStance === "agreed" ? "agree" : "dissent"} because...`
-    : "Speak your mind...";
+  // --- Dynamic UI Strings ---
+  const activePlaceholder = useMemo(() => {
+    if (hasNoStance) return "Choose a stance to reply";
+    if (placeholder) return placeholder;
+    return isReplyMode
+      ? `I ${currentStance === "agreed" ? "agree" : "dissent"} because...`
+      : "Speak your mind...";
+  }, [hasNoStance, placeholder, isReplyMode, currentStance]);
 
-  const activePlaceholder = hasNoStance
-    ? "Choose a stance to reply"
-    : placeholder || defaultPlaceholder;
+  const buttonText = isPosting ? null : isReplyMode ? "Reply" : "Post";
 
+  // --- Handlers ---
   const handleSubmit = async () => {
-    if (loading || isPosting || hasNoStance) return;
-    if (!user) {
-      openModal("signin");
-      return;
-    }
+    if (isSubmitDisabled) return;
+    if (!user) return openModal("signin");
 
     const trimmedContent = content.trim();
-    if (!trimmedContent || trimmedContent.length > MAX_CHARS) return;
 
     openModal("confirmPost", {
       content: trimmedContent,
@@ -82,7 +78,7 @@ export const PostInput = ({
           setContent("");
           closeModal();
         } catch (error) {
-          console.error("failed to submit:", error);
+          console.error("failed to submit post:", error);
         } finally {
           setIsPosting(false);
         }
@@ -97,12 +93,11 @@ export const PostInput = ({
     }
   };
 
-  const isSubmitDisabled = loading || isPosting || hasNoStance;
-
   return (
-    <div className="flex w-full flex-col gap-1.5">
+    <div className="flex w-full flex-col gap-2">
+      {/* Container spacing fix: added mt-4 */}
       <div className="flex w-full flex-row items-end gap-2">
-        <div className="relative grow-8">
+        <div className="relative flex-1">
           <textarea
             ref={textareaRef}
             rows={1}
@@ -111,24 +106,20 @@ export const PostInput = ({
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={activePlaceholder}
-            disabled={isSubmitDisabled}
-            className={`w-full resize-none border px-3 py-2.25 text-[15px] transition-all
-            outline-none block custom-scrollbar appearance-none leading-[1.6] shadow-sm
-            ${
-              hasNoStance
-                ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed italic"
-                : "bg-white border-border-subtle focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10"
-            }
-          `}
-            style={{
-              borderRadius: "var(--radius-input)",
-              boxSizing: "border-box",
-            }}
+            disabled={isPosting || loading}
+            className={`w-full resize-none border px-3 py-2.5 text-[15px] transition-all
+              outline-none block custom-scrollbar shadow-sm rounded-(--radius-input)
+              ${
+                hasNoStance
+                  ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed italic"
+                  : "bg-white border-border-subtle focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10"
+              }
+            `}
           />
 
           {!hasNoStance && content.length > 0 && (
             <span
-              className={`absolute right-2 -bottom-3.5 text-[10px] font-bold uppercase tracking-tight transition-colors ${
+              className={`absolute right-2 -bottom-4 text-[10px] font-bold uppercase tracking-tight transition-colors ${
                 isNearLimit ? "text-logo-red" : "text-slate-300"
               }`}
             >
@@ -141,28 +132,26 @@ export const PostInput = ({
           onClick={handleSubmit}
           disabled={isSubmitDisabled}
           className={`
-            grow-2 min-w-22 h-11 flex items-center justify-center px-4 text-sm font-bold text-white transition-all duration-200 shadow-sm
+            min-w-24 h-11 flex items-center justify-center px-4 text-sm font-bold text-white transition-all duration-200 shadow-sm
             bg-linear-to-r from-logo-blue via-logo-green to-logo-red bg-size-[300%_100%] animate-shimmer
+            rounded-(--radius-button)
             ${
               isSubmitDisabled
-                ? "cursor-not-allowed grayscale-[0.6] opacity-60"
+                ? "grayscale-[0.6] opacity-50 cursor-not-allowed"
                 : "cursor-pointer hover:shadow-md active:scale-95"
             }
           `}
-          style={{ borderRadius: "var(--radius-button)" }}
         >
           {isPosting ? (
-            <i className="bi bi-three-dots animate-pulse"></i>
-          ) : isReplyMode ? (
-            "Reply"
+            <i className="bi bi-three-dots animate-pulse text-lg"></i>
           ) : (
-            "Post"
+            buttonText
           )}
         </button>
       </div>
 
       {hasNoStance && (
-        <p className="px-1 text-[11px] font-bold text-logo-red">
+        <p className="px-1 text-[11px] font-bold text-logo-red animate-in fade-in slide-in-from-top-1">
           Select "Agree" or "Dissent" on the post to unlock replies.
         </p>
       )}

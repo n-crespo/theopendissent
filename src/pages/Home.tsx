@@ -1,15 +1,15 @@
 import { DiscoveryRail } from "../components/discovery/DiscoveryRail";
 import { PostInput } from "../components/feed/PostInput";
-import { PostList } from "../components/feed/PostList";
+import { FeedContainer } from "../components/feed/FeedContainer";
 import { FeedSortProvider } from "../context/FeedSortContext";
 
 export const Home = () => {
   return (
     <FeedSortProvider>
-      <div className="mx-auto flex max-w-125 flex-col gap-3 px-2">
+      <div className="flex flex-col gap-4">
         <DiscoveryRail />
         <PostInput />
-        <PostList />
+        <FeedContainer />
       </div>
     </FeedSortProvider>
   );

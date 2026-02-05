@@ -1,55 +1,57 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePosts } from "../../hooks/usePosts";
 import { useFeedSort } from "../../context/FeedSortContext";
 import { getPostById } from "../../lib/firebase";
 import { Post } from "../../types";
-import { PostListView } from "./PostListView";
+import { FeedList } from "./FeedList";
 
 /**
- * Smart container: Handles data fetching and deep-link logic for the main feed.
+ * Smart container: Orchestrates data fetching, deep-linking, and sorting logic.
  */
-export const PostList = () => {
+export const FeedContainer = () => {
   const { sortType } = useFeedSort();
   const { posts, loading, loadMore, currentLimit } = usePosts(20, sortType);
-  const [injectedPost, setInjectedPost] = useState<Post | null>(null);
+  const [highlightedPost, setHighlightedPost] = useState<Post | null>(null);
 
+  // reset scroll position when the user changes the sort order
   useEffect(() => {
-    // When sort changes, scroll to top of feed
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [sortType]);
 
+  // handle deep-linking (e.g., /?s=post123)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sharedId = params.get("s");
 
     if (sharedId) {
-      const fetchAndInject = async () => {
+      const resolveSharedContent = async () => {
         const target = await getPostById(sharedId);
         if (!target) return;
 
-        // If reply, fetch parent to inject into main feed
+        // if the link is for a reply, we want to highlight its parent post in the feed
         if (target.parentPostId) {
           const parent = await getPostById(target.parentPostId);
-          if (parent) setInjectedPost(parent);
+          if (parent) setHighlightedPost(parent);
         } else {
-          setInjectedPost(target);
+          setHighlightedPost(target);
         }
       };
-      fetchAndInject();
+      resolveSharedContent();
     }
   }, []);
 
-  // Filter out the injected post from the main list to prevent duplicates
-  const filteredPosts = injectedPost
-    ? posts.filter((p) => p.id !== injectedPost.id)
-    : posts;
+  // prevent the highlighted post from appearing twice in the list
+  const filteredPosts = useMemo(() => {
+    if (!highlightedPost) return posts;
+    return posts.filter((p) => p.id !== highlightedPost.id);
+  }, [posts, highlightedPost]);
 
   const hasMore = posts.length >= currentLimit;
 
   return (
-    <PostListView
+    <FeedList
       posts={filteredPosts}
-      highlightedPost={injectedPost}
+      highlightedPost={highlightedPost}
       loading={loading}
       hasMore={hasMore}
       onLoadMore={loadMore}

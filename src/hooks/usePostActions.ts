@@ -5,12 +5,14 @@ import { interactionStore } from "../lib/interactionStore";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
 
+/**
+ * Manages the lifecycle and actions for a single post or reply.
+ */
 export const usePostActions = (post: Post) => {
   const { user } = useAuth();
   const { openModal } = useModal();
   const uid = user?.uid;
 
-  // Initialize from Store if available, else props
   const [localInteractions, setLocalInteractions] = useState(() =>
     interactionStore.get(post.id).agreed
       ? interactionStore.get(post.id)
@@ -21,22 +23,20 @@ export const usePostActions = (post: Post) => {
   const [editContent, setEditContent] = useState(post.postContent);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Sync Server Props -> Store (With User Protection)
+  // sync server props to the store
   useEffect(() => {
     if (post.userInteractions) {
-      // We pass 'uid' here so the store knows to merge CAREFULLY
       interactionStore.syncFromServer(post.id, post.userInteractions, uid);
     }
   }, [post.id, post.userInteractions, uid]);
 
-  // Sync Store -> Local State
+  // sync store changes to local state
   useEffect(() => {
     return interactionStore.subscribe(post.id, (newData) => {
       setLocalInteractions(newData);
     });
   }, [post.id]);
 
-  // Derived state
   const interactionState = {
     agreed: !!(uid && localInteractions?.agreed?.[uid]),
     dissented: !!(uid && localInteractions?.dissented?.[uid]),
@@ -51,7 +51,7 @@ export const usePostActions = (post: Post) => {
   const toggleInteraction = (type: "agreed" | "dissented") => {
     if (!uid) {
       openModal("signin");
-      return false; // Return status so the component knows not to animate
+      return false;
     }
     interactionStore.toggle(post.id, uid, type, post.parentPostId);
     return true;
@@ -62,31 +62,35 @@ export const usePostActions = (post: Post) => {
     setIsEditing(false);
   };
 
-  const saveEdit = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!editContent.trim() || editContent.trim() === post.postContent) {
+  const saveEdit = async () => {
+    const trimmed = editContent.trim();
+    if (!trimmed || trimmed === post.postContent) {
       handleCancel();
-      return;
+      return false;
     }
 
     setIsSaving(true);
     try {
       await updatePost(
         post.id,
-        { postContent: editContent, editedAt: Date.now() },
+        { postContent: trimmed, editedAt: Date.now() },
         post.parentPostId,
       );
       setIsEditing(false);
+      return true;
     } catch (err) {
-      console.error("failed to save changes:", err);
+      console.error("failed to save:", err);
+      return false;
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDeleteTrigger = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!uid) return openModal("signin");
+  const triggerDelete = () => {
+    if (!uid) {
+      openModal("signin");
+      return false;
+    }
     openModal("deleteConfirm", {
       name: post.postContent || "this post",
       onConfirm: async () => {
@@ -97,6 +101,7 @@ export const usePostActions = (post: Post) => {
         }
       },
     });
+    return true;
   };
 
   return {
@@ -111,6 +116,6 @@ export const usePostActions = (post: Post) => {
     toggleInteraction,
     handleCancel,
     saveEdit,
-    handleDeleteTrigger,
+    triggerDelete,
   };
 };
