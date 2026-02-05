@@ -74,6 +74,34 @@ const getContentRef = async (
   return null;
 };
 
+// delete replies in batches to avoid thundering herd
+const deleteRepliesInBatches = async (postId: string) => {
+  const db = admin.database();
+  const repliesRef = db.ref(`replies/${postId}`);
+
+  let finished = false;
+  while (!finished) {
+    // Get a small chunk of reply IDs
+    const snapshot = await repliesRef.limitToFirst(100).once("value");
+
+    if (!snapshot.exists()) {
+      finished = true;
+      break;
+    }
+
+    const updates: Record<string, null> = {};
+    snapshot.forEach((child) => {
+      updates[child.key as string] = null;
+    });
+
+    // Delete this batch
+    await repliesRef.update(updates);
+
+    // add a small delay to let CPU/Network breathe
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+};
+
 /**
  * syncs user interactions from the user's private tree to the public post or reply tree.
  */
@@ -227,24 +255,22 @@ export const onPostDeletedCleanup = onValueDeleted(
   "/posts/{postId}",
   async (event) => {
     const { postId } = event.params;
-
-    // event.data contains the snapshot of the data immediately BEFORE it was deleted.
     const postData = event.data.val();
     const db = admin.database();
 
     if (!postData) return;
 
-    console.log(`Cleaning up interactions and cascading for post: ${postId}`);
-
-    // 1. Clean up interactions for the post itself
+    // immediate cleanup of the post's own interactions
     await cleanupUserInteractions(postId, postData.userInteractions);
+    const replyCount = postData.replyCount || 0;
 
-    // This deletion will automatically trigger 'onReplyDeletedCleanup'
-    // for every child reply inside this node, handling their profile
-    // references and interaction cleanups individually.
-    await db.ref(`replies/${postId}`).remove();
-
-    console.log(`Cascade cleanup triggered for post: ${postId}`);
+    if (replyCount < 100) {
+      // Small post: Safe to delete all at once
+      await db.ref(`replies/${postId}`).remove();
+    } else {
+      // Large post: delete in chunks to avoid overwhelming the system
+      await deleteRepliesInBatches(postId);
+    }
   },
 );
 
