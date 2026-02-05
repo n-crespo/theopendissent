@@ -217,7 +217,7 @@ export const FeedItem = memo(
         )}
 
         {/* FOOTER */}
-        <div className="flex items-center justify-between pt-3 mt-1 border-t border-border-subtle">
+        <div className="flex items-center justify-between pt-3 border-t border-border-subtle">
           <div className="flex items-center gap-3">
             {/* Interaction Pill */}
             <div className="relative flex items-center bg-slate-50 p-0.5 rounded-full border border-border-subtle">
