@@ -28,14 +28,13 @@ export const FeedList = ({
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        // Trigger load if visible, not loading, and more exists
         if (entry.isIntersecting && hasMore && !loading) {
           onLoadMore();
         }
       },
       {
         threshold: 0.1,
-        rootMargin: "200px", // Increased for a smoother "seamless" feel
+        rootMargin: "400px",
       },
     );
 
@@ -46,63 +45,46 @@ export const FeedList = ({
     };
   }, [hasMore, loading, onLoadMore]);
 
-  // --- Render Helpers ---
   const renderItem = (post: Post, isHighlighted = false) => (
     <motion.div
-      layout
+      layout={isHighlighted ? "position" : undefined}
       key={isHighlighted ? `highlighted-${post.id}` : post.id}
-      initial={{
-        opacity: 0,
-        y: isHighlighted ? -20 : 20,
-        scale: isHighlighted ? 0.95 : 1,
-      }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-      transition={{
-        duration: 0.4,
-        type: "spring",
-        bounce: isHighlighted ? 0.3 : 0,
-      }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, transition: { duration: 0.1 } }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
     >
       <FeedItem
         item={post}
         highlighted={isHighlighted}
-        isReply={!!post.parentPostId} // Auto-detect if it's a reply
+        isReply={!!post.parentPostId}
       />
     </motion.div>
   );
 
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto gap-4">
-      <AnimatePresence mode="popLayout">
-        {/* Priority/Highlighted Post */}
+      <AnimatePresence>
         {highlightedPost && renderItem(highlightedPost, true)}
-
-        {/* Standard Feed List */}
         {posts.map((post) => renderItem(post))}
       </AnimatePresence>
 
-      {/* Infinite Scroll Anchor & Loading States */}
       <div
         ref={bottomBoundaryRef}
-        className="py-12 flex flex-col items-center justify-center w-full min-h-25"
+        className="h-40 flex items-center justify-center w-full"
       >
         {loading && hasMore ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center gap-3 text-slate-400 text-sm font-semibold"
-          >
+          <div className="flex items-center gap-3 text-slate-400 text-sm font-semibold">
             <LoadingDots />
             <span>Finding more perspectives...</span>
-          </motion.div>
+          </div>
         ) : (
           !hasMore &&
           posts.length > 0 && (
             <div className="flex flex-col items-center gap-2 opacity-40">
               <div className="h-px w-12 bg-slate-300 mb-2" />
-              <span className="text-slate-500 text-[11px] font-bold tracking-widest">
-                You've reached the end!
+              <span className="text-slate-500 text-[11px] font-bold tracking-widest uppercase">
+                End of Discussion
               </span>
             </div>
           )
