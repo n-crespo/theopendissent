@@ -282,7 +282,7 @@ export const FeedItem = memo(
             onClick={(e) => handleAction(e, () => sharePost(item))}
             className="flex items-center gap-2 px-3 py-1.5 rounded-full text-slate-400 hover:bg-slate-50 hover:text-logo-blue active:scale-95 transition-all"
           >
-            <i className="bi bi-box-arrow-up text-[14px]"></i>
+            <i className="bi bi-box-arrow-up text-[15px]"></i>
           </button>
         </div>
       </div>
