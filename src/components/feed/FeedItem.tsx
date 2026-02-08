@@ -1,10 +1,10 @@
 import { memo, useState } from "react";
 import { Post } from "../../types";
 import { timeAgo } from "../../utils";
-import { useModal } from "../../context/ModalContext";
 import { usePostActions } from "../../hooks/usePostActions";
 import { useShare } from "../../hooks/useShare";
 import { useReport } from "../../hooks/useReport";
+import { useNavigate } from "react-router-dom";
 
 interface FeedItemProps {
   item: Post;
@@ -24,7 +24,7 @@ export const FeedItem = memo(
   }: FeedItemProps) => {
     if (!item || !item.userId) return null;
 
-    const { openModal } = useModal();
+    const navigate = useNavigate();
     const { sharePost } = useShare();
     const { reportPost } = useReport();
     const [isJiggling, setIsJiggling] = useState(false);
@@ -260,13 +260,13 @@ export const FeedItem = memo(
                 onClick={(e) =>
                   handleAction(
                     e,
-                    () => !disableClick && openModal("postPopup", item),
+                    () => !disableClick && navigate(`/post/${item.id}`),
                   )
                 }
                 disabled={disableClick}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full origin-center active:scale-95 transition-all
-                ${isJiggling ? "animate-jiggle shadow-md ring-2 ring-logo-blue/10" : ""}
-                ${disableClick ? "text-logo-blue" : "text-slate-400 hover:bg-slate-50 hover:text-logo-blue"}`}
+    ${isJiggling ? "animate-jiggle shadow-md ring-2 ring-logo-blue/10" : ""}
+    ${disableClick ? "text-logo-blue" : "text-slate-400 hover:bg-slate-50 hover:text-logo-blue"}`}
               >
                 <i
                   className={`bi ${disableClick ? "bi-chat-fill" : "bi-chat"} text-[14px]`}

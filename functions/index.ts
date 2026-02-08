@@ -358,8 +358,16 @@ export const sharePost = onRequest(async (req, res) => {
     const pageTitle = `@${authorDisplay} • ${agreedCount} agreed • ${dissentedCount} dissented`;
     const pageDescription = `“${contentPreview}”`;
 
+    // keep the shareUrl pointing to THIS function so meta tags work on re-shares
     const shareUrl = `${DOMAIN}/share?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
-    const appUrl = `${DOMAIN}/?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
+
+    // redirect to new "/post" route
+    let appUrl = `${DOMAIN}/post/${postId}`;
+
+    // If parentId exists, 'postId' is actually the Reply ID (s), and 'parentId' is the Post (p)
+    if (parentId) {
+      appUrl = `${DOMAIN}/post/${parentId}?reply=${postId}`;
+    }
 
     const html = `
       <!DOCTYPE html>

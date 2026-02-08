@@ -9,6 +9,7 @@ import { Home } from "./pages/Home";
 import { Profile } from "./pages/Profile";
 import { Privacy } from "./pages/Privacy";
 import { Terms } from "./pages/Terms";
+import { PostDetails } from "./pages/PostDetails";
 
 function Layout() {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -63,6 +64,7 @@ export default function App() {
         <Route path="profile" element={<Profile />} />
         <Route path="privacy" element={<Privacy />} />
         <Route path="terms" element={<Terms />} />
+        <Route path="post/:postId" element={<PostDetails />} />
       </Route>
     </Routes>
   );

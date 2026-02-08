@@ -1,18 +1,17 @@
-import { FeedItem } from "./FeedItem"; // Use the unified component
+import { useNavigate } from "react-router-dom";
+import { FeedItem } from "./FeedItem";
 import { Post } from "../../types";
-import { useModal } from "../../context/ModalContext";
 
 type ReplyWithParent = Post & { parentPost?: Post };
 
 export const ProfileReplyItem = ({ reply }: { reply: ReplyWithParent }) => {
-  const { openModal } = useModal();
+  const navigate = useNavigate();
 
-  const handleOpenContext = () => {
+  const handleOpenContext = (e: React.MouseEvent) => {
+    e.stopPropagation(); // prevent triggering parent clicks if any
     if (reply.parentPost) {
-      openModal("postPopup", {
-        post: reply.parentPost,
-        highlightReplyId: reply.id,
-      });
+      // Navigate to the parent post and highlight this specific reply
+      navigate(`/post/${reply.parentPost.id}?reply=${reply.id}`);
     }
   };
 

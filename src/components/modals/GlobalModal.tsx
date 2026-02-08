@@ -4,7 +4,6 @@ import { SignInModal } from "./SignInModal";
 import { AboutModal } from "./AboutModal";
 import { InstallPwaModal } from "./InstallPwaModal";
 import { LogoutModal } from "./LogoutModal";
-import { PostPopupModal } from "./PostPopupModal";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { ConfirmPostModal } from "./ConfirmPostModal";
 import { ListenModal } from "./ListenModal";
@@ -34,9 +33,6 @@ export const GlobalModal = () => {
   return (
     <AnimatePresence>
       {modalStack.map((modal, index) => {
-        // Determine if this specific modal should fill the screen height
-        const isFullHeight = modal.type === "postPopup";
-
         return (
           <motion.div
             key={`${modal.type}-${index}`}
@@ -59,12 +55,9 @@ export const GlobalModal = () => {
                 stiffness: 250,
                 layout: { duration: 0.35 },
               }}
-              // conditionally apply height classes
-              // If postPopup, force h-[83vh]
-              // Otherwise, use min/max auto-sizing.
               className={`
                 relative flex w-full max-w-120 flex-col overflow-hidden bg-white shadow-(--shadow-modal)
-                ${isFullHeight ? "h-[83vh]" : "min-h-[23vh] max-h-[83vh]"}
+                "min-h-[23vh] max-h-[83vh]"
               `}
               style={{
                 borderRadius: "var(--radius-modal)",
@@ -87,20 +80,13 @@ export const GlobalModal = () => {
               {/* 'flex-1' and 'h-full' so the internal scrollbar area fills the fixed height */}
               <div
                 className={`
-                  custom-scrollbar overflow-y-auto p-5 pt-0 text-left
-                  ${isFullHeight ? "flex-1 h-full" : ""}
+                  custom-scrollbar overflow-y-auto p-5 pt-0 text-left}
                 `}
               >
                 {modal.type === "signin" && <SignInModal />}
                 {modal.type === "about" && <AboutModal />}
                 {modal.type === "installPwa" && <InstallPwaModal />}
                 {modal.type === "logout" && <LogoutModal />}
-                {modal.type === "postPopup" && (
-                  <PostPopupModal
-                    post={modal.payload.post || modal.payload}
-                    highlightReplyId={modal.payload.highlightReplyId}
-                  />
-                )}
                 {modal.type === "deleteConfirm" && (
                   <ConfirmDeleteModal
                     itemName={modal.payload?.name || "this item"}

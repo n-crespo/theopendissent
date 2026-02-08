@@ -5,7 +5,6 @@ type ModalType =
   | "about" // renamed from help
   | "installPwa"
   | "logout"
-  | "postPopup"
   | "deleteConfirm"
   | "confirmPost"
   | "listen"

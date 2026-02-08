@@ -4,7 +4,8 @@ import { Post } from "../types";
 
 /**
  * Custom hook to handle sharing logic.
- * Generates a deep link and invokes the native share sheet or clipboard fallback.
+ * Generates a link to the /share Cloud Function to ensure Social Previews work,
+ * then invokes the native share sheet or clipboard fallback.
  */
 export const useShare = () => {
   // const { showToast } = useToast();
@@ -14,15 +15,16 @@ export const useShare = () => {
     const url = new URL(window.location.origin);
     url.pathname = "/share";
 
-    // Logic: If sharing a reply, 's' is the reply ID, 'p' is parent ID.
-    // If sharing a main post, 's' is the post ID.
+    // Logic: 's' is the ID of the content being shared.
+    // If it's a reply, 's' is the reply ID and 'p' is the parent ID.
+    // If it's a main post, 's' is the post ID.
     url.searchParams.set("s", post.id);
+
     if (post.parentPostId) {
       url.searchParams.set("p", post.parentPostId);
     }
 
     const shareUrl = url.toString();
-    // const shareText = `Check out this discussion on TheOpenDissent: "${post.postContent.substring(0, 50)}..."`;
     const shareText = `Check out this discussion on TheOpenDissent!`;
 
     const shareData = {
