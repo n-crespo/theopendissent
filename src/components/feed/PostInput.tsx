@@ -106,7 +106,7 @@ export const PostInput = ({
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={activePlaceholder}
-            disabled={isPosting || loading}
+            disabled={isPosting || loading || hasNoStance}
             className={`w-full resize-none border px-3 py-2.5 text-[15px] transition-all
               outline-none block custom-scrollbar shadow-sm rounded-(--radius-input)
               ${
