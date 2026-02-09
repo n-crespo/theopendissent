@@ -21,7 +21,6 @@ export const PostDetails = () => {
   const [livePost, setLivePost] = useState<Post | null>(null);
   const [isLoadingPost, setIsLoadingPost] = useState(true);
 
-  // 1. Get user and loading state
   const { user, loading: authLoading } = useAuth();
   const uid = user?.uid;
 
@@ -33,12 +32,10 @@ export const PostDetails = () => {
   const getCalculatedStance = (post: Post, userId: string | undefined) => {
     if (!userId) return null;
 
-    // Check optimistic store first
     const storeData = interactionStore.get(post.id);
     if (storeData.agreed[userId]) return "agreed";
     if (storeData.dissented[userId]) return "dissented";
 
-    // Fallback to server data
     const interactions = post.userInteractions || { agreed: {}, dissented: {} };
     if (interactions.agreed?.[userId]) return "agreed";
     if (interactions.dissented?.[userId]) return "dissented";
@@ -46,7 +43,7 @@ export const PostDetails = () => {
     return null;
   };
 
-  // 2. Fetch Post (Only runs when ID changes)
+  // Fetch Post
   useEffect(() => {
     if (!postId) return;
     const unsubscribe = subscribeToPost(postId, (post) => {
@@ -60,7 +57,7 @@ export const PostDetails = () => {
     return () => unsubscribe();
   }, [postId, navigate]);
 
-  // 3. Sync Replies
+  // Sync Replies
   useEffect(() => {
     if (!postId) return;
     setIsLoadingReplies(true);
@@ -78,34 +75,23 @@ export const PostDetails = () => {
     return () => unsubscribe();
   }, [postId, highlightReplyId]);
 
-  // 4. CRITICAL FIX: Calculate Stance Effect
-  // This runs whenever the Post updates OR the User/Auth finishes loading.
+  // Calculate Stance
   useEffect(() => {
     if (livePost && uid) {
       setLocalStance((prev) => {
-        // If we already have a local stance (e.g. user just clicked), keep it.
-        // Otherwise, calculate it from the DB/Store.
         if (prev) return prev;
         return getCalculatedStance(livePost, uid);
       });
     }
   }, [livePost, uid]);
-  // ^^^ Dependency on 'uid' ensures this re-runs after auth finishes
 
-  if (isLoadingPost || authLoading) {
-    // Optional: Wait for auth before showing content
-    return (
-      <div className="flex justify-center p-8">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-logo-blue border-t-transparent"></div>
-      </div>
-    );
-  }
+  // --- RENDER LOGIC ---
 
-  if (!livePost) return null;
+  // NOTE: We removed the blocking "isLoading" return.
+  // We now render the layout immediately and use skeletons for content.
 
   return (
     <div className="flex flex-col gap-4">
-      {/* back navigation header */}
       <div>
         <ScrollableRail>
           <Chip
@@ -117,17 +103,50 @@ export const PostDetails = () => {
         </ScrollableRail>
       </div>
 
-      <FeedItem
-        item={livePost}
-        disableClick={true}
-        onStanceChange={setLocalStance}
-        isReply={false}
-      />
+      {/* Main Post: Real Item OR Skeleton */}
+      {isLoadingPost || authLoading ? (
+        // MAIN POST SKELETON
+        <div className="flex flex-col gap-4 rounded-xl border border-slate-100 bg-white p-4 shadow-sm animate-pulse">
+          {/* Header Row */}
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-md bg-slate-100"></div>
+              <div className="flex flex-col gap-1.5">
+                <div className="h-3 w-24 rounded-full bg-slate-100"></div>
+                <div className="h-2 w-16 rounded-full bg-slate-50"></div>
+              </div>
+            </div>
+          </div>
+          {/* Content Rows */}
+          <div className="space-y-2 mt-1">
+            <div className="h-3 w-full rounded-full bg-slate-50"></div>
+            <div className="h-3 w-[90%] rounded-full bg-slate-50"></div>
+            <div className="h-3 w-[60%] rounded-full bg-slate-50"></div>
+          </div>
+          {/* Footer Pills */}
+          <div className="flex gap-2 mt-2 pt-3 border-t border-slate-50">
+            <div className="h-6 w-16 rounded-full bg-slate-50"></div>
+            <div className="h-6 w-16 rounded-full bg-slate-50"></div>
+          </div>
+        </div>
+      ) : livePost ? (
+        <FeedItem
+          item={livePost}
+          disableClick={true}
+          onStanceChange={setLocalStance}
+          isReply={false}
+        />
+      ) : null}
 
-      <PostInput parentPostId={livePost.id} currentStance={localStance} />
+      {/* Post Input: Real Input OR Skeleton */}
+      {isLoadingPost || !livePost ? (
+        <div className="h-24 w-full rounded-xl border border-slate-100 bg-slate-50/50 animate-pulse"></div>
+      ) : (
+        <PostInput parentPostId={livePost.id} currentStance={localStance} />
+      )}
 
+      {/* Replies Section */}
       <div className="flex flex-col gap-4">
-        {/* ... (Replies Section remains unchanged) ... */}
         <div className="flex items-center justify-between">
           <h4 className="text-[11px] font-bold tracking-widest uppercase text-slate-400">
             Replies
