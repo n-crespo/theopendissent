@@ -86,10 +86,16 @@ export const FeedItem = memo(
       const wasNeutral = !activeStance;
       const success = toggleInteraction(type);
 
-      if (success && wasNeutral) {
-        triggerJiggle();
+      if (success) {
+        // Notify parent of change regardless of whether we started neutral
+        // This ensures un-clicking a stance sends 'null' to the parent
         if (onStanceChange) {
           onStanceChange(activeStance === type ? null : type);
+        }
+
+        // Only jiggle if adding a new stance
+        if (wasNeutral) {
+          triggerJiggle();
         }
       }
     };
@@ -268,8 +274,8 @@ export const FeedItem = memo(
                 }
                 disabled={disableClick}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full origin-center active:scale-95 transition-all
-    ${isJiggling ? "animate-jiggle shadow-md ring-2 ring-logo-blue/10" : ""}
-    ${disableClick ? "text-logo-blue" : "text-slate-400 hover:bg-slate-50 hover:text-logo-blue"}`}
+                  ${isJiggling ? "animate-jiggle shadow-md ring-2 ring-logo-blue/10" : ""}
+                  ${disableClick ? "text-logo-blue" : "text-slate-400 hover:bg-slate-50 hover:text-logo-blue"}`}
               >
                 <i
                   className={`bi ${disableClick ? "bi-chat-fill" : "bi-chat"} text-[14px]`}
