@@ -21,35 +21,37 @@ export const PostDetails = () => {
   const [livePost, setLivePost] = useState<Post | null>(null);
   const [isLoadingPost, setIsLoadingPost] = useState(true);
 
-  const { user } = useAuth();
+  // 1. Get user and loading state
+  const { user, loading: authLoading } = useAuth();
   const uid = user?.uid;
-
-  const getStoreStance = (post: Post) => {
-    if (!uid) return null;
-    const storeData = interactionStore.get(post.id);
-    if (storeData.agreed[uid]) return "agreed";
-    if (storeData.dissented[uid]) return "dissented";
-
-    const interactions = post.userInteractions || {
-      agreed: {},
-      dissented: {},
-    };
-    if (interactions.agreed?.[uid]) return "agreed";
-    if (interactions.dissented?.[uid]) return "dissented";
-    return null;
-  };
 
   const [localStance, setLocalStance] = useState<"agreed" | "dissented" | null>(
     null,
   );
 
-  // fetch and sync the parent post
+  // Helper to calculate stance from Store (optimistic) or Post (server)
+  const getCalculatedStance = (post: Post, userId: string | undefined) => {
+    if (!userId) return null;
+
+    // Check optimistic store first
+    const storeData = interactionStore.get(post.id);
+    if (storeData.agreed[userId]) return "agreed";
+    if (storeData.dissented[userId]) return "dissented";
+
+    // Fallback to server data
+    const interactions = post.userInteractions || { agreed: {}, dissented: {} };
+    if (interactions.agreed?.[userId]) return "agreed";
+    if (interactions.dissented?.[userId]) return "dissented";
+
+    return null;
+  };
+
+  // 2. Fetch Post (Only runs when ID changes)
   useEffect(() => {
     if (!postId) return;
     const unsubscribe = subscribeToPost(postId, (post) => {
       if (post) {
         setLivePost(post);
-        setLocalStance(getStoreStance(post));
       } else {
         navigate("/");
       }
@@ -58,7 +60,7 @@ export const PostDetails = () => {
     return () => unsubscribe();
   }, [postId, navigate]);
 
-  // sync replies and handle deep-link scrolling
+  // 3. Sync Replies
   useEffect(() => {
     if (!postId) return;
     setIsLoadingReplies(true);
@@ -76,7 +78,22 @@ export const PostDetails = () => {
     return () => unsubscribe();
   }, [postId, highlightReplyId]);
 
-  if (isLoadingPost) {
+  // 4. CRITICAL FIX: Calculate Stance Effect
+  // This runs whenever the Post updates OR the User/Auth finishes loading.
+  useEffect(() => {
+    if (livePost && uid) {
+      setLocalStance((prev) => {
+        // If we already have a local stance (e.g. user just clicked), keep it.
+        // Otherwise, calculate it from the DB/Store.
+        if (prev) return prev;
+        return getCalculatedStance(livePost, uid);
+      });
+    }
+  }, [livePost, uid]);
+  // ^^^ Dependency on 'uid' ensures this re-runs after auth finishes
+
+  if (isLoadingPost || authLoading) {
+    // Optional: Wait for auth before showing content
     return (
       <div className="flex justify-center p-8">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-logo-blue border-t-transparent"></div>
@@ -110,6 +127,7 @@ export const PostDetails = () => {
       <PostInput parentPostId={livePost.id} currentStance={localStance} />
 
       <div className="flex flex-col gap-4">
+        {/* ... (Replies Section remains unchanged) ... */}
         <div className="flex items-center justify-between">
           <h4 className="text-[11px] font-bold tracking-widest uppercase text-slate-400">
             Replies

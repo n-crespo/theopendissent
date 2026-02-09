@@ -101,14 +101,14 @@ export const FeedItem = memo(
 
     return (
       <div
-        className={`flex flex-col p-4 bg-white border transition-all duration-200 rounded-(--radius-modal) ${
+        className={`flex flex-col gap-4 p-4 bg-white border transition-all duration-200 rounded-(--radius-modal) ${
           highlighted
             ? "border-logo-blue ring-2 ring-logo-blue/10 shadow-md scale-[1.01]"
             : "border-border-subtle shadow-sm"
         }`}
       >
         {/* HEADER */}
-        <div className="flex justify-between items-start mb-3">
+        <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
             {/* CONDITIONAL AVATAR */}
             {!isReply ? (
@@ -171,24 +171,27 @@ export const FeedItem = memo(
 
         {/* CONTENT AREA */}
         {isEditing ? (
-          <div className="mb-2" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="flex flex-col gap-2"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="relative">
               <textarea
                 autoFocus
                 maxLength={600}
-                className="w-full p-3 border border-border-subtle rounded-(--radius-input) outline-none min-h-24 text-[15px] focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10 transition-all"
+                className="resize-none custom-scrollbar w-full p-3 pr-6 border border-border-subtle rounded-(--radius-input) outline-none min-h-24 text-[15px] focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10 transition-all"
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
                 disabled={isSaving}
               />
               <span
-                className={`absolute right-2 -bottom-5 text-[10px] font-bold uppercase ${isNearLimit ? "text-logo-red" : "text-slate-300"}`}
+                className={`absolute right-2 bottom-2 text-[10px] font-bold uppercase ${isNearLimit ? "text-logo-red" : "text-slate-300"}`}
               >
                 {charsLeft}
               </span>
             </div>
 
-            <div className="flex items-center justify-between mt-6">
+            <div className="flex items-center justify-between">
               <div className="flex gap-2">
                 <button
                   className="px-4 py-1.5 bg-logo-blue text-white rounded-(--radius-button) text-sm font-semibold disabled:opacity-50"
@@ -213,7 +216,7 @@ export const FeedItem = memo(
             </div>
           </div>
         ) : (
-          <p className="text-slate-800 leading-[1.6] mb-4 whitespace-pre-wrap wrap-break-word">
+          <p className="text-slate-800 leading-[1.6] whitespace-pre-wrap wrap-break-word">
             {item.postContent}
           </p>
         )}

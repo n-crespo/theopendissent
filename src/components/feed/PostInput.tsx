@@ -107,7 +107,7 @@ export const PostInput = ({
             onKeyDown={handleKeyDown}
             placeholder={activePlaceholder}
             disabled={isPosting || loading || hasNoStance}
-            className={`w-full resize-none border px-3 py-2.5 text-[15px] transition-all
+            className={`w-full resize-none border p-2 pr-6 text-[15px] transition-all
               outline-none block custom-scrollbar shadow-sm rounded-(--radius-input)
               ${
                 hasNoStance
