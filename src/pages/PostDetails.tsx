@@ -103,7 +103,6 @@ export const PostDetails = () => {
           </Chip>
         </ScrollableRail>
       </div>
-
       {/* Main Post: Real Item OR Skeleton */}
       {isLoadingPost || authLoading ? (
         <FeedItemSkeleton />
@@ -115,14 +114,12 @@ export const PostDetails = () => {
           isReply={false}
         />
       ) : null}
-
       {/* Post Input: Real Input OR Skeleton */}
       {isLoadingPost || !livePost ? (
         <div className="h-15 w-full rounded-xl border border-slate-100 bg-white animate-pulse p-4 shadow-sm"></div>
       ) : (
         <PostInput parentPostId={livePost.id} currentStance={localStance} />
       )}
-
       {/* Replies Section */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
