@@ -87,7 +87,7 @@ export const PostDetails = () => {
   if (!livePost) return null;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {/* back navigation header */}
       <div>
         <ScrollableRail>
