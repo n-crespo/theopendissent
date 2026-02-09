@@ -6,8 +6,9 @@ export const Privacy = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 text-slate-800">
-      <div className="mb-6">
+    <div className="flex flex-col gap-6 text-slate-800">
+      {/* Header Area */}
+      <div className="flex flex-col gap-3">
         <ScrollableRail>
           <Chip
             onClick={() => navigate("/")}
@@ -16,14 +17,23 @@ export const Privacy = () => {
             Back to Home
           </Chip>
         </ScrollableRail>
+
+        <div>
+          <h1 className="text-3xl font-bold">Privacy Policy</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Last Updated: January 2026
+          </p>
+        </div>
       </div>
 
-      <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
-      <p className="text-sm text-slate-500 mb-8">Last Updated: January 2026</p>
-
-      <div className="space-y-6 leading-relaxed">
+      {/* OPTIMIZATION:
+         - added 'flex flex-col gap-8' to parent for consistent vertical rhythm
+         - [&_section]: targets all section children to apply the gap automatically
+         - [&_h2]: targets all h2s inside to apply font weight/size automatically
+      */}
+      <div className="flex flex-col gap-8 leading-relaxed [&_section]:flex [&_section]:flex-col [&_section]:gap-3 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900">
         <section>
-          <h2 className="text-xl font-semibold mb-2">1. Introduction</h2>
+          <h2>1. Introduction</h2>
           <p>
             The Open Dissent ("we," "our," or "us") is committed to protecting
             your privacy. This Privacy Policy explains how we collect, use, and
@@ -32,10 +42,8 @@ export const Privacy = () => {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-2">
-            2. Information We Collect
-          </h2>
-          <ul className="list-disc pl-5 space-y-2">
+          <h2>2. Information We Collect</h2>
+          <ul className="list-disc pl-5 space-y-1">
             <li>
               <strong>Authentication Data:</strong> We use Google Firebase
               Authentication. When you sign in, we receive your email address
@@ -57,11 +65,9 @@ export const Privacy = () => {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-2">
-            3. How We Use Your Information
-          </h2>
+          <h2>3. How We Use Your Information</h2>
           <p>We use your information to:</p>
-          <ul className="list-disc pl-5 mt-2 space-y-1">
+          <ul className="list-disc pl-5 space-y-1">
             <li>Provide and maintain the Service.</li>
             <li>Prevent abuse and enforce our Terms of Service.</li>
             <li>Allow you to create and manage anonymous content.</li>
@@ -69,9 +75,7 @@ export const Privacy = () => {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-2">
-            4. Third-Party Services
-          </h2>
+          <h2>4. Third-Party Services</h2>
           <p>
             We use <strong>Google Firebase</strong> for hosting, database, and
             authentication services. Their privacy practices are governed by the
@@ -80,10 +84,15 @@ export const Privacy = () => {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-2">5. Contact Us</h2>
+          <h2>5. Contact Us</h2>
           <p>
             If you have questions about this policy, please contact us at
-            theopendissent@gmail.com
+            <a
+              href="mailto:theopendissent@gmail.com"
+              className="text-blue-600 hover:underline ml-1"
+            >
+              theopendissent@gmail.com
+            </a>
           </p>
         </section>
       </div>
