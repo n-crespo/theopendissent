@@ -7,6 +7,8 @@ import { PostInput } from "../components/feed/PostInput";
 import { useAuth } from "../context/AuthContext";
 import { interactionStore } from "../lib/interactionStore";
 import { Post } from "../types";
+import { ScrollableRail } from "../components/ui/ScrollableRail";
+import { Chip } from "../components/ui/Chip";
 
 export const PostDetails = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -85,16 +87,17 @@ export const PostDetails = () => {
   if (!livePost) return null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {/* back navigation header */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white border border-border-subtle shadow-sm transition-colors hover:bg-slate-50"
-        >
-          <i className="bi bi-arrow-left text-lg"></i>
-        </button>
-        <h2 className="text-xl text-slate-800 font-semibold ">Back Home</h2>
+      <div>
+        <ScrollableRail>
+          <Chip
+            onClick={() => navigate("/")}
+            icon={<i className="bi bi-arrow-left"></i>}
+          >
+            Back to Home
+          </Chip>
+        </ScrollableRail>
       </div>
 
       <FeedItem
