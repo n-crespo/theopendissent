@@ -111,7 +111,7 @@ export const PostInput = ({
               outline-none block custom-scrollbar shadow-sm rounded-(--radius-input)
               ${
                 hasNoStance
-                  ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed"
+                  ? "bg-slate-50 border-slate-200 cursor-not-allowed"
                   : "bg-white border-border-subtle focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10"
               }
             `}
