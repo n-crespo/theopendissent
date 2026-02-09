@@ -96,10 +96,10 @@ export const PostDetails = () => {
       <div>
         <ScrollableRail>
           <Chip
-            onClick={() => navigate("/")}
+            onClick={() => navigate(-1)}
             icon={<i className="bi bi-arrow-left"></i>}
           >
-            Back to Home
+            Back
           </Chip>
         </ScrollableRail>
       </div>
