@@ -140,7 +140,7 @@ export const PostDetails = () => {
 
       {/* Post Input: Real Input OR Skeleton */}
       {isLoadingPost || !livePost ? (
-        <div className="h-24 w-full rounded-xl border border-slate-100 bg-slate-50/50 animate-pulse"></div>
+        <div className="h-15 w-full rounded-xl border border-slate-100 bg-white animate-pulse p-4 shadow-sm"></div>
       ) : (
         <PostInput parentPostId={livePost.id} currentStance={localStance} />
       )}
