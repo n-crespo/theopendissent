@@ -28,14 +28,11 @@ export const Profile = () => {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="pt-0">
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+    <div className="flex flex-col gap-4">
+      <div className="pt-0 flex flex-col">
+        <h1 className="text-xl font-bold text-slate-900 tracking-tight">
           Your Profile
         </h1>
-        <p className="text-sm text-slate-400 font-medium">
-          Manage your contributions and interactions
-        </p>
       </div>
 
       <ScrollableRail>
