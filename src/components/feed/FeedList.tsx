@@ -63,7 +63,7 @@ export const FeedList = ({
   );
 
   return (
-    <div className="flex flex-col w-full max-w-2xl mx-auto gap-4">
+    <div className="flex flex-col w-full max-w-2xl mx-auto gap-3">
       <AnimatePresence>
         {highlightedPost && renderItem(highlightedPost, true)}
         {posts.map((post) => renderItem(post))}
