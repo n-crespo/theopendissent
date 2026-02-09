@@ -23,7 +23,7 @@ export const Chip = ({
 
   // Conditional styles for Active vs Inactive state
   const baseStyles =
-    "shadow-sm group inline-flex items-center gap-3 rounded-full border py-1.5 pl-1.5 pr-4 transition-all duration-300 cursor-pointer active:scale-95 overflow-visible mb-1";
+    "shadow-sm group inline-flex items-center gap-3 rounded-full border py-1.5 pl-1.5 pr-4 transition-all duration-300 cursor-pointer active:scale-95 overflow-visible";
 
   const activeStyles = "bg-slate-800 border-slate-800 text-white shadow-md";
   const inactiveStyles =

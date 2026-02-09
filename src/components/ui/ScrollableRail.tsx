@@ -13,7 +13,7 @@ export const ScrollableRail = ({
     <div className={`w-full mx-auto ${className}`}>
       <div className="relative group">
         {/* Scroll Container */}
-        <div className="flex items-center gap-2 overflow-x-auto pt-0 scroll-smooth snap-x hide-scrollbar justify-start">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-smooth snap-x hide-scrollbar justify-start pb-1 -mb-1">
           {children}
 
           {/* Spacer for right-side fade visibility */}
