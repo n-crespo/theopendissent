@@ -46,7 +46,7 @@ export const PostInput = ({
 
   // --- Dynamic UI Strings ---
   const activePlaceholder = useMemo(() => {
-    if (hasNoStance) return "Choose a stance to reply";
+    if (hasNoStance) return "Choose a stance to reply!";
     if (placeholder) return placeholder;
     return isReplyMode
       ? `I ${currentStance === "agreed" ? "agree" : "dissent"} because...`
@@ -111,7 +111,7 @@ export const PostInput = ({
               outline-none block custom-scrollbar shadow-sm rounded-(--radius-input)
               ${
                 hasNoStance
-                  ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed italic"
+                  ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed"
                   : "bg-white border-border-subtle focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10"
               }
             `}
