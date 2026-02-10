@@ -30,8 +30,6 @@ function Layout() {
     // If we are going "Back" (POP), let the browser restore the position.
     if (navType !== "POP") {
       window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-    } else {
-      console.log("restoring scroll!");
     }
   }, [pathname, navType]);
 
