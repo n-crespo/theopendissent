@@ -3,8 +3,10 @@ import { subscribeToFeed } from "../lib/firebase";
 import { Post } from "../types";
 import { SortOption } from "../context/FeedSortContext";
 
-// module-level cache to preserve shuffle order across session navigations
+// module level cache
 const weightMap = new Map<string, number>();
+let cachedLimit = 20;
+let cachedPosts: Post[] = [];
 
 const getPostWeight = (postId: string) => {
   if (!weightMap.has(postId)) {
@@ -25,9 +27,21 @@ export const pinPostToTop = (postId: string) => {
  * manages real-time feed subscriptions and integrates sorting logic.
  */
 export const usePosts = (initialLimit: number = 20, sortType: SortOption) => {
-  const [posts, setPosts] = useState<Post[]>([]);
+  // initialize state with the cache.
+  // ensures the Feed renders full-height immediately on mount.
+  const [posts, setPosts] = useState<Post[]>(() => cachedPosts);
+
+  // initialize limit from cache
+  const [currentLimit, setCurrentLimit] = useState(() =>
+    Math.max(initialLimit, cachedLimit),
+  );
+
   const [loading, setLoading] = useState(true);
-  const [currentLimit, setCurrentLimit] = useState(initialLimit);
+
+  // Sync limit cache
+  useEffect(() => {
+    cachedLimit = currentLimit;
+  }, [currentLimit]);
 
   useEffect(() => {
     // ensure loading state is set when changing sort modes or increasing limits
@@ -42,7 +56,10 @@ export const usePosts = (initialLimit: number = 20, sortType: SortOption) => {
         finalPosts.sort((a, b) => getPostWeight(a.id) - getPostWeight(b.id));
       }
 
+      // update state and cache
       setPosts(finalPosts);
+      cachedPosts = finalPosts;
+
       setLoading(false);
     });
 
@@ -50,7 +67,7 @@ export const usePosts = (initialLimit: number = 20, sortType: SortOption) => {
   }, [currentLimit, sortType]);
 
   const loadMore = () => {
-    // guard to prevent multiple triggers while a fetch is active
+    // Only load more if we aren't currently loading
     if (!loading) {
       setCurrentLimit((prev) => prev + 20);
     }

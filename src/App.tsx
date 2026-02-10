@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, Outlet, useLocation } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  Outlet,
+  useLocation,
+  useNavigationType,
+} from "react-router-dom";
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
 import { GlobalModal } from "./components/modals/GlobalModal";
@@ -14,13 +20,20 @@ import { PostDetails } from "./pages/PostDetails";
 function Layout() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const { pathname } = useLocation();
+  const navType = useNavigationType(); // Get navigation type (PUSH, POP, or REPLACE)
 
   useDeepLinkHandler();
 
-  // reset scroll position when the route changes
+  // conditional scroll reset
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-  }, [pathname]);
+    // Only scroll to top if we are navigating to a NEW page (PUSH).
+    // If we are going "Back" (POP), let the browser restore the position.
+    if (navType !== "POP") {
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    } else {
+      console.log("restoring scroll!");
+    }
+  }, [pathname, navType]);
 
   useEffect(() => {
     const handleScroll = () => setShowScrollTop(window.scrollY > 400);
@@ -32,7 +45,6 @@ function Layout() {
     <div className="min-h-screen bg-logo-offwhite">
       <Header />
 
-      {/* Standardized Content Container */}
       <main className="mx-auto w-full max-w-125 px-4 pb-4">
         <Outlet />
       </main>
