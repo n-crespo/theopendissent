@@ -29,8 +29,18 @@ export const Profile = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="pt-0 flex flex-col">
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+      <div className="pt-0 flex flex-row items-center w-full relative">
+        <div className="absolute left-0">
+          <ScrollableRail>
+            <Chip
+              onClick={() => navigate(-1)}
+              icon={<i className="bi bi-arrow-left"></i>}
+            >
+              Back
+            </Chip>
+          </ScrollableRail>
+        </div>
+        <h1 className="text-xl font-bold text-slate-900 tracking-tight text-nowrap w-full text-center">
           Your Profile
         </h1>
       </div>
