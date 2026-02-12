@@ -45,7 +45,7 @@ function Layout() {
     <div className="min-h-screen bg-logo-offwhite">
       <Header />
 
-      <main className="mx-auto w-full max-w-125 px-4 pb-4">
+      <main className="mx-auto w-full max-w-125 px-4 pb-4 pt-15">
         <Outlet />
       </main>
 

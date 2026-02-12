@@ -12,9 +12,9 @@ export const Header = () => {
   const { openModal } = useModal();
 
   return (
-    <header className="sticky top-0 mb-3 z-50 rounded-b-lg border-b border-slate-200 bg-logo-offwhite">
+    <header className="fixed top-0 left-0 right-0 z-50 rounded-b-lg border-b border-slate-200 bg-logo-offwhite transform-gpu">
       <div className="mx-auto flex max-w-125 items-center justify-between px-0 py-0">
-        {/* LEFT: Info Button */}
+        {/* left: info button */}
         <div className="flex w-20 items-center justify-start pl-2">
           <button
             className={PILL_BUTTON_STYLE}
@@ -36,8 +36,7 @@ export const Header = () => {
           />
         </Link>
 
-        {/* RIGHT: Auth Section */}
-        {/* Fixed width w-20 ensures no layout shift when loading state changes */}
+        {/* auth section */}
         <div
           id="auth-section"
           className="flex w-20 items-center justify-end pr-2"
