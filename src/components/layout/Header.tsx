@@ -4,12 +4,12 @@ import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
 import { HeaderUserMenu } from "./HeaderUserMenu";
 
+const PILL_BUTTON_STYLE =
+  "group flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-logo-offwhite text-slate-600 hover:text-slate-900 transition-all active:scale-95 cursor-pointer shadow-sm";
+
 export const Header = () => {
   const { user, loading } = useAuth();
   const { openModal } = useModal();
-
-  const pillButtonStyle =
-    "group flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-logo-offwhite text-slate-600 hover:text-slate-900 transition-all active:scale-95 cursor-pointer shadow-sm";
 
   return (
     <header className="sticky top-0 mb-3 z-50 rounded-b-lg border-b border-slate-200 bg-logo-offwhite">
@@ -17,7 +17,7 @@ export const Header = () => {
         {/* LEFT: Info Button */}
         <div className="flex w-20 items-center justify-start pl-2">
           <button
-            className={pillButtonStyle}
+            className={PILL_BUTTON_STYLE}
             onClick={() => openModal("about")}
           >
             <span className="text-[15px] font-bold whitespace-nowrap px-1">
@@ -26,8 +26,7 @@ export const Header = () => {
           </button>
         </div>
 
-        {/* CENTER: Main Logo (Now clickable) */}
-        {/* h-12.5 (50px) fixes the header height */}
+        {/* center (main logo) */}
         <Link to="/" className="flex h-12.5 items-center justify-center">
           <img
             src={logoUrl}
@@ -38,6 +37,7 @@ export const Header = () => {
         </Link>
 
         {/* RIGHT: Auth Section */}
+        {/* Fixed width w-20 ensures no layout shift when loading state changes */}
         <div
           id="auth-section"
           className="flex w-20 items-center justify-end pr-2"
@@ -50,7 +50,7 @@ export const Header = () => {
             <HeaderUserMenu />
           ) : (
             <button
-              className={pillButtonStyle}
+              className={PILL_BUTTON_STYLE}
               onClick={() => openModal("signin")}
             >
               <span className="text-[13px] font-bold whitespace-nowrap">
