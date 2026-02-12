@@ -28,9 +28,9 @@ export const Profile = () => {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="pt-0 flex flex-row items-center w-full relative">
-        <div className="absolute left-0">
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-1 items-center w-full">
+        <div className="col-start-1 row-start-1 justify-self-start z-10">
           <ScrollableRail>
             <Chip
               onClick={() => navigate(-1)}
@@ -40,7 +40,7 @@ export const Profile = () => {
             </Chip>
           </ScrollableRail>
         </div>
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight text-nowrap w-full text-center">
+        <h1 className="col-start-1 row-start-1 justify-self-center text-xl font-bold text-slate-900 tracking-tight text-nowrap">
           Your Profile
         </h1>
       </div>
