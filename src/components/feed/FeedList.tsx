@@ -95,7 +95,7 @@ export const FeedList = ({
       )}
 
       {/* Render Posts */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {highlightedPost && renderItem(highlightedPost, true)}
         {posts.map((post) => renderItem(post))}
       </AnimatePresence>
