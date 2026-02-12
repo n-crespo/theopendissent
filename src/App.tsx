@@ -18,18 +18,20 @@ import { Terms } from "./pages/Terms";
 import { PostDetails } from "./pages/PostDetails";
 
 function Layout() {
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  // lazy initialize state.
+  // check scroll position immediately so it doesn't default to false -> true
+  const [showScrollTop, setShowScrollTop] = useState(() => {
+    return typeof window !== "undefined" ? window.scrollY > 400 : false;
+  });
+
   const { pathname } = useLocation();
-  const navType = useNavigationType(); // Get navigation type (PUSH, POP, or REPLACE)
+  const navType = useNavigationType();
 
   useDeepLinkHandler();
 
-  // conditional scroll reset
   useEffect(() => {
-    // Only scroll to top if we are navigating to a NEW page (PUSH).
-    // If we are going "Back" (POP), let the browser restore the position.
     if (navType !== "POP") {
-      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     }
   }, [pathname, navType]);
 
