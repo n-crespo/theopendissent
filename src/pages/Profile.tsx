@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollableRail } from "../components/ui/ScrollableRail";
 import { Chip } from "../components/ui/Chip";
@@ -16,7 +16,10 @@ type FilterType = "posts" | "replies" | "agreed" | "dissented";
 export const Profile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [filter, setFilter] = useState<FilterType>("posts");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // default to 'posts' if url is empty.
+  const filter = (searchParams.get("tab") as FilterType) || "posts";
 
   useEffect(() => {
     if (!user) navigate("/", { replace: true });
@@ -25,15 +28,21 @@ export const Profile = () => {
   const { posts, loading } = useUserActivity(user?.uid, filter);
   const counts = useUserCounts(user?.uid);
 
+  // Helper to update URL without cluttering history (replace: true)
+  const handleFilterChange = (newFilter: FilterType) => {
+    setSearchParams({ tab: newFilter }, { replace: true });
+  };
+
   if (!user) return null;
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Header Grid */}
       <div className="grid grid-cols-1 items-center w-full">
         <div className="col-start-1 row-start-1 justify-self-start z-10">
           <ScrollableRail>
             <Chip
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(-1)} // -1 restores previous URL (including ?tab=...)
               icon={<i className="bi bi-arrow-left"></i>}
             >
               Back
@@ -75,7 +84,8 @@ export const Profile = () => {
           <Chip
             key={tab.id}
             isActive={filter === tab.id}
-            onClick={() => setFilter(tab.id as FilterType)}
+            // 5. Use the new handler
+            onClick={() => handleFilterChange(tab.id as FilterType)}
             icon={<i className={`bi ${tab.icon}`}></i>}
           >
             {tab.label}{" "}
@@ -96,9 +106,11 @@ export const Profile = () => {
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            <AnimatePresence mode="popLayout">
+            {/* 6. FIX: Add initial={false} to stop animation on mount (helps scroll restoration) */}
+            <AnimatePresence mode="popLayout" initial={false}>
               {posts.length === 0 ? (
                 <motion.div
+                  key="empty"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="py-20 text-center border-2 border-dashed border-slate-100 rounded-3xl"

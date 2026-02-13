@@ -2,24 +2,52 @@ import { useState, useEffect, useRef } from "react";
 import { getUserActivity, subscribeToPost } from "../lib/firebase";
 import { Post } from "../types";
 
-export const useUserActivity = (userId?: string, filter?: string) => {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+// module-level cache survives route changes but resets on page reload
+const activityCache: Record<string, Post[]> = {};
 
-  // Track subscriptions to avoid duplicates
+export const useUserActivity = (userId?: string, filter?: string) => {
+  const cacheKey = userId && filter ? `${userId}-${filter}` : null;
+
+  // initialize state directly from cache
+  const [posts, setPosts] = useState<Post[]>(() => {
+    if (cacheKey && activityCache[cacheKey]) {
+      return activityCache[cacheKey];
+    }
+    return [];
+  });
+
+  // only set loading to true if we don't have cached data to show
+  const [loading, setLoading] = useState(() => {
+    if (
+      cacheKey &&
+      activityCache[cacheKey] &&
+      activityCache[cacheKey].length > 0
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  // track subscriptions to avoid duplicates
   const subscriptions = useRef<Record<string, () => void>>({});
 
   useEffect(() => {
-    if (!userId || !filter) return;
+    if (!userId || !filter || !cacheKey) return;
 
     let isMounted = true;
-    setLoading(true);
 
-    // Initial Fetch
+    // only trigger loading spinner if cache was empty
+    if (!activityCache[cacheKey]) {
+      setLoading(true);
+    }
+
+    // initial fetch
     getUserActivity(userId, filter as any).then((initialData) => {
       if (!isMounted) return;
 
+      // Update State AND Cache
       setPosts(initialData);
+      activityCache[cacheKey] = initialData;
       setLoading(false);
 
       // "Go Live" - Subscribe to every item found
@@ -31,19 +59,28 @@ export const useUserActivity = (userId?: string, filter?: string) => {
         subscriptions.current[post.id] = subscribeToPost(
           post.id,
           (updatedPost) => {
-            if (!updatedPost) {
-              // CASE A: Item was deleted -> Remove from local state
-              setPosts((prev) => prev.filter((p) => p.id !== post.id));
-            } else {
-              // CASE B: Item was edited -> Update local state
-              // We merge (...p, ...updatedPost) to ensure we don't lose the
-              // parentPost data that isn't included in the update stream.
-              setPosts((prev) =>
-                prev.map((p) =>
+            if (!isMounted) return;
+
+            setPosts((prev) => {
+              let newPosts: Post[];
+
+              if (!updatedPost) {
+                // Item was deleted -> Remove from local state
+                newPosts = prev.filter((p) => p.id !== post.id);
+              } else {
+                // Item was edited -> Update local state
+                newPosts = prev.map((p) =>
                   p.id === post.id ? { ...p, ...updatedPost } : p,
-                ),
-              );
-            }
+                );
+              }
+
+              // CRITICAL: Keep cache in sync with live updates
+              if (cacheKey) {
+                activityCache[cacheKey] = newPosts;
+              }
+
+              return newPosts;
+            });
           },
           post.parentPostId,
         );
@@ -56,7 +93,7 @@ export const useUserActivity = (userId?: string, filter?: string) => {
       Object.values(subscriptions.current).forEach((unsub) => unsub());
       subscriptions.current = {};
     };
-  }, [userId, filter]);
+  }, [userId, filter, cacheKey]);
 
   return { posts, loading };
 };
