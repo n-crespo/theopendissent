@@ -7,13 +7,13 @@ import { pinPostToTop } from "../../hooks/usePosts";
 interface PostInputProps {
   parentPostId?: string;
   placeholder?: string;
-  currentStance?: "agreed" | "dissented" | null;
+  currentScore?: number;
 }
 
 export const PostInput = ({
   parentPostId,
   placeholder,
-  currentStance,
+  currentScore,
 }: PostInputProps) => {
   const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
@@ -24,9 +24,10 @@ export const PostInput = ({
 
   // --- Logic State ---
   const isReplyMode = !!parentPostId;
-  const hasNoStance = isReplyMode && !currentStance;
-  const isSubmitDisabled =
-    loading || isPosting || hasNoStance || !content.trim();
+  const hasNoInteraction = isReplyMode && currentScore === undefined;
+
+  // you must have interacted to reply
+  const isSubmitDisabled = loading || isPosting || hasNoInteraction;
 
   const MAX_CHARS = 600;
   const charsLeft = MAX_CHARS - content.length;
@@ -46,12 +47,18 @@ export const PostInput = ({
 
   // --- Dynamic UI Strings ---
   const activePlaceholder = useMemo(() => {
-    if (hasNoStance) return "Choose a stance to reply!";
+    if (hasNoInteraction) return "Rate the post to unlock replies!";
     if (placeholder) return placeholder;
-    return isReplyMode
-      ? `I ${currentStance === "agreed" ? "agree" : "dissent"} because...`
-      : "Speak your mind...";
-  }, [hasNoStance, placeholder, isReplyMode, currentStance]);
+
+    // Dynamic text based on score
+    if (isReplyMode && currentScore !== undefined) {
+      if (currentScore > 0) return "Add to the agreement...";
+      if (currentScore < 0) return "Explain your dissent...";
+      return "Share your neutral perspective...";
+    }
+
+    return "Speak your mind...";
+  }, [hasNoInteraction, placeholder, isReplyMode, currentScore]);
 
   const buttonText = isPosting ? null : isReplyMode ? "Reply" : "Post";
 
@@ -71,7 +78,7 @@ export const PostInput = ({
             user.uid,
             trimmedContent,
             parentPostId,
-            currentStance || undefined,
+            currentScore,
           );
 
           if (newKey) pinPostToTop(newKey);
@@ -95,8 +102,7 @@ export const PostInput = ({
 
   return (
     <div className="flex w-full flex-col gap-2">
-      {/* Container spacing fix: added mt-4 */}
-      <div className="flex w-full flex-row items-end gap-2">
+      <div className="flex w-full flex-row gap-2">
         <div className="relative flex-1">
           <textarea
             ref={textareaRef}
@@ -106,18 +112,18 @@ export const PostInput = ({
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={activePlaceholder}
-            disabled={isPosting || loading || hasNoStance}
+            disabled={isPosting || loading || hasNoInteraction}
             className={`w-full resize-none border px-3 py-2.5 pr-6 text-[15px] transition-all
               outline-none block custom-scrollbar shadow-sm rounded-(--radius-input)
               ${
-                hasNoStance
+                hasNoInteraction
                   ? "bg-slate-50 border-slate-200 cursor-not-allowed"
                   : "bg-white border-border-subtle focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10"
               }
             `}
           />
 
-          {!hasNoStance && content.length > 0 && (
+          {!hasNoInteraction && content.length > 0 && (
             <span
               className={`absolute right-2 bottom-0 text-[10px] font-bold uppercase tracking-tight transition-colors ${
                 isNearLimit ? "text-logo-red" : "text-slate-300"
@@ -132,7 +138,7 @@ export const PostInput = ({
           onClick={handleSubmit}
           disabled={isSubmitDisabled}
           className={`
-            min-w-24 h-11 flex items-center justify-center px-4 text-sm font-bold text-white transition-all duration-200 shadow-sm
+            min-w-24 flex items-center justify-center px-4 text-sm font-bold text-white transition-all duration-200 shadow-sm
             bg-linear-to-r from-logo-blue via-logo-green to-logo-red bg-size-[300%_100%] animate-shimmer
             rounded-(--radius-button)
             ${
@@ -150,9 +156,9 @@ export const PostInput = ({
         </button>
       </div>
 
-      {hasNoStance && (
+      {hasNoInteraction && (
         <p className="px-1 text-[11px] font-bold text-logo-red animate-in fade-in slide-in-from-top-1">
-          Select "Agree" or "Dissent" on the post to unlock replies.
+          Rate the post using the slider before replying!
         </p>
       )}
     </div>
