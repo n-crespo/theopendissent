@@ -13,11 +13,14 @@ export const usePostActions = (post: Post) => {
   const { openModal } = useModal();
   const uid = user?.uid;
 
-  const [localInteractions, setLocalInteractions] = useState(() =>
-    interactionStore.get(post.id).agreed
-      ? interactionStore.get(post.id)
-      : post.userInteractions || { agreed: {}, dissented: {} },
-  );
+  // Initialize from Store (if available) or Server Data
+  const [localScores, setLocalScores] = useState<Record<string, number>>(() => {
+    const cached = interactionStore.get(post.id);
+    // if cache has keys, use it, otherwise fall back to post data
+    return Object.keys(cached).length > 0
+      ? cached
+      : post.userInteractions || {};
+  });
 
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.postContent);
@@ -32,29 +35,23 @@ export const usePostActions = (post: Post) => {
 
   // sync store changes to local state
   useEffect(() => {
-    return interactionStore.subscribe(post.id, (newData) => {
-      setLocalInteractions(newData);
+    return interactionStore.subscribe(post.id, (newScores) => {
+      setLocalScores(newScores);
     });
   }, [post.id]);
 
-  const interactionState = {
-    agreed: !!(uid && localInteractions?.agreed?.[uid]),
-    dissented: !!(uid && localInteractions?.dissented?.[uid]),
-  };
+  const currentScore = uid ? localScores[uid] : undefined;
 
-  const dynamicMetrics = {
-    agreedCount: Object.keys(localInteractions?.agreed || {}).length,
-    dissentedCount: Object.keys(localInteractions?.dissented || {}).length,
+  const localMetrics = {
     replyCount: post.replyCount || 0,
   };
 
-  const toggleInteraction = (type: "agreed" | "dissented") => {
+  const handleScoreChange = (newScore: number) => {
     if (!uid) {
       openModal("signin");
-      return false;
+      return;
     }
-    interactionStore.toggle(post.id, uid, type, post.parentPostId);
-    return true;
+    interactionStore.setScore(post.id, uid, newScore);
   };
 
   const handleCancel = () => {
@@ -106,14 +103,15 @@ export const usePostActions = (post: Post) => {
 
   return {
     uid,
-    localMetrics: dynamicMetrics,
+    localMetrics,
+    currentScore, // (-5 to 5) or undefined
+    handleScoreChange,
+
     isEditing,
     setIsEditing,
     editContent,
     setEditContent,
     isSaving,
-    interactionState,
-    toggleInteraction,
     handleCancel,
     saveEdit,
     triggerDelete,
