@@ -5,13 +5,12 @@ export const useUserCounts = (userId: string | undefined) => {
   const [counts, setCounts] = useState<UserCounts>({
     posts: 0,
     replies: 0,
-    agreed: 0,
-    dissented: 0,
+    interacted: 0,
   });
 
   useEffect(() => {
     if (!userId) {
-      setCounts({ posts: 0, replies: 0, agreed: 0, dissented: 0 });
+      setCounts({ posts: 0, replies: 0, interacted: 0 });
       return;
     }
 
