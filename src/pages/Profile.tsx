@@ -11,7 +11,7 @@ import { useUserActivity } from "../hooks/useUserActivity";
 import { useUserCounts } from "../hooks/useUserCounts";
 import { formatCompactNumber } from "../utils";
 
-type FilterType = "posts" | "replies" | "agreed" | "dissented";
+type FilterType = "posts" | "replies" | "interacted";
 
 export const Profile = () => {
   const { user } = useAuth();
@@ -35,6 +35,27 @@ export const Profile = () => {
 
   if (!user) return null;
 
+  const tabs = [
+    {
+      id: "posts",
+      label: "Your Posts",
+      icon: "bi-file-text",
+      count: counts.posts,
+    },
+    {
+      id: "replies",
+      label: "Your Replies",
+      icon: "bi-chat",
+      count: counts.replies,
+    },
+    {
+      id: "interacted",
+      label: "Interacted", // "Rated" or "Interacted"
+      icon: "bi-sliders",
+      count: counts.interacted,
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-3">
       {/* Header Grid */}
@@ -55,36 +76,10 @@ export const Profile = () => {
       </div>
 
       <ScrollableRail>
-        {[
-          {
-            id: "posts",
-            label: "Posts",
-            icon: "bi-file-text",
-            count: counts.posts,
-          },
-          {
-            id: "replies",
-            label: "Replies",
-            icon: "bi-chat-left-text",
-            count: counts.replies,
-          },
-          {
-            id: "agreed",
-            label: "Agreed",
-            icon: "bi-check-circle",
-            count: counts.agreed,
-          },
-          {
-            id: "dissented",
-            label: "Dissented",
-            icon: "bi-x-circle",
-            count: counts.dissented,
-          },
-        ].map((tab) => (
+        {tabs.map((tab) => (
           <Chip
             key={tab.id}
             isActive={filter === tab.id}
-            // 5. Use the new handler
             onClick={() => handleFilterChange(tab.id as FilterType)}
             icon={<i className={`bi ${tab.icon}`}></i>}
           >
@@ -106,7 +101,6 @@ export const Profile = () => {
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            {/* 6. FIX: Add initial={false} to stop animation on mount (helps scroll restoration) */}
             <AnimatePresence mode="popLayout" initial={false}>
               {posts.length === 0 ? (
                 <motion.div
@@ -130,17 +124,15 @@ export const Profile = () => {
                     exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.2 }}
                   >
+                    {/* Logic:
+                      - If tab is 'replies', use the specialized Reply Item.
+                      - If tab is 'posts' or 'interacted', use FeedItem.
+                      - For 'interacted', it *might* be a reply, so we check parentPostId.
+                    */}
                     {filter === "replies" ? (
                       <ProfileReplyItem reply={item} />
                     ) : (
-                      <FeedItem
-                        item={item}
-                        isReply={
-                          filter === "agreed" || filter === "dissented"
-                            ? !!item.parentPostId
-                            : false
-                        }
-                      />
+                      <FeedItem item={item} isReply={!!item.parentPostId} />
                     )}
                   </motion.div>
                 ))
