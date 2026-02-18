@@ -52,9 +52,7 @@ export const PostInput = ({
 
     // Dynamic text based on score
     if (isReplyMode && currentScore !== undefined) {
-      if (currentScore > 0) return "Add to the agreement...";
-      if (currentScore < 0) return "Explain your dissent...";
-      return "Share your neutral perspective...";
+      return "Explain your stance...";
     }
 
     return "Speak your mind...";
