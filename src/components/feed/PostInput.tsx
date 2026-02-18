@@ -153,12 +153,6 @@ export const PostInput = ({
           )}
         </button>
       </div>
-
-      {hasNoInteraction && (
-        <p className="px-1 text-[11px] font-bold text-logo-red animate-in fade-in slide-in-from-top-1">
-          Rate the post using the slider before replying!
-        </p>
-      )}
     </div>
   );
 };
