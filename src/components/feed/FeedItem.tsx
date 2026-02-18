@@ -5,13 +5,14 @@ import { usePostActions } from "../../hooks/usePostActions";
 import { useShare } from "../../hooks/useShare";
 import { useReport } from "../../hooks/useReport";
 import { useNavigate } from "react-router-dom";
+import { InteractionSlider } from "../ui/InteractionSlider";
 
 interface FeedItemProps {
   item: Post;
   isReply?: boolean;
   highlighted?: boolean;
   disableClick?: boolean;
-  onStanceChange?: (stance: "agreed" | "dissented" | null) => void;
+  onInteraction?: (score: number) => void;
 }
 
 export const FeedItem = memo(
@@ -20,25 +21,28 @@ export const FeedItem = memo(
     isReply = false,
     highlighted = false,
     disableClick = false,
-    onStanceChange,
+    onInteraction,
   }: FeedItemProps) => {
     if (!item || !item.userId) return null;
 
     const navigate = useNavigate();
     const { sharePost } = useShare();
     const { reportPost } = useReport();
+
+    // Derived Local State for animations (if needed later)
     const [isJiggling, setIsJiggling] = useState(false);
 
     const {
       uid,
-      localMetrics,
+      localMetrics, // only contains replyCount
+      currentScore, // scalar score (-5 to 5)
+      handleScoreChange,
+
       isEditing,
       setIsEditing,
       editContent,
       setEditContent,
       isSaving,
-      interactionState,
-      toggleInteraction,
       saveEdit,
       handleCancel,
       triggerDelete,
@@ -46,23 +50,18 @@ export const FeedItem = memo(
 
     // --- Derived State & Logic ---
     const isOwner = uid === item.userId;
-    const activeStance = interactionState.dissented
-      ? "dissented"
-      : interactionState.agreed
-        ? "agreed"
-        : null;
     const charsLeft = 600 - editContent.length;
     const isNearLimit = charsLeft < 50;
 
-    // Stance of the author (Only relevant for replies)
-    const authorAgreed = item.userInteractionType === "agreed";
-    const stanceColorClass = authorAgreed ? "text-logo-green" : "text-logo-red";
-    const stanceBgClass = authorAgreed
-      ? "bg-logo-green-light"
-      : "bg-logo-red-light";
-    const stanceIconClass = authorAgreed
-      ? "bi-check-square-fill"
-      : "bi-x-square-fill";
+    // --- Reply Indicator Logic ---
+    // Visualizing the author's score on the parent post
+    const replyScore = item.interactionScore ?? 0;
+
+    const getReplyBadgeStyle = (val: number) => {
+      if (val > 0) return "bg-green-100 text-green-700 border-green-200";
+      if (val < 0) return "bg-red-100 text-red-700 border-red-200";
+      return "bg-yellow-100 text-yellow-700 border-yellow-200";
+    };
 
     const formattedTime = timeAgo(
       new Date(typeof item.timestamp === "number" ? item.timestamp : 0),
@@ -78,26 +77,14 @@ export const FeedItem = memo(
       setTimeout(() => setIsJiggling(false), 500);
     };
 
-    const onStanceClick = (
-      e: React.MouseEvent,
-      type: "agreed" | "dissented",
-    ) => {
-      e.stopPropagation();
-      const wasNeutral = !activeStance;
-      const success = toggleInteraction(type);
+    const onSliderChange = (val: number) => {
+      const isNewInteraction = currentScore === undefined;
 
-      if (success) {
-        // Notify parent of change regardless of whether we started neutral
-        // This ensures un-clicking a stance sends 'null' to the parent
-        if (onStanceChange) {
-          onStanceChange(activeStance === type ? null : type);
-        }
+      handleScoreChange(val);
 
-        // Only jiggle if adding a new stance
-        if (wasNeutral) {
-          triggerJiggle();
-        }
-      }
+      if (onInteraction) onInteraction(val);
+
+      if (isNewInteraction) triggerJiggle();
     };
 
     const handleAction = (e: React.MouseEvent, action: () => void) => {
@@ -116,31 +103,29 @@ export const FeedItem = memo(
         {/* HEADER */}
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
-            {/* CONDITIONAL AVATAR */}
-            {!isReply ? (
-              <div className="w-9 h-9 bg-slate-100 rounded-md flex items-center justify-center text-slate-500 shrink-0 border border-slate-200/50">
-                <i className="bi bi-person-fill"></i>
-              </div>
-            ) : (
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-md ${stanceBgClass} shrink-0`}
-              >
-                <i
-                  className={`bi ${stanceIconClass} ${stanceColorClass} text-[14px]`}
-                ></i>
-              </div>
-            )}
+            {/* AVATAR */}
+            <div className="w-9 h-9 bg-slate-100 rounded-md flex items-center justify-center text-slate-500 shrink-0 border border-slate-200/50">
+              <i className="bi bi-person-fill"></i>
+            </div>
 
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-slate-900 leading-tight">
-                {isOwner ? "You" : item.userId.substring(0, 10) + "..."}
-              </span>
-              <div className="flex items-center flex-wrap gap-1 text-[10px] text-slate-400 font-medium tracking-tight">
-                {isReply && (
-                  <span className={`${stanceColorClass} font-bold opacity-90`}>
-                    {authorAgreed ? "Agreed" : "Dissented"} ·
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-slate-900 leading-tight">
+                  {isOwner ? "You" : item.userId.substring(0, 10) + "..."}
+                </span>
+
+                {/* reply indicator badge */}
+                {isReply && item.interactionScore !== undefined && (
+                  <span
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${getReplyBadgeStyle(replyScore)}`}
+                  >
+                    {replyScore > 0 ? "+" : ""}
+                    {replyScore}
                   </span>
                 )}
+              </div>
+
+              <div className="flex items-center flex-wrap gap-1 text-[10px] text-slate-400 font-medium tracking-tight">
                 <span>{formattedTime}</span>
                 {formattedEditTime && (
                   <span className="flex items-center italic">
@@ -169,9 +154,7 @@ export const FeedItem = memo(
               >
                 <i className="bi bi-flag text-[14px]"></i>
               </button>
-            ) : (
-              <></>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -227,43 +210,19 @@ export const FeedItem = memo(
           </p>
         )}
 
-        {/* FOOTER */}
-        <div className="flex items-center justify-between pt-3 border-t border-border-subtle">
-          <div className="flex items-center gap-3">
-            {/* Interaction Pill */}
-            <div className="relative flex items-center bg-slate-50 p-0.5 rounded-full border border-border-subtle">
-              <div
-                className={`absolute h-7 rounded-full transition-all duration-300 cubic-bezier(0.34, 1.56, 0.64, 1) z-0
-                ${activeStance === "agreed" ? "translate-x-0 bg-logo-green" : ""}
-                ${activeStance === "dissented" ? "translate-x-[102%] bg-logo-red" : ""}
-                ${!activeStance ? "translate-x-[51%] opacity-0 scale-50" : "opacity-100 scale-100"}
-              `}
-                style={{ left: "2px", width: "48%" }}
-              />
-              <button
-                onClick={(e) => onStanceClick(e, "agreed")}
-                className={`cursor-pointer relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-all
-                ${activeStance === "agreed" ? "text-white" : "text-slate-400 hover:text-logo-green"}`}
-              >
-                <i className="bi bi-check2 text-[16px]"></i>
-                <span className="text-[12px] font-bold">
-                  {localMetrics.agreedCount}
-                </span>
-              </button>
+        {/* post footer */}
+        <div className="flex items-center justify-between pt-3 border-t border-border-subtle gap-4">
+          {/* slider */}
+          <div className="flex-1 max-w-50" onClick={(e) => e.stopPropagation()}>
+            <InteractionSlider
+              value={currentScore}
+              onChange={onSliderChange}
+              disabled={isOwner || !uid}
+            />
+          </div>
 
-              <button
-                onClick={(e) => onStanceClick(e, "dissented")}
-                className={`cursor-pointer relative z-10 px-3 py-1 flex items-center gap-1.5 rounded-full active:scale-95 transition-all
-                ${activeStance === "dissented" ? "text-white" : "text-slate-400 hover:text-logo-red"}`}
-              >
-                <i className="bi bi-x-lg text-[14px]"></i>
-                <span className="text-[12px] font-bold">
-                  {localMetrics.dissentedCount}
-                </span>
-              </button>
-            </div>
-
-            {/* Discussion Button (Conditional) */}
+          <div className="flex items-center gap-2">
+            {/* Discussion Button */}
             {!isReply && (
               <button
                 onClick={(e) =>
@@ -278,21 +237,24 @@ export const FeedItem = memo(
                   ${disableClick ? "text-logo-blue" : "text-slate-400 hover:bg-slate-50 hover:text-logo-blue"}`}
               >
                 <i
-                  className={`bi ${disableClick ? "bi-chat-fill" : "bi-chat"} text-[14px]`}
+                  className={`bi ${disableClick ? "bi-chat-fill" : "bi-chat"} text-[16px]`}
                 ></i>
-                <span className="text-[13px] font-bold">
-                  {localMetrics.replyCount}
-                </span>
+                {localMetrics.replyCount > 0 && (
+                  <span className="text-[13px] font-bold">
+                    {localMetrics.replyCount}
+                  </span>
+                )}
               </button>
             )}
-          </div>
 
-          <button
-            onClick={(e) => handleAction(e, () => sharePost(item))}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-slate-400 hover:bg-slate-50 hover:text-logo-blue active:scale-95 transition-all"
-          >
-            <i className="bi bi-box-arrow-up text-[15px]"></i>
-          </button>
+            {/* Share Button */}
+            <button
+              onClick={(e) => handleAction(e, () => sharePost(item))}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-slate-400 hover:bg-slate-50 hover:text-logo-blue active:scale-95 transition-all"
+            >
+              <i className="bi bi-box-arrow-up text-[16px]"></i>
+            </button>
+          </div>
         </div>
       </div>
     );
