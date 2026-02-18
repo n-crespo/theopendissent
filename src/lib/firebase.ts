@@ -427,8 +427,6 @@ export const getUserActivity = async (
   }
 };
 
-// TODO: do i need a dedicated getUserCounts function for the profile page?
-
 /**
  * Subscribes to posts, replies, and interacted counts for a user.
  */
