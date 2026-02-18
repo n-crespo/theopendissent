@@ -50,7 +50,7 @@ export const Profile = () => {
     },
     {
       id: "interacted",
-      label: "Interacted", // "Rated" or "Interacted"
+      label: "Your Interactions", // "Rated" or "Interacted"
       icon: "bi-sliders",
       count: counts.interacted,
     },
