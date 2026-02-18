@@ -5,7 +5,9 @@ import { Post } from "../types";
 // module-level cache survives route changes but resets on page reload
 const activityCache: Record<string, Post[]> = {};
 
-export const useUserActivity = (userId?: string, filter?: string) => {
+type ActivityFilter = "posts" | "replies" | "interacted";
+
+export const useUserActivity = (userId?: string, filter?: ActivityFilter) => {
   const cacheKey = userId && filter ? `${userId}-${filter}` : null;
 
   // initialize state directly from cache
@@ -41,8 +43,8 @@ export const useUserActivity = (userId?: string, filter?: string) => {
       setLoading(true);
     }
 
-    // initial fetch
-    getUserActivity(userId, filter as any).then((initialData) => {
+    // Initial Fetch (Calls the updated getUserActivity with 'interacted')
+    getUserActivity(userId, filter).then((initialData) => {
       if (!isMounted) return;
 
       // Update State AND Cache
@@ -56,6 +58,7 @@ export const useUserActivity = (userId?: string, filter?: string) => {
         if (subscriptions.current[post.id]) return;
 
         // Subscribe to this specific item
+        // TODO: may need changing if we allow reply interaction
         subscriptions.current[post.id] = subscribeToPost(
           post.id,
           (updatedPost) => {
