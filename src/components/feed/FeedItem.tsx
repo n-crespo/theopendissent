@@ -217,7 +217,7 @@ export const FeedItem = memo(
             <InteractionSlider
               value={currentScore}
               onChange={onSliderChange}
-              disabled={isOwner || !uid}
+              disabled={!uid}
             />
           </div>
 
