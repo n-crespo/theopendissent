@@ -134,7 +134,6 @@ export const PostDetails = () => {
           <h4 className="text-[11px] font-bold tracking-widest uppercase text-slate-400">
             Replies
           </h4>
-          <div className="ml-4 h-px grow bg-border-subtle opacity-50"></div>
         </div>
 
         <div className="flex flex-col gap-4">
