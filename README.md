@@ -23,10 +23,9 @@ pnpm dev # start frontend
 In yet another terminal...
 
 ```sh
-# IF YOU HAVEN'T RAN THIS BEFORE, USE THE FOLLOWING
+# (first time only), USE THE FOLLOWING
 pnpm emulate:new # start backend (local emulator dev environment)
 
-# AFTER FIRST USAGE, USE THE FOLLOWING
 pnpm emulate # start backend (local emulator dev environment)
 ```
 
