@@ -15,14 +15,6 @@ import { defineString } from "firebase-functions/params";
 
 admin.initializeApp();
 
-/**
- * matches the structure of userInteractions stored on posts and replies.
- */
-interface InteractionNode {
-  agreed?: Record<string, boolean>;
-  dissented?: Record<string, boolean>;
-}
-
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
 const DOMAIN = isEmulator
   ? "http://127.0.0.1:5173"
@@ -103,25 +95,34 @@ const deleteRepliesInBatches = async (postId: string) => {
 };
 
 /**
- * syncs user interactions from the user's private tree to the public post or reply tree.
+ * Syncs user interaction SCALAR SCORE from the user's private tree to the public content.
+ * Trigger: /users/{userId}/postInteractions/{postId}
  */
 export const syncInteractionToPost = onValueWritten(
-  "/users/{userId}/postInteractions/{interactionType}/{postId}",
+  "/users/{userId}/postInteractions/{postId}",
   async (event) => {
-    const { userId, interactionType, postId } = event.params;
+    const { userId, postId } = event.params;
+
+    // The new value is the score (number) or null (if deleted)
+    const newScore = event.data.after.val();
     const exists = event.data.after.exists();
-    const parentId = event.data.after.val() || event.data.before.val();
 
     try {
-      const contentRef = await getContentRef(postId, parentId);
+      // Note: We don't have parentId easily available here in the new flat structure
+      // So getContentRef will rely on the `content_parents` index lookup
+      const contentRef = await getContentRef(postId);
+
       if (!contentRef) {
-        if (exists) await event.data.after.ref.set(null); // cleanup ghost interaction
+        // If content doesn't exist, we clean up the user's orphan record
+        if (exists) await event.data.after.ref.set(null);
         return null;
       }
 
+      // Write the score directly to the content's userInteractions map
+      // Path: posts/{postId}/userInteractions/{userId} = 4.5
       await contentRef
-        .child(`userInteractions/${interactionType}/${userId}`)
-        .set(exists ? true : null);
+        .child(`userInteractions/${userId}`)
+        .set(exists ? newScore : null);
     } catch (error) {
       console.error(`sync error for ${userId} on ${postId}:`, error);
     }
@@ -221,26 +222,20 @@ export const beforesignedin = beforeUserSignedIn((event) => {
 /**
  * Clean up user interaction references when a post or reply is deleted.
  * @param {string} postId - the ID of the post or reply being cleaned up.
- * @param {InteractionNode} interactions - the interaction object containing user UIDs.
- * @return {Promise<void>}
+ * @param {Record<string, number>} interactions - the map of { userId: score }.
  */
 const cleanupUserInteractions = async (
   postId: string,
-  interactions: InteractionNode | undefined,
+  interactions: Record<string, number> | undefined,
 ): Promise<void> => {
   if (!interactions) return;
+
   const updates: Record<string, null> = {};
 
-  const types = ["agreed", "dissented"] as const;
-
-  types.forEach((type) => {
-    const group = interactions[type];
-    if (group) {
-      Object.keys(group).forEach((uid) => {
-        // target the user's private tree to remove the record of the interaction
-        updates[`users/${uid}/postInteractions/${type}/${postId}`] = null;
-      });
-    }
+  // interactions is { "user_abc": 5, "user_xyz": -2 }
+  Object.keys(interactions).forEach((uid) => {
+    // Remove the record from the user's profile
+    updates[`users/${uid}/postInteractions/${postId}`] = null;
   });
 
   // chunk updates to prevent payload from being too large for single Firebase write
@@ -330,15 +325,6 @@ export const sharePost = onRequest(async (req, res) => {
 
     if (!data) return res.redirect(DOMAIN);
 
-    // prepare content
-    const interactions = data.userInteractions || {};
-    const agreedCount = interactions.agreed
-      ? Object.keys(interactions.agreed).length
-      : 0;
-    const dissentedCount = interactions.dissented
-      ? Object.keys(interactions.dissented).length
-      : 0;
-
     const rawContent =
       data.postContent || "View this discussion on The Open Dissent.";
     const cleanContent = escapeHtml(rawContent);
@@ -355,7 +341,8 @@ export const sharePost = onRequest(async (req, res) => {
         ? `${cleanContent.slice(0, maxLength)}...`
         : cleanContent;
 
-    const pageTitle = `@${authorDisplay} • ${agreedCount} agreed • ${dissentedCount} dissented`;
+    // TODO: add reply count here
+    const pageTitle = `@${authorDisplay} on TheOpenDissent.com`;
     const pageDescription = `“${contentPreview}”`;
 
     // keep the shareUrl pointing to THIS function so meta tags work on re-shares
