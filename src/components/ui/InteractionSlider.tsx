@@ -131,6 +131,7 @@ export const InteractionSlider = ({
   const onPointerUp = () => {
     if (disabled) return;
     state.current.isDragging = false;
+    updateDOM(state.current.currentValue, false);
     onChange(state.current.targetValue);
   };
 
@@ -200,7 +201,7 @@ export const InteractionSlider = ({
           </svg>
           <span
             ref={textRef}
-            className="text-[13px] font-bold tracking-wider text-black leading-none font-mono"
+            className="text-[13px] font-bold tracking-wider text-black leading-none"
           >
             0.0
           </span>
