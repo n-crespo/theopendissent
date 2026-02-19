@@ -79,13 +79,13 @@ const desaturate = (color: RGB, factor: number): RGB => ({
 });
 
 /* global dashboard configuration */
-export const DASHBOARD_STOPS: ColorStop[] = [
+export const VIVID_STOPS: ColorStop[] = [
   { value: -3, color: { r: 239, g: 68, b: 68 } },
   { value: 0, color: { r: 234, g: 179, b: 8 } },
   { value: 3, color: { r: 34, g: 197, b: 94 } },
 ];
 
-export const TRACK_STOPS: ColorStop[] = DASHBOARD_STOPS.map((stop) => ({
+export const DEFAULT_STOPS: ColorStop[] = VIVID_STOPS.map((stop) => ({
   ...stop,
   color: desaturate(stop.color, 0.6),
 }));

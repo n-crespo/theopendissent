@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from "react";
 import {
   getInterpolatedColor,
   getGradientCSS,
-  TRACK_STOPS,
-  DASHBOARD_STOPS,
+  DEFAULT_STOPS,
+  VIVID_STOPS,
 } from "../../color-utils";
 
 interface LensSliderProps {
@@ -41,7 +41,7 @@ export const InteractionSlider = ({
 
     thumbRef.current.style.opacity = "1";
     const percent = ((val + 3) / 6) * 100;
-    const activeColor = getInterpolatedColor(val, TRACK_STOPS);
+    const activeColor = getInterpolatedColor(val, DEFAULT_STOPS);
 
     thumbRef.current.style.left = `${percent}%`;
 
@@ -138,10 +138,10 @@ export const InteractionSlider = ({
       <button
         onClick={handleReset}
         disabled={disabled || !value}
-        className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 active:scale-90 ${
+        className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 active:scale-90 text-slate-400 ${
           disabled || !value
-            ? "text-slate-300 cursor-not-allowed opacity-50"
-            : "text-slate-500 hover:text-(--disagree) hover:bg-red-50 bg-white"
+            ? "cursor-not-allowed"
+            : "hover:text-(--disagree) hover:bg-red-50 bg-white"
         }`}
         title="Clear interaction"
       >
@@ -158,7 +158,7 @@ export const InteractionSlider = ({
           disabled ? "grayscale-[0.5] opacity-80" : ""
         }`}
         style={{
-          background: getGradientCSS(TRACK_STOPS),
+          background: getGradientCSS(DEFAULT_STOPS),
           backgroundRepeat: "no-repeat",
           backgroundClip: "padding-box",
         }}

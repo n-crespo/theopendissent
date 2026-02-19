@@ -6,7 +6,7 @@ import { useShare } from "../../hooks/useShare";
 import { useReport } from "../../hooks/useReport";
 import { useNavigate } from "react-router-dom";
 import { InteractionSlider } from "../ui/InteractionSlider";
-import { getInterpolatedColor, DASHBOARD_STOPS } from "../../color-utils";
+import { getInterpolatedColor, DEFAULT_STOPS } from "../../color-utils";
 
 interface FeedItemProps {
   item: Post;
@@ -51,7 +51,7 @@ export const FeedItem = memo(
     const isNearLimit = charsLeft < 50;
 
     const replyScore = item.interactionScore ?? 0;
-    const scoreColor = getInterpolatedColor(replyScore, DASHBOARD_STOPS);
+    const scoreColor = getInterpolatedColor(replyScore, DEFAULT_STOPS);
 
     const formattedTime = timeAgo(
       new Date(typeof item.timestamp === "number" ? item.timestamp : 0),
