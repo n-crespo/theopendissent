@@ -51,7 +51,7 @@ export const usePostActions = (post: Post) => {
       openModal("signin");
       return;
     }
-    interactionStore.setScore(post.id, uid, newScore);
+    interactionStore.setScore(post.id, uid, newScore, post.parentPostId);
   };
 
   const handleCancel = () => {

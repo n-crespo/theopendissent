@@ -47,16 +47,6 @@ const getContentRef = async (
   if (providedParentId && providedParentId !== "top") {
     return db.ref(`replies/${providedParentId}/${id}`);
   }
-  if (providedParentId === "top") {
-    return db.ref(`posts/${id}`);
-  }
-
-  // 2. check the new metadata map (instant lookup)
-  const parentSnap = await db.ref(`content_parents/${id}`).once("value");
-  if (parentSnap.exists()) {
-    const pId = parentSnap.val();
-    return db.ref(`replies/${pId}/${id}`);
-  }
 
   // 3. fallback to posts
   const postRef = db.ref(`posts/${id}`);
@@ -103,14 +93,27 @@ export const syncInteractionToPost = onValueWritten(
   async (event) => {
     const { userId, postId } = event.params;
 
-    // The new value is the score (number) or null (if deleted)
-    const newScore = event.data.after.val();
+    const rawVal = event.data.after.val();
     const exists = event.data.after.exists();
 
+    // Extract Score
+    // Handle both new object format and potential legacy numbers during transition
+    const newScore = exists
+      ? typeof rawVal === "object"
+        ? rawVal.score
+        : rawVal
+      : null;
+
+    // 2. Extract Parent ID (for self-repairing path lookup)
+    const storedParentId =
+      exists && typeof rawVal === "object" ? rawVal.parentId : undefined;
+
+    // If storedParentId is "top", we treat it as undefined for getContentRef logic
+    const parentId = storedParentId === "top" ? undefined : storedParentId;
+
     try {
-      // Note: We don't have parentId easily available here in the new flat structure
-      // So getContentRef will rely on the `content_parents` index lookup
-      const contentRef = await getContentRef(postId);
+      // Use the stored parentId to find the content efficiently
+      const contentRef = await getContentRef(postId, parentId);
 
       if (!contentRef) {
         // If content doesn't exist, we clean up the user's orphan record
@@ -296,9 +299,7 @@ export const onReplyDeletedCleanup = onValueDeleted(
 
     // cleanup from flat map
     const updates: Record<string, null> = {};
-    updates[`content_parents/${replyId}`] = null;
 
-    // remove the reply reference from the author's profile
     if (replyData?.userId) {
       updates[`users/${replyData.userId}/replies/${parentId}/${replyId}`] =
         null;
@@ -421,9 +422,6 @@ export const onReplyCreated = onValueCreated(
       updates[`users/${replyData.userId}/replies/${parentId}/${replyId}`] =
         true;
     }
-
-    // store path metadata for instant lookups in getContentRef
-    updates[`content_parents/${replyId}`] = parentId;
 
     try {
       await db.ref().update(updates);

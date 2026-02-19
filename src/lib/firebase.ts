@@ -68,9 +68,20 @@ export const setInteraction = async (
   postId: string,
   uid: string,
   score: number | null, // set to null to remove
+  parentPostId?: string,
 ) => {
+  // If removing, value is null.
+  // If adding/updating, value is the object { score, parentId }
+  const value =
+    score === null
+      ? null
+      : {
+          score,
+          parentId: parentPostId || "top",
+        };
+
   const updates: Record<string, any> = {
-    [`users/${uid}/postInteractions/${postId}`]: score,
+    [`users/${uid}/postInteractions/${postId}`]: value,
   };
 
   return update(ref(db), updates);
@@ -366,50 +377,52 @@ export const getUserActivity = async (
     const data = snapshot.val();
     const promises: Promise<Post | null>[] = [];
 
-    // Iterate keys and queue up fetches
     if (filter === "posts") {
       Object.keys(data).forEach((postId) => {
         promises.push(getPostById(postId));
       });
     } else if (filter === "replies") {
-      // data is { parentId: { replyId: true } }
+      // Structure: { parentId: { replyId: true } }
       Object.entries(data).forEach(([parentId, repliesObj]: [string, any]) => {
         Object.keys(repliesObj).forEach((replyId) => {
-          // Fetch Reply AND Parent
           const fetchWithParent = async () => {
             const reply = await getPostById(replyId, parentId);
             if (!reply) return null;
 
             // Fetch parent for context
             const parent = await getPostById(parentId);
-            // Attach parent to the reply object
-            // We cast as any or extend the type locally in the component
+
+            // Return reply with attached parent
             return { ...reply, parentPost: parent || undefined };
           };
           promises.push(fetchWithParent());
         });
       });
     } else {
-      // TODO: remove interacations on replies for now?
+      // Structure: { itemId: { score: 5, parentId: "..." } }
+      Object.entries(data).forEach(([itemId, val]: [string, any]) => {
+        // Robust extraction of parentId.
+        // If val is just a number (legacy), parentId is undefined (assumes top-level).
+        // If val.parentId is "top", parentId is undefined (top-level).
+        // Otherwise, it's a specific parent ID string.
+        const parentId =
+          typeof val === "object" && val.parentId && val.parentId !== "top"
+            ? val.parentId
+            : undefined;
 
-      // UPDATED: Filter is 'interacted' (the map is postId -> score)
-      // Note: We don't store parentId in the user's interaction map anymore (it's just a number)
-      // So we have to check content_parents to find the parent ID if it's a reply
-      Object.keys(data).forEach((itemId) => {
         const fetchContent = async () => {
-          // 1. Try fetching as top-level post first
-          let item = await getPostById(itemId);
+          // Efficient lookup: We know exactly where the content lives (posts/ or replies/ParentID)
+          const item = await getPostById(itemId, parentId);
 
-          // 2. If null, it might be a reply. Look up parent via content_parents index (not available on client directly without exposed ref)
-          // Since we can't easily check content_parents from here without a new index or rule,
-          // we can try fetching from a known path or rely on the fact that most interactions are on posts.
-          // *Refinement*: For now, let's assume interactions are primarily on posts.
-          // If we need to support reply interactions in profile, we'd need to expose the `content_parents` index to the client.
+          if (!item) return null;
 
-          // For now, let's try a heuristic or just return the post if found.
-          if (item) return item;
+          // If we determined it's a reply (parentId exists), fetch the parent for context
+          if (parentId) {
+            const parent = await getPostById(parentId);
+            return { ...item, parentPost: parent || undefined };
+          }
 
-          return null;
+          return item;
         };
         promises.push(fetchContent());
       });

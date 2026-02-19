@@ -70,7 +70,12 @@ class InteractionStore {
     }
   }
 
-  setScore(postId: string, uid: string, score: number | null) {
+  setScore(
+    postId: string,
+    uid: string,
+    score: number | null,
+    parentPostId?: string,
+  ) {
     if (!this.state[postId]) this.state[postId] = {};
 
     // 1. Optimistic Update
@@ -97,7 +102,7 @@ class InteractionStore {
 
     this.pendingDebounce[postId] = setTimeout(() => {
       delete this.pendingDebounce[postId];
-      setInteraction(postId, uid, score).catch((err) =>
+      setInteraction(postId, uid, score, parentPostId).catch((err) =>
         console.error("Failed to sync interaction score:", err),
       );
     }, 500);

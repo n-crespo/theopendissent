@@ -137,7 +137,7 @@ export const FeedItem = memo(
           </div>
 
           {/* Top-Right Actions */}
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
             {isOwner ? (
               <button
                 onClick={(e) => handleAction(e, () => setIsEditing(true))}
@@ -152,7 +152,7 @@ export const FeedItem = memo(
                 }
                 className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-logo-red hover:bg-slate-50 transition-colors"
               >
-                <i className="bi bi-flag text-[14px]"></i>
+                <i className="bi bi-flag text-[15px]"></i>
               </button>
             ) : null}
           </div>
@@ -211,19 +211,19 @@ export const FeedItem = memo(
         )}
 
         {/* post footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-border-subtle gap-4">
-          {/* slider */}
-          <div className="flex-1 max-w-50" onClick={(e) => e.stopPropagation()}>
-            <InteractionSlider
-              value={currentScore}
-              onChange={onSliderChange}
-              disabled={!uid}
-            />
-          </div>
+        {(!isReply && (
+          <div className="flex items-center justify-between pt-3 border-t border-border-subtle gap-4">
+            {/* slider */}
+            <div className="flex-1" onClick={(e) => e.stopPropagation()}>
+              <InteractionSlider
+                value={currentScore}
+                onChange={onSliderChange}
+                disabled={!uid}
+              />
+            </div>
 
-          <div className="flex items-center gap-2">
-            {/* Discussion Button */}
-            {!isReply && (
+            <div className="flex items-center gap-2">
+              {/* Discussion Button */}
               <button
                 onClick={(e) =>
                   handleAction(
@@ -245,17 +245,26 @@ export const FeedItem = memo(
                   </span>
                 )}
               </button>
-            )}
 
-            {/* Share Button */}
+              {/* Share Button */}
+              <button
+                onClick={(e) => handleAction(e, () => sharePost(item))}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-slate-400 hover:bg-slate-50 hover:text-logo-blue active:scale-95 transition-all"
+              >
+                <i className="bi bi-box-arrow-up text-[16px]"></i>
+              </button>
+            </div>
+          </div>
+        )) || (
+          <div className="flex justify-end border-border-subtle -mt-3">
             <button
               onClick={(e) => handleAction(e, () => sharePost(item))}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-slate-400 hover:bg-slate-50 hover:text-logo-blue active:scale-95 transition-all"
+              className="w-8 h-8 flex justify-center rounded-full text-slate-400 hover:bg-slate-50 hover:text-logo-blue active:scale-95 transition-all"
             >
-              <i className="bi bi-box-arrow-up text-[16px]"></i>
+              <i className="bi bi-box-arrow-up text-[15px] mt-1"></i>
             </button>
           </div>
-        </div>
+        )}
       </div>
     );
   },

@@ -14,7 +14,12 @@
         },
         "postInteractions": {
           "$post_id": {
-            ".validate": "newData.isNumber() && newData.val() >= -5 && newData.val() <= 5"
+            ".validate": "newData.hasChildren(['score', 'parentId'])",
+
+            "score": {
+              ".validate": "newData.isNumber() && newData.val() >= -5 && newData.val() <= 5"
+            },
+            "parentId": { ".validate": "newData.isString()" }
           }
         }
       }
