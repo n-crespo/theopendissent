@@ -256,7 +256,7 @@ export const FeedItem = memo(
             </div>
           </div>
         )) || (
-          <div className="flex justify-end border-border-subtle -mt-3">
+          <div className="flex justify-end border-border-subtle">
             <button
               onClick={(e) => handleAction(e, () => sharePost(item))}
               className="w-8 h-8 flex justify-center rounded-full text-slate-400 hover:bg-slate-50 hover:text-logo-blue active:scale-95 transition-all"
