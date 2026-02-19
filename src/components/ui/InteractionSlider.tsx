@@ -58,7 +58,7 @@ export const InteractionSlider = ({
 
     const scale = isPressed && !disabled ? 1.4 : 1;
     thumbRef.current.style.transform = `translate(-50%, -50%) scale(${scale})`;
-    thumbRef.current.style.borderWidth = isPressed ? "2px" : "4px";
+    thumbRef.current.style.borderWidth = isPressed ? "2px" : "3px";
 
     const displayVal =
       val === 0 ? "0.0" : val > 0 ? `+${val.toFixed(1)}` : val.toFixed(1);
@@ -164,7 +164,7 @@ export const InteractionSlider = ({
       >
         <div
           ref={thumbRef}
-          className="absolute top-1/2 w-10 h-10 rounded-full bg-white/40 flex items-center justify-center pointer-events-none backdrop-blur-xs z-10"
+          className="absolute top-1/2 w-8 h-8 rounded-full bg-white/40 flex items-center justify-center pointer-events-none backdrop-blur-xs z-10"
           style={{
             left: "50%",
             transform: "translate(-50%, -50%) scale(1)",
@@ -190,7 +190,7 @@ export const InteractionSlider = ({
           </svg>
           <span
             ref={textRef}
-            className="text-[13px] font-bold tracking-normal text-black leading-none"
+            className="text-[11px] font-bold tracking-normal text-black leading-none"
           >
             0.0
           </span>
