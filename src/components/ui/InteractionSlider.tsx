@@ -191,7 +191,7 @@ export const InteractionSlider = ({
             ref={textRef}
             className="text-sm leading-none bold border border-white w-auto px-2 py-2 box-content rounded-xl overflow-hidden text-white font-bold"
           >
-            Post
+            0.0
           </span>
         </div>
       </div>
