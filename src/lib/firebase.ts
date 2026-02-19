@@ -70,13 +70,16 @@ export const setInteraction = async (
   score: number | null | undefined,
   parentPostId?: string,
 ) => {
-  // If removing, value is null.
-  // If adding/updating, value is the object { score, parentId }
+  const sanitizedScore = // sanitize the score to exactly one decimal place if it's a number
+    typeof score === "number" ? Math.round(score * 10) / 10 : score;
+
+  // if removing, value is null.
+  // if adding/updating, value is the object { score, parentId }
   const value =
-    score === null || score === undefined
+    sanitizedScore === null || sanitizedScore === undefined
       ? null
       : {
-          score,
+          score: sanitizedScore,
           parentId: parentPostId || "top",
         };
 
