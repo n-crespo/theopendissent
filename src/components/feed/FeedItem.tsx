@@ -6,13 +6,14 @@ import { useShare } from "../../hooks/useShare";
 import { useReport } from "../../hooks/useReport";
 import { useNavigate } from "react-router-dom";
 import { InteractionSlider } from "../ui/InteractionSlider";
+import { getInterpolatedColor, DASHBOARD_STOPS } from "../../color-utils";
 
 interface FeedItemProps {
   item: Post;
   isReply?: boolean;
   highlighted?: boolean;
   disableClick?: boolean;
-  onInteraction?: (score: number) => void;
+  onInteraction?: (score: number | undefined) => void;
 }
 
 export const FeedItem = memo(
@@ -28,16 +29,13 @@ export const FeedItem = memo(
     const navigate = useNavigate();
     const { sharePost } = useShare();
     const { reportPost } = useReport();
-
-    // Derived Local State for animations (if needed later)
     const [isJiggling, setIsJiggling] = useState(false);
 
     const {
       uid,
-      localMetrics, // only contains replyCount
-      currentScore, // scalar score (-5 to 5)
-      handleScoreChange,
-
+      localMetrics,
+      currentScore,
+      handleScoreChange, // ensure this hook function supports 'number | undefined'
       isEditing,
       setIsEditing,
       editContent,
@@ -48,20 +46,12 @@ export const FeedItem = memo(
       triggerDelete,
     } = usePostActions(item);
 
-    // --- Derived State & Logic ---
     const isOwner = uid === item.userId;
     const charsLeft = 600 - editContent.length;
     const isNearLimit = charsLeft < 50;
 
-    // --- Reply Indicator Logic ---
-    // Visualizing the author's score on the parent post
     const replyScore = item.interactionScore ?? 0;
-
-    const getReplyBadgeStyle = (val: number) => {
-      if (val > 0) return "bg-green-100 text-green-700 border-green-200";
-      if (val < 0) return "bg-red-100 text-red-700 border-red-200";
-      return "bg-yellow-100 text-yellow-700 border-yellow-200";
-    };
+    const scoreColor = getInterpolatedColor(replyScore, DASHBOARD_STOPS);
 
     const formattedTime = timeAgo(
       new Date(typeof item.timestamp === "number" ? item.timestamp : 0),
@@ -70,21 +60,22 @@ export const FeedItem = memo(
       ? timeAgo(new Date(item.editedAt))
       : null;
 
-    // --- Handlers ---
     const triggerJiggle = () => {
       setIsJiggling(false);
       window.requestAnimationFrame(() => setIsJiggling(true));
       setTimeout(() => setIsJiggling(false), 500);
     };
 
-    const onSliderChange = (val: number) => {
-      const isNewInteraction = currentScore === undefined;
+    /** handles both new scores and deletion (eraser) */
+    const onSliderChange = (val: number | undefined) => {
+      const isFirstInteraction =
+        currentScore === undefined && val !== undefined;
 
-      handleScoreChange(val);
+      // Fix: cast if the hook is strictly typed, or update the hook to handle undefined
+      handleScoreChange(val as any);
 
       if (onInteraction) onInteraction(val);
-
-      if (isNewInteraction) triggerJiggle();
+      if (isFirstInteraction) triggerJiggle();
     };
 
     const handleAction = (e: React.MouseEvent, action: () => void) => {
@@ -94,7 +85,7 @@ export const FeedItem = memo(
 
     return (
       <div
-        className={`flex flex-col gap-4 p-4 bg-white border transition-all duration-200 rounded-(--radius-modal) ${
+        className={`flex flex-col gap-4 p-4 bg-white border transition-all duration-200 rounded-lg ${
           highlighted
             ? "border-logo-blue ring-2 ring-logo-blue/10 shadow-md scale-[1.01]"
             : "border-border-subtle shadow-sm"
@@ -103,8 +94,7 @@ export const FeedItem = memo(
         {/* HEADER */}
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
-            {/* AVATAR */}
-            <div className="w-9 h-9 bg-slate-100 rounded-md flex items-center justify-center text-slate-500 shrink-0 border border-slate-200/50">
+            <div className="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 shrink-0 border border-slate-200/50">
               <i className="bi bi-person-fill"></i>
             </div>
 
@@ -114,13 +104,12 @@ export const FeedItem = memo(
                   {isOwner ? "You" : item.userId.substring(0, 10) + "..."}
                 </span>
 
-                {/* reply indicator badge */}
                 {isReply && item.interactionScore !== undefined && (
                   <span
-                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${getReplyBadgeStyle(replyScore)}`}
+                    className="text-[10px] font-black px-1.5 py-0.5 rounded-sm border bg-white shadow-xs"
+                    style={{ borderColor: scoreColor, color: scoreColor }}
                   >
-                    {replyScore > 0 ? "+" : ""}
-                    {replyScore}
+                    {replyScore > 0 ? `+${replyScore}` : replyScore}
                   </span>
                 )}
               </div>
@@ -128,7 +117,7 @@ export const FeedItem = memo(
               <div className="flex items-center flex-wrap gap-1 text-[10px] text-slate-400 font-medium tracking-tight">
                 <span>{formattedTime}</span>
                 {formattedEditTime && (
-                  <span className="flex items-center italic">
+                  <span className="flex items-center italic text-slate-300">
                     <span className="mx-1">·</span> edited {formattedEditTime}
                   </span>
                 )}
@@ -136,12 +125,11 @@ export const FeedItem = memo(
             </div>
           </div>
 
-          {/* Top-Right Actions */}
           <div className="flex items-center gap-3">
             {isOwner ? (
               <button
                 onClick={(e) => handleAction(e, () => setIsEditing(true))}
-                className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-logo-blue hover:bg-slate-50 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-logo-blue hover:bg-slate-50 transition-colors"
               >
                 <i className="bi bi-pencil-square text-[14px]"></i>
               </button>
@@ -150,7 +138,7 @@ export const FeedItem = memo(
                 onClick={(e) =>
                   handleAction(e, () => uid && reportPost(item.id, uid))
                 }
-                className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-logo-red hover:bg-slate-50 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-logo-red hover:bg-slate-50 transition-colors"
               >
                 <i className="bi bi-flag text-[15px]"></i>
               </button>
@@ -158,7 +146,7 @@ export const FeedItem = memo(
           </div>
         </div>
 
-        {/* CONTENT AREA */}
+        {/* CONTENT */}
         {isEditing ? (
           <div
             className="flex flex-col gap-2"
@@ -167,8 +155,7 @@ export const FeedItem = memo(
             <div className="relative">
               <textarea
                 autoFocus
-                maxLength={600}
-                className="resize-none custom-scrollbar w-full p-3 pr-6 border border-border-subtle rounded-(--radius-input) outline-none min-h-24 text-[15px] focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10 transition-all"
+                className="resize-none custom-scrollbar w-full p-3 border border-border-subtle rounded-lg outline-none min-h-24 text-[15px] focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10 transition-all"
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
                 disabled={isSaving}
@@ -179,25 +166,24 @@ export const FeedItem = memo(
                 {charsLeft}
               </span>
             </div>
-
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
                 <button
-                  className="px-4 py-1.5 bg-logo-blue text-white rounded-(--radius-button) text-sm font-semibold disabled:opacity-50"
+                  className="px-4 py-1.5 bg-logo-blue text-white rounded-lg text-sm font-semibold disabled:opacity-50"
                   onClick={(e) => handleAction(e, saveEdit)}
                   disabled={isSaving || !editContent.trim()}
                 >
                   {isSaving ? "Saving..." : "Save"}
                 </button>
                 <button
-                  className="px-4 py-1.5 bg-slate-100 text-slate-600 rounded-(--radius-button) text-sm font-semibold"
+                  className="px-4 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-semibold"
                   onClick={handleCancel}
                 >
                   Cancel
                 </button>
               </div>
               <button
-                className="w-8 h-8 flex items-center justify-center text-slate-400 rounded-full hover:text-red-400 hover:bg-red-50"
+                className="w-8 h-8 flex items-center justify-center text-slate-400 rounded-lg hover:text-red-400 hover:bg-red-50"
                 onClick={(e) => handleAction(e, triggerDelete)}
               >
                 <i className="bi bi-trash3 text-[16px]"></i>
@@ -210,10 +196,11 @@ export const FeedItem = memo(
           </p>
         )}
 
-        {/* post footer */}
-        {(!isReply && (
-          <div className="flex items-center justify-between pt-3 border-t border-border-subtle gap-4">
-            {/* slider */}
+        {/* FOOTER */}
+        <div
+          className={`flex items-center justify-between pt-3 border-t border-border-subtle gap-4 ${isReply ? "border-none pt-0" : ""}`}
+        >
+          {!isReply && (
             <div className="flex-1" onClick={(e) => e.stopPropagation()}>
               <InteractionSlider
                 value={currentScore}
@@ -221,9 +208,10 @@ export const FeedItem = memo(
                 disabled={!uid}
               />
             </div>
+          )}
 
-            <div className="flex items-center gap-2">
-              {/* Discussion Button */}
+          <div className="flex items-center gap-2 ml-auto">
+            {!isReply && (
               <button
                 onClick={(e) =>
                   handleAction(
@@ -239,32 +227,22 @@ export const FeedItem = memo(
                 <i
                   className={`bi ${disableClick ? "bi-chat-fill" : "bi-chat"} text-[16px]`}
                 ></i>
-                {localMetrics.replyCount > 0 && (
+                {/* localMetrics.replyCount > 0 && (
                   <span className="text-[13px] font-bold">
                     {localMetrics.replyCount}
                   </span>
-                )}
+                ) */}
               </button>
+            )}
 
-              {/* Share Button */}
-              <button
-                onClick={(e) => handleAction(e, () => sharePost(item))}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-slate-400 hover:bg-slate-50 hover:text-logo-blue active:scale-95 transition-all"
-              >
-                <i className="bi bi-box-arrow-up text-[16px]"></i>
-              </button>
-            </div>
-          </div>
-        )) || (
-          <div className="flex justify-end border-border-subtle">
             <button
               onClick={(e) => handleAction(e, () => sharePost(item))}
-              className="w-8 h-8 flex justify-center rounded-full text-slate-400 hover:bg-slate-50 hover:text-logo-blue active:scale-95 transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-logo-blue active:scale-95 transition-all"
             >
-              <i className="bi bi-box-arrow-up text-[15px] mt-1"></i>
+              <i className="bi bi-box-arrow-up text-[16px]"></i>
             </button>
           </div>
-        )}
+        </div>
       </div>
     );
   },
