@@ -76,7 +76,7 @@ export const DropdownMenu = ({
         }`,
         borderRadius: "var(--radius-modal)",
       }}
-      className={`z-9999 ${width} overflow-hidden border border-border-subtle bg-white py-1.5 shadow-xl animate-in fade-in zoom-in-95 duration-100`}
+      className={`z-9999 ${width} overflow-hidden border border-border-subtle bg-white py-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-100`}
     >
       {/* Provide the close function to children */}
       <DropdownContext.Provider value={{ close: () => setShow(false) }}>
