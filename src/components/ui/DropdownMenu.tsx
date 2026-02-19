@@ -136,7 +136,7 @@ export const MenuItem = ({
     >
       {icon && (
         <i
-          className={`bi ${icon} ${variant === "danger" ? "text-red-400" : "text-slate-400"}`}
+          className={`bi ${icon} ${variant === "danger" ? "text-(--disagree)" : "text-slate-400"}`}
         ></i>
       )}
       {label}

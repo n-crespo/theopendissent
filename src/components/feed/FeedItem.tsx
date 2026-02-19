@@ -183,7 +183,7 @@ export const FeedItem = memo(
                 </button>
               </div>
               <button
-                className="w-8 h-8 flex items-center justify-center text-slate-400 rounded-lg hover:text-red-400 hover:bg-red-50"
+                className="w-8 h-8 flex items-center justify-center text-slate-400 rounded-lg hover:text-(--disagree) hover:bg-red-50"
                 onClick={(e) => handleAction(e, triggerDelete)}
               >
                 <i className="bi bi-trash3 text-[16px]"></i>

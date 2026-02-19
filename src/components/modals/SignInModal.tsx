@@ -47,7 +47,7 @@ export const SignInModal = () => {
 
         {/* Inline Error Message */}
         {error && (
-          <p className="text-center text-sm text-red-600 leading-relaxed animate-in fade-in slide-in-from-top-1">
+          <p className="text-center text-sm text-(--disagree) leading-relaxed animate-in fade-in slide-in-from-top-1">
             {error}
           </p>
         )}

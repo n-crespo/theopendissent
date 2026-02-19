@@ -38,7 +38,7 @@ export const LogoutModal = () => {
       <div className="w-full flex flex-col gap-2">
         {/* primary action: destructive sign out */}
         <button
-          className="inline-flex w-full items-center justify-center rounded-(--radius-button) bg-logo-red px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-red-700"
+          className="inline-flex w-full items-center justify-center rounded-(--radius-button) bg-logo-red px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-(--disagree)"
           onClick={handleConfirm}
         >
           Sign out
