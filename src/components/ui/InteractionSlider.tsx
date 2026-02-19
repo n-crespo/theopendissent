@@ -116,7 +116,10 @@ export const InteractionSlider = ({
     if (disabled) return;
     state.current.isDragging = false;
     updateDOM(state.current.currentValue, false);
-    onChange(state.current.targetValue);
+
+    // round to one decimal place before emitting
+    const finalVal = Math.round(state.current.targetValue * 10) / 10;
+    onChange(finalVal);
   };
 
   const handleReset = (e: React.MouseEvent) => {
