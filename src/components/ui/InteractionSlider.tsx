@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import {
   getInterpolatedColor,
   getGradientCSS,
+  TRACK_STOPS,
   DASHBOARD_STOPS,
 } from "../../color-utils";
 
@@ -33,32 +34,33 @@ export const InteractionSlider = ({
     if (!thumbRef.current || !textRef.current || !lockRef.current) return;
 
     if (!state.current.hasValue) {
-      thumbRef.current.style.opacity = "0";
+      thumbRef.current.style.opacity = "0"; // Set to 0 to keep it hidden until used
       thumbRef.current.style.transform = `translate(-50%, -50%) scale(0.5)`;
       return;
     }
 
     thumbRef.current.style.opacity = "1";
     const percent = ((val + 3) / 6) * 100;
-
-    // dynamically determine color from utils
-    const activeColor = getInterpolatedColor(val, DASHBOARD_STOPS);
+    const activeColor = getInterpolatedColor(val, TRACK_STOPS);
 
     thumbRef.current.style.left = `${percent}%`;
 
     if (disabled) {
       lockRef.current.style.display = "block";
       textRef.current.style.display = "none";
-      thumbRef.current.style.borderColor = "#94a3b8";
+      thumbRef.current.style.backgroundColor = "rgba(255, 255, 255, 0.4)";
+      thumbRef.current.style.boxShadow = "none";
     } else {
       lockRef.current.style.display = "none";
       textRef.current.style.display = "block";
-      thumbRef.current.style.borderColor = activeColor;
+      thumbRef.current.style.backgroundColor = "white";
+      textRef.current.style.background = activeColor;
+      // const glowIntensity = isPressed ? "15px" : "10px";
+      // thumbRef.current.style.boxShadow = `0 4px 10px rgba(0,0,0,0.1), 0 0 ${glowIntensity} ${activeColor}`;
     }
 
     const scale = isPressed && !disabled ? 1.4 : 1;
     thumbRef.current.style.transform = `translate(-50%, -50%) scale(${scale})`;
-    thumbRef.current.style.borderWidth = isPressed ? "2px" : "3px";
 
     const displayVal =
       val === 0 ? "0.0" : val > 0 ? `+${val.toFixed(1)}` : val.toFixed(1);
@@ -117,7 +119,6 @@ export const InteractionSlider = ({
     state.current.isDragging = false;
     updateDOM(state.current.currentValue, false);
 
-    // round to one decimal place before emitting
     const finalVal = Math.round(state.current.targetValue * 10) / 10;
     onChange(finalVal);
   };
@@ -132,7 +133,7 @@ export const InteractionSlider = ({
   };
 
   return (
-    <div className="flex items-center w-full h-10 select-none gap-4">
+    <div className="flex items-center w-full h-8 select-none gap-4">
       {/* Eraser Button */}
       <button
         onClick={handleReset}
@@ -153,26 +154,24 @@ export const InteractionSlider = ({
         onPointerDown={handlePointer}
         onPointerMove={(e) => state.current.isDragging && handlePointer(e)}
         onPointerUp={onPointerUp}
-        className={`relative flex-1 h-3 rounded-full cursor-crosshair touch-none border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
+        className={`relative flex-1 h-4 rounded-full cursor-crosshair touch-none border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
           disabled ? "grayscale-[0.5] opacity-80" : ""
         }`}
         style={{
-          background: getGradientCSS(DASHBOARD_STOPS),
-          backgroundRepeat: "no-repeat", // crucial to stop the "sliver" on the far edge
-          backgroundClip: "padding-box", // keeps the paint inside the border
+          background: getGradientCSS(TRACK_STOPS),
+          backgroundRepeat: "no-repeat",
+          backgroundClip: "padding-box",
         }}
       >
         <div
           ref={thumbRef}
-          className="absolute top-1/2 w-8 h-8 rounded-full bg-white/40 flex items-center justify-center pointer-events-none backdrop-blur-xs z-10"
+          className="absolute top-1/2 flex items-center justify-center pointer-events-none z-10"
           style={{
             left: "50%",
             transform: "translate(-50%, -50%) scale(1)",
             transition:
-              "transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), border-width 0.2s ease, border-color 0.1s ease, opacity 0.2s ease",
-            filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25))",
-            borderStyle: "solid",
-            opacity: 0,
+              "transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease",
+            backgroundColor: "white",
           }}
         >
           <svg
@@ -180,7 +179,7 @@ export const InteractionSlider = ({
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="w-5 h-5 text-slate-500 hidden"
+            className="w-4 h-4 text-slate-600 hidden"
           >
             <path
               fillRule="evenodd"
@@ -190,9 +189,9 @@ export const InteractionSlider = ({
           </svg>
           <span
             ref={textRef}
-            className="text-[11px] font-bold tracking-normal text-black leading-none"
+            className="text-sm leading-none bold border border-white w-auto px-2 py-2 box-content rounded-xl overflow-hidden text-white font-bold"
           >
-            0.0
+            Post
           </span>
         </div>
       </div>

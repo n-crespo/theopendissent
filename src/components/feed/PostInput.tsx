@@ -147,7 +147,7 @@ export const PostInput = ({
           `}
         >
           {isPosting ? (
-            <i className="bi bi-three-dots animate-pulse text-lg"></i>
+            <i className="bi bi-three-dots animate-pulse"></i>
           ) : (
             buttonText
           )}

@@ -72,9 +72,20 @@ export const getGradientCSS = (stops: ColorStop[]): string => {
   )`;
 };
 
-/** global dashboard configuration */
+const desaturate = (color: RGB, factor: number): RGB => ({
+  r: Math.round(color.r + (128 - color.r) * factor),
+  g: Math.round(color.g + (128 - color.g) * factor),
+  b: Math.round(color.b + (128 - color.b) * factor),
+});
+
+/* global dashboard configuration */
 export const DASHBOARD_STOPS: ColorStop[] = [
   { value: -3, color: { r: 239, g: 68, b: 68 } },
   { value: 0, color: { r: 234, g: 179, b: 8 } },
   { value: 3, color: { r: 34, g: 197, b: 94 } },
 ];
+
+export const TRACK_STOPS: ColorStop[] = DASHBOARD_STOPS.map((stop) => ({
+  ...stop,
+  color: desaturate(stop.color, 0.6),
+}));
