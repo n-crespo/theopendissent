@@ -54,8 +54,8 @@ export const SignInModal = () => {
 
         {!error && (
           <p className="text-center text-sm text-slate-500 leading-relaxed">
-            Unsure? Tap
-            <span className="text-[15px] font-bold whitespace-nowrap px-2 rounded-full border mx-1 bg-logo-offwhite border-slate-200 shadow-sm">
+            Unsure? Tap the
+            <span className="text-[15px] font-bold whitespace-nowrap px-3 py-1 rounded-xl border m-2 bg-logo-offwhite border-slate-200 shadow-sm">
               ?
             </span>
             in the top left to learn more.
