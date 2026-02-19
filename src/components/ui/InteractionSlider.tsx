@@ -161,7 +161,7 @@ export const InteractionSlider = ({
       >
         <div
           ref={thumbRef}
-          className="absolute top-1/2 w-11 h-11 rounded-full bg-white/40 flex items-center justify-center pointer-events-none backdrop-blur-xs z-10"
+          className="absolute top-1/2 w-10 h-10 rounded-full bg-white/40 flex items-center justify-center pointer-events-none backdrop-blur-xs z-10"
           style={{
             left: "50%",
             transform: "translate(-50%, -50%) scale(1)",
@@ -187,7 +187,7 @@ export const InteractionSlider = ({
           </svg>
           <span
             ref={textRef}
-            className="text-[13px] font-bold tracking-wider text-black leading-none"
+            className="text-[13px] font-bold tracking-normal text-black leading-none"
           >
             0.0
           </span>
