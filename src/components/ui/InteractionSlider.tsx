@@ -62,7 +62,7 @@ export const InteractionSlider = ({
       textRef.current.style.display = "block";
     }
 
-    const scale = isPressed && !disabled && active ? 1.4 : 1;
+    const scale = isPressed && !disabled && active ? 1.3 : 1;
     thumbRef.current.style.transform = `translate(-50%, -50%) scale(${scale})`;
 
     const displayVal =
@@ -158,11 +158,7 @@ export const InteractionSlider = ({
         onPointerMove={(e) => state.current.isDragging && handlePointer(e)}
         onPointerUp={onPointerUp}
         className={`relative flex-1 h-4 rounded-full cursor-crosshair touch-none border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
-          disabled
-            ? "grayscale-[0.5] opacity-80"
-            : !active
-              ? "blur-xs opacity-80"
-              : ""
+          disabled ? "opacity-50" : !active ? "blur-xs opacity-80" : ""
         }`}
         style={{
           background: getGradientCSS(DEFAULT_STOPS),
