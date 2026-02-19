@@ -3,24 +3,25 @@ import {
   getInterpolatedColor,
   getGradientCSS,
   DEFAULT_STOPS,
-  VIVID_STOPS,
+  // VIVID_STOPS,
 } from "../../color-utils";
 
 interface LensSliderProps {
   value?: number;
   onChange: (val: number | undefined) => void;
   disabled?: boolean;
+  active?: boolean;
 }
 
 export const InteractionSlider = ({
   value,
   onChange,
   disabled,
+  active = true,
 }: LensSliderProps) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
-  const lockRef = useRef<SVGSVGElement>(null);
 
   const state = useRef({
     currentValue: value ?? 0,
@@ -31,10 +32,11 @@ export const InteractionSlider = ({
   });
 
   const updateDOM = (val: number, isPressed: boolean) => {
-    if (!thumbRef.current || !textRef.current || !lockRef.current) return;
+    if (!thumbRef.current || !textRef.current) return;
 
     if (!state.current.hasValue) {
-      thumbRef.current.style.opacity = "0"; // Set to 0 to keep it hidden until used
+      // set to 0 to keep it hidden until used
+      thumbRef.current.style.opacity = "0";
       thumbRef.current.style.transform = `translate(-50%, -50%) scale(0.5)`;
       return;
     }
@@ -46,20 +48,21 @@ export const InteractionSlider = ({
     thumbRef.current.style.left = `${percent}%`;
 
     if (disabled) {
-      lockRef.current.style.display = "block";
-      textRef.current.style.display = "none";
-      thumbRef.current.style.backgroundColor = "rgba(255, 255, 255, 0.4)";
+      thumbRef.current.style.left = "50%";
+      thumbRef.current.style.backgroundColor = "transparent";
       thumbRef.current.style.boxShadow = "none";
+
+      // show lock, hide label
+      textRef.current.style.display = "none";
     } else {
-      lockRef.current.style.display = "none";
-      textRef.current.style.display = "block";
       thumbRef.current.style.backgroundColor = "white";
       textRef.current.style.background = activeColor;
-      // const glowIntensity = isPressed ? "15px" : "10px";
-      // thumbRef.current.style.boxShadow = `0 4px 10px rgba(0,0,0,0.1), 0 0 ${glowIntensity} ${activeColor}`;
+
+      // show label, hide lock
+      textRef.current.style.display = "block";
     }
 
-    const scale = isPressed && !disabled ? 1.4 : 1;
+    const scale = isPressed && !disabled && active ? 1.4 : 1;
     thumbRef.current.style.transform = `translate(-50%, -50%) scale(${scale})`;
 
     const displayVal =
@@ -94,10 +97,10 @@ export const InteractionSlider = ({
     } else {
       updateDOM(state.current.currentValue, false);
     }
-  }, [value, disabled]);
+  }, [value, disabled, active]);
 
   const handlePointer = (e: React.PointerEvent) => {
-    if (disabled) return;
+    if (disabled || !active) return;
     if (e.type === "pointerdown") {
       state.current.isDragging = true;
       state.current.hasValue = true;
@@ -115,7 +118,7 @@ export const InteractionSlider = ({
   };
 
   const onPointerUp = () => {
-    if (disabled) return;
+    if (disabled || !active) return;
     state.current.isDragging = false;
     updateDOM(state.current.currentValue, false);
 
@@ -134,12 +137,12 @@ export const InteractionSlider = ({
 
   return (
     <div className="flex items-center w-full h-8 select-none gap-4">
-      {/* Eraser Button */}
+      {/* eraser button */}
       <button
         onClick={handleReset}
-        disabled={disabled || !value}
+        disabled={disabled || !active || !value}
         className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 active:scale-90 text-slate-400 ${
-          disabled || !value
+          disabled || !active || !value
             ? "cursor-not-allowed"
             : "hover:text-(--disagree) hover:bg-red-50 bg-white"
         }`}
@@ -155,7 +158,11 @@ export const InteractionSlider = ({
         onPointerMove={(e) => state.current.isDragging && handlePointer(e)}
         onPointerUp={onPointerUp}
         className={`relative flex-1 h-4 rounded-full cursor-crosshair touch-none border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
-          disabled ? "grayscale-[0.5] opacity-80" : ""
+          disabled
+            ? "grayscale-[0.5] opacity-80"
+            : !active
+              ? "blur-xs opacity-80"
+              : ""
         }`}
         style={{
           background: getGradientCSS(DEFAULT_STOPS),
@@ -174,19 +181,6 @@ export const InteractionSlider = ({
             backgroundColor: "white",
           }}
         >
-          <svg
-            ref={lockRef}
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="w-4 h-4 text-slate-600 hidden"
-          >
-            <path
-              fillRule="evenodd"
-              d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z"
-              clipRule="evenodd"
-            />
-          </svg>
           <span
             ref={textRef}
             className="text-sm leading-none bold border border-white w-auto px-2 py-2 box-content rounded-xl overflow-hidden text-white font-bold"
