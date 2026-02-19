@@ -78,11 +78,10 @@ class InteractionStore {
   ) {
     if (!this.state[postId]) this.state[postId] = {};
 
-    // 1. Optimistic Update
     const current = this.state[postId];
     const next = { ...current };
 
-    // Optimistic Update (treat null and undefined as removal)
+    // optimistic update (treat null and undefined as removal)
     if (score === null || score === undefined) {
       delete next[uid];
     } else {
@@ -92,11 +91,11 @@ class InteractionStore {
     this.state[postId] = next;
     this.notify(postId);
 
-    // 2. Set Lock (2 seconds)
+    // set lock (2 seconds)
     const lockKey = `${postId}-${uid}`;
     this.optimisticLocks[lockKey] = Date.now() + 2000;
 
-    // 3. Debounce
+    // debounce
     if (this.pendingDebounce[postId]) {
       clearTimeout(this.pendingDebounce[postId]);
     }
