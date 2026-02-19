@@ -166,11 +166,15 @@ export const InteractionSlider = ({
         onPointerDown={handlePointer}
         onPointerMove={(e) => state.current.isDragging && handlePointer(e)}
         onPointerUp={onPointerUp}
-        className={`relative flex-1 h-3.5 rounded-full cursor-crosshair touch-none border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
+        className={`relative flex-1 h-3 rounded-full cursor-crosshair touch-none border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
           disabled ? "grayscale-[0.5] opacity-80" : ""
         }`}
         style={{
-          background: "linear-gradient(to right, #ef4444, #eab308, #22c55e)",
+          background:
+            "linear-gradient(to right, #ef4444 0%, #ef4444 2px, #eab308 50%, #22c55e calc(100% - 2px), #22c55e 100%)",
+          backgroundRepeat: "no-repeat",
+          backgroundClip: "padding-box",
+          backgroundColor: "#22c55e",
         }}
       >
         <div
