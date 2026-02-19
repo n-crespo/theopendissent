@@ -1,116 +1,158 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
-interface InteractionSliderProps {
-  value?: number; // Current score (-5 to 5). Undefined = No interaction yet.
+const COLORS = {
+  red: { r: 239, g: 68, b: 68 },
+  yellow: { r: 234, g: 179, b: 8 },
+  green: { r: 34, g: 197, b: 94 },
+};
+
+const getThumbColor = (val: number) => {
+  const { red, yellow, green } = COLORS;
+  let r, g, b;
+  if (val <= 0) {
+    const t = (val + 5) / 5;
+    r = red.r + (yellow.r - red.r) * t;
+    g = red.g + (yellow.g - red.g) * t;
+    b = red.b + (yellow.b - red.b) * t;
+  } else {
+    const t = val / 5;
+    r = yellow.r + (green.r - yellow.r) * t;
+    g = yellow.g + (green.g - yellow.g) * t;
+    b = yellow.b + (green.b - yellow.b) * t;
+  }
+  return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+};
+
+interface LensSliderProps {
+  value?: number;
   onChange: (val: number) => void;
   disabled?: boolean;
 }
 
 export const InteractionSlider = ({
-  value,
+  value = 0,
   onChange,
   disabled,
-}: InteractionSliderProps) => {
-  // If value is undefined (no interaction), default visual to 0 (middle)
-  const [localValue, setLocalValue] = useState(value ?? 0);
-  const [isDragging, setIsDragging] = useState(false);
+}: LensSliderProps) => {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const thumbRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
 
-  // Sync with external value updates (unless user is currently dragging)
-  useEffect(() => {
-    if (!isDragging && value !== undefined) {
-      setLocalValue(value);
+  const state = useRef({
+    currentValue: value,
+    targetValue: value,
+    isDragging: false,
+    rafId: 0,
+  });
+
+  const updateDOM = (val: number, isPressed: boolean) => {
+    if (!thumbRef.current || !textRef.current) return;
+
+    const percent = ((val + 5) / 10) * 100;
+    const activeColor = getThumbColor(val);
+
+    thumbRef.current.style.left = `${percent}%`;
+    const scale = isPressed ? 1.4 : 1;
+    thumbRef.current.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    thumbRef.current.style.borderWidth = isPressed ? "2px" : "4px";
+    thumbRef.current.style.borderColor = activeColor;
+
+    const displayVal =
+      val === 0 ? "0.0" : val > 0 ? `+${val.toFixed(1)}` : val.toFixed(1);
+    if (textRef.current.textContent !== displayVal) {
+      textRef.current.textContent = displayVal;
     }
-  }, [value, isDragging]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVal = parseInt(e.target.value, 10);
-    setLocalValue(newVal);
-    onChange(newVal);
   };
 
-  // Calculate percentage for positioning the floating label (0% to 100%)
-  // Range is -5 to 5 (total 10 steps)
-  const percent = ((localValue + 5) / 10) * 100;
+  const runLerpLoop = () => {
+    const s = state.current;
 
-  // Dynamic color for the label
-  const getLabelColor = (val: number) => {
-    if (val === 0) return "bg-yellow-500";
-    if (val > 0) return "bg-green-600";
-    return "bg-red-600";
+    // dynamic speed: 0.06 for the slow tap jump, 0.25 for responsive dragging
+    const lerpFactor = s.isDragging ? 0.25 : 0.06;
+    const diff = s.targetValue - s.currentValue;
+
+    if (Math.abs(diff) < 0.005) {
+      s.currentValue = s.targetValue;
+      updateDOM(s.currentValue, s.isDragging);
+      s.rafId = 0;
+      return;
+    }
+
+    s.currentValue += diff * lerpFactor;
+    updateDOM(s.currentValue, true);
+
+    s.rafId = requestAnimationFrame(runLerpLoop);
+  };
+
+  useEffect(() => {
+    if (!state.current.isDragging) {
+      state.current.targetValue = value;
+      if (!state.current.rafId) runLerpLoop();
+    }
+  }, [value]);
+
+  const handlePointer = (e: React.PointerEvent) => {
+    if (disabled) return;
+
+    if (e.type === "pointerdown") {
+      state.current.isDragging = true;
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
+
+    const rect = trackRef.current?.getBoundingClientRect();
+    if (rect) {
+      const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+      let newValue = (x / rect.width) * 10 - 5;
+
+      const snapThreshold = 0.15;
+      if (Math.abs(newValue) < snapThreshold) newValue = 0;
+
+      state.current.targetValue = newValue;
+
+      // start or keep the loop running
+      if (!state.current.rafId) runLerpLoop();
+    }
+  };
+
+  const onPointerUp = () => {
+    state.current.isDragging = false;
+    onChange(state.current.targetValue);
   };
 
   return (
-    <div
-      className={`relative flex flex-col items-center justify-center w-full h-12 ${
-        disabled ? "opacity-50 pointer-events-none" : ""
-      }`}
-    >
-      {/* The Track (Gradient) */}
-      <div className="absolute w-full h-2 rounded-full bg-linear-to-r from-red-500 via-yellow-400 to-green-500 opacity-40"></div>
-
-      {/* The Hidden Range Input */}
-      <input
-        type="range"
-        min="-5"
-        max="5"
-        step="1"
-        value={localValue}
-        disabled={disabled}
-        onMouseDown={() => setIsDragging(true)}
-        onTouchStart={() => setIsDragging(true)}
-        onMouseUp={() => setIsDragging(false)}
-        onTouchEnd={() => setIsDragging(false)}
-        onChange={handleChange}
-        className="
-          w-full h-8 bg-transparent appearance-none cursor-pointer z-10
-          focus:outline-none
-
-          /* Webkit Thumb (Chrome/Safari) */
-          [&::-webkit-slider-thumb]:appearance-none
-          [&::-webkit-slider-thumb]:w-6
-          [&::-webkit-slider-thumb]:h-6
-          [&::-webkit-slider-thumb]:rounded-full
-          [&::-webkit-slider-thumb]:bg-white
-          [&::-webkit-slider-thumb]:border-2
-          [&::-webkit-slider-thumb]:border-slate-200
-          [&::-webkit-slider-thumb]:shadow-[0_2px_4px_rgba(0,0,0,0.2)]
-          [&::-webkit-slider-thumb]:transition-transform
-          [&::-webkit-slider-thumb]:active:scale-110
-          [&::-webkit-slider-thumb]:-mt-2 /* Aligns thumb with track vertically */
-
-          /* Firefox Thumb */
-          [&::-moz-range-thumb]:w-6
-          [&::-moz-range-thumb]:h-6
-          [&::-moz-range-thumb]:rounded-full
-          [&::-moz-range-thumb]:bg-white
-          [&::-moz-range-thumb]:border-2
-          [&::-moz-range-thumb]:border-slate-200
-          [&::-moz-range-thumb]:shadow-sm
-          [&::-moz-range-thumb]:transition-transform
-          [&::-moz-range-thumb]:active:scale-110
-
-          /* Runnable Track (needed for vertical alignment on some browsers) */
-          [&::-webkit-slider-runnable-track]:h-2
-          [&::-webkit-slider-runnable-track]:bg-transparent
-        "
-      />
-
-      {/* Floating Value Label */}
-      {/* We only show this if the user has interacted (value is defined) OR is dragging */}
-      {(value !== undefined || isDragging) && (
+    <div className="flex items-center justify-center w-full h-10 select-none">
+      <div
+        ref={trackRef}
+        onPointerDown={handlePointer}
+        onPointerMove={(e) => state.current.isDragging && handlePointer(e)}
+        onPointerUp={onPointerUp}
+        className={`relative w-full max-w-md h-3.5 rounded-full cursor-crosshair touch-none border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] ${
+          disabled ? "opacity-40 grayscale" : ""
+        }`}
+        style={{
+          background: "linear-gradient(to right, #ef4444, #eab308, #22c55e)",
+        }}
+      >
         <div
-          className={`absolute -top-1.25 px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm pointer-events-none transition-all duration-75 ${getLabelColor(
-            localValue,
-          )}`}
+          ref={thumbRef}
+          className="absolute top-1/2 w-11 h-11 rounded-full bg-white/30 flex items-center justify-center pointer-events-none backdrop-blur-[3px]"
           style={{
-            // Clamped to prevent overflowing the edges
-            left: `clamp(10px, ${percent}%, calc(100% - 25px))`,
-            transform: `translateX(-50%)`,
+            left: "50%",
+            transform: "translate(-50%, -50%) scale(1)",
+            transition:
+              "transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), border-width 0.2s ease, border-color 0.1s ease",
+            filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25))",
+            borderStyle: "solid",
           }}
         >
-          {localValue > 0 ? `+${localValue}` : localValue}
+          <span
+            ref={textRef}
+            className="text-[13px] font-bold tracking-wider text-black leading-none"
+          >
+            0.0
+          </span>
         </div>
-      )}
+      </div>
     </div>
   );
 };
