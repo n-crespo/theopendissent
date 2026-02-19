@@ -1,31 +1,13 @@
 import React, { useEffect, useRef } from "react";
-
-const COLORS = {
-  red: { r: 239, g: 68, b: 68 },
-  yellow: { r: 234, g: 179, b: 8 },
-  green: { r: 34, g: 197, b: 94 },
-};
-
-const getThumbColor = (val: number) => {
-  const { red, yellow, green } = COLORS;
-  let r, g, b;
-  if (val <= 0) {
-    const t = (val + 5) / 5;
-    r = red.r + (yellow.r - red.r) * t;
-    g = red.g + (yellow.g - red.g) * t;
-    b = red.b + (yellow.b - red.b) * t;
-  } else {
-    const t = val / 5;
-    r = yellow.r + (green.r - yellow.r) * t;
-    g = yellow.g + (green.g - yellow.g) * t;
-    b = yellow.b + (green.b - yellow.b) * t;
-  }
-  return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
-};
+import {
+  getInterpolatedColor,
+  getGradientCSS,
+  DASHBOARD_STOPS,
+} from "../../color-utils";
 
 interface LensSliderProps {
   value?: number;
-  onChange: (val: number | undefined) => void; // updated to handle undefined
+  onChange: (val: number | undefined) => void;
   disabled?: boolean;
 }
 
@@ -58,7 +40,9 @@ export const InteractionSlider = ({
 
     thumbRef.current.style.opacity = "1";
     const percent = ((val + 5) / 10) * 100;
-    const activeColor = getThumbColor(val);
+
+    // dynamically determine color from utils
+    const activeColor = getInterpolatedColor(val, DASHBOARD_STOPS);
 
     thumbRef.current.style.left = `${percent}%`;
 
@@ -153,7 +137,7 @@ export const InteractionSlider = ({
         className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 active:scale-90 ${
           disabled || !value
             ? "text-slate-300 cursor-not-allowed opacity-50"
-            : "text-slate-500 hover:text-red-500 hover:bg-red-50 bg-white"
+            : "text-slate-500 hover:text-(--disagree) hover:bg-red-50 bg-white"
         }`}
         title="Clear interaction"
       >
@@ -170,11 +154,9 @@ export const InteractionSlider = ({
           disabled ? "grayscale-[0.5] opacity-80" : ""
         }`}
         style={{
-          background:
-            "linear-gradient(to right, #ef4444 0%, #ef4444 2px, #eab308 50%, #22c55e calc(100% - 2px), #22c55e 100%)",
-          backgroundRepeat: "no-repeat",
-          backgroundClip: "padding-box",
-          backgroundColor: "#22c55e",
+          background: getGradientCSS(DASHBOARD_STOPS),
+          backgroundRepeat: "no-repeat", // crucial to stop the "sliver" on the far edge
+          backgroundClip: "padding-box", // keeps the paint inside the border
         }}
       >
         <div
