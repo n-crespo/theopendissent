@@ -17,7 +17,7 @@
             ".validate": "newData.hasChildren(['score', 'parentId'])",
 
             "score": {
-              ".validate": "newData.isNumber() && newData.val() >= -5 && newData.val() <= 5"
+              ".validate": "newData.isNumber() && newData.val() >= -3 && newData.val() <= 3"
             },
             "parentId": { ".validate": "newData.isString()" }
           }
@@ -83,7 +83,7 @@
             ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 600)"
           },
           "interactionScore": {
-            ".validate": "newData.isNumber() && newData.val() >= -5 && newData.val() <= 5"
+            ".validate": "newData.isNumber() && newData.val() >= -3 && newData.val() <= 3"
           },
           "timestamp": {
             ".validate": "!data.exists() || data.val() === newData.val()"

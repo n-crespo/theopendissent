@@ -39,7 +39,7 @@ export const InteractionSlider = ({
     }
 
     thumbRef.current.style.opacity = "1";
-    const percent = ((val + 5) / 10) * 100;
+    const percent = ((val + 3) / 6) * 100;
 
     // dynamically determine color from utils
     const activeColor = getInterpolatedColor(val, DASHBOARD_STOPS);
@@ -104,7 +104,7 @@ export const InteractionSlider = ({
     const rect = trackRef.current?.getBoundingClientRect();
     if (rect) {
       const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
-      let newValue = (x / rect.width) * 10 - 5;
+      let newValue = (x / rect.width) * 6 - 3;
       const snapThreshold = 0.15;
       if (Math.abs(newValue) < snapThreshold) newValue = 0;
       state.current.targetValue = newValue;

@@ -74,7 +74,7 @@ export const getGradientCSS = (stops: ColorStop[]): string => {
 
 /** global dashboard configuration */
 export const DASHBOARD_STOPS: ColorStop[] = [
-  { value: -5, color: { r: 239, g: 68, b: 68 } },
+  { value: -3, color: { r: 239, g: 68, b: 68 } },
   { value: 0, color: { r: 234, g: 179, b: 8 } },
-  { value: 5, color: { r: 34, g: 197, b: 94 } },
+  { value: 3, color: { r: 34, g: 197, b: 94 } },
 ];
