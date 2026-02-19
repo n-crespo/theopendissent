@@ -67,13 +67,13 @@ export const postsRef = ref(db, "posts");
 export const setInteraction = async (
   postId: string,
   uid: string,
-  score: number | null, // set to null to remove
+  score: number | null | undefined,
   parentPostId?: string,
 ) => {
   // If removing, value is null.
   // If adding/updating, value is the object { score, parentId }
   const value =
-    score === null
+    score === null || score === undefined
       ? null
       : {
           score,

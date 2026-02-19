@@ -46,7 +46,8 @@ export const usePostActions = (post: Post) => {
     replyCount: post.replyCount || 0,
   };
 
-  const handleScoreChange = (newScore: number) => {
+  /* handles both score updates and removals (undefined) */
+  const handleScoreChange = (newScore: number | undefined) => {
     if (!uid) {
       openModal("signin");
       return;
@@ -104,7 +105,7 @@ export const usePostActions = (post: Post) => {
   return {
     uid,
     localMetrics,
-    currentScore, // (-5 to 5) or undefined
+    currentScore,
     handleScoreChange,
 
     isEditing,

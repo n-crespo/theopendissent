@@ -73,7 +73,7 @@ class InteractionStore {
   setScore(
     postId: string,
     uid: string,
-    score: number | null,
+    score: number | null | undefined,
     parentPostId?: string,
   ) {
     if (!this.state[postId]) this.state[postId] = {};
@@ -82,7 +82,8 @@ class InteractionStore {
     const current = this.state[postId];
     const next = { ...current };
 
-    if (score === null) {
+    // Optimistic Update (treat null and undefined as removal)
+    if (score === null || score === undefined) {
       delete next[uid];
     } else {
       next[uid] = score;
@@ -102,6 +103,7 @@ class InteractionStore {
 
     this.pendingDebounce[postId] = setTimeout(() => {
       delete this.pendingDebounce[postId];
+      // firebase setInteraction should handle null/undefined as a delete
       setInteraction(postId, uid, score, parentPostId).catch((err) =>
         console.error("Failed to sync interaction score:", err),
       );
