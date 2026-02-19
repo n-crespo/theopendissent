@@ -38,7 +38,14 @@ class InteractionStore {
     currentUid?: string,
   ) {
     const currentState = this.get(postId);
-    const safeServerData = serverData || {};
+
+    // transform server data to ensure 1-decimal precision immediately
+    const safeServerData: InteractionState = {};
+    if (serverData) {
+      for (const [uid, score] of Object.entries(serverData)) {
+        safeServerData[uid] = Math.round(score * 10) / 10;
+      }
+    }
 
     const lockKey = currentUid ? `${postId}-${currentUid}` : null;
     const isLocked =
@@ -85,7 +92,8 @@ class InteractionStore {
     if (score === null || score === undefined) {
       delete next[uid];
     } else {
-      next[uid] = score;
+      // ensure optimistic state is also rounded
+      next[uid] = Math.round(score * 10) / 10;
     }
 
     this.state[postId] = next;
