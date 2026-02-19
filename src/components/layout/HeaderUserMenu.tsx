@@ -17,7 +17,7 @@ export const HeaderUserMenu = () => {
       align="right"
       width="w-48"
       trigger={
-        <div className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-slate-200/50 bg-slate-100 text-slate-500 transition-all shadow-sm active:scale-95">
+        <div className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-slate-200/50 bg-slate-100 text-slate-500 transition-all shadow-sm active:scale-95">
           <i className="bi bi-person-fill text-lg"></i>
         </div>
       }

@@ -112,7 +112,7 @@ export const PostInput = ({
             placeholder={activePlaceholder}
             disabled={isPosting || loading || hasNoInteraction}
             className={`w-full resize-none border px-3 py-2.5 pr-6 text-[15px] transition-all
-              outline-none block custom-scrollbar shadow-sm rounded-(--radius-input)
+              outline-none block custom-scrollbar shadow-sm rounded-xl
               ${
                 hasNoInteraction
                   ? "bg-slate-50 border-slate-200 cursor-not-allowed"
@@ -138,7 +138,7 @@ export const PostInput = ({
           className={`
             min-w-24 flex items-center justify-center px-4 text-sm font-bold text-white transition-all duration-200 shadow-sm
             bg-linear-to-r from-logo-blue via-logo-green to-logo-red bg-size-[300%_100%] animate-shimmer
-            rounded-(--radius-button)
+            rounded-xl
             ${
               isSubmitDisabled
                 ? "grayscale-[0.6] opacity-50 cursor-not-allowed"

@@ -85,7 +85,7 @@ export const FeedItem = memo(
 
     return (
       <div
-        className={`flex flex-col gap-4 p-4 bg-white border transition-all duration-200 rounded-lg ${
+        className={`flex flex-col gap-4 p-4 bg-white border transition-all duration-200 rounded-xl ${
           highlighted
             ? "border-logo-blue ring-2 ring-logo-blue/10 shadow-md scale-[1.01]"
             : "border-border-subtle shadow-sm"
