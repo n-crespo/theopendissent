@@ -5,7 +5,7 @@ import { useModal } from "../../context/ModalContext";
 import { HeaderUserMenu } from "./HeaderUserMenu";
 
 const PILL_BUTTON_STYLE =
-  "group flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-logo-offwhite text-slate-600 hover:text-slate-900 transition-all active:scale-95 cursor-pointer shadow-sm";
+  "group flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-logo-offwhite text-slate-600 hover:text-slate-900 transition-all active:scale-95 cursor-pointer shadow-sm";
 
 export const Header = () => {
   const { user, loading } = useAuth();
@@ -20,7 +20,7 @@ export const Header = () => {
             className={PILL_BUTTON_STYLE}
             onClick={() => openModal("about")}
           >
-            <span className="text-[15px] font-bold whitespace-nowrap px-1">
+            <span className="text-[15px] font-extrabold whitespace-nowrap px-1">
               ?
             </span>
           </button>
