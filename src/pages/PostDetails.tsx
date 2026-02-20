@@ -155,7 +155,7 @@ export const PostDetails = () => {
                 key="empty"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="rounded-(--radius-input) py-16 text-center"
+                className="rounded-xl py-16 text-center"
               >
                 <p className="text-sm font-medium italic text-slate-400">
                   No replies yet, you can be the first!

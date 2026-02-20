@@ -24,7 +24,7 @@ export const ActionMenu = ({
   return (
     <DropdownMenu
       trigger={
-        <div className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus:outline-none">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus:outline-none">
           <i className="bi bi-three-dots text-lg"></i>
         </div>
       }

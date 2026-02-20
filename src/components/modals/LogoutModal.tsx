@@ -26,7 +26,7 @@ export const LogoutModal = () => {
 
       {user && (
         /* user profile box: uses global preview and border tokens */
-        <div className="w-full bg-bg-preview rounded-(--radius-input) p-4 mb-8 flex flex-col items-center border border-border-subtle">
+        <div className="w-full bg-bg-preview rounded-xl p-4 mb-8 flex flex-col items-center border border-border-subtle">
           <div className="font-semibold text-logo-blue text-base">
             {user.displayName || "UCLA Student"}
           </div>
