@@ -32,10 +32,10 @@ export const HeaderBurgerMenu = () => {
         label="Follow Us!"
         onClick={() => openModal("joinTeam")}
       />
-      <MenuSeparator />
 
       {(deferredPrompt || isIOS) && (
         <>
+          <MenuSeparator />
           <MenuItem
             icon="bi-download"
             label="Install"
@@ -47,10 +47,10 @@ export const HeaderBurgerMenu = () => {
               }
             }}
           />
-          <MenuSeparator />
         </>
       )}
 
+      <MenuSeparator />
       <MenuItem
         icon="bi-chat-text"
         label="Send Feedback"
