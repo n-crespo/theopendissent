@@ -6,6 +6,7 @@ import { useShare } from "../../hooks/useShare";
 import { useReport } from "../../hooks/useReport";
 import { useNavigate } from "react-router-dom";
 import { InteractionSlider } from "../ui/InteractionSlider";
+import { useModal } from "../../context/ModalContext.tsx";
 
 interface FeedItemProps {
   item: Post;
@@ -25,6 +26,8 @@ export const FeedItem = memo(
   }: FeedItemProps) => {
     if (!item || !item.userId) return null;
 
+    const { openModal } = useModal();
+
     const navigate = useNavigate();
     const { sharePost } = useShare();
     const { reportPost } = useReport();
@@ -34,7 +37,7 @@ export const FeedItem = memo(
       uid,
       // localMetrics,
       currentScore,
-      handleScoreChange, // ensure this hook function supports 'number | undefined'
+      handleScoreChange,
       isEditing,
       setIsEditing,
       editContent,
@@ -65,12 +68,11 @@ export const FeedItem = memo(
       setTimeout(() => setIsJiggling(false), 500);
     };
 
-    /** handles both new scores and deletion (eraser) */
+    /** Handles both new scores and deletion (eraser) */
     const onSliderChange = (val: number | undefined) => {
       const isFirstInteraction =
         currentScore === undefined && val !== undefined;
 
-      // Fix: cast if the hook is strictly typed, or update the hook to handle undefined
       handleScoreChange(val as any);
 
       if (onInteraction) onInteraction(val);
@@ -198,6 +200,9 @@ export const FeedItem = memo(
               disabled={isReply || isOwner || !uid}
               blur={!uid}
               thumb={!!uid && ((isOwner && isReply) || !isOwner)}
+              onDisabledInteraction={() => {
+                if (!uid) openModal("signin");
+              }}
             />
           </div>
 

@@ -14,6 +14,7 @@ interface LensSliderProps {
   greyscale?: boolean;
   disabled?: boolean;
   thumb?: boolean;
+  onDisabledInteraction?: () => void;
 }
 
 export const InteractionSlider = ({
@@ -24,6 +25,7 @@ export const InteractionSlider = ({
   greyscale,
   disabled,
   thumb = true,
+  onDisabledInteraction,
 }: LensSliderProps) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
@@ -94,7 +96,10 @@ export const InteractionSlider = ({
   }, [value, disabled, thumb]);
 
   const handlePointer = (e: React.PointerEvent) => {
-    if (disabled) return;
+    if (disabled) {
+      if (onDisabledInteraction) onDisabledInteraction();
+      return;
+    }
     if (e.type === "pointerdown") {
       state.current.isDragging = true;
       state.current.hasValue = true;
@@ -135,6 +140,9 @@ export const InteractionSlider = ({
       {disabled ? (
         <button
           disabled={true}
+          onClick={() => {
+            if (onDisabledInteraction) onDisabledInteraction();
+          }}
           className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 text-slate-400 cursor-not-allowed opacity-50`}
         >
           <i className="bi bi-lock text-lg"></i>
