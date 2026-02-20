@@ -187,7 +187,7 @@ export const InteractionSlider = ({
         />
 
         {/* thumb */}
-        {thumb && (
+        {thumb && state.current.hasValue && (
           <div
             ref={thumbRef}
             className="absolute top-1/2 flex items-center justify-center pointer-events-none z-10"
