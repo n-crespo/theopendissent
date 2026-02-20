@@ -94,7 +94,7 @@ export const PostDetails = () => {
   }, [livePost, uid]);
 
   // Handler for FeedItem to update the local state when user slides
-  const handleInteractionChange = (newScore: number) => {
+  const handleInteractionChange = (newScore: number | undefined) => {
     setLocalScore(newScore);
   };
 
