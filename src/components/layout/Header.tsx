@@ -3,6 +3,7 @@ import logoUrl from "../../assets/Flat-Logo.svg";
 import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
 import { HeaderUserMenu } from "./HeaderUserMenu";
+import { HeaderBurgerMenu } from "./HeaderBurgerMenu";
 
 const PILL_BUTTON_STYLE =
   "group flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-logo-offwhite text-slate-600 hover:text-slate-900 transition-all active:scale-95 cursor-pointer shadow-sm";
@@ -14,29 +15,36 @@ export const Header = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 rounded-b-lg border-b border-slate-200 bg-logo-offwhite transform-gpu">
       <div className="mx-auto flex max-w-125 items-center justify-between px-0 py-0">
-        {/* left: info button */}
+        {/* left side: menu button */}
+
         <div className="flex w-20 items-center justify-start pl-2">
-          <button
-            className={PILL_BUTTON_STYLE}
-            onClick={() => openModal("about")}
-          >
-            <span className="text-[15px] font-extrabold whitespace-nowrap px-1">
-              ?
-            </span>
-          </button>
+          {loading ? (
+            <div className="flex items-center justify-center opacity-50">
+              <i className="bi bi-three-dots text-slate-400"></i>
+            </div>
+          ) : user ? (
+            <HeaderBurgerMenu />
+          ) : (
+            <button
+              className={PILL_BUTTON_STYLE}
+              onClick={() => openModal("about")}
+            >
+              <i className="bi bi-list text-xl leading-none"></i>
+            </button>
+          )}
         </div>
 
-        {/* center (main logo) */}
+        {/* center: logo */}
         <Link to="/" className="flex h-12.5 items-center justify-center">
           <img
             src={logoUrl}
             alt="App Icon"
-            className="h-full w-auto max-w-[60vw] object-contain"
+            className="h-full w-auto max-w-[50vw] object-contain"
             draggable="false"
           />
         </Link>
 
-        {/* auth section */}
+        {/* right side: auth profile */}
         <div
           id="auth-section"
           className="flex w-20 items-center justify-end pr-2"
