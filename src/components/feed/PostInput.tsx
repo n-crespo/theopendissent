@@ -136,10 +136,11 @@ export const PostInput = ({
           )}
         </div>
 
-        <button
-          onClick={handleSubmit}
-          disabled={isSubmitDisabled}
-          className={`
+        {!hasNoInteraction && (
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitDisabled}
+            className={`
             min-w-24 max-h-[44px] flex items-center justify-center px-4 text-sm font-bold text-white transition-all duration-200 shadow-2xl
             bg-linear-to-r from-logo-blue via-logo-green to-logo-red bg-size-[300%_100%] animate-shimmer
             rounded-xl
@@ -149,13 +150,14 @@ export const PostInput = ({
                 : "cursor-pointer hover:shadow-2xl active:scale-95"
             }
           `}
-        >
-          {isPosting ? (
-            <i className="bi bi-three-dots animate-pulse"></i>
-          ) : (
-            buttonText
-          )}
-        </button>
+          >
+            {isPosting ? (
+              <i className="bi bi-three-dots animate-pulse"></i>
+            ) : (
+              buttonText
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
