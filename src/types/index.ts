@@ -9,7 +9,7 @@ export interface Post {
   replyCount: number;
   userInteractions: PostInteractions;
   parentPostId?: string;
-  interactionScore?: number; // -5 to 5
+  interactionScore?: number; // -3 to 3
 }
 
 export interface UserProfile {
