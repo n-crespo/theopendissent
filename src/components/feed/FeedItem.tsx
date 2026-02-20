@@ -53,7 +53,6 @@ export const FeedItem = memo(
     const isNearLimit = charsLeft < 50;
 
     const replyScore = item.interactionScore ?? 0;
-    console.log("reply score:" + replyScore);
 
     const formattedTime = timeAgo(
       new Date(typeof item.timestamp === "number" ? item.timestamp : 0),
