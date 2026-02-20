@@ -24,6 +24,7 @@ export const PostDetails = () => {
 
   const { user, loading: authLoading } = useAuth();
   const uid = user?.uid;
+  const isOwner = uid === livePost?.userId;
 
   // store local score (number)
   const [localScore, setLocalScore] = useState<number | undefined>(undefined);
@@ -125,6 +126,8 @@ export const PostDetails = () => {
       {/* This input is "locked" until localScore is defined */}
       {isLoadingPost || !livePost ? (
         <div className="h-15 w-full rounded-xl border border-slate-100 bg-white animate-pulse p-4 shadow-sm"></div>
+      ) : isOwner ? (
+        <></>
       ) : (
         <PostInput parentPostId={livePost.id} currentScore={localScore} />
       )}
