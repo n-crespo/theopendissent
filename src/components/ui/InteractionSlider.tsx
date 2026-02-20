@@ -40,14 +40,6 @@ export const InteractionSlider = ({
   const updateDOM = (val: number, isPressed: boolean) => {
     if (!thumbRef.current || !textRef.current) return;
 
-    if (!thumb) {
-      // hide thumb entirely when thumb is false
-      thumbRef.current.style.display = "none";
-      return;
-    } else {
-      thumbRef.current.style.display = "flex";
-    }
-
     if (!state.current.hasValue) {
       // set to 0 to keep it hidden until used
       thumbRef.current.style.opacity = "0";
@@ -139,19 +131,28 @@ export const InteractionSlider = ({
 
   return (
     <div className="flex items-center w-full h-8 select-none gap-4">
-      {/* eraser button */}
-      <button
-        onClick={handleReset}
-        disabled={disabled || !value}
-        className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 text-slate-400 ${
-          disabled || !value
-            ? "cursor-not-allowed opacity-50"
-            : "hover:text-(--disagree) hover:bg-red-50 bg-white"
-        }`}
-        title="Clear interaction"
-      >
-        <i className="bi bi-eraser text-lg"></i>
-      </button>
+      {/* eraser/lock button */}
+      {disabled ? (
+        <button
+          disabled={true}
+          className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 text-slate-400 cursor-not-allowed opacity-50`}
+        >
+          <i className="bi bi-lock text-lg"></i>
+        </button>
+      ) : (
+        <button
+          onClick={handleReset}
+          disabled={disabled || !value}
+          className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 text-slate-400 ${
+            disabled || !value
+              ? "cursor-not-allowed opacity-50"
+              : "hover:text-(--disagree) hover:bg-red-50 bg-white"
+          }`}
+          title="Clear interaction"
+        >
+          <i className="bi bi-eraser text-lg"></i>
+        </button>
+      )}
 
       {/* gradient bar/track container */}
       <div
@@ -178,24 +179,26 @@ export const InteractionSlider = ({
         />
 
         {/* thumb */}
-        <div
-          ref={thumbRef}
-          className="absolute top-1/2 flex items-center justify-center pointer-events-none z-10"
-          style={{
-            left: "50%",
-            transform: "translate(-50%, -50%) scale(1)",
-            transition:
-              "transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease",
-            backgroundColor: "white",
-          }}
-        >
-          <span
-            ref={textRef}
-            className="text-sm leading-none bold border border-white w-auto px-2 py-2 box-content rounded-xl overflow-hidden text-white font-bold"
+        {thumb && (
+          <div
+            ref={thumbRef}
+            className="absolute top-1/2 flex items-center justify-center pointer-events-none z-10"
+            style={{
+              left: "50%",
+              transform: "translate(-50%, -50%) scale(1)",
+              transition:
+                "transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease",
+              backgroundColor: "white",
+            }}
           >
-            0.0
-          </span>
-        </div>
+            <span
+              ref={textRef}
+              className="text-sm leading-none bold border border-white w-auto px-2 py-2 box-content rounded-xl overflow-hidden text-white font-bold"
+            >
+              0.0
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
