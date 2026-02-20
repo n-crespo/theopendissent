@@ -166,9 +166,9 @@ export const InteractionSlider = ({
       ) : (
         <button
           onClick={handleReset}
-          disabled={!value && value !== 0}
+          disabled={value === undefined}
           className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 text-slate-400 ${
-            !value && value !== 0
+            value === undefined
               ? "cursor-not-allowed opacity-50"
               : "hover:text-(--disagree) hover:bg-red-50 bg-white"
           }`}
@@ -204,7 +204,7 @@ export const InteractionSlider = ({
         />
 
         {/* thumb */}
-        {thumb && state.current.hasValue && (
+        {thumb && (
           <div
             ref={thumbRef}
             className="absolute top-1/2 flex items-center justify-center pointer-events-none z-10"
