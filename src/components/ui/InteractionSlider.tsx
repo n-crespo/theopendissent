@@ -158,9 +158,9 @@ export const InteractionSlider = ({
       ) : (
         <button
           onClick={handleReset}
-          disabled={disabled || !value}
+          disabled={disabled || (!value && value !== 0)}
           className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 text-slate-400 ${
-            disabled || !value
+            !value && value !== 0
               ? "cursor-not-allowed opacity-50"
               : "hover:text-(--disagree) hover:bg-red-50 bg-white"
           }`}
