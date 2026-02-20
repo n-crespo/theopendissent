@@ -39,6 +39,15 @@ export const InteractionSlider = ({
     rafId: 0,
   });
 
+  // cleanup animation on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (state.current.rafId) {
+        cancelAnimationFrame(state.current.rafId);
+      }
+    };
+  }, []);
+
   const updateDOM = (val: number, isPressed: boolean) => {
     if (!thumbRef.current || !textRef.current) return;
 
@@ -147,7 +156,6 @@ export const InteractionSlider = ({
       {/* eraser/lock button */}
       {disabled ? (
         <button
-          disabled={true}
           onClick={() => {
             if (onDisabledInteraction) onDisabledInteraction();
           }}
@@ -158,7 +166,7 @@ export const InteractionSlider = ({
       ) : (
         <button
           onClick={handleReset}
-          disabled={disabled || (!value && value !== 0)}
+          disabled={!value && value !== 0}
           className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 text-slate-400 ${
             !value && value !== 0
               ? "cursor-not-allowed opacity-50"
@@ -176,13 +184,14 @@ export const InteractionSlider = ({
         onPointerDown={handlePointer}
         onPointerMove={(e) => state.current.isDragging && handlePointer(e)}
         onPointerUp={onPointerUp}
-        className={`relative flex-1 h-4 rounded-xl touch-none transition-all duration-300 ${
+        onPointerCancel={onPointerUp}
+        className={`relative flex-1 h-10 flex items-center touch-none transition-all duration-300 ${
           disabled ? "cursor-not-allowed" : "cursor-crosshair"
         }`}
       >
         {/* track background */}
         <div
-          className={`absolute inset-0 rounded-xl border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
+          className={`absolute left-0 right-0 h-4 top-1/2 -translate-y-1/2 rounded-xl border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
             dim ? "opacity-40" : ""
           } ${blur ? "blur-xs opacity-80" : ""} ${
             greyscale ? "grayscale" : ""
