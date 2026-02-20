@@ -26,9 +26,9 @@ export const usePostActions = (post: Post) => {
   const [editContent, setEditContent] = useState(post.postContent);
   const [isSaving, setIsSaving] = useState(false);
 
-  // sync server props to the store
   useEffect(() => {
     if (post.userInteractions) {
+      setLocalScores((prev) => ({ ...prev, ...post.userInteractions }));
       interactionStore.syncFromServer(post.id, post.userInteractions, uid);
     }
   }, [post.id, post.userInteractions, uid]);
@@ -40,7 +40,10 @@ export const usePostActions = (post: Post) => {
     });
   }, [post.id]);
 
-  const currentScore = uid ? localScores[uid] : undefined;
+  // fallback to raw post data if local state is lagging
+  const currentScore = uid
+    ? (localScores[uid] ?? post.userInteractions?.[uid])
+    : undefined;
 
   const localMetrics = {
     replyCount: post.replyCount || 0,
