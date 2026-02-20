@@ -5,7 +5,7 @@ import { LoadingDots } from "../ui/LoadingDots";
 
 export const SignInModal = () => {
   const { signIn } = useAuth();
-  const { closeModal } = useModal();
+  const { openModal, closeModal } = useModal();
 
   // Local state for UI feedback
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -54,11 +54,12 @@ export const SignInModal = () => {
 
         {!error && (
           <p className="text-center text-sm text-slate-500 leading-relaxed">
-            Unsure? Tap the
-            <span className="text-[15px] font-extrabold whitespace-nowrap px-3 py-1 rounded-full border m-2 bg-logo-offwhite border-slate-200 shadow-sm">
-              ?
-            </span>
-            in the top left to learn more.
+            Confused?
+            <button onClick={() => openModal("about")}>
+              <span className="whitespace-nowrap px-3 py-1 rounded-full border m-1 bg-logo-offwhite border-slate-200 shadow-sm">
+                Tap here!
+              </span>
+            </button>
           </p>
         )}
       </div>
