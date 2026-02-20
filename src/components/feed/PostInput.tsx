@@ -1,4 +1,10 @@
-import React, { useState, useRef, useLayoutEffect, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useLayoutEffect,
+  useMemo,
+  useEffect,
+} from "react";
 import { createPost } from "../../lib/firebase";
 import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
@@ -19,6 +25,7 @@ export const PostInput = ({
 }: PostInputProps) => {
   const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
+  const [showLockedText, setShowLockedText] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // pick emoji once per component mount, rather than once per page load
@@ -30,6 +37,7 @@ export const PostInput = ({
   const { user, loading } = useAuth();
   const { openModal, closeModal } = useModal();
 
+  // logic state
   const isReplyMode = !!parentPostId;
   const hasNoInteraction = isReplyMode && currentScore === undefined;
 
@@ -40,6 +48,16 @@ export const PostInput = ({
   const MAX_CHARS = 600;
   const charsLeft = MAX_CHARS - content.length;
   const isNearLimit = charsLeft < 50;
+
+  // delay the locked text slightly to avoid a flash when loading existing scores
+  useEffect(() => {
+    if (hasNoInteraction) {
+      const timer = setTimeout(() => setShowLockedText(true), 100);
+      return () => clearTimeout(timer);
+    } else {
+      setShowLockedText(false);
+    }
+  }, [hasNoInteraction]);
 
   // useLayoutEffect prevents visual jitter when altering DOM dimensions
   useLayoutEffect(() => {
@@ -54,15 +72,16 @@ export const PostInput = ({
   }, [content]);
 
   const activePlaceholder = useMemo(() => {
-    if (hasNoInteraction) return "🔒 Score the post to unlock replies!";
+    if (showLockedText) return "🔒 Score the post to unlock replies!";
     if (placeholder) return placeholder;
 
-    if (isReplyMode && currentScore !== undefined) {
+    // assume we will resolve to an interacted state to avoid flashing text
+    if (isReplyMode) {
       return emoji + " Explain your stance...";
     }
 
     return emoji + " Speak your mind...";
-  }, [hasNoInteraction, placeholder, isReplyMode, currentScore, emoji]);
+  }, [showLockedText, placeholder, isReplyMode, emoji]);
 
   const buttonText = isPosting ? null : isReplyMode ? "Reply" : "Post";
 
