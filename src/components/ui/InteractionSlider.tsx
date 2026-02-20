@@ -44,6 +44,7 @@ export const InteractionSlider = ({
     return () => {
       if (state.current.rafId) {
         cancelAnimationFrame(state.current.rafId);
+        state.current.rafId = 0;
       }
     };
   }, []);
@@ -55,13 +56,15 @@ export const InteractionSlider = ({
       // keep it hidden and centered until it receives a value
       thumbRef.current.style.opacity = "0";
       thumbRef.current.style.transform = `translate(-50%, -50%) scale(0.5)`;
-      thumbRef.current.style.left = "50%";
       return;
     }
 
+    // fallback guard against math poisoning
+    const safeVal = isNaN(val) ? 0 : val;
+
     thumbRef.current.style.opacity = "1";
-    const percent = ((val + 3) / 6) * 100;
-    const activeColor = getInterpolatedColor(val, DEFAULT_STOPS);
+    const percent = ((safeVal + 3) / 6) * 100;
+    const activeColor = getInterpolatedColor(safeVal, DEFAULT_STOPS);
 
     thumbRef.current.style.left = `${percent}%`;
     thumbRef.current.style.backgroundColor = "white";
@@ -71,8 +74,7 @@ export const InteractionSlider = ({
     const scale = isPressed ? 1.3 : 1;
     thumbRef.current.style.transform = `translate(-50%, -50%) scale(${scale})`;
 
-    // format to integer to avoid showing decimals
-    const intVal = Math.round(val);
+    const intVal = Math.round(safeVal);
     const displayVal =
       intVal === 0 ? "0" : intVal > 0 ? `+${intVal}` : `${intVal}`;
 
@@ -81,13 +83,18 @@ export const InteractionSlider = ({
     }
   };
 
-  // force initial DOM state before browser paints to completely avoid visual flashes
   useLayoutEffect(() => {
     updateDOM(state.current.currentValue, false);
   }, []);
 
   const runLerpLoop = () => {
     const s = state.current;
+
+    // Fail-safe against NaN poisoning freezing the slider
+    if (isNaN(s.currentValue)) s.currentValue = 0;
+    if (isNaN(s.targetValue)) s.targetValue = 0;
+
+
     const lerpFactor = s.isDragging ? 0.4 : 0.15;
     const diff = s.targetValue - s.currentValue;
 
@@ -124,12 +131,13 @@ export const InteractionSlider = ({
       e.currentTarget.setPointerCapture(e.pointerId);
     }
     const rect = trackRef.current?.getBoundingClientRect();
-    if (rect) {
+    if (rect && rect.width > 0) {
       const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
       let newValue = (x / rect.width) * 6 - 3;
       const snapThreshold = 0.15;
       if (Math.abs(newValue) < snapThreshold) newValue = 0;
-      state.current.targetValue = newValue;
+
+      state.current.targetValue = isNaN(newValue) ? 0 : newValue;
       if (!state.current.rafId) runLerpLoop();
     }
   };
@@ -138,7 +146,6 @@ export const InteractionSlider = ({
     if (disabled) return;
     state.current.isDragging = false;
 
-    // snap to nearest integer on release
     const finalVal = Math.round(state.current.targetValue);
     state.current.targetValue = finalVal;
 
@@ -151,8 +158,15 @@ export const InteractionSlider = ({
   const handleReset = (e: React.MouseEvent) => {
     e.stopPropagation();
     state.current.hasValue = false;
-    cancelAnimationFrame(state.current.rafId);
-    state.current.rafId = 0;
+    if (state.current.rafId) {
+      cancelAnimationFrame(state.current.rafId);
+      state.current.rafId = 0;
+    }
+
+    // RESET FIX: Silently zero out the math so it fades out without flying back
+    state.current.currentValue = 0;
+    state.current.targetValue = 0;
+
     updateDOM(0, false);
     onChange(undefined);
   };
@@ -215,6 +229,7 @@ export const InteractionSlider = ({
             ref={thumbRef}
             className="absolute top-1/2 flex items-center justify-center pointer-events-none z-10"
             style={{
+              // SNAPPY FIX: reduced CSS transition speeds to 0.1s
               transition:
                 "transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.1s ease, opacity 0.1s ease, box-shadow 0.1s ease",
               backgroundColor: "white",
