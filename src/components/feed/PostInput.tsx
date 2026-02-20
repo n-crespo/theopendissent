@@ -10,7 +10,7 @@ interface PostInputProps {
   currentScore?: number;
 }
 
-const emojis = ["👂", "🎤", "🗣️", "🗨️"];
+const emojis = ["🎤", "🗣️", "📣", "📢", "🧠"];
 
 const emoji = emojis[Math.floor(Math.random() * emojis.length)];
 
