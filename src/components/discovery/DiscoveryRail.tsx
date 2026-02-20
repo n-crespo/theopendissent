@@ -4,11 +4,9 @@ import { usePwa } from "../../context/PwaContext";
 import { ScrollableRail } from "../ui/ScrollableRail";
 import { SortChip } from "./chips/SortChip";
 import { FollowUsChip } from "./chips/FollowUsChip";
+import { JoinTeamChip } from "./chips/JoinTeamChip";
 
 export const DiscoveryRail = () => {
-  const { deferredPrompt } = usePwa();
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
   return (
     <ScrollableRail>
       <div className="snap-start shrink-0">
@@ -19,11 +17,15 @@ export const DiscoveryRail = () => {
         <ListenChip />
       </div>
 
-      {(deferredPrompt || isIOS) && (
-        <div className="snap-start shrink-0">
-          <InstallPwaChip />
-        </div>
-      )}
+      <div className="snap-start shrink-0">
+        <JoinTeamChip />
+      </div>
+
+      {/* <MenuItem
+        icon="bi-rocket-takeoff"
+        label="Join the Team"
+        onClick={() => openModal("joinTeam")}
+      />*/}
 
       <div className="snap-start shrink-0">
         <FollowUsChip />

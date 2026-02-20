@@ -1,13 +1,16 @@
 import { useModal } from "../../context/ModalContext";
+import { usePwa } from "../../context/PwaContext";
 import { DropdownMenu, MenuItem, MenuSeparator } from "../ui/DropdownMenu";
 
 export const HeaderBurgerMenu = () => {
   const { openModal } = useModal();
 
-  const handleListen = () => openModal("listen");
   const handleAbout = () => openModal("about");
   const handleFeedback = () =>
     window.open("https://forms.gle/EA1DcFzigrmjRqZK8", "_blank");
+
+  const { deferredPrompt, install } = usePwa();
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   return (
     <DropdownMenu
@@ -19,14 +22,35 @@ export const HeaderBurgerMenu = () => {
         </div>
       }
     >
-      <MenuItem icon="bi-question-lg" label="About" onClick={handleAbout} />
-      <MenuSeparator />
-      <MenuItem icon="bi-broadcast-pin" label="Listen" onClick={handleListen} />
       <MenuItem
-        icon="bi-rocket-takeoff"
-        label="Join the Team"
+        icon="bi-question-lg"
+        label="What is this?"
+        onClick={handleAbout}
+      />
+      <MenuItem
+        icon="bi-chat-square-heart"
+        label="Follow Us!"
         onClick={() => openModal("joinTeam")}
       />
+      <MenuSeparator />
+
+      {(deferredPrompt || isIOS) && (
+        <>
+          <MenuItem
+            icon="bi-download"
+            label="Install"
+            onClick={() => {
+              if (deferredPrompt) {
+                install();
+              } else if (isIOS) {
+                openModal("installPwa");
+              }
+            }}
+          />
+          <MenuSeparator />
+        </>
+      )}
+
       <MenuItem
         icon="bi-chat-text"
         label="Send Feedback"
