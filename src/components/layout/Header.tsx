@@ -13,33 +13,19 @@ export const Header = () => {
   const { openModal } = useModal();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 rounded-b-lg border-b border-slate-200 bg-logo-offwhite transform-gpu">
-      <div className="mx-auto flex max-w-125 items-center justify-between px-0 py-0">
+    <header className="fixed h-[9vh] top-0 left-0 right-0 z-50 rounded-b-lg border-b border-slate-200 bg-logo-offwhite transform-gpu">
+      <div className="mx-auto flex max-w-125 items-center justify-between px-0 py-2">
         {/* left side: menu button */}
-
         <div className="flex w-20 items-center justify-start pl-2">
-          {loading ? (
-            <div className="flex items-center justify-center opacity-50">
-              <i className="bi bi-three-dots text-slate-400"></i>
-            </div>
-          ) : user ? (
-            <HeaderBurgerMenu />
-          ) : (
-            <button
-              className={PILL_BUTTON_STYLE}
-              onClick={() => openModal("about")}
-            >
-              <i className="bi bi-list text-xl leading-none"></i>
-            </button>
-          )}
+          <HeaderBurgerMenu />
         </div>
 
-        {/* center: logo */}
-        <Link to="/" className="flex h-12.5 items-center justify-center">
+        {/* logo */}
+        <Link to="/" className="flex items-start justify-center">
           <img
             src={logoUrl}
             alt="App Icon"
-            className="h-full w-auto max-w-[50vw] object-contain"
+            className="h-full w-auto"
             draggable="false"
           />
         </Link>
@@ -50,8 +36,8 @@ export const Header = () => {
           className="flex w-20 items-center justify-end pr-2"
         >
           {loading ? (
-            <div className="flex items-center justify-center opacity-50">
-              <i className="bi bi-three-dots text-slate-400"></i>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-logo-offwhite shadow-sm active:scale-95">
+              <i className=""></i>
             </div>
           ) : user ? (
             <HeaderUserMenu />
