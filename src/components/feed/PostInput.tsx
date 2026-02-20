@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useLayoutEffect, useMemo } from "react";
 import { createPost } from "../../lib/firebase";
 import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
@@ -12,8 +12,6 @@ interface PostInputProps {
 
 const emojis = ["🎤", "🗣️", "📣", "📢", "🧠"];
 
-const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-
 export const PostInput = ({
   parentPostId,
   placeholder,
@@ -23,22 +21,28 @@ export const PostInput = ({
   const [isPosting, setIsPosting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // pick emoji once per component mount, rather than once per page load
+  const emoji = useMemo(
+    () => emojis[Math.floor(Math.random() * emojis.length)],
+    [],
+  );
+
   const { user, loading } = useAuth();
   const { openModal, closeModal } = useModal();
 
-  // --- Logic State ---
   const isReplyMode = !!parentPostId;
   const hasNoInteraction = isReplyMode && currentScore === undefined;
 
-  // you must have interacted to reply
-  const isSubmitDisabled = loading || isPosting || hasNoInteraction;
+  // prevent empty submissions
+  const isSubmitDisabled =
+    loading || isPosting || hasNoInteraction || !content.trim();
 
   const MAX_CHARS = 600;
   const charsLeft = MAX_CHARS - content.length;
   const isNearLimit = charsLeft < 50;
 
-  // --- Auto-resize Logic ---
-  useEffect(() => {
+  // useLayoutEffect prevents visual jitter when altering DOM dimensions
+  useLayoutEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
@@ -49,22 +53,19 @@ export const PostInput = ({
     }
   }, [content]);
 
-  // --- Dynamic UI Strings ---
   const activePlaceholder = useMemo(() => {
     if (hasNoInteraction) return "🔒 Score the post to unlock replies!";
     if (placeholder) return placeholder;
 
-    // Dynamic text based on score
     if (isReplyMode && currentScore !== undefined) {
       return emoji + " Explain your stance...";
     }
 
     return emoji + " Speak your mind...";
-  }, [hasNoInteraction, placeholder, isReplyMode, currentScore]);
+  }, [hasNoInteraction, placeholder, isReplyMode, currentScore, emoji]);
 
   const buttonText = isPosting ? null : isReplyMode ? "Reply" : "Post";
 
-  // --- Handlers ---
   const handleSubmit = async () => {
     if (isSubmitDisabled) return;
     if (!user) return openModal("signin");
@@ -103,62 +104,67 @@ export const PostInput = ({
   };
 
   return (
-    <div className="flex w-full flex-col gap-2">
-      <div className="flex w-full flex-row gap-2">
-        <div className="relative flex-1">
-          <textarea
-            ref={textareaRef}
-            rows={1}
-            maxLength={MAX_CHARS}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={activePlaceholder}
-            disabled={isPosting || loading || hasNoInteraction}
-            className={`w-full resize-none border px-3 py-2.5 pr-6 text-[15px] transition-all
-              outline-none block custom-scrollbar shadow-sm rounded-xl
-              ${
-                hasNoInteraction
-                  ? "bg-slate-50 border-slate-200 cursor-not-allowed"
-                  : "bg-white border-border-subtle focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10"
-              }
-            `}
-          />
-
-          {!hasNoInteraction && content.length > 0 && (
-            <span
-              className={`absolute right-2 bottom-0 text-[10px] font-bold uppercase tracking-tight transition-colors ${
-                isNearLimit ? "text-logo-red" : "text-slate-300"
-              }`}
-            >
-              {charsLeft}
-            </span>
-          )}
-        </div>
-
-        {!hasNoInteraction && (
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitDisabled}
-            className={`
-            min-w-24 max-h-[44px] flex items-center justify-center px-4 text-sm font-bold text-white transition-all duration-200 shadow-2xl
-            bg-linear-to-r from-logo-blue via-logo-green to-logo-red bg-size-[300%_100%] animate-shimmer
-            rounded-xl
+    <div className="flex w-full flex-row gap-0">
+      <div className="relative flex-1">
+        <textarea
+          ref={textareaRef}
+          rows={1}
+          maxLength={MAX_CHARS}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={activePlaceholder}
+          disabled={isPosting || loading || hasNoInteraction}
+          className={`w-full resize-none border px-3 py-2.5 pr-6 text-[15px] transition-all
+            outline-none block custom-scrollbar shadow-sm rounded-xl
             ${
-              isSubmitDisabled
-                ? "grayscale-[0.6] opacity-50 cursor-not-allowed"
-                : "cursor-pointer hover:shadow-2xl active:scale-95"
+              hasNoInteraction
+                ? "bg-slate-50 border-slate-200 cursor-not-allowed"
+                : "bg-white border-border-subtle focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10"
             }
           `}
+        />
+
+        {!hasNoInteraction && content.length > 0 && (
+          <span
+            className={`absolute right-2 bottom-0 text-[10px] font-bold uppercase tracking-tight transition-colors ${
+              isNearLimit ? "text-logo-red" : "text-slate-300"
+            }`}
           >
-            {isPosting ? (
-              <i className="bi bi-three-dots animate-pulse"></i>
-            ) : (
-              buttonText
-            )}
-          </button>
+            {charsLeft}
+          </span>
         )}
       </div>
+
+      <button
+        onClick={handleSubmit}
+        disabled={isSubmitDisabled}
+        aria-hidden={hasNoInteraction}
+        tabIndex={hasNoInteraction ? -1 : 0}
+        className={`
+          flex items-center justify-center font-bold text-white transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap
+          bg-linear-to-r from-logo-blue via-logo-green to-logo-red bg-size-[300%_100%] animate-shimmer
+          rounded-xl h-[44px]
+          ${
+            hasNoInteraction
+              ? "w-0 min-w-0 px-0 opacity-0 pointer-events-none border-none"
+              : "w-24 min-w-24 px-4 text-sm opacity-100 shadow-2xl ml-2"
+          }
+          ${
+            isSubmitDisabled && !hasNoInteraction
+              ? "grayscale-[0.6] opacity-50 cursor-not-allowed"
+              : !hasNoInteraction
+                ? "cursor-pointer hover:shadow-2xl active:scale-95"
+                : ""
+          }
+        `}
+      >
+        {isPosting ? (
+          <i className="bi bi-three-dots animate-pulse"></i>
+        ) : (
+          buttonText
+        )}
+      </button>
     </div>
   );
 };
