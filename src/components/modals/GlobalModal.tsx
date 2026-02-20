@@ -68,7 +68,7 @@ export const GlobalModal = () => {
               {/* Header */}
               <div className="sticky top-0 z-50 flex h-10 w-full shrink-0 items-center justify-end bg-white/80 backdrop-blur-sm px-1">
                 <button
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100"
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100"
                   onClick={closeModal}
                   aria-label="Close"
                 >

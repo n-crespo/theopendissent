@@ -1,7 +1,4 @@
-export interface PostInteractions {
-  agreed: Record<string, boolean>;
-  dissented: Record<string, boolean>;
-}
+export type PostInteractions = Record<string, number>;
 
 export interface Post {
   id: string;
@@ -12,7 +9,7 @@ export interface Post {
   replyCount: number;
   userInteractions: PostInteractions;
   parentPostId?: string;
-  userInteractionType?: "agreed" | "dissented";
+  interactionScore?: number; // -5 to 5
 }
 
 export interface UserProfile {

@@ -21,10 +21,9 @@ export const FeedItemSkeleton = () => {
         <div className="h-3 w-[60%] rounded-full bg-slate-50"></div>
       </div>
 
-      {/* Footer Pills */}
-      <div className="flex gap-2 mt-2 pt-3 border-t border-slate-50">
-        <div className="h-6 w-16 rounded-full bg-slate-50"></div>
-        <div className="h-6 w-16 rounded-full bg-slate-50"></div>
+      {/* Footer */}
+      <div className="space-y-2 mt-1">
+        <div className="h-4 w-full rounded-full bg-slate-50"></div>
       </div>
     </div>
   );

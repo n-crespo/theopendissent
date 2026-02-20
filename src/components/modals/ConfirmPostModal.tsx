@@ -20,7 +20,7 @@ export const ConfirmPostModal = ({
       </h2>
 
       {/* content preview box: using global border and background tokens */}
-      <div className="w-full bg-bg-preview rounded-(--radius-input) p-4 mb-6 flex flex-col border border-border-subtle max-h-48 overflow-y-auto custom-scrollbar">
+      <div className="w-full bg-bg-preview rounded-xl p-4 mb-6 flex flex-col border border-border-subtle max-h-48 overflow-y-auto custom-scrollbar">
         <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
           Preview
         </div>
@@ -37,7 +37,7 @@ export const ConfirmPostModal = ({
       <div className="w-full flex flex-col gap-2">
         {/* primary action: post now */}
         <button
-          className="inline-flex w-full items-center justify-center rounded-(--radius-button) bg-logo-blue px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-logo-blue/90"
+          className="inline-flex w-full items-center justify-center rounded-xl bg-logo-blue px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-logo-blue/90"
           onClick={onConfirm}
         >
           Post now
@@ -45,7 +45,7 @@ export const ConfirmPostModal = ({
 
         {/* secondary action: ghost style */}
         <button
-          className="w-full rounded-(--radius-button) px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100"
+          className="w-full rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100"
           onClick={onClose}
         >
           Wait, let me edit

@@ -8,40 +8,19 @@ export const HeaderUserMenu = () => {
 
   const handleHome = () => navigate("/");
   const handleProfile = () => navigate("/profile");
-  const handleListen = () => openModal("listen");
-  const handleFeedback = () =>
-    window.open("https://forms.gle/EA1DcFzigrmjRqZK8", "_blank");
 
   return (
     <DropdownMenu
       align="right"
       width="w-48"
       trigger={
-        <div className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-slate-200/50 bg-slate-100 text-slate-500 transition-all shadow-sm active:scale-95">
+        <div className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-slate-200/50 bg-slate-100 text-slate-500 transition-all shadow-sm active:scale-95">
           <i className="bi bi-person-fill text-lg"></i>
         </div>
       }
     >
       <MenuItem icon="bi-house-door" label="Home" onClick={handleHome} />
       <MenuItem icon="bi-person" label="Profile" onClick={handleProfile} />
-
-      <MenuSeparator />
-
-      <MenuItem icon="bi-broadcast-pin" label="Listen" onClick={handleListen} />
-
-      <MenuSeparator />
-
-      <MenuItem
-        icon="bi-rocket-takeoff"
-        label="Join the Team"
-        onClick={() => openModal("joinTeam")}
-      />
-
-      <MenuItem
-        icon="bi-chat-text"
-        label="Send Feedback"
-        onClick={handleFeedback}
-      />
 
       <MenuSeparator />
 

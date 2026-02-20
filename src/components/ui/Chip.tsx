@@ -43,7 +43,7 @@ export const Chip = ({
       {icon && (
         <div
           className={`
-            flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-colors
+            flex h-7 w-7 shrink-0 items-center justify-center rounded-xl border transition-colors
             ${
               isActive
                 ? "bg-slate-700 border-slate-600 text-slate-200"

@@ -11,7 +11,7 @@ import { useUserActivity } from "../hooks/useUserActivity";
 import { useUserCounts } from "../hooks/useUserCounts";
 import { formatCompactNumber } from "../utils";
 
-type FilterType = "posts" | "replies" | "agreed" | "dissented";
+type FilterType = "posts" | "replies" | "interacted";
 
 export const Profile = () => {
   const { user } = useAuth();
@@ -35,56 +35,41 @@ export const Profile = () => {
 
   if (!user) return null;
 
+  const tabs = [
+    {
+      id: "posts",
+      label: "Your Posts",
+      icon: "bi-file-text",
+      count: counts.posts,
+    },
+    {
+      id: "replies",
+      label: "Your Replies",
+      icon: "bi-chat",
+      count: counts.replies,
+    },
+    {
+      id: "interacted",
+      label: "Your Interactions",
+      icon: "bi-sliders",
+      count: counts.interacted,
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-3">
       {/* Header Grid */}
       <div className="grid grid-cols-1 items-center w-full">
-        <div className="col-start-1 row-start-1 justify-self-start z-10">
-          <ScrollableRail>
-            <Chip
-              onClick={() => navigate(-1)} // -1 restores previous URL (including ?tab=...)
-              icon={<i className="bi bi-arrow-left"></i>}
-            >
-              Back
-            </Chip>
-          </ScrollableRail>
-        </div>
-        <h1 className="col-start-1 row-start-1 justify-self-center text-xl font-bold text-slate-900 tracking-tight text-nowrap">
+        <h1 className="my-2 col-start-1 row-start-1 justify-self-center text-xl font-bold text-slate-900 tracking-tight text-nowrap">
           Your Profile
         </h1>
       </div>
 
       <ScrollableRail>
-        {[
-          {
-            id: "posts",
-            label: "Posts",
-            icon: "bi-file-text",
-            count: counts.posts,
-          },
-          {
-            id: "replies",
-            label: "Replies",
-            icon: "bi-chat-left-text",
-            count: counts.replies,
-          },
-          {
-            id: "agreed",
-            label: "Agreed",
-            icon: "bi-check-circle",
-            count: counts.agreed,
-          },
-          {
-            id: "dissented",
-            label: "Dissented",
-            icon: "bi-x-circle",
-            count: counts.dissented,
-          },
-        ].map((tab) => (
+        {tabs.map((tab) => (
           <Chip
             key={tab.id}
             isActive={filter === tab.id}
-            // 5. Use the new handler
             onClick={() => handleFilterChange(tab.id as FilterType)}
             icon={<i className={`bi ${tab.icon}`}></i>}
           >
@@ -106,7 +91,6 @@ export const Profile = () => {
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            {/* 6. FIX: Add initial={false} to stop animation on mount (helps scroll restoration) */}
             <AnimatePresence mode="popLayout" initial={false}>
               {posts.length === 0 ? (
                 <motion.div
@@ -133,14 +117,7 @@ export const Profile = () => {
                     {filter === "replies" ? (
                       <ProfileReplyItem reply={item} />
                     ) : (
-                      <FeedItem
-                        item={item}
-                        isReply={
-                          filter === "agreed" || filter === "dissented"
-                            ? !!item.parentPostId
-                            : false
-                        }
-                      />
+                      <FeedItem item={item} isReply={!!item.parentPostId} />
                     )}
                   </motion.div>
                 ))

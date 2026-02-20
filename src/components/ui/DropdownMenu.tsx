@@ -76,7 +76,7 @@ export const DropdownMenu = ({
         }`,
         borderRadius: "var(--radius-modal)",
       }}
-      className={`z-9999 ${width} overflow-hidden border border-border-subtle bg-white py-1.5 shadow-xl animate-in fade-in zoom-in-95 duration-100`}
+      className={`z-9999 ${width} overflow-hidden border border-border-subtle bg-white py-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-100`}
     >
       {/* Provide the close function to children */}
       <DropdownContext.Provider value={{ close: () => setShow(false) }}>
@@ -131,12 +131,12 @@ export const MenuItem = ({
         ${
           variant === "danger"
             ? "text-logo-red hover:bg-red-50"
-            : "text-slate-700 hover:bg-slate-50"
+            : "text-slate-800 hover:bg-slate-50"
         }`}
     >
       {icon && (
         <i
-          className={`bi ${icon} ${variant === "danger" ? "text-red-400" : "text-slate-400"}`}
+          className={`bi ${icon} ${variant === "danger" ? "text-(--disagree)" : "text-slate-400"}`}
         ></i>
       )}
       {label}

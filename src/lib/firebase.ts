@@ -39,8 +39,7 @@ const firebaseConfig = {
 export interface UserCounts {
   posts: number;
   replies: number;
-  agreed: number;
-  dissented: number;
+  interacted: number;
 }
 
 const app = initializeApp(firebaseConfig);
@@ -62,50 +61,43 @@ googleProvider.setCustomParameters({
 export const postsRef = ref(db, "posts");
 
 /**
- * atomic update to add or remove an interaction in the user's tree.
- * cloud function handles syncing this to the public post/reply and metrics.
- * stores the parent ID as a string so the cloud function can resolve paths.
+ * atomic update to add or remove an interaction score in the user's tree.
+ * cloud function handles syncing this to the public post/reply.
  */
-const setInteraction = async (
+export const setInteraction = async (
   postId: string,
   uid: string,
-  type: "agreed" | "dissented",
-  value: true | null,
+  score: number | null | undefined,
   parentPostId?: string,
 ) => {
+  const sanitizedScore = // sanitize the score to exactly one decimal place if it's a number
+    typeof score === "number" ? Math.round(score * 10) / 10 : score;
+
+  // if removing, value is null.
+  // if adding/updating, value is the object { score, parentId }
+  const value =
+    sanitizedScore === null || sanitizedScore === undefined
+      ? null
+      : {
+          score: sanitizedScore,
+          parentId: parentPostId || "top",
+        };
+
   const updates: Record<string, any> = {
-    // value is the parent ID string or "top"
-    [`users/${uid}/postInteractions/${type}/${postId}`]: value
-      ? parentPostId || "top"
-      : null,
+    [`users/${uid}/postInteractions/${postId}`]: value,
   };
 
   return update(ref(db), updates);
 };
 
-export const addInteraction = (
-  postId: string,
-  uid: string,
-  type: "agreed" | "dissented",
-  parentPostId?: string,
-) => setInteraction(postId, uid, type, true, parentPostId);
-
-export const removeInteraction = (
-  postId: string,
-  uid: string,
-  type: "agreed" | "dissented",
-  parentPostId?: string,
-) => setInteraction(postId, uid, type, null, parentPostId);
-
 /**
- * creates a new post or a reply. also writes an index to users/{uid} for
- * performant profile querying.
+ * creates a new post or a reply.
  */
 export const createPost = async (
   userId: string,
   content: string,
   parentPostId?: string,
-  stance?: "agreed" | "dissented",
+  score?: number,
 ) => {
   const mainTree = parentPostId ? `replies/${parentPostId}` : "posts";
   const newKey = push(child(ref(db), mainTree)).key;
@@ -117,8 +109,8 @@ export const createPost = async (
     postContent: content,
     timestamp: serverTimestamp(),
     replyCount: 0,
-    userInteractions: { agreed: {}, dissented: {} },
-    ...(parentPostId && { parentPostId, userInteractionType: stance }),
+    userInteractions: {},
+    ...(parentPostId && { parentPostId, interactionScore: score }),
   };
 
   const updates: Record<string, any> = {};
@@ -210,10 +202,7 @@ export const getPostById = async (
         ...data,
         // normalize fields to match the post type structure
         replyCount: data.replyCount || 0,
-        userInteractions: data.userInteractions || {
-          agreed: {},
-          dissented: {},
-        },
+        userInteractions: data.userInteractions || {},
       };
     }
 
@@ -245,10 +234,7 @@ export const subscribeToPost = (
       callback({
         id: postId,
         ...data,
-        userInteractions: data.userInteractions || {
-          agreed: {},
-          dissented: {},
-        },
+        userInteractions: data.userInteractions || {},
       });
     } else {
       callback(null);
@@ -278,9 +264,8 @@ export const subscribeToReplies = (
         id,
         ...val,
         replyCount: val.replyCount || 0,
-        userInteractions: val.userInteractions || { agreed: {}, dissented: {} },
+        userInteractions: val.userInteractions || {},
       }))
-      // sort by timestamp descending (Newest First)
       .sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
 
     callback(list);
@@ -316,15 +301,10 @@ export const subscribeToFeed = (
         timestamp: postData.timestamp || 0,
         editedAt: postData.editedAt,
         replyCount: postData.replyCount || 0,
-        userInteractions: {
-          agreed: postData.userInteractions?.agreed || {},
-          dissented: postData.userInteractions?.dissented || {},
-        },
+        userInteractions: postData.userInteractions || {},
         parentPostId: postData.parentPostId,
       }))
-      // filter out replies and invalid content
       .filter((post) => post.postContent && !post.parentPostId)
-      // newest first
       .sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
 
     callback(postsArray);
@@ -379,23 +359,19 @@ export const getDeepLinkData = async (
 
 /**
  * Fetches lists of content based on user profile filters.
- * Handles the "Fan-out" reading:
- * 1. Get list of IDs from users/{uid}
- * 2. Fetch actual content for each ID in parallel
  */
 export const getUserActivity = async (
   userId: string,
-  filter: "posts" | "replies" | "agreed" | "dissented",
+  filter: "posts" | "replies" | "interacted",
 ): Promise<Post[]> => {
   try {
-    // Determine where to look for the IDs
     let indexRef;
     if (filter === "posts") {
       indexRef = ref(db, `users/${userId}/posts`);
     } else if (filter === "replies") {
       indexRef = ref(db, `users/${userId}/replies`);
     } else {
-      indexRef = ref(db, `users/${userId}/postInteractions/${filter}`);
+      indexRef = ref(db, `users/${userId}/postInteractions`);
     }
 
     const snapshot = await get(indexRef);
@@ -404,38 +380,55 @@ export const getUserActivity = async (
     const data = snapshot.val();
     const promises: Promise<Post | null>[] = [];
 
-    // Iterate keys and queue up fetches
     if (filter === "posts") {
       Object.keys(data).forEach((postId) => {
         promises.push(getPostById(postId));
       });
     } else if (filter === "replies") {
-      // data is { parentId: { replyId: true } }
+      // Structure: { parentId: { replyId: true } }
       Object.entries(data).forEach(([parentId, repliesObj]: [string, any]) => {
         Object.keys(repliesObj).forEach((replyId) => {
-          // Fetch Reply AND Parent
           const fetchWithParent = async () => {
             const reply = await getPostById(replyId, parentId);
             if (!reply) return null;
 
             // Fetch parent for context
             const parent = await getPostById(parentId);
-            // Attach parent to the reply object
-            // We cast as any or extend the type locally in the component
+
+            // Return reply with attached parent
             return { ...reply, parentPost: parent || undefined };
           };
           promises.push(fetchWithParent());
         });
       });
     } else {
-      // filter is "agreed" or "dissented"
-      Object.entries(data).forEach(
-        ([itemId, parentReference]: [string, any]) => {
-          const parentId =
-            parentReference === "top" ? undefined : parentReference;
-          promises.push(getPostById(itemId, parentId));
-        },
-      );
+      // Structure: { itemId: { score: 5, parentId: "..." } }
+      Object.entries(data).forEach(([itemId, val]: [string, any]) => {
+        // Robust extraction of parentId.
+        // If val is just a number (legacy), parentId is undefined (assumes top-level).
+        // If val.parentId is "top", parentId is undefined (top-level).
+        // Otherwise, it's a specific parent ID string.
+        const parentId =
+          typeof val === "object" && val.parentId && val.parentId !== "top"
+            ? val.parentId
+            : undefined;
+
+        const fetchContent = async () => {
+          // Efficient lookup: We know exactly where the content lives (posts/ or replies/ParentID)
+          const item = await getPostById(itemId, parentId);
+
+          if (!item) return null;
+
+          // If we determined it's a reply (parentId exists), fetch the parent for context
+          if (parentId) {
+            const parent = await getPostById(parentId);
+            return { ...item, parentPost: parent || undefined };
+          }
+
+          return item;
+        };
+        promises.push(fetchContent());
+      });
     }
 
     const results = await Promise.all(promises);
@@ -451,51 +444,7 @@ export const getUserActivity = async (
 };
 
 /**
- * Fetches count of items for all profile tabs.
- * Uses the index nodes (users/{uid}/...) to avoid downloading full post content.
- */
-export const getUserCounts = async (userId: string) => {
-  try {
-    const userRef = `users/${userId}`;
-
-    // Fetch all 3 index nodes in parallel
-    const [postsSnap, repliesSnap, interactionsSnap] = await Promise.all([
-      get(ref(db, `${userRef}/posts`)),
-      get(ref(db, `${userRef}/replies`)),
-      get(ref(db, `${userRef}/postInteractions`)),
-    ]);
-
-    // Posts Count
-    const posts = postsSnap.exists() ? Object.keys(postsSnap.val()).length : 0;
-
-    // Replies Count (Nested: parentId -> replyId)
-    let replies = 0;
-    if (repliesSnap.exists()) {
-      const repliesData = repliesSnap.val();
-      Object.values(repliesData).forEach((thread: any) => {
-        replies += Object.keys(thread).length;
-      });
-    }
-
-    // Interactions Count
-    const interactionsData = interactionsSnap.val() || {};
-    const agreed = interactionsData.agreed
-      ? Object.keys(interactionsData.agreed).length
-      : 0;
-    const dissented = interactionsData.dissented
-      ? Object.keys(interactionsData.dissented).length
-      : 0;
-
-    return { posts, replies, agreed, dissented };
-  } catch (error) {
-    console.error("Error fetching user counts:", error);
-    return { posts: 0, replies: 0, agreed: 0, dissented: 0 };
-  }
-};
-
-/**
- * Subscribes to posts, replies, and interactions counts for a user.
- * Aggregates updates from 3 different listeners into a single callback.
+ * Subscribes to posts, replies, and interacted counts for a user.
  */
 export const subscribeToUserCounts = (
   userId: string,
@@ -507,8 +456,7 @@ export const subscribeToUserCounts = (
   const currentCounts: UserCounts = {
     posts: 0,
     replies: 0,
-    agreed: 0,
-    dissented: 0,
+    interacted: 0,
   };
 
   // Helper to trigger the callback with a copy of current data
@@ -534,11 +482,7 @@ export const subscribeToUserCounts = (
   const interactionsUnsub = onValue(
     ref(db, `${userRef}/postInteractions`),
     (snapshot) => {
-      const data = snapshot.val() || {};
-      currentCounts.agreed = data.agreed ? Object.keys(data.agreed).length : 0;
-      currentCounts.dissented = data.dissented
-        ? Object.keys(data.dissented).length
-        : 0;
+      currentCounts.interacted = snapshot.size; // Just count total number of keys in the map
       emit();
     },
   );

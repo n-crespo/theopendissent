@@ -1,36 +1,16 @@
-import { ScrollableRail } from "../components/ui/ScrollableRail";
-import { Chip } from "../components/ui/Chip";
-import { useNavigate } from "react-router-dom";
-
 export const Privacy = () => {
-  const navigate = useNavigate();
-
   return (
     <div className="flex flex-col gap-6 text-slate-800">
       {/* Header Area */}
       <div className="flex flex-col gap-3">
-        <ScrollableRail>
-          <Chip
-            onClick={() => navigate("/")}
-            icon={<i className="bi bi-arrow-left"></i>}
-          >
-            Back to Home
-          </Chip>
-        </ScrollableRail>
-
         <div>
-          <h1 className="text-3xl font-bold">Privacy Policy</h1>
+          <h1 className="mt-2 text-3xl font-bold">Privacy Policy</h1>
           <p className="text-sm text-slate-500 mt-1">
             Last Updated: January 2026
           </p>
         </div>
       </div>
 
-      {/* OPTIMIZATION:
-         - added 'flex flex-col gap-8' to parent for consistent vertical rhythm
-         - [&_section]: targets all section children to apply the gap automatically
-         - [&_h2]: targets all h2s inside to apply font weight/size automatically
-      */}
       <div className="flex flex-col gap-8 leading-relaxed [&_section]:flex [&_section]:flex-col [&_section]:gap-3 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900">
         <section>
           <h2>1. Introduction</h2>

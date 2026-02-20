@@ -13,10 +13,13 @@
           }
         },
         "postInteractions": {
-          "$type": {
-            "$post_id": {
-              ".validate": "!newData.exists() || newData.isString()"
-            }
+          "$post_id": {
+            ".validate": "newData.hasChildren(['score', 'parentId'])",
+
+            "score": {
+              ".validate": "newData.isNumber() && newData.val() >= -3 && newData.val() <= 3"
+            },
+            "parentId": { ".validate": "newData.isString()" }
           }
         }
       }
@@ -59,9 +62,9 @@
         ".write": "auth != null && root.child('posts/' + $post_id + '/userId').val() === auth.uid",
 
         "$reply_id": {
-          ".write": "auth != null && ( (!data.exists() && (root.child('posts/' + $post_id + '/userInteractions/agreed/' + auth.uid).exists() || root.child('posts/' + $post_id + '/userInteractions/dissented/' + auth.uid).exists())) || (data.exists() && data.child('userId').val() === auth.uid) )",
+          ".write": "auth != null && ( (!data.exists() && root.child('posts/' + $post_id + '/userInteractions/' + auth.uid).exists()) || (data.exists() && data.child('userId').val() === auth.uid) )",
 
-          ".validate": "!newData.exists() || (data.exists() || newData.hasChildren(['userId', 'postContent', 'timestamp', 'parentPostId', 'userInteractionType', 'replyCount']))",
+          ".validate": "!newData.exists() || (data.exists() || newData.hasChildren(['userId', 'postContent', 'timestamp', 'parentPostId', 'interactionScore', 'replyCount']))",
 
           "userInteractions": {
             ".write": false
@@ -79,8 +82,8 @@
           "postContent": {
             ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 600)"
           },
-          "userInteractionType": {
-            ".validate": "!newData.exists() || (newData.val() === 'agreed' || newData.val() === 'dissented')"
+          "interactionScore": {
+            ".validate": "newData.isNumber() && newData.val() >= -3 && newData.val() <= 3"
           },
           "timestamp": {
             ".validate": "!data.exists() || data.val() === newData.val()"

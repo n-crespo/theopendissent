@@ -25,23 +25,28 @@ export const PostDetails = () => {
   const { user, loading: authLoading } = useAuth();
   const uid = user?.uid;
 
-  const [localStance, setLocalStance] = useState<"agreed" | "dissented" | null>(
-    null,
-  );
+  // store local score (number)
+  const [localScore, setLocalScore] = useState<number | undefined>(undefined);
 
-  // Helper to calculate stance from Store (optimistic) or Post (server)
-  const getCalculatedStance = (post: Post, userId: string | undefined) => {
-    if (!userId) return null;
+  // Helper to calculate score from Store (optimistic) or Post (server)
+  const getCalculatedScore = (
+    post: Post,
+    userId: string | undefined,
+  ): number | undefined => {
+    if (!userId) return undefined;
 
+    // check optimistic store
     const storeData = interactionStore.get(post.id);
-    if (storeData.agreed[userId]) return "agreed";
-    if (storeData.dissented[userId]) return "dissented";
+    if (storeData[userId] !== undefined) {
+      return storeData[userId];
+    }
 
-    const interactions = post.userInteractions || { agreed: {}, dissented: {} };
-    if (interactions.agreed?.[userId]) return "agreed";
-    if (interactions.dissented?.[userId]) return "dissented";
+    // check server data (which is now just a flat map { uid: score })
+    if (post.userInteractions && post.userInteractions[userId] !== undefined) {
+      return post.userInteractions[userId];
+    }
 
-    return null;
+    return undefined;
   };
 
   // Fetch Post
@@ -79,17 +84,19 @@ export const PostDetails = () => {
   // Calculate Stance
   useEffect(() => {
     if (livePost && uid) {
-      setLocalStance((prev) => {
-        if (prev) return prev;
-        return getCalculatedStance(livePost, uid);
+      setLocalScore((prev) => {
+        // If we already have a local score (e.g. from interaction), keep it to avoid jitter
+        // Actually, for PostDetails parent -> input communication, we want the LATEST truth
+        // But getCalculatedScore handles the store lookup, so it is safe.
+        return getCalculatedScore(livePost, uid);
       });
     }
   }, [livePost, uid]);
 
-  // --- RENDER LOGIC ---
-
-  // NOTE: We removed the blocking "isLoading" return.
-  // We now render the layout immediately and use skeletons for content.
+  // Handler for FeedItem to update the local state when user slides
+  const handleInteractionChange = (newScore: number) => {
+    setLocalScore(newScore);
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -110,15 +117,16 @@ export const PostDetails = () => {
         <FeedItem
           item={livePost}
           disableClick={true}
-          onStanceChange={setLocalStance}
+          onInteraction={handleInteractionChange}
           isReply={false}
         />
       ) : null}
       {/* Post Input: Real Input OR Skeleton */}
+      {/* This input is "locked" until localScore is defined */}
       {isLoadingPost || !livePost ? (
         <div className="h-15 w-full rounded-xl border border-slate-100 bg-white animate-pulse p-4 shadow-sm"></div>
       ) : (
-        <PostInput parentPostId={livePost.id} currentStance={localStance} />
+        <PostInput parentPostId={livePost.id} currentScore={localScore} />
       )}
       {/* Replies Section */}
       <div className="flex flex-col gap-4">
@@ -126,7 +134,6 @@ export const PostDetails = () => {
           <h4 className="text-[11px] font-bold tracking-widest uppercase text-slate-400">
             Replies
           </h4>
-          <div className="ml-4 h-px grow bg-border-subtle opacity-50"></div>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -140,16 +147,7 @@ export const PostDetails = () => {
                 transition={{ duration: 0.2 }}
               >
                 {[1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-white p-4 shadow-sm animate-pulse"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-md bg-slate-100"></div>
-                      <div className="h-3 w-24 rounded-full bg-slate-100"></div>
-                    </div>
-                    <div className="h-3 w-full rounded-full bg-slate-50"></div>
-                  </div>
+                  <FeedItemSkeleton key={i} />
                 ))}
               </motion.div>
             ) : replies.length === 0 ? (
@@ -157,10 +155,10 @@ export const PostDetails = () => {
                 key="empty"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="rounded-(--radius-input) py-16 text-center"
+                className="rounded-xl py-16 text-center"
               >
                 <p className="text-sm font-medium italic text-slate-400">
-                  No dissenters yet, you can be the first!
+                  No replies yet, you can be the first!
                 </p>
               </motion.div>
             ) : (
