@@ -9,15 +9,21 @@ import {
 interface LensSliderProps {
   value?: number;
   onChange: (val: number | undefined) => void;
+  blur?: boolean;
+  dim?: boolean;
+  greyscale?: boolean;
   disabled?: boolean;
-  active?: boolean;
+  thumb?: boolean;
 }
 
 export const InteractionSlider = ({
   value,
   onChange,
+  blur,
+  dim,
+  greyscale,
   disabled,
-  active = true,
+  thumb = true,
 }: LensSliderProps) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
@@ -34,6 +40,14 @@ export const InteractionSlider = ({
   const updateDOM = (val: number, isPressed: boolean) => {
     if (!thumbRef.current || !textRef.current) return;
 
+    if (!thumb) {
+      // hide thumb entirely when thumb is false
+      thumbRef.current.style.display = "none";
+      return;
+    } else {
+      thumbRef.current.style.display = "flex";
+    }
+
     if (!state.current.hasValue) {
       // set to 0 to keep it hidden until used
       thumbRef.current.style.opacity = "0";
@@ -46,23 +60,11 @@ export const InteractionSlider = ({
     const activeColor = getInterpolatedColor(val, DEFAULT_STOPS);
 
     thumbRef.current.style.left = `${percent}%`;
+    thumbRef.current.style.backgroundColor = "white";
+    textRef.current.style.background = activeColor;
+    textRef.current.style.display = "block";
 
-    if (disabled) {
-      thumbRef.current.style.left = "50%";
-      thumbRef.current.style.backgroundColor = "transparent";
-      thumbRef.current.style.boxShadow = "none";
-
-      // show lock, hide label
-      textRef.current.style.display = "none";
-    } else {
-      thumbRef.current.style.backgroundColor = "white";
-      textRef.current.style.background = activeColor;
-
-      // show label, hide lock
-      textRef.current.style.display = "block";
-    }
-
-    const scale = isPressed && !disabled && active ? 1.3 : 1;
+    const scale = isPressed ? 1.3 : 1;
     thumbRef.current.style.transform = `translate(-50%, -50%) scale(${scale})`;
 
     const displayVal =
@@ -97,10 +99,10 @@ export const InteractionSlider = ({
     } else {
       updateDOM(state.current.currentValue, false);
     }
-  }, [value, disabled, active]);
+  }, [value, disabled, thumb]);
 
   const handlePointer = (e: React.PointerEvent) => {
-    if (disabled || !active) return;
+    if (disabled) return;
     if (e.type === "pointerdown") {
       state.current.isDragging = true;
       state.current.hasValue = true;
@@ -118,7 +120,7 @@ export const InteractionSlider = ({
   };
 
   const onPointerUp = () => {
-    if (disabled || !active) return;
+    if (disabled) return;
     state.current.isDragging = false;
     updateDOM(state.current.currentValue, false);
 
@@ -140,10 +142,10 @@ export const InteractionSlider = ({
       {/* eraser button */}
       <button
         onClick={handleReset}
-        disabled={disabled || !active || !value}
-        className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 active:scale-90 text-slate-400 ${
-          disabled || !active || !value
-            ? "cursor-not-allowed"
+        disabled={disabled || !value}
+        className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 text-slate-400 ${
+          disabled || !value
+            ? "cursor-not-allowed opacity-50"
             : "hover:text-(--disagree) hover:bg-red-50 bg-white"
         }`}
         title="Clear interaction"
@@ -151,21 +153,31 @@ export const InteractionSlider = ({
         <i className="bi bi-eraser text-lg"></i>
       </button>
 
-      {/* gradient bar/track */}
+      {/* gradient bar/track container */}
       <div
         ref={trackRef}
         onPointerDown={handlePointer}
         onPointerMove={(e) => state.current.isDragging && handlePointer(e)}
         onPointerUp={onPointerUp}
-        className={`relative flex-1 h-4 rounded-full cursor-crosshair touch-none border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
-          disabled ? "opacity-50" : !active ? "blur-xs opacity-80" : ""
+        className={`relative flex-1 h-4 rounded-xl touch-none transition-all duration-300 ${
+          disabled ? "cursor-not-allowed" : "cursor-crosshair"
         }`}
-        style={{
-          background: getGradientCSS(DEFAULT_STOPS),
-          backgroundRepeat: "no-repeat",
-          backgroundClip: "padding-box",
-        }}
       >
+        {/* track background */}
+        <div
+          className={`absolute inset-0 rounded-xl border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
+            dim ? "opacity-50" : ""
+          } ${blur ? "blur-xs opacity-80" : ""} ${
+            greyscale ? "grayscale" : ""
+          }`}
+          style={{
+            background: getGradientCSS(DEFAULT_STOPS),
+            backgroundRepeat: "no-repeat",
+            backgroundClip: "padding-box",
+          }}
+        />
+
+        {/* thumb */}
         <div
           ref={thumbRef}
           className="absolute top-1/2 flex items-center justify-center pointer-events-none z-10"

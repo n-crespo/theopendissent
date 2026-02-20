@@ -6,7 +6,6 @@ import { useShare } from "../../hooks/useShare";
 import { useReport } from "../../hooks/useReport";
 import { useNavigate } from "react-router-dom";
 import { InteractionSlider } from "../ui/InteractionSlider";
-import { getInterpolatedColor, DEFAULT_STOPS } from "../../color-utils";
 
 interface FeedItemProps {
   item: Post;
@@ -33,7 +32,7 @@ export const FeedItem = memo(
 
     const {
       uid,
-      localMetrics,
+      // localMetrics,
       currentScore,
       handleScoreChange, // ensure this hook function supports 'number | undefined'
       isEditing,
@@ -51,7 +50,7 @@ export const FeedItem = memo(
     const isNearLimit = charsLeft < 50;
 
     const replyScore = item.interactionScore ?? 0;
-    const scoreColor = getInterpolatedColor(replyScore, DEFAULT_STOPS);
+    console.log("reply score:" + replyScore);
 
     const formattedTime = timeAgo(
       new Date(typeof item.timestamp === "number" ? item.timestamp : 0),
@@ -94,7 +93,7 @@ export const FeedItem = memo(
         {/* HEADER */}
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 shrink-0 border border-slate-200/50">
+            <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 shrink-0 border border-slate-200/50">
               <i className="bi bi-person-fill"></i>
             </div>
 
@@ -103,15 +102,6 @@ export const FeedItem = memo(
                 <span className="text-sm font-semibold text-slate-900 leading-tight">
                   {isOwner ? "You" : item.userId.substring(0, 10) + "..."}
                 </span>
-
-                {isReply && item.interactionScore !== undefined && (
-                  <span
-                    className="text-[10px] font-black px-1.5 py-0.5 rounded-sm border bg-white shadow-xs"
-                    style={{ borderColor: scoreColor, color: scoreColor }}
-                  >
-                    {replyScore > 0 ? `+${replyScore}` : replyScore}
-                  </span>
-                )}
               </div>
 
               <div className="flex items-center flex-wrap gap-1 text-[10px] text-slate-400 font-medium tracking-tight">
@@ -129,7 +119,7 @@ export const FeedItem = memo(
             {isOwner ? (
               <button
                 onClick={(e) => handleAction(e, () => setIsEditing(true))}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-logo-blue hover:bg-slate-50 transition-colors"
+                className="px-3 py-1.5 flex items-center justify-center rounded-lg text-slate-400 hover:text-logo-blue hover:bg-slate-50 transition-colors"
               >
                 <i className="bi bi-pencil-square text-[14px]"></i>
               </button>
@@ -138,7 +128,7 @@ export const FeedItem = memo(
                 onClick={(e) =>
                   handleAction(e, () => uid && reportPost(item.id, uid))
                 }
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-logo-red hover:bg-slate-50 transition-colors"
+                className="px-3 py-1.5 flex items-center justify-center rounded-lg text-slate-400 hover:text-logo-red hover:bg-slate-50 transition-colors"
               >
                 <i className="bi bi-flag text-[15px]"></i>
               </button>
@@ -198,18 +188,18 @@ export const FeedItem = memo(
 
         {/* FOOTER */}
         <div
-          className={`flex items-center justify-between pt-3 border-t border-border-subtle gap-4 ${isReply ? "border-none pt-0" : ""}`}
+          className={`flex items-center justify-between border-t-2 border-border-subtle gap-4 pt-4`}
         >
-          {!isReply && (
-            <div className="flex-1" onClick={(e) => e.stopPropagation()}>
-              <InteractionSlider
-                value={currentScore}
-                onChange={onSliderChange}
-                disabled={isOwner}
-                active={!!uid}
-              />
-            </div>
-          )}
+          <div className="flex-1" onClick={(e) => e.stopPropagation()}>
+            <InteractionSlider
+              onChange={onSliderChange}
+              value={isReply ? replyScore : currentScore}
+              dim={isReply || isOwner}
+              disabled={isReply || isOwner || !uid}
+              blur={!uid}
+              thumb={!!uid && ((isOwner && isReply) || !isOwner)}
+            />
+          </div>
 
           <div className="flex items-center gap-2 ml-auto">
             {!isReply && (
