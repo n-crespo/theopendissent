@@ -50,7 +50,7 @@ export const Profile = () => {
     },
     {
       id: "interacted",
-      label: "Your Interactions", // "Rated" or "Interacted"
+      label: "Your Interactions",
       icon: "bi-sliders",
       count: counts.interacted,
     },
@@ -60,17 +60,7 @@ export const Profile = () => {
     <div className="flex flex-col gap-3">
       {/* Header Grid */}
       <div className="grid grid-cols-1 items-center w-full">
-        <div className="col-start-1 row-start-1 justify-self-start z-10">
-          <ScrollableRail>
-            <Chip
-              onClick={() => navigate(-1)} // -1 restores previous URL (including ?tab=...)
-              icon={<i className="bi bi-arrow-left"></i>}
-            >
-              Back
-            </Chip>
-          </ScrollableRail>
-        </div>
-        <h1 className="col-start-1 row-start-1 justify-self-center text-xl font-bold text-slate-900 tracking-tight text-nowrap">
+        <h1 className="my-2 col-start-1 row-start-1 justify-self-center text-xl font-bold text-slate-900 tracking-tight text-nowrap">
           Your Profile
         </h1>
       </div>
@@ -124,11 +114,6 @@ export const Profile = () => {
                     exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.2 }}
                   >
-                    {/* Logic:
-                      - If tab is 'replies', use the specialized Reply Item.
-                      - If tab is 'posts' or 'interacted', use FeedItem.
-                      - For 'interacted', it *might* be a reply, so we check parentPostId.
-                    */}
                     {filter === "replies" ? (
                       <ProfileReplyItem reply={item} />
                     ) : (
