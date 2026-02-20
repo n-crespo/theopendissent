@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef } from "react";
 import {
   getInterpolatedColor,
   getGradientCSS,
@@ -32,7 +32,7 @@ export const InteractionSlider = ({
   const textRef = useRef<HTMLSpanElement>(null);
 
   const state = useRef({
-    currentValue: value ?? 0,
+    currentValue: 0, // Starts at 0 so it smoothly slides out on initial load
     targetValue: value ?? 0,
     isDragging: false,
     hasValue: value !== undefined,
@@ -52,9 +52,10 @@ export const InteractionSlider = ({
     if (!thumbRef.current || !textRef.current) return;
 
     if (!state.current.hasValue) {
-      // set to 0 to keep it hidden until used
+      // keep it hidden and centered until it receives a value
       thumbRef.current.style.opacity = "0";
       thumbRef.current.style.transform = `translate(-50%, -50%) scale(0.5)`;
+      thumbRef.current.style.left = "50%";
       return;
     }
 
@@ -80,6 +81,11 @@ export const InteractionSlider = ({
     }
   };
 
+  // force initial DOM state before browser paints to completely avoid visual flashes
+  useLayoutEffect(() => {
+    updateDOM(state.current.currentValue, false);
+  }, []);
+
   const runLerpLoop = () => {
     const s = state.current;
     const lerpFactor = s.isDragging ? 0.25 : 0.06;
@@ -93,7 +99,7 @@ export const InteractionSlider = ({
     }
 
     s.currentValue += diff * lerpFactor;
-    updateDOM(s.currentValue, true);
+    updateDOM(s.currentValue, s.isDragging);
     s.rafId = requestAnimationFrame(runLerpLoop);
   };
 
@@ -209,8 +215,6 @@ export const InteractionSlider = ({
             ref={thumbRef}
             className="absolute top-1/2 flex items-center justify-center pointer-events-none z-10"
             style={{
-              left: "50%",
-              transform: "translate(-50%, -50%) scale(1)",
               transition:
                 "transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease",
               backgroundColor: "white",
