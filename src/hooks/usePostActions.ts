@@ -28,7 +28,8 @@ export const usePostActions = (post: Post) => {
 
   useEffect(() => {
     if (post.userInteractions) {
-      setLocalScores((prev) => ({ ...prev, ...post.userInteractions }));
+      // feed server data into the store. don't update local state directly here,
+      // the store will handle the optimistic lock and notify() if an update is needed.
       interactionStore.syncFromServer(post.id, post.userInteractions, uid);
     }
   }, [post.id, post.userInteractions, uid]);

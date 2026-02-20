@@ -103,13 +103,13 @@ class InteractionStore {
     const lockKey = `${postId}-${uid}`;
     this.optimisticLocks[lockKey] = Date.now() + 2000;
 
-    // debounce
-    if (this.pendingDebounce[postId]) {
-      clearTimeout(this.pendingDebounce[postId]);
+    // debounce using the isolated lockKey instead of the generic postId
+    if (this.pendingDebounce[lockKey]) {
+      clearTimeout(this.pendingDebounce[lockKey]);
     }
 
-    this.pendingDebounce[postId] = setTimeout(() => {
-      delete this.pendingDebounce[postId];
+    this.pendingDebounce[lockKey] = setTimeout(() => {
+      delete this.pendingDebounce[lockKey];
       // firebase setInteraction should handle null/undefined as a delete
       setInteraction(postId, uid, score, parentPostId).catch((err) =>
         console.error("Failed to sync interaction score:", err),
