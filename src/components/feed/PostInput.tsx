@@ -10,6 +10,10 @@ interface PostInputProps {
   currentScore?: number;
 }
 
+const emojis = ["👂", "🎤", "🗣️", "🗨️"];
+
+const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+
 export const PostInput = ({
   parentPostId,
   placeholder,
@@ -47,7 +51,7 @@ export const PostInput = ({
 
   // --- Dynamic UI Strings ---
   const activePlaceholder = useMemo(() => {
-    if (hasNoInteraction) return "Rate the post to unlock replies!";
+    if (hasNoInteraction) return "🔒 Score the post to unlock replies!";
     if (placeholder) return placeholder;
 
     // Dynamic text based on score
@@ -55,7 +59,7 @@ export const PostInput = ({
       return "Explain your stance...";
     }
 
-    return "Speak your mind...";
+    return emoji + " Speak your mind...";
   }, [hasNoInteraction, placeholder, isReplyMode, currentScore]);
 
   const buttonText = isPosting ? null : isReplyMode ? "Reply" : "Post";
