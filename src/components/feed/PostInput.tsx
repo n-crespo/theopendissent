@@ -56,7 +56,7 @@ export const PostInput = ({
 
     // Dynamic text based on score
     if (isReplyMode && currentScore !== undefined) {
-      return "Explain your stance...";
+      return emoji + " Explain your stance...";
     }
 
     return emoji + " Speak your mind...";
