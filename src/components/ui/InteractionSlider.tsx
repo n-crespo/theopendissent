@@ -88,7 +88,7 @@ export const InteractionSlider = ({
 
   const runLerpLoop = () => {
     const s = state.current;
-    const lerpFactor = s.isDragging ? 0.25 : 0.06;
+    const lerpFactor = s.isDragging ? 0.4 : 0.15;
     const diff = s.targetValue - s.currentValue;
 
     if (Math.abs(diff) < 0.005) {
@@ -216,7 +216,7 @@ export const InteractionSlider = ({
             className="absolute top-1/2 flex items-center justify-center pointer-events-none z-10"
             style={{
               transition:
-                "transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease",
+                "transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.1s ease, opacity 0.1s ease, box-shadow 0.1s ease",
               backgroundColor: "white",
             }}
           >
