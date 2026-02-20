@@ -136,13 +136,13 @@ export const PostInput = ({
           onClick={handleSubmit}
           disabled={isSubmitDisabled}
           className={`
-            min-w-24 flex items-center justify-center px-4 text-sm font-bold text-white transition-all duration-200 shadow-sm
+            min-w-24 max-h-[44px] flex items-center justify-center px-4 text-sm font-bold text-white transition-all duration-200 shadow-2xl
             bg-linear-to-r from-logo-blue via-logo-green to-logo-red bg-size-[300%_100%] animate-shimmer
             rounded-xl
             ${
               isSubmitDisabled
                 ? "grayscale-[0.6] opacity-50 cursor-not-allowed"
-                : "cursor-pointer hover:shadow-md active:scale-95"
+                : "cursor-pointer hover:shadow-2xl active:scale-95"
             }
           `}
         >

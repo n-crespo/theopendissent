@@ -131,7 +131,7 @@ export const MenuItem = ({
         ${
           variant === "danger"
             ? "text-logo-red hover:bg-red-50"
-            : "text-slate-700 hover:bg-slate-50"
+            : "text-slate-800 hover:bg-slate-50"
         }`}
     >
       {icon && (
