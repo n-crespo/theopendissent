@@ -61,8 +61,11 @@ export const InteractionSlider = ({
     const scale = isPressed ? 1.3 : 1;
     thumbRef.current.style.transform = `translate(-50%, -50%) scale(${scale})`;
 
+    // format to integer to avoid showing decimals
+    const intVal = Math.round(val);
     const displayVal =
-      val === 0 ? "0.0" : val > 0 ? `+${val.toFixed(1)}` : val.toFixed(1);
+      intVal === 0 ? "0" : intVal > 0 ? `+${intVal}` : `${intVal}`;
+
     if (textRef.current.textContent !== displayVal) {
       textRef.current.textContent = displayVal;
     }
@@ -119,9 +122,14 @@ export const InteractionSlider = ({
   const onPointerUp = () => {
     if (disabled) return;
     state.current.isDragging = false;
-    updateDOM(state.current.currentValue, false);
 
-    const finalVal = Math.round(state.current.targetValue * 10) / 10;
+    // snap to nearest integer on release
+    const finalVal = Math.round(state.current.targetValue);
+    state.current.targetValue = finalVal;
+
+    if (!state.current.rafId) runLerpLoop();
+
+    updateDOM(state.current.currentValue, false);
     onChange(finalVal);
   };
 
@@ -175,7 +183,7 @@ export const InteractionSlider = ({
         {/* track background */}
         <div
           className={`absolute inset-0 rounded-xl border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
-            dim ? "opacity-50" : ""
+            dim ? "opacity-40" : ""
           } ${blur ? "blur-xs opacity-80" : ""} ${
             greyscale ? "grayscale" : ""
           }`}
@@ -203,7 +211,7 @@ export const InteractionSlider = ({
               ref={textRef}
               className="text-sm leading-none bold border border-white w-auto px-2 py-2 box-content rounded-xl overflow-hidden text-white font-bold"
             >
-              0.0
+              0
             </span>
           </div>
         )}
