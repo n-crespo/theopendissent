@@ -36,8 +36,8 @@ export const Header = () => {
           className="flex w-20 items-center justify-end pr-2"
         >
           {loading ? (
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-logo-offwhite shadow-sm active:scale-95">
-              <i className=""></i>
+            <div className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-slate-200/50 bg-slate-100 text-slate-500 transition-all shadow-sm active:scale-95">
+              <></>
             </div>
           ) : user ? (
             <HeaderUserMenu />
