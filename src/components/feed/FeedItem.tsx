@@ -216,7 +216,7 @@ export const FeedItem = memo(
                 }
                 disabled={disableClick}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg origin-center active:scale-95 transition-all
-                  ${isJiggling ? "animate-jiggle shadow-md ring-2 ring-logo-blue/10" : ""}
+                  ${isJiggling ? "animate-jiggle" : ""}
                   ${disableClick ? "text-logo-blue" : "text-slate-400 hover:bg-slate-50 hover:text-logo-blue"}`}
               >
                 <i
