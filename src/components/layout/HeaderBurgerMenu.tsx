@@ -30,7 +30,7 @@ export const HeaderBurgerMenu = () => {
       <MenuItem
         icon="bi-chat-square-heart"
         label="Follow Us!"
-        onClick={() => openModal("joinTeam")}
+        onClick={() => openModal("followUs")}
       />
 
       {(deferredPrompt || isIOS) && (
