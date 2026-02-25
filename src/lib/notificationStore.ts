@@ -43,7 +43,9 @@ class NotificationStore {
   subscribe(callback: (notifications: Notification[]) => void) {
     this.listeners.add(callback);
     callback(this.notifications);
-    return () => this.listeners.delete(callback);
+    return () => {
+      this.listeners.delete(callback);
+    };
   }
 
   /** Actions wrapper */
