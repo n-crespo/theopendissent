@@ -26,30 +26,18 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 10
-          run_install: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          # we removed 'cache: pnpm' from here to fix the path resolution error
 
-      - name: Get pnpm store directory
-        shell: bash
+      - name: Clean and Install Dependencies
         run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          # cache based on the lockfile inside functions/
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('functions/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile --config.node-linker=hoisted
+          # kill any existing node_modules to prevent symlink pollution
+          rm -rf node_modules functions/node_modules
+          # install with hoisted linker to ensure a flat structure for firebase
+          pnpm install --frozen-lockfile --config.node-linker=hoisted --dir functions
 
       - name: Deploy to Production
         env:
@@ -66,9 +54,12 @@ jobs:
           # create the env file locally in the current dir (functions/)
           echo "WHITELISTED_EMAILS=\"$WHITELISTED_EMAILS\"" > .env.the-open-dissent-prod
 
-          # we reference the config files one level up
-          pnpm exec firebase deploy \
+          # install firebase-tools globally via npm to ensure it's clean and stable
+          # this avoids the 'minimatch' errors from previous attempts
+          npm install -g firebase-tools
+
+          firebase deploy \
             --only functions,database \
             --project the-open-dissent-prod \
-            --config ../firebase.json \
-            --non-interactive
+            --non-interactive \
+            --debug
