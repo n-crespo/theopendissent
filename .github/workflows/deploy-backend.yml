@@ -21,7 +21,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install pnpm
-        # update to v4 for pnpm 10 support
         uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -31,12 +30,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "pnpm"
-          # explicitly point to the lockfile inside functions for caching to work
-          cache-dependency-path: "functions/pnpm-lock.yaml"
 
       - name: Install Dependencies
-        # run install inside the functions directory
         run: pnpm install --frozen-lockfile --config.node-linker=hoisted --dir functions
 
       - name: Deploy to Production
