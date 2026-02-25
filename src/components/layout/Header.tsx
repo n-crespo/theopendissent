@@ -15,7 +15,7 @@ export const Header = () => {
   const { unreadCount } = useNotifications(); // Access unread count
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-slate-200 transform-gpu">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-slate-200 bg-logo-offwhite transform-gpu">
       <div className="mx-auto flex max-w-125 items-center justify-between px-2 py-2">
         <HeaderBurgerMenu />
         <Link
