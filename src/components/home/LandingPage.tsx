@@ -61,7 +61,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
               </p>
             </section>
             <section>
-              A functional democracy cannot survive without open dissent.
+              A functional democracy cannot survive without <b>open dissent</b>.
             </section>
             <div className="flex flex-col justify-center items-center gap-4">
               <div className="font-bold mt-8 text-slate-900">
