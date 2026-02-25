@@ -38,6 +38,7 @@ jobs:
 
       - name: Deploy to Production
         env:
+          NPM_CONFIG_NODE_LINKER: hoisted
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/service-account.json
           WHITELISTED_EMAILS: ${{ secrets.WHITELISTED_EMAILS }}
         run: |
