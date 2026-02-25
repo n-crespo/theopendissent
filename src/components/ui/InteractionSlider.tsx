@@ -67,7 +67,7 @@ export const InteractionSlider = ({
     const activeColor = getInterpolatedColor(safeVal, DEFAULT_STOPS);
 
     thumbRef.current.style.left = `${percent}%`;
-    thumbRef.current.style.backgroundColor = "white";
+    // thumbRef.current.style.backgroundColor = "white";
     textRef.current.style.background = activeColor;
     textRef.current.style.display = "block";
 
@@ -93,7 +93,6 @@ export const InteractionSlider = ({
     // Fail-safe against NaN poisoning freezing the slider
     if (isNaN(s.currentValue)) s.currentValue = 0;
     if (isNaN(s.targetValue)) s.targetValue = 0;
-
 
     const lerpFactor = s.isDragging ? 0.4 : 0.15;
     const diff = s.targetValue - s.currentValue;
@@ -190,7 +189,7 @@ export const InteractionSlider = ({
           className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 text-slate-400 ${
             value === undefined
               ? "cursor-not-allowed opacity-50"
-              : "hover:text-(--disagree) hover:bg-red-50 bg-white"
+              : "hover:text-(--disagree) hover:bg-red-50"
           }`}
           title="Clear interaction"
         >
@@ -229,10 +228,8 @@ export const InteractionSlider = ({
             ref={thumbRef}
             className="absolute top-1/2 flex items-center justify-center pointer-events-none z-10"
             style={{
-              // SNAPPY FIX: reduced CSS transition speeds to 0.1s
               transition:
                 "transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.1s ease, opacity 0.1s ease, box-shadow 0.1s ease",
-              backgroundColor: "white",
             }}
           >
             <span
