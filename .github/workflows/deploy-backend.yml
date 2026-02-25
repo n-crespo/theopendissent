@@ -4,21 +4,30 @@ on:
   push:
     branches:
       - main
-    # Only deploy if backend files change
     paths:
       - "functions/**"
       - "database.rules.json"
       - "firebase.json"
       - ".firebaserc"
-
   workflow_dispatch:
 
 jobs:
   deploy_backend:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./functions
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          # checkout the whole repo, but we will operate inside /functions
+          sparse-checkout: |
+            functions
+            firebase.json
+            .firebaserc
+            database.rules.json
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -30,11 +39,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: "pnpm"
+          cache-dependency-path: "functions/pnpm-lock.yaml"
 
       - name: Install Dependencies
-        run: |
-          rm -rf functions/node_modules
-          pnpm install --frozen-lockfile --config.node-linker=hoisted --dir functions
+        run: pnpm install --frozen-lockfile --config.node-linker=hoisted
 
       - name: Deploy to Production
         env:
@@ -48,10 +57,12 @@ jobs:
             exit 1
           fi
 
-          echo "WHITELISTED_EMAILS=\"$WHITELISTED_EMAILS\"" > functions/.env.the-open-dissent-prod
+          # create the env file locally in the current dir (functions/)
+          echo "WHITELISTED_EMAILS=\"$WHITELISTED_EMAILS\"" > .env.the-open-dissent-prod
 
-          npx firebase-tools deploy \
+          # we reference the config files one level up
+          pnpm exec firebase deploy \
             --only functions,database \
             --project the-open-dissent-prod \
-            --non-interactive \
-            --debug
+            --config ../firebase.json \
+            --non-interactive
