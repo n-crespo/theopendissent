@@ -80,7 +80,7 @@ export const GlobalModal = () => {
               {/* 'flex-1' and 'h-full' so the internal scrollbar area fills the fixed height */}
               <div
                 className={`
-                  custom-scrollbar overflow-y-auto p-5 pt-0 text-left}
+                  custom-scrollbar overflow-y-auto p-4 pt-0 text-left}
                 `}
               >
                 {modal.type === "signin" && <SignInModal />}
