@@ -21,13 +21,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          # checkout the whole repo, but we will operate inside /functions
-          sparse-checkout: |
-            functions
-            firebase.json
-            .firebaserc
-            database.rules.json
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -39,8 +32,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "pnpm"
-          cache-dependency-path: "functions/pnpm-lock.yaml"
+          # we removed 'cache: pnpm' from here to fix the path resolution error
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          # cache based on the lockfile inside functions/
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('functions/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile --config.node-linker=hoisted
