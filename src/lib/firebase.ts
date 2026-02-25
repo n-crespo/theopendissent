@@ -494,3 +494,99 @@ export const subscribeToUserCounts = (
     interactionsUnsub();
   };
 };
+
+/**
+ * Subscribes to all notifications for a specific user.
+ * Groups data and sorts by the latest update.
+ */
+export const subscribeToNotifications = (
+  userId: string,
+  callback: (notifications: any[]) => void,
+) => {
+  const notifRef = ref(db, `users/${userId}/notifications`);
+  // Sort by updatedAt so newest notifications are at the top
+  const q = query(notifRef, orderByChild("updatedAt"));
+
+  return onValue(q, (snapshot) => {
+    if (!snapshot.exists()) {
+      callback([]);
+      return;
+    }
+
+    const data = snapshot.val();
+    const list = Object.entries(data)
+      .map(([id, val]: [string, any]) => ({
+        id,
+        ...val,
+      }))
+      // Reverse because limitToLast/orderByChild returns ascending
+      .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+    callback(list);
+  });
+};
+
+/**
+ * Marks a specific notification as read.
+ */
+export const markNotificationAsRead = async (
+  userId: string,
+  notificationId: string,
+) => {
+  const path = `users/${userId}/notifications/${notificationId}/isRead`;
+  return update(ref(db), { [path]: true });
+};
+
+/**
+ * Marks ALL notifications as read for a user.
+ */
+export const markAllNotificationsAsRead = async (
+  userId: string,
+  notificationIds: string[],
+) => {
+  const updates: Record<string, boolean> = {};
+  notificationIds.forEach((id) => {
+    updates[`users/${userId}/notifications/${id}/isRead`] = true;
+  });
+  return update(ref(db), updates);
+};
+
+/**
+ * Deletes a specific notification or a batch of notifications.
+ */
+export const deleteNotifications = async (
+  userId: string,
+  notificationIds: string[],
+) => {
+  const updates: Record<string, null> = {};
+  notificationIds.forEach((id) => {
+    updates[`users/${userId}/notifications/${id}`] = null;
+  });
+  return update(ref(db), updates);
+};
+
+/**
+ * Helper to subscribe specifically to the unread count for the Header bubble.
+ * This is more performant than fetching the whole list if you only need the number.
+ */
+export const subscribeToUnreadCount = (
+  userId: string,
+  callback: (count: number) => void,
+) => {
+  const notifRef = ref(db, `users/${userId}/notifications`);
+
+  return onValue(notifRef, (snapshot) => {
+    if (!snapshot.exists()) {
+      callback(0);
+      return;
+    }
+
+    let unread = 0;
+    snapshot.forEach((child) => {
+      if (child.val().isRead === false) {
+        unread++;
+      }
+    });
+    callback(unread);
+  });
+};
