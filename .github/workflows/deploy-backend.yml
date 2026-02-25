@@ -53,5 +53,5 @@ jobs:
           pnpm exec firebase deploy \
             --only functions,database \
             --project the-open-dissent-prod \
-            --non-interactive
+            --non-interactive \
             --debug
