@@ -29,11 +29,11 @@ export const Notifications = () => {
   };
 
   const handleNotifClick = (id: string, targetId: string, type: string) => {
-    markAsRead(id);
+    removeBatch([id]);
     if (type === "reply") {
       navigate(`/post/${targetId}`);
     }
-    // placeholder for invitations/show logic
+    // can add invitation logic here!
   };
 
   const renderMessage = (notif: any) => {
