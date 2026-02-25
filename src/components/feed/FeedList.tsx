@@ -116,7 +116,7 @@ export const FeedList = ({
           !hasMore &&
           posts.length > 0 && (
             <div className="items-center opacity-40">
-              <span className="text-slate-500 text-[11px] font-bold tracking-widest uppercase">
+              <span className="text-slate-500 text-[11px] font-bold tracking-wider uppercase">
                 You've reached the end!
               </span>
             </div>

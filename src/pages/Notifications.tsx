@@ -49,7 +49,7 @@ export const Notifications = () => {
         <div className="flex items-center justify-between px-1 mb-1">
           <button
             onClick={toggleAll}
-            className="text-[11px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors"
+            className="text-[11px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-wider transition-colors"
           >
             {selectedIds.size === notifications.length
               ? "Deselect All"
@@ -59,7 +59,7 @@ export const Notifications = () => {
           {selectedIds.size > 0 && (
             <button
               onClick={handleDeleteSelected}
-              className="text-[11px] font-bold text-logo-red hover:text-red-700 uppercase tracking-widest transition-colors"
+              className="text-[11px] font-bold text-logo-red hover:text-red-700 uppercase tracking-wider transition-colors"
             >
               Delete ({selectedIds.size})
             </button>
@@ -75,7 +75,7 @@ export const Notifications = () => {
             animate={{ opacity: 0.4 }}
             className="flex flex-col items-center justify-center py-10"
           >
-            <span className="text-slate-500 text-[11px] font-bold tracking-widest uppercase">
+            <span className="text-slate-500 text-[11px] font-bold tracking-wider uppercase">
               All caught up!
             </span>
           </motion.div>

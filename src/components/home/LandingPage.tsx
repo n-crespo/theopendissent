@@ -78,7 +78,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                 </button>
               </div>
 
-              <label className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest hover:text-slate-600 cursor-pointer select-none transition-colors mt-2">
+              <label className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider hover:text-slate-600 cursor-pointer select-none transition-colors mt-2">
                 <input
                   type="checkbox"
                   className="rounded-sm border-slate-300 text-slate-900 focus:ring-slate-900 h-3.5 w-3.5"

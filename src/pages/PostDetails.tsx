@@ -134,7 +134,7 @@ export const PostDetails = () => {
       {/* Replies Section */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h4 className="text-[11px] font-bold tracking-widest uppercase text-slate-400">
+          <h4 className="text-[11px] font-bold tracking-wider uppercase text-slate-400">
             Replies
           </h4>
         </div>

@@ -85,7 +85,7 @@ export const Profile = () => {
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-4 text-slate-300">
             <LoadingDots className="scale-125" />
-            <span className="text-xs font-bold tracking-widest">
+            <span className="text-xs font-bold tracking-wider">
               Loading {filter}...
             </span>
           </div>
