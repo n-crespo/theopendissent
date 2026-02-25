@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { User } from "firebase/auth";
-import { subscribeToAuth, signInWithGoogle, logoutUser } from "../lib/firebase";
+import {
+  subscribeToAuth,
+  signInWithGoogle,
+  signOutUser,
+} from "../lib/firebase";
 
 /**
  * manages authenticated user state and auth actions.
@@ -22,6 +26,6 @@ export function useAuth() {
     user,
     loading,
     signIn: signInWithGoogle,
-    logout: logoutUser,
+    signOut: signOutUser,
   };
 }

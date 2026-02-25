@@ -3,7 +3,7 @@ import { useModal } from "../../context/ModalContext";
 import { SignInModal } from "./SignInModal";
 import { AboutModal } from "./AboutModal";
 import { InstallPwaModal } from "./InstallPwaModal";
-import { LogoutModal } from "./LogoutModal";
+import { SignOutModal } from "./SignOutModal";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { ConfirmPostModal } from "./ConfirmPostModal";
 import { ListenModal } from "./ListenModal";
@@ -86,7 +86,7 @@ export const GlobalModal = () => {
                 {modal.type === "signin" && <SignInModal />}
                 {modal.type === "about" && <AboutModal />}
                 {modal.type === "installPwa" && <InstallPwaModal />}
-                {modal.type === "logout" && <LogoutModal />}
+                {modal.type === "signOut" && <SignOutModal />}
                 {modal.type === "deleteConfirm" && (
                   <ConfirmDeleteModal
                     itemName={modal.payload?.name || "this item"}

@@ -334,7 +334,7 @@ export const signInWithGoogle = async () => {
 /**
  * signs the current user out.
  */
-export const logoutUser = () => signOut(auth);
+export const signOutUser = () => signOut(auth);
 
 /**
  * fetches data required for deep-linking based on post and parent ids.

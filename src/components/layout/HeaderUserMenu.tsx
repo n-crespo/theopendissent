@@ -26,8 +26,8 @@ export const HeaderUserMenu = () => {
 
       <MenuItem
         icon="bi-box-arrow-right"
-        label="Log Out"
-        onClick={() => openModal("logout")}
+        label="Sign out"
+        onClick={() => openModal("signOut")}
         variant="danger"
       />
     </DropdownMenu>

@@ -6,13 +6,17 @@ import {
   useEffect,
 } from "react";
 import { User } from "firebase/auth";
-import { subscribeToAuth, signInWithGoogle, logoutUser } from "../lib/firebase";
+import {
+  subscribeToAuth,
+  signInWithGoogle,
+  signOutUser,
+} from "../lib/firebase";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   signIn: () => Promise<void>;
-  logout: () => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,16 +46,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = async () => {
+  const signOut = async () => {
     try {
-      await logoutUser();
+      await signOutUser();
     } catch (error) {
-      console.error("context logout error:", error);
+      console.error("context sign out error:", error);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, logout }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

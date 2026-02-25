@@ -2,19 +2,19 @@ import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
 
 /**
- * Simplified logout content for the global modal container.
+ * Simplified sign out content for the global modal container.
  * uses css variables for consistent professional geometry.
  */
-export const LogoutModal = () => {
-  const { user, logout } = useAuth();
+export const SignOutModal = () => {
+  const { user, signOut } = useAuth();
   const { closeModal } = useModal();
 
   const handleConfirm = async () => {
     try {
-      await logout();
+      await signOut();
       closeModal();
     } catch (error) {
-      console.error("failed to log out:", error);
+      console.error("failed to sign out:", error);
     }
   };
 

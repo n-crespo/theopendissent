@@ -4,7 +4,7 @@ type ModalType =
   | "signin"
   | "about" // renamed from help
   | "installPwa"
-  | "logout"
+  | "signOut"
   | "deleteConfirm"
   | "confirmPost"
   | "listen"
