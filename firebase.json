@@ -10,7 +10,9 @@
         ".git",
         "firebase-debug.log",
         "firebase-debug.*.log",
-        "*.local"
+        "*.local",
+        "**/*.link",
+        ".pnpm-store"
       ],
       "predeploy": ["pnpm --dir \"$RESOURCE_DIR\" run build"],
       "source": "functions"

@@ -50,7 +50,7 @@ jobs:
 
           echo "WHITELISTED_EMAILS=\"$WHITELISTED_EMAILS\"" > functions/.env.the-open-dissent-prod
 
-          pnpm exec firebase deploy \
+          npx firebase-tools deploy \
             --only functions,database \
             --project the-open-dissent-prod \
             --non-interactive \
