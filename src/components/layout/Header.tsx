@@ -18,7 +18,10 @@ export const Header = () => {
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-slate-200 transform-gpu">
       <div className="mx-auto flex max-w-125 items-center justify-between px-2 py-2">
         <HeaderBurgerMenu />
-        <Link to="/" className="flex items-center">
+        <Link
+          to="/"
+          className="flex items-center xs: ml-1 sm:ml-5 md:ml-5 lg:md-5"
+        >
           <img
             src={logoUrl}
             alt="App Icon"
