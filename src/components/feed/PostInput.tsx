@@ -14,6 +14,7 @@ interface PostInputProps {
   parentPostId?: string;
   placeholder?: string;
   currentScore?: number;
+  onSubmitOverride?: (content: string) => void;
 }
 
 const emojis = ["🎤", "🗣️", "📣", "📢", "🧠"];
@@ -22,6 +23,7 @@ export const PostInput = ({
   parentPostId,
   placeholder,
   currentScore,
+  onSubmitOverride,
 }: PostInputProps) => {
   const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
@@ -86,10 +88,16 @@ export const PostInput = ({
   const buttonText = isPosting ? null : isReplyMode ? "Reply" : "Post";
 
   const handleSubmit = async () => {
+    const trimmedContent = content.trim();
+    // intercept submission for the about modal demonstration
+    if (onSubmitOverride) {
+      onSubmitOverride(trimmedContent);
+      setContent("");
+      return;
+    }
+
     if (isSubmitDisabled) return;
     if (!user) return openModal("signin");
-
-    const trimmedContent = content.trim();
 
     openModal("confirmPost", {
       content: trimmedContent,
