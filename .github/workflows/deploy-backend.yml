@@ -35,9 +35,9 @@ jobs:
       - name: Clean and Install Dependencies
         run: |
           # kill any existing node_modules to prevent symlink pollution
-          rm -rf node_modules functions/node_modules
+          rm -rf node_modules node_modules
           # install with hoisted linker to ensure a flat structure for firebase
-          pnpm install --frozen-lockfile --config.node-linker=hoisted --dir functions
+          pnpm install --frozen-lockfile --config.node-linker=hoisted
 
       - name: Deploy to Production
         env:
