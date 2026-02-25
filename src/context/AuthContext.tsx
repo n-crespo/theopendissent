@@ -11,6 +11,7 @@ import {
   signInWithGoogle,
   signOutUser,
 } from "../lib/firebase";
+import { notificationStore } from "../lib/notificationStore";
 
 interface AuthContextType {
   user: User | null;
@@ -29,10 +30,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // listen for auth changes using the library helper
     const unsubscribe = subscribeToAuth((currentUser) => {
       setUser(currentUser);
       setLoading(false);
+
+      if (currentUser) {
+        // Start listening to notifications for this specific user
+        notificationStore.init(currentUser.uid);
+      } else {
+        // Wipe data and stop listeners on logout
+        notificationStore.dispose();
+      }
     });
     return () => unsubscribe();
   }, []);

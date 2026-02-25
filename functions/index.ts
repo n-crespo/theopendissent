@@ -435,3 +435,65 @@ export const onReplyCreated = onValueCreated(
     return null;
   },
 );
+
+/**
+ * Automatically creates or updates a notification for the post owner when a new reply is created.
+ */
+export const onReplyCreatedNotification = onValueCreated(
+  "/replies/{parentId}/{replyId}",
+  async (event) => {
+    const { parentId, replyId } = event.params;
+    const replyData = event.data.val();
+    const db = admin.database();
+
+    if (!replyData || !replyData.userId) return null;
+
+    try {
+      // find the owner of the content being replied to
+      const parentRef = await getContentRef(parentId);
+      if (!parentRef) {
+        console.warn(
+          `Parent content ${parentId} not found. Skipping notification.`,
+        );
+        return null;
+      }
+
+      const parentSnap = await parentRef.once("value");
+      const parentData = parentSnap.val();
+      const ownerId = parentData?.userId;
+
+      // don't notify if the user is replying to their own content
+      if (!ownerId || ownerId === replyData.userId) return null;
+
+      // define the path for the notification
+      // We use parentId (the post being replied to) as the notification ID for aggregation
+      const notifRef = db.ref(`users/${ownerId}/notifications/${parentId}`);
+
+      const now = Date.now();
+
+      return notifRef.transaction((current) => {
+        if (current) {
+          // If notification exists, increment count and mark as unread
+          return {
+            ...current,
+            count: (current.count || 1) + 1,
+            isRead: false,
+            updatedAt: now,
+          };
+        } else {
+          // Create new notification
+          return {
+            type: "reply",
+            count: 1,
+            isRead: false,
+            createdAt: now,
+            updatedAt: now,
+          };
+        }
+      });
+    } catch (error) {
+      console.error(`Notification trigger failed for reply ${replyId}:`, error);
+      return null;
+    }
+  },
+);

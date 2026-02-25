@@ -18,6 +18,7 @@ import { Profile } from "./pages/Profile";
 import { Privacy } from "./pages/Privacy";
 import { Terms } from "./pages/Terms";
 import { PostDetails } from "./pages/PostDetails";
+import { Notifications } from "./pages/Notifications";
 
 function Layout() {
   const { user, loading } = useAuth();
@@ -108,6 +109,7 @@ export default function App() {
         <Route path="profile" element={<Profile />} />
         <Route path="privacy" element={<Privacy />} />
         <Route path="terms" element={<Terms />} />
+        <Route path="notifications" element={<Notifications />} />
         <Route path="post/:postId" element={<PostDetails />} />
       </Route>
     </Routes>

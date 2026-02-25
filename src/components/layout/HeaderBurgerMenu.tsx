@@ -17,8 +17,8 @@ export const HeaderBurgerMenu = () => {
       align="left"
       width="w-48"
       trigger={
-        <div className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-slate-500 transition-all active:scale-95">
-          <i className="bi bi-list text-3xl"></i>
+        <div className="flex px-2 cursor-pointer items-center justify-center rounded-xl text-slate-500 transition-all active:scale-95">
+          <i className="bi bi-list text-2xl"></i>
         </div>
       }
     >
