@@ -33,12 +33,10 @@ jobs:
           cache: "pnpm"
 
       - name: Install Dependencies
-        # Installs EVERYTHING (Functions + Firebase Tools) from the root lockfile
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --config.node-linker=hoisted
 
       - name: Deploy to Production
         env:
-          NPM_CONFIG_NODE_LINKER: hoisted
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/service-account.json
           WHITELISTED_EMAILS: ${{ secrets.WHITELISTED_EMAILS }}
         run: |
