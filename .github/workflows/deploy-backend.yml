@@ -54,3 +54,4 @@ jobs:
             --only functions,database \
             --project the-open-dissent-prod \
             --non-interactive
+            --debug
