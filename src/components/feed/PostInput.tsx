@@ -74,7 +74,7 @@ export const PostInput = ({
   }, [content]);
 
   const activePlaceholder = useMemo(() => {
-    if (showLockedText) return "🔒 Score the post to unlock replies!";
+    if (showLockedText) return "🔒 Rate the post to unlock replies!";
     if (placeholder) return placeholder;
 
     // assume we will resolve to an interacted state to avoid flashing text
