@@ -32,7 +32,9 @@ jobs:
           node-version: "22"
 
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile --config.node-linker=hoisted --dir functions
+        run: |
+          rm -rf functions/node_modules
+          pnpm install --frozen-lockfile --config.node-linker=hoisted --dir functions
 
       - name: Deploy to Production
         env:
@@ -41,14 +43,11 @@ jobs:
         run: |
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}' > $GOOGLE_APPLICATION_CREDENTIALS
 
-          # fail early if the secret is missing/empty in github
           if [ -z "$WHITELISTED_EMAILS" ]; then
             echo "error: WHITELISTED_EMAILS secret is empty or missing"
             exit 1
           fi
 
-          # inject secret into the project-specific env file
-          # allows defineString() to pick it up during deployment
           echo "WHITELISTED_EMAILS=\"$WHITELISTED_EMAILS\"" > functions/.env.the-open-dissent-prod
 
           pnpm exec firebase deploy \
