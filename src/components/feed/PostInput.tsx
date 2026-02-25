@@ -79,7 +79,7 @@ export const PostInput = ({
 
     // assume we will resolve to an interacted state to avoid flashing text
     if (isReplyMode) {
-      return emoji + " Explain your stance...";
+      return emoji + " Explain your stance!";
     }
 
     return emoji + " Speak your mind...";
