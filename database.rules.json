@@ -4,6 +4,18 @@
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && auth.uid === $uid",
+        "notifications": {
+          ".read": "auth != null && auth.uid === $uid",
+          "$notification_id": {
+            ".write": "auth != null && auth.uid === $uid",
+            ".validate": "newData.hasChildren(['type', 'isRead', 'updatedAt'])",
+            "type": { ".validate": "newData.isString()" },
+            "count": { ".validate": "newData.isNumber()" },
+            "isRead": { ".validate": "newData.isBoolean()" },
+            "createdAt": { ".validate": "newData.isNumber()" },
+            "updatedAt": { ".validate": "newData.isNumber()" }
+          }
+        },
         "posts": {
           "$post_id": { ".validate": "newData.val() === true" }
         },
