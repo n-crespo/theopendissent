@@ -78,7 +78,7 @@ export const SignInModal = () => {
           ) : (
             <>
               <i className="bi bi-google text-base"></i>
-              <span>Sign in with Google</span>
+              <span>UCLA Sign In</span>
             </>
           )}
         </button>
