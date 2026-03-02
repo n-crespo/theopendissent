@@ -178,7 +178,10 @@ const getWhitelistedEmails = (): string[] => {
   return rawValue.split(",").map((email) => email.trim().toLowerCase());
 };
 
-// restricts user's to @g.ucla.edu emails/more
+/**
+ * Validates that the signing-in user has a legitimate UCLA-affiliated email.
+ * This includes students (@g.ucla.edu), faculty (@ucla.edu), and departments (@cs.ucla.edu).
+ */
 const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
   const user = event.data;
   const email = (user?.email || "no-email").toLowerCase().trim();
@@ -191,12 +194,14 @@ const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
     return;
   }
 
-  // reject all other invalid emails
-  if (!email.toLowerCase().trim().endsWith("@g.ucla.edu")) {
+  const domain = email.split("@")[1];
+  const isUcla = domain === "ucla.edu" || domain.endsWith(".ucla.edu");
+
+  if (!isUcla) {
     console.error(`auth blocked for: ${email}`);
     throw new HttpsError(
       "permission-denied",
-      "Only @g.ucla.edu emails are allowed.",
+      "Only UCLA-affiliated emails are allowed.",
     );
   }
 

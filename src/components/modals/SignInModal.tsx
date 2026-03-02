@@ -23,7 +23,7 @@ export const SignInModal = () => {
 
       // Check for the specific blocking function error code
       if (err.code === "auth/internal-error" || err.message?.includes("ucla")) {
-        setError("Sorry, only @g.ucla.edu emails are allowed right now.");
+        setError("Sorry, only UCLA emails are allowed right now.");
       } else {
         setError("Sign in failed. Please try again.");
       }
@@ -41,8 +41,8 @@ export const SignInModal = () => {
       <div className="mb-8 space-y-4 px-2">
         <p className="text-center text-slate-700 leading-relaxed">
           Sign in with a{" "}
-          <strong className="font-bold text-logo-blue">@g.ucla.edu</strong>{" "}
-          email to post or interact!
+          <strong className="font-bold text-logo-blue">UCLA</strong> email to
+          post or interact!
         </p>
 
         {/* Inline Error Message */}
