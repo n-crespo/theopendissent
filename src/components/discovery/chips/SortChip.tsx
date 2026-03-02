@@ -6,7 +6,7 @@ export const SortChip = () => {
   const { sortType, setSortType } = useFeedSort();
 
   // Determine label and icon based on state
-  const label = sortType === "random" ? "Default" : "Newest";
+  const label = sortType === "random" ? "Random" : "Newest";
   // const iconClass = sortType === "random" ? "bi-shuffle" : "bi-clock-history";
   const iconClass = "bi-sort-down";
 
@@ -26,7 +26,7 @@ export const SortChip = () => {
       }
     >
       <MenuItem
-        label="Default"
+        label="Random"
         icon="bi-shuffle"
         onClick={() => setSortType("random")}
       />
