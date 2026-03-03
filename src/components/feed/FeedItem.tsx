@@ -225,9 +225,9 @@ export const FeedItem = memo(
                   <i
                     className={`bi ${disableClick ? "bi-chat-fill" : "bi-chat"} text-[16px]`}
                   ></i>
-                  {hasReply && !disableClick && (
+                  {hasReply && !disableClick ? (
                     <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white"></span>
-                  )}
+                  ) : null}
                 </div>
               </button>
             )}
