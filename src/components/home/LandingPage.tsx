@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { motion, Variants, useScroll, useTransform } from "framer-motion";
+import { useState } from "react";
+import { motion, Variants } from "framer-motion";
 import logoUrl from "../../assets/Flat-Logo.svg";
 import { SocialLinksRow } from "./SocialLinksRow";
 
@@ -7,65 +7,35 @@ interface LandingPageProps {
   onContinue: (dontShowAgain: boolean) => void;
 }
 
-// helper component to scrub opacity and y-position on scroll
-const ScrubText = ({
-  children,
-  className,
-  containerRef,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  containerRef: React.RefObject<HTMLDivElement | null>;
-}) => {
-  const ref = useRef<HTMLDivElement>(null);
-
-  // triggers when the element's top hits 90% down the container, finishes when the bottom hits 60%
-  const { scrollYProgress } = useScroll({
-    container: containerRef,
-    target: ref,
-    offset: ["start 90%", "end 60%"],
-  });
-
-  const opacity = useTransform(scrollYProgress, [0, 1], [0, 1]);
-  const y = useTransform(scrollYProgress, [0, 1], [40, 0]);
-
-  return (
-    <motion.div ref={ref} style={{ opacity, y }} className={className}>
-      {children}
-    </motion.div>
-  );
+const fadeIn: Variants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.2,
+      duration: 0.8,
+      ease: [0.21, 0.47, 0.32, 0.98],
+    },
+  }),
 };
 
 export const LandingPage = ({ onContinue }: LandingPageProps) => {
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleExit = () => {
     setIsExiting(true);
     setTimeout(() => onContinue(dontShowAgain), 500);
   };
 
-  const fadeIn: Variants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.2,
-        duration: 0.8,
-        ease: [0.21, 0.47, 0.32, 0.98] as const,
-      },
-    }),
-  };
-
   return (
     <div
-      className={`fixed inset-0 z-100 bg-logo-offwhite transition-opacity duration-700
+      className={`fixed inset-0 z-100 bg-logo-offwhite transition-opacity duration-700 overflow-y-auto overflow-x-hidden custom-scrollbar
         ${isExiting ? "opacity-0 pointer-events-none" : "opacity-100"}`}
     >
-      {/* header: fixed with a gradient block to hide text scrolling underneath */}
-      <div className="absolute top-0 left-0 right-0 z-40 flex justify-center pt-16 h-[30vh] px-6 pointer-events-none bg-linear-to-b from-logo-offwhite from-75% via-logo-offwhite to-transparent">
+      {/* header overlay */}
+      <div className="fixed top-0 left-0 right-0 z-50 h-[35vh] pointer-events-none bg-linear-to-b from-logo-offwhite via-logo-offwhite to-transparent flex justify-center pt-12 px-6">
         <motion.header
           custom={0}
           initial="hidden"
@@ -73,102 +43,85 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
           variants={fadeIn}
           className="max-w-xl w-full text-center pointer-events-auto"
         >
-          <h1 className="text-4xl font-bold text-slate-900 mb-4 tracking-tighter">
-            <img
-              src={logoUrl}
-              alt="The Open Dissent"
-              className="w-full"
-              draggable="false"
-            />
-          </h1>
-          <p className="text-slate-400 font-medium tracking-[0.2em] uppercase text-[11px] mb-4">
+          <img
+            src={logoUrl}
+            alt="The Open Dissent"
+            className="w-full mb-4"
+            draggable="false"
+          />
+          <p className="text-slate-400 font-medium tracking-[0.2em] uppercase text-[11px]">
             Humanizing Political Discourse
           </p>
-          <SocialLinksRow />
+          <div className="mt-4">
+            <SocialLinksRow />
+          </div>
         </motion.header>
       </div>
 
-      {/* scroll engine: normal document flow */}
-      <div
-        ref={containerRef}
-        className="h-full overflow-y-auto custom-scrollbar scroll-smooth"
-      >
-        {/* reduced gap to 30vh and bottom padding to 40vh */}
-        <div className="max-w-xl mx-auto px-6 pt-[40vh] pb-[40vh] flex flex-col items-center gap-[20vh] md:gap-[50vh] text-center">
-          {/* text a */}
-          <div className="flex flex-col items-center gap-6">
-            <div className="space-y-6 text-slate-900 text-[16px] leading-relaxed">
-              <motion.section
-                custom={1}
-                initial="hidden"
-                animate="visible"
-                variants={fadeIn}
-              >
-                Modern social media fuels polarity and division.
-              </motion.section>
-              <motion.section
-                custom={2}
-                initial="hidden"
-                animate="visible"
-                variants={fadeIn}
-              >
-                Ragebait and corporate interests litter our (digital) public
-                square.
-              </motion.section>
-              <motion.section
-                custom={3}
-                initial="hidden"
-                animate="visible"
-                variants={fadeIn}
-              >
-                Stop interacting with an algorithm that profits from your anger.
-              </motion.section>
-            </div>
-
-            <motion.div
-              custom={4}
-              initial="hidden"
-              animate="visible"
-              variants={fadeIn}
-              className="mt-8 animate-bounce text-slate-300"
-            >
-              <i className="bi bi-chevron-down text-2xl"></i>
-            </motion.div>
-          </div>
-
-          {/* text b */}
-          <ScrubText
-            containerRef={containerRef}
-            className="flex flex-col items-center gap-6 w-full max-w-lg"
+      {/* scrollable content */}
+      <main className="relative z-10 flex flex-col items-center px-6">
+        {/* text a - centered on load */}
+        <div className="min-h-screen flex flex-col items-center justify-center text-center max-w-xl">
+          <motion.div
+            custom={1}
+            initial="hidden"
+            animate="visible"
+            variants={fadeIn}
+            className="space-y-6 text-slate-900 text-[16px] leading-relaxed"
           >
-            <div className="space-y-6 text-slate-900 text-[16px] leading-relaxed">
-              <section>Here's how we fixed it:</section>
-              <ul className="list-disc space-y-2 marker:text-slate-400 text-left px-7">
-                <li>
-                  <strong>fully anonymous profiles </strong>(no popularity
-                  contests)
-                </li>
-                <li>
-                  <strong>no predatory algorithms</strong> (posts are randomly
-                  shuffled)
-                </li>
-                <li>
-                  <strong>zero visible metrics</strong> (to avoid crowd bias)
-                </li>
-                <li>
-                  <strong>sliders for interaction</strong> (because real issues
-                  have nuance)
-                </li>
-              </ul>
+            <p>Modern social media fuels polarity and division.</p>
+            <p>
+              Ragebait and corporate interests litter our (digital) public
+              square.
+            </p>
+            <p>
+              Stop interacting with an algorithm that profits from your anger.
+            </p>
+            <div className="mt-12 animate-bounce text-slate-300">
+              <i className="bi bi-chevron-down text-2xl"></i>
             </div>
-          </ScrubText>
+          </motion.div>
         </div>
-      </div>
 
-      {/* footer: permanently fixed */}
-      <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-logo-offwhite via-logo-offwhite from-70% to-transparent pt-[15vh] pb-8 px-6 flex flex-col items-center gap-4 z-40 pointer-events-none">
+        {/* text b - follows immediately below fold */}
+        <div className="pb-[35vh] sm:pb-[40vh] w-full max-w-lg text-center">
+          <div
+            // initial={false} // tells framer to skip the 'initial' animation on mount
+            // whileInView={{ opacity: 1 }}
+            // viewport={{ once: true, margin: "-100px" }}
+            // transition={{ duration: 0 }} // instantaneous appearance
+            className="space-y-6 text-slate-900 text-[16px] leading-relaxed text-center"
+          >
+            <p>Here's how we fixed it:</p>
+            <ul className="list-disc space-y-4 marker:text-slate-400 text-left w-fit mx-auto pl-7">
+              <li>
+                <strong>fully anonymous profiles </strong>(no popularity
+                contests)
+              </li>
+              <li>
+                <strong>no predatory algorithms</strong> (posts are randomly
+                shuffled)
+              </li>
+              <li>
+                <strong>zero visible metrics</strong> (to avoid crowd bias)
+              </li>
+              <li>
+                <strong>sliders for interaction</strong> (real issues have
+                nuance)
+              </li>
+              <li>
+                <strong>our podcast </strong>
+                (where online discussion comes to life)
+              </li>
+            </ul>
+          </div>
+        </div>
+      </main>
+
+      {/* footer overlay */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 h-[35vh] pointer-events-none bg-linear-to-t from-logo-offwhite via-logo-offwhite/95 to-transparent flex flex-col items-center justify-end pb-8 px-6 gap-4">
         <motion.strong
-          custom={5}
+          custom={2}
           initial="hidden"
           animate="visible"
           variants={fadeIn}
@@ -178,7 +131,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
         </motion.strong>
 
         <motion.div
-          custom={6}
+          custom={3}
           initial="hidden"
           animate="visible"
           variants={fadeIn}
@@ -193,7 +146,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
         </motion.div>
 
         <motion.label
-          custom={7}
+          custom={5}
           initial="hidden"
           animate="visible"
           variants={fadeIn}
