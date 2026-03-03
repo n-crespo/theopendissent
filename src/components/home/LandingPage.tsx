@@ -77,7 +77,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
             <p>
               Stop interacting with an algorithm that profits from your anger.
             </p>
-            <div className="mt-12 animate-bounce text-slate-300">
+            <div className="mt-12 animate-bounce text-slate-400">
               <i className="bi bi-chevron-down text-2xl"></i>
             </div>
           </motion.div>
