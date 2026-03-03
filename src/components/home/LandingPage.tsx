@@ -32,7 +32,8 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
   return (
     <div
       className={`fixed inset-0 z-100 bg-logo-offwhite transition-opacity duration-700 overflow-y-auto overflow-x-hidden custom-scrollbar
-        ${isExiting ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+    snap-y snap-mandatory
+    ${isExiting ? "opacity-0 pointer-events-none" : "opacity-100"}`}
     >
       {/* header overlay */}
       <div className="fixed top-0 left-0 right-0 z-50 h-[35vh] pointer-events-none bg-linear-to-b from-logo-offwhite via-logo-offwhite to-transparent flex justify-center pt-12 px-6">
@@ -61,7 +62,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
       {/* scrollable content */}
       <main className="relative z-10 flex flex-col items-center px-6">
         {/* text a - centered on load */}
-        <div className="min-h-screen flex flex-col items-center justify-center text-center max-w-xl">
+        <div className="snap-start min-h-screen flex flex-col items-center justify-center text-center max-w-xl">
           <motion.div
             custom={1}
             initial="hidden"
@@ -84,7 +85,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
         </div>
 
         {/* text b - follows immediately below fold */}
-        <div className="pb-[35vh] sm:pb-[40vh] w-full max-w-lg text-center">
+        <div className="snap-start pb-[35vh] sm:pb-[40vh] w-full max-w-lg text-center">
           <div
             // initial={false} // tells framer to skip the 'initial' animation on mount
             // whileInView={{ opacity: 1 }}
