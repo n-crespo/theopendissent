@@ -53,6 +53,7 @@ export const FeedItem = memo(
     const isNearLimit = charsLeft < 50;
 
     const replyScore = item.interactionScore ?? 0;
+    const hasReply = item.replyCount && item.replyCount > 0;
 
     const formattedTime = timeAgo(
       new Date(typeof item.timestamp === "number" ? item.timestamp : 0),
@@ -219,14 +220,15 @@ export const FeedItem = memo(
                   ${isJiggling ? "animate-jiggle" : ""}
                   ${disableClick ? "text-logo-blue" : "text-slate-400 hover:bg-slate-50 hover:text-logo-blue"}`}
               >
-                <i
-                  className={`bi ${disableClick ? "bi-chat-fill" : "bi-chat"} text-[16px]`}
-                ></i>
-                {/* localMetrics.replyCount > 0 && (
-                  <span className="text-[13px] font-bold">
-                    {localMetrics.replyCount}
-                  </span>
-                ) */}
+                {/* icon wrapper for the dot */}
+                <div className="relative flex items-center justify-center">
+                  <i
+                    className={`bi ${disableClick ? "bi-chat-fill" : "bi-chat"} text-[16px]`}
+                  ></i>
+                  {hasReply && !disableClick && (
+                    <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white"></span>
+                  )}
+                </div>
               </button>
             )}
 
