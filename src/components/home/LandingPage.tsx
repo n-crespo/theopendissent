@@ -92,7 +92,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
             // transition={{ duration: 0 }} // instantaneous appearance
             className="space-y-6 text-slate-900 text-[16px] leading-relaxed text-center"
           >
-            <p>Here's how we fixed it:</p>
+            <p>Here's how we're fixing it:</p>
             <ul className="list-disc space-y-4 marker:text-slate-400 text-left w-fit mx-auto pl-7">
               <li>
                 <strong>fully anonymous profiles </strong>(no popularity
@@ -111,7 +111,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
               </li>
               <li>
                 <strong>our podcast </strong>
-                (where online discussion comes to life)
+                (where online discussions come to life)
               </li>
             </ul>
           </div>
