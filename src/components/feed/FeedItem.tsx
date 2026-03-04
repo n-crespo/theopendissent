@@ -215,17 +215,19 @@ export const FeedItem = memo(
                   )
                 }
                 disabled={disableClick}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg origin-center active:scale-95 transition-all
-                  ${isJiggling ? "animate-jiggle" : ""}
-                  ${disableClick ? "text-logo-blue" : "text-slate-400 hover:bg-slate-50 hover:text-logo-blue"}`}
+                className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg origin-center active:scale-95 transition-all
+                    ${isJiggling ? "animate-jiggle" : ""}
+                    ${disableClick ? "text-logo-blue" : "text-slate-400 hover:bg-slate-50 hover:text-logo-blue"}`}
               >
-                {/* icon wrapper for the dot */}
                 <div className="relative flex items-center justify-center">
                   <i
                     className={`bi ${disableClick ? "bi-chat-fill" : "bi-chat"} text-[16px]`}
                   ></i>
                   {hasReply && !disableClick ? (
-                    <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white"></span>
+                    <span
+                      /* added transition-all to sync with parent hover */
+                      className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white transition-all group-hover:ring-slate-50"
+                    ></span>
                   ) : null}
                 </div>
               </button>
@@ -233,7 +235,7 @@ export const FeedItem = memo(
 
             <button
               onClick={(e) => handleAction(e, () => sharePost(item))}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-logo-blue active:scale-95 transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-logo-blue  active:scale-95 transition-all"
             >
               <i className="bi bi-box-arrow-up text-[16px]"></i>
             </button>
