@@ -68,50 +68,93 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
             initial="hidden"
             animate="visible"
             variants={fadeIn}
-            className="max-w-xl space-y-6 text-slate-900 text-[16px] leading-relaxed pt-[10vh]"
+            className="max-w-md w-full flex flex-col items-center pt-[5vh]"
           >
-            <p>Modern social media fuels polarity and division.</p>
-            <p>
-              Ragebait and corporate interests litter our (digital) public
-              square.
-            </p>
-            <p>
-              Stop interacting with an algorithm that profits from your anger.
-            </p>
-            <div className="mt-12 animate-bounce text-slate-400">
-              <i className="bi bi-chevron-down text-2xl"></i>
+            <div className="mb-6 space-y-2">
+              <h3 className="text-xl font-bold text-slate-900 tracking-tight pt-[5vh]">
+                Modern social media is broken.
+              </h3>
+            </div>
+            <div className="relative w-full bg-white/50 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
+              {/* Content Area */}
+              <div className="p-10 space-y-7 text-slate-700 text-[16px] leading-relaxed">
+                <p className="relative">
+                  Addictive algorithms fuels polarity and division.
+                </p>
+
+                <p>
+                  Ragebait and corporate interests litter our (digital) public
+                  square.
+                </p>
+
+                <p className="font-medium text-slate-900">
+                  Stop interacting with a system that profits from your anger.
+                </p>
+              </div>
+
+              <div className="animate-bounce text-slate-300">
+                <i className="bi bi-chevron-down text-xl"></i>
+              </div>
             </div>
           </motion.div>
         </section>
 
         {/* TEXT B: Scrolled View */}
         <section className="snap-start snap-always min-h-screen flex flex-col items-center justify-center px-6 text-center">
-          <div className="max-w-lg w-full space-y-6 text-slate-900 text-[16px] leading-relaxed py-[20vh] flex flex-col items-center">
-            <p>Here's how we're fixing it:</p>
+          <div className="max-w-md w-full flex flex-col items-center">
+            <div className="mb-6 space-y-2">
+              <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                Here's how we're fixing it:
+              </h3>
+            </div>
 
-            {/* INDEPENDENT SCROLL CONTAINER */}
-            <div className="w-full max-h-[35vh] overflow-y-auto custom-scrollbar pr-2 border-y border-slate-100 py-4">
-              <ul className="list-disc space-y-6 marker:text-slate-400 text-left w-fit mx-auto pl-7">
-                <li>
-                  <strong>fully anonymous profiles</strong> (no popularity
-                  contests)
-                </li>
-                <li>
-                  <strong>no predatory algorithms</strong> (posts are randomly
-                  shuffled)
-                </li>
-                <li>
-                  <strong>zero visible metrics</strong> (to avoid crowd bias)
-                </li>
-                <li>
-                  <strong>sliders for interaction</strong> (real issues have
-                  nuance)
-                </li>
-                <li>
-                  <strong>our podcast</strong> (where online discussions come to
-                  life)
-                </li>
-              </ul>
+            {/* THE CLEAN CARD */}
+            <div className="relative w-full bg-white/50 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
+              {/* Scrollable Area with Fade Masks */}
+              <div className="relative flex-1 max-h-[40vh] overflow-y-auto custom-scrollbar p-8">
+                <ul className="list-disc space-y-6 marker:text-slate-300 text-left w-fit mx-auto pl-6 text-slate-700">
+                  <li className="leading-snug">
+                    <strong className="text-slate-900">
+                      fully anonymous profiles
+                    </strong>
+                    <p className="text-[13px] text-slate-500 mt-0.5">
+                      No popularity contests.
+                    </p>
+                  </li>
+                  <li className="leading-snug">
+                    <strong className="text-slate-900">
+                      no predatory algorithms
+                    </strong>
+                    <p className="text-[13px] text-slate-500 mt-0.5">
+                      Posts are randomly shuffled.
+                    </p>
+                  </li>
+                  <li className="leading-snug">
+                    <strong className="text-slate-900">
+                      zero visible metrics
+                    </strong>
+                    <p className="text-[13px] text-slate-500 mt-0.5">
+                      To avoid crowd bias.
+                    </p>
+                  </li>
+                  <li className="leading-snug">
+                    <strong className="text-slate-900">
+                      sliders for interaction
+                    </strong>
+                    <p className="text-[13px] text-slate-500 mt-0.5">
+                      Real issues have nuance.
+                    </p>
+                  </li>
+                  <li className="leading-snug">
+                    <strong className="text-slate-900">
+                      our companion podcast
+                    </strong>
+                    <p className="text-[13px] text-slate-500 mt-0.5">
+                      Where online discussions come to life.
+                    </p>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </section>
