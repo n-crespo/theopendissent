@@ -99,12 +99,20 @@ export const PostDetails = () => {
     setLocalScore(newScore);
   };
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/", { replace: true });
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div>
         <ScrollableRail>
           <Chip
-            onClick={() => navigate(-1)}
+            onClick={handleBack}
             icon={<i className="bi bi-arrow-left"></i>}
           >
             Back

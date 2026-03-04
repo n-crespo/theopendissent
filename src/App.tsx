@@ -33,12 +33,18 @@ function Layout() {
   useDeepLinkHandler();
 
   useEffect(() => {
-    // 1. check localStorage for dismiss status
-    const skip = localStorage.getItem("skipLanding") === "true";
+    // check permanent and session-based dismiss status
+    const skipPermanent = localStorage.getItem("skipLanding") === "true";
+    const skipSession = sessionStorage.getItem("landingDismissed") === "true";
 
-    // 2. if no user and hasn't skipped, we must show landing
+    // 2. if no user and hasn't skipped (either way), we must show landing
     if (!loading) {
-      if (!user && !skip && (pathname === "/" || pathname === "/share")) {
+      if (
+        !user &&
+        !skipPermanent &&
+        !skipSession &&
+        (pathname === "/" || pathname === "/share")
+      ) {
         setShowLanding(true);
       }
       setIsInitialCheck(false);
@@ -52,6 +58,9 @@ function Layout() {
 
   const handleContinue = (dontShowAgain: boolean) => {
     if (dontShowAgain) localStorage.setItem("skipLanding", "true");
+
+    // mark as dismissed for the current session to prevent re-triggering on back-nav
+    sessionStorage.setItem("landingDismissed", "true");
     setShowLanding(false);
   };
 
@@ -61,12 +70,14 @@ function Layout() {
   return (
     <div className="min-h-screen bg-logo-offwhite">
       {/* render landing page at the top level.
-          it uses fixed inset-0 so it covers the header below.
+          uses fixed inset-0 so it covers the header below.
       */}
       {showLanding && <LandingPage onContinue={handleContinue} />}
 
       <div
-        className={`transition-opacity duration-700 ${showLanding ? "opacity-0 invisible" : "opacity-100 visible"}`}
+        className={`transition-opacity duration-700 ${
+          showLanding ? "opacity-0 invisible" : "opacity-100 visible"
+        }`}
       >
         <Header />
         <main className="mx-auto w-full max-w-125 px-4 pb-4 pt-16">
