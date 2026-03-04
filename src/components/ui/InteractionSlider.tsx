@@ -194,12 +194,12 @@ export const InteractionSlider = ({
       );
     }
 
-    // the user made this post, they can't rate it
-    if (authored) {
-      const msg = "You can't rate your own posts!";
+    // this is under a reply
+    if (isReply) {
+      const msg = `${authorName} stance: ${value}`;
       return (
-        <button ref={btnRef} className={`${baseStyles} ${disabledStyles}`}>
-          <i className="bi bi-lock text-lg"></i>
+        <button ref={btnRef} className={`${baseStyles}`}>
+          <i className="bi bi-question-lg text-lg"></i>
           <PopupIndicator
             text={msg}
             triggerRef={btnRef}
@@ -209,12 +209,12 @@ export const InteractionSlider = ({
       );
     }
 
-    // this is under a reply
-    if (isReply) {
-      const msg = `Author's stance: ${value}`;
+    // the user made this post, they can't rate it
+    if (authored) {
+      const msg = "You can't rate your own posts!";
       return (
-        <button ref={btnRef} className={`${baseStyles}`}>
-          <i className="bi bi-question-lg text-lg"></i>
+        <button ref={btnRef} className={`${baseStyles} ${disabledStyles}`}>
+          <i className="bi bi-lock text-lg"></i>
           <PopupIndicator
             text={msg}
             triggerRef={btnRef}
@@ -279,7 +279,7 @@ export const InteractionSlider = ({
 
         {(isReply || authored) && (
           <PopupIndicator
-            triggerRef={sliderRef}
+            triggerRef={trackRef}
             text={
               isReply
                 ? `${authorName} stance: ${value}`
