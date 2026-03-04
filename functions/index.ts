@@ -172,7 +172,7 @@ const getWhitelistedEmails = (): string[] => {
   // defineString picks up the value injected during firebase deploy
   const rawValue = WHITELISTED_EMAILS_PARAM.value() || "";
 
-  console.log(`debug: raw whitelist string is: "${rawValue}"`);
+  // console.log(`debug: raw whitelist string is: "${rawValue}"`);
 
   if (!rawValue) return [];
   return rawValue.split(",").map((email) => email.trim().toLowerCase());
@@ -205,7 +205,7 @@ const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
     );
   }
 
-  console.log(`auth permitted for: ${email}`);
+  // console.log(`auth permitted for: ${email}`);
 };
 
 export const beforecreated = beforeUserCreated(async (event) => {
