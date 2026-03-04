@@ -1,15 +1,17 @@
 import { createPortal } from "react-dom";
 import { useState, useLayoutEffect, useRef, useEffect } from "react";
 
-// define a generic margin for safety from screen edges
 const SCREEN_MARGIN = 16;
 
 interface PopupProps {
   text: string;
   triggerRef: React.RefObject<HTMLElement | null>;
-  onClick?: () => void; // capture original button logic
+  onClick?: () => void;
 }
 
+/**
+ * Renders a portal-based tooltip that handles edge collisions and bundled interaction logic.
+ */
 export const PopupIndicator = ({ text, triggerRef, onClick }: PopupProps) => {
   const [visible, setVisible] = useState(false);
 
@@ -85,7 +87,7 @@ export const PopupIndicator = ({ text, triggerRef, onClick }: PopupProps) => {
 
       const rect = el.getBoundingClientRect();
 
-      // A. Position the container center above the trigger point
+      // place container centered above the trigger
       container.style.position = "absolute";
       container.style.top = `${rect.top + window.scrollY - 6}px`;
       container.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
@@ -93,11 +95,8 @@ export const PopupIndicator = ({ text, triggerRef, onClick }: PopupProps) => {
 
       // B. Collision Handling Logic for the Body
       const bubbleRect = bubble.getBoundingClientRect();
-      const bubbleHalfWidth = bubbleRect.width / 2;
       const viewportWidth = window.innerWidth;
-
-      // where the bubble *wants* to be (left edge relative to viewport)
-      const idealLeft = rect.left + rect.width / 2 - bubbleHalfWidth;
+      const idealLeft = rect.left + rect.width / 2 - bubbleRect.width / 2;
       const idealRight = idealLeft + bubbleRect.width;
 
       let xOffset = 0; // how much we need to shift the rectangle left or right
@@ -105,14 +104,11 @@ export const PopupIndicator = ({ text, triggerRef, onClick }: PopupProps) => {
       // check if clipped on the left
       if (idealLeft < SCREEN_MARGIN) {
         xOffset = SCREEN_MARGIN - idealLeft;
-      }
-
-      // check if clipped on the right (priority if both)
-      if (idealRight > viewportWidth - SCREEN_MARGIN) {
+      } else if (idealRight > viewportWidth - SCREEN_MARGIN) {
         xOffset = viewportWidth - SCREEN_MARGIN - idealRight;
       }
 
-      // C. apply shift to the rectangular bubble (while arrow stays centered in container)
+      // shift the rectangle bubble while the arrow stays centered in the container
       bubble.style.transform = `translateX(${xOffset}px)`;
     };
 
@@ -133,7 +129,7 @@ export const PopupIndicator = ({ text, triggerRef, onClick }: PopupProps) => {
     /* main positioning container centered above trigger */
     <div
       ref={containerRef}
-      className="z-9999 pointer-events-none origin-bottom group"
+      className="z-9999 pointer-events-none origin-bottom"
     >
       {/* the rectangular bubble that slides horizontally */}
       <div
