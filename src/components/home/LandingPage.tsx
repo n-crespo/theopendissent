@@ -31,12 +31,12 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
 
   return (
     <div
-      className={`fixed inset-0 z-100 bg-logo-offwhite transition-opacity duration-700 overflow-y-auto overflow-x-hidden custom-scrollbar
-    snap-y snap-mandatory
-    ${isExiting ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+      className={`fixed inset-0 z-100 bg-logo-offwhite transition-opacity duration-700
+        snap-y snap-mandatory overflow-y-auto overflow-x-hidden custom-scrollbar
+        ${isExiting ? "opacity-0 pointer-events-none" : "opacity-100"}`}
     >
-      {/* header overlay */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-[35vh] pointer-events-none bg-linear-to-b from-logo-offwhite via-logo-offwhite to-transparent flex justify-center pt-12 px-6">
+      {/* 1. Header Overlay (Fixed) */}
+      <div className="fixed top-0 left-0 right-0 z-50 h-[30vh] pointer-events-none bg-linear-to-b from-logo-offwhite via-logo-offwhite to-transparent flex justify-center pt-12 px-6">
         <motion.header
           custom={0}
           initial="hidden"
@@ -60,15 +60,15 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
       </div>
 
       {/* scrollable content */}
-      <main className="relative z-10 flex flex-col items-center px-6">
+      <main className="relative z-10 w-full">
         {/* text a - centered on load */}
-        <div className="snap-start min-h-screen flex flex-col items-center justify-center text-center max-w-xl">
+        <section className="snap-start snap-always min-h-screen flex flex-col items-center justify-center px-6 text-center">
           <motion.div
             custom={1}
             initial="hidden"
             animate="visible"
             variants={fadeIn}
-            className="space-y-6 text-slate-900 text-[16px] leading-relaxed"
+            className="max-w-xl space-y-6 text-slate-900 text-[16px] leading-relaxed pt-[10vh]"
           >
             <p>Modern social media fuels polarity and division.</p>
             <p>
@@ -82,41 +82,39 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
               <i className="bi bi-chevron-down text-2xl"></i>
             </div>
           </motion.div>
-        </div>
+        </section>
 
-        {/* text b - follows immediately below fold */}
-        <div className="snap-start pb-[35vh] sm:pb-[40vh] w-full max-w-lg text-center">
-          <div
-            // initial={false} // tells framer to skip the 'initial' animation on mount
-            // whileInView={{ opacity: 1 }}
-            // viewport={{ once: true, margin: "-100px" }}
-            // transition={{ duration: 0 }} // instantaneous appearance
-            className="space-y-6 text-slate-900 text-[16px] leading-relaxed text-center"
-          >
+        {/* TEXT B: Scrolled View */}
+        <section className="snap-start snap-always min-h-screen flex flex-col items-center justify-center px-6 text-center">
+          <div className="max-w-lg w-full space-y-6 text-slate-900 text-[16px] leading-relaxed py-[20vh] flex flex-col items-center">
             <p>Here's how we're fixing it:</p>
-            <ul className="list-disc space-y-4 marker:text-slate-400 text-left w-fit mx-auto pl-7">
-              <li>
-                <strong>fully anonymous profiles </strong>(no popularity
-                contests)
-              </li>
-              <li>
-                <strong>no predatory algorithms</strong> (posts are randomly
-                shuffled)
-              </li>
-              <li>
-                <strong>zero visible metrics</strong> (to avoid crowd bias)
-              </li>
-              <li>
-                <strong>sliders for interaction</strong> (real issues have
-                nuance)
-              </li>
-              <li>
-                <strong>our podcast </strong>
-                (where online discussions come to life)
-              </li>
-            </ul>
+
+            {/* INDEPENDENT SCROLL CONTAINER */}
+            <div className="w-full max-h-[35vh] overflow-y-auto custom-scrollbar pr-2 border-y border-slate-100 py-4">
+              <ul className="list-disc space-y-6 marker:text-slate-400 text-left w-fit mx-auto pl-7">
+                <li>
+                  <strong>fully anonymous profiles</strong> (no popularity
+                  contests)
+                </li>
+                <li>
+                  <strong>no predatory algorithms</strong> (posts are randomly
+                  shuffled)
+                </li>
+                <li>
+                  <strong>zero visible metrics</strong> (to avoid crowd bias)
+                </li>
+                <li>
+                  <strong>sliders for interaction</strong> (real issues have
+                  nuance)
+                </li>
+                <li>
+                  <strong>our podcast</strong> (where online discussions come to
+                  life)
+                </li>
+              </ul>
+            </div>
           </div>
-        </div>
+        </section>
       </main>
 
       {/* footer overlay */}
