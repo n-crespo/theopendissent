@@ -196,10 +196,9 @@ export const FeedItem = memo(
             <InteractionSlider
               onChange={onSliderChange}
               value={isReply ? replyScore : currentScore}
-              dim={isReply || isOwner}
-              disabled={isReply || isOwner || !uid}
-              blur={!uid}
-              thumb={!!uid && ((isOwner && isReply) || !isOwner)}
+              authored={isOwner}
+              isReply={isReply}
+              loggedIn={!!uid}
               onDisabledInteraction={() => {
                 if (!uid) openModal("signin");
               }}

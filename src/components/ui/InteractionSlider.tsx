@@ -3,33 +3,35 @@ import {
   getInterpolatedColor,
   getGradientCSS,
   DEFAULT_STOPS,
-  // VIVID_STOPS,
 } from "../../color-utils";
 
 interface LensSliderProps {
   value?: number;
   onChange: (val: number | undefined) => void;
-  blur?: boolean;
-  dim?: boolean;
-  greyscale?: boolean;
-  disabled?: boolean;
-  thumb?: boolean;
+  // New Props
+  authored: boolean;
+  isReply: boolean;
+  loggedIn: boolean;
   onDisabledInteraction?: () => void;
 }
 
 export const InteractionSlider = ({
   value,
   onChange,
-  blur,
-  dim,
-  greyscale,
-  disabled,
-  thumb = true,
+  authored,
+  isReply,
+  loggedIn,
   onDisabledInteraction,
 }: LensSliderProps) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
+
+  // Deriving the internal states to match previous logic
+  const isDisabled = isReply || authored || !loggedIn;
+  const isDimmed = isReply || authored;
+  const isBlurred = !loggedIn;
+  const showThumb = loggedIn && ((authored && isReply) || !authored);
 
   const state = useRef({
     currentValue: 0, // Starts at 0 so it smoothly slides out on initial load
@@ -117,10 +119,10 @@ export const InteractionSlider = ({
     } else {
       updateDOM(state.current.currentValue, false);
     }
-  }, [value, disabled, thumb]);
+  }, [value, isDisabled, showThumb]);
 
   const handlePointer = (e: React.PointerEvent) => {
-    if (disabled) {
+    if (isDisabled) {
       if (onDisabledInteraction) onDisabledInteraction();
       return;
     }
@@ -142,7 +144,7 @@ export const InteractionSlider = ({
   };
 
   const onPointerUp = () => {
-    if (disabled) return;
+    if (isDisabled) return;
     state.current.isDragging = false;
 
     const finalVal = Math.round(state.current.targetValue);
@@ -162,7 +164,6 @@ export const InteractionSlider = ({
       state.current.rafId = 0;
     }
 
-    // RESET FIX: Silently zero out the math so it fades out without flying back
     state.current.currentValue = 0;
     state.current.targetValue = 0;
 
@@ -173,15 +174,10 @@ export const InteractionSlider = ({
   return (
     <div className="flex items-center w-full h-8 select-none gap-4">
       {/* eraser/lock button */}
-      {disabled ? (
-        <button
-          onClick={() => {
-            if (onDisabledInteraction) onDisabledInteraction();
-          }}
-          className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 text-slate-400 cursor-not-allowed opacity-50`}
-        >
+      {isDisabled ? (
+        <div className="flex items-center justify-center w-8 h-8 rounded-xl text-slate-400 opacity-50">
           <i className="bi bi-lock text-lg"></i>
-        </button>
+        </div>
       ) : (
         <button
           onClick={handleReset}
@@ -189,7 +185,7 @@ export const InteractionSlider = ({
           className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 text-slate-400 ${
             value === undefined
               ? "cursor-not-allowed opacity-50"
-              : "hover:text-(--disagree) hover:bg-red-50"
+              : "hover:text-logo-red hover:bg-red-50"
           }`}
           title="Clear interaction"
         >
@@ -205,16 +201,13 @@ export const InteractionSlider = ({
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         className={`relative flex-1 h-10 flex items-center touch-none transition-all duration-300 ${
-          disabled ? "cursor-not-allowed" : "cursor-crosshair"
+          isDisabled ? "cursor-not-allowed" : "cursor-crosshair"
         }`}
       >
-        {/* track background */}
         <div
           className={`absolute left-0 right-0 h-4 top-1/2 -translate-y-1/2 rounded-xl border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
-            dim ? "opacity-40" : ""
-          } ${blur ? "blur-xs opacity-80" : ""} ${
-            greyscale ? "grayscale" : ""
-          }`}
+            isDimmed ? "opacity-40" : ""
+          } ${isBlurred ? "blur-xs opacity-80" : ""}`}
           style={{
             background: getGradientCSS(DEFAULT_STOPS),
             backgroundRepeat: "no-repeat",
@@ -222,8 +215,7 @@ export const InteractionSlider = ({
           }}
         />
 
-        {/* thumb */}
-        {thumb && (
+        {showThumb && (
           <div
             ref={thumbRef}
             className="absolute top-1/2 flex items-center justify-center pointer-events-none z-10"

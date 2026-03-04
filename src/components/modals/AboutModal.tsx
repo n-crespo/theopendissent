@@ -40,9 +40,9 @@ export const AboutModal = () => {
           <InteractionSlider
             value={sliderValue}
             onChange={setSliderValue}
-            disabled={false}
-            dim={false}
-            blur={false}
+            isReply={false}
+            authored={false}
+            loggedIn={true} // pretend to be logged in so its still interactive
           />
 
           <li className="flex flex-col gap-2">
@@ -59,7 +59,13 @@ export const AboutModal = () => {
           <PostInput
             parentPostId="top"
             currentScore={sliderValue}
-            onSubmitOverride={(content) => {
+            onSubmitOverride={(
+              {
+                /* content */
+              },
+            ) => {
+              // TODO: add a little popup here that encourages user to make a
+              // real post
               // console.log("mock post submitted from tutorial:", content);
             }}
           />
@@ -78,7 +84,8 @@ export const AboutModal = () => {
               onClick={() => openModal("listen")}
               className="text-white self-start flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-colors active:scale-95 shadow-2xl bg-linear-to-r from-logo-blue via-logo-green to-logo-red text-md animate-bounceJiggle"
             >
-              <i className="bi bi-headphones text-sm"></i> Listen Now!
+              <i className="bi bi-headphones text-sm"></i> Here's where to find
+              us!
             </button>
           </div>
         </ul>
