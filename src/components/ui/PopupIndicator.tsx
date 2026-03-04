@@ -28,6 +28,7 @@ export const PopupIndicator = ({
   // keep isHovering synchronous in a ref for timer callbacks
   const isHovering = useRef(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const enterTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Manage Listeners and Timers (Lifecycle)
@@ -40,28 +41,35 @@ export const PopupIndicator = ({
     const handleEnter = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
       isHovering.current = true;
-      setVisible(true);
+
+      enterTimerRef.current = setTimeout(() => {
+        setVisible(true);
+      }, 1000);
     };
 
     const handleLeave = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
       isHovering.current = false;
-      if (!timerRef.current) setVisible(false); // hide immediately if no click active
+
+      // Clear the pending show timer so it doesn't pop up after we've left
+      if (enterTimerRef.current) clearTimeout(enterTimerRef.current);
+
+      if (!timerRef.current) setVisible(false);
     };
 
     const handleClick = () => {
-      if (onClick) onClick(); // fire original button logic
+      if (onClick) onClick();
 
-      // reset existing timer
+      // Clear any pending hover timer so the click takes priority
+      if (enterTimerRef.current) clearTimeout(enterTimerRef.current);
       if (timerRef.current) clearTimeout(timerRef.current);
+
       setVisible(true);
 
-      // start persistence window
       timerRef.current = setTimeout(() => {
         timerRef.current = null;
-        // if on mobile, isHovering will be false here even if the browser "thinks" it's hovered
         if (!isHovering.current) setVisible(false);
-      }, 1500);
+      }, 1000);
     };
 
     // pointerenter/leave are more robust for distinguishing touch vs mouse
@@ -75,6 +83,7 @@ export const PopupIndicator = ({
       el.removeEventListener("pointerleave", handleLeave as any);
       el.removeEventListener("click", handleClick);
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (enterTimerRef.current) clearTimeout(enterTimerRef.current);
     };
   }, [triggerRef, text, onClick]);
 
