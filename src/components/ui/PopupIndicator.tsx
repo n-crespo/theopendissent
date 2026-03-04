@@ -30,12 +30,15 @@ export const PopupIndicator = ({ text, triggerRef, onClick }: PopupProps) => {
     const el = triggerRef.current;
     if (!el) return;
 
-    const handleEnter = () => {
+    // only allow real mice to trigger the permanent "hover" state
+    const handleEnter = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
       isHovering.current = true;
       setVisible(true);
     };
 
-    const handleLeave = () => {
+    const handleLeave = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
       isHovering.current = false;
       if (!timerRef.current) setVisible(false); // hide immediately if no click active
     };
@@ -50,19 +53,20 @@ export const PopupIndicator = ({ text, triggerRef, onClick }: PopupProps) => {
       // start persistence window
       timerRef.current = setTimeout(() => {
         timerRef.current = null;
-        // only hide if user has also stopped hovering
+        // if on mobile, isHovering will be false here even if the browser "thinks" it's hovered
         if (!isHovering.current) setVisible(false);
       }, 1500);
     };
 
-    el.addEventListener("mouseenter", handleEnter);
-    el.addEventListener("mouseleave", handleLeave);
+    // pointerenter/leave are more robust for distinguishing touch vs mouse
+    el.addEventListener("pointerenter", handleEnter as any);
+    el.addEventListener("pointerleave", handleLeave as any);
     el.addEventListener("click", handleClick);
 
     // cleanup
     return () => {
-      el.removeEventListener("mouseenter", handleEnter);
-      el.removeEventListener("mouseleave", handleLeave);
+      el.removeEventListener("pointerenter", handleEnter as any);
+      el.removeEventListener("pointerleave", handleLeave as any);
       el.removeEventListener("click", handleClick);
       if (timerRef.current) clearTimeout(timerRef.current);
     };
