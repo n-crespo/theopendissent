@@ -10,10 +10,21 @@ interface FeedSortContextType {
 const FeedSortContext = createContext<FeedSortContextType | null>(null);
 
 export const FeedSortProvider = ({ children }: { children: ReactNode }) => {
-  const [sortType, setSortType] = useState<SortOption>("random");
+  // initialize from storage if it exists
+  const [sortType, setSortType] = useState<SortOption>(() => {
+    const saved = localStorage.getItem("feedSortSelection");
+    return (saved as SortOption) || "random";
+  });
+
+  const handleSetSortType = (type: SortOption) => {
+    setSortType(type);
+    localStorage.setItem("feedSortSelection", type);
+  };
 
   return (
-    <FeedSortContext.Provider value={{ sortType, setSortType }}>
+    <FeedSortContext.Provider
+      value={{ sortType, setSortType: handleSetSortType }}
+    >
       {children}
     </FeedSortContext.Provider>
   );
