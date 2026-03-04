@@ -19,6 +19,7 @@ import { Privacy } from "./pages/Privacy";
 import { Terms } from "./pages/Terms";
 import { PostDetails } from "./pages/PostDetails";
 import { Notifications } from "./pages/Notifications";
+import { FeedSortProvider } from "./context/FeedSortContext";
 
 function Layout() {
   const { user, loading } = useAuth();
@@ -81,16 +82,18 @@ function Layout() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
-        <Route path="share" element={<Home />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="privacy" element={<Privacy />} />
-        <Route path="terms" element={<Terms />} />
-        <Route path="notifications" element={<Notifications />} />
-        <Route path="post/:postId" element={<PostDetails />} />
-      </Route>
-    </Routes>
+    <FeedSortProvider>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="share" element={<Home />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="privacy" element={<Privacy />} />
+          <Route path="terms" element={<Terms />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="post/:postId" element={<PostDetails />} />
+        </Route>
+      </Routes>
+    </FeedSortProvider>
   );
 }
