@@ -90,10 +90,10 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                 <p className="font-medium text-slate-900">
                   Stop interacting with a system that profits from your anger.
                 </p>
-              </div>
 
-              <div className="animate-bounce text-slate-300">
-                <i className="bi bi-chevron-down text-xl"></i>
+                <div className="animate-bounce text-slate-300 mt-[5vh]">
+                  <i className="bi bi-chevron-down text-xl"></i>
+                </div>
               </div>
             </div>
           </motion.div>
