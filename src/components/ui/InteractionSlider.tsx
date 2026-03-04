@@ -4,11 +4,12 @@ import {
   getGradientCSS,
   DEFAULT_STOPS,
 } from "../../color-utils";
+import { useModal } from "../../context/ModalContext";
+import { PopupIndicator } from "./PopupIndicator";
 
 interface LensSliderProps {
   value?: number;
   onChange: (val: number | undefined) => void;
-  // New Props
   authored: boolean;
   isReply: boolean;
   loggedIn: boolean;
@@ -23,14 +24,18 @@ export const InteractionSlider = ({
   loggedIn,
   onDisabledInteraction,
 }: LensSliderProps) => {
+  const { openModal } = useModal();
+  const btnRef = useRef<HTMLButtonElement>(null);
+
   const trackRef = useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
 
   // Deriving the internal states to match previous logic
   const isDisabled = isReply || authored || !loggedIn;
   const isDimmed = isReply || authored;
-  const isBlurred = !loggedIn;
+  const isBlurred = !loggedIn || (!isReply && authored);
   const showThumb = loggedIn && ((authored && isReply) || !authored);
 
   const state = useRef({
@@ -158,40 +163,96 @@ export const InteractionSlider = ({
 
   const handleReset = (e: React.MouseEvent) => {
     e.stopPropagation();
+    state.current.currentValue = 0;
     state.current.hasValue = false;
     if (state.current.rafId) {
       cancelAnimationFrame(state.current.rafId);
       state.current.rafId = 0;
     }
 
-    state.current.currentValue = 0;
+    // state.current.currentValue = 0;
     state.current.targetValue = 0;
 
     updateDOM(0, false);
     onChange(undefined);
   };
 
-  return (
-    <div className="flex items-center w-full h-8 select-none gap-4">
-      {/* eraser/lock button */}
-      {isDisabled ? (
-        <div className="flex items-center justify-center w-8 h-8 rounded-xl text-slate-400 opacity-50">
+  const renderActionButton = () => {
+    const baseStyles =
+      "flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 text-slate-400";
+    const disabledStyles = "opacity-50 cursor-not-allowed";
+
+    // user is not logged in
+    if (!loggedIn) {
+      return (
+        <button
+          className={`${baseStyles} opacity-50`}
+          onClick={() => openModal("about")}
+        >
           <i className="bi bi-lock text-lg"></i>
-        </div>
-      ) : (
+        </button>
+      );
+    }
+
+    // the user made this post, they can't rate it
+    if (authored) {
+      const msg = "You can't rate your own posts!";
+      return (
+        <button ref={btnRef} className={`${baseStyles} ${disabledStyles}`}>
+          <i className="bi bi-lock text-lg"></i>
+          <PopupIndicator
+            text={msg}
+            triggerRef={btnRef}
+            onClick={() => console.log(msg)}
+          />
+        </button>
+      );
+    }
+
+    // this is under a reply
+    if (isReply) {
+      const msg = `Author's stance: ${value}`;
+      return (
+        <button ref={btnRef} className={`${baseStyles}`}>
+          <i className="bi bi-question-lg text-lg"></i>
+          <PopupIndicator
+            text={msg}
+            triggerRef={btnRef}
+            onClick={() => console.log(msg)}
+          />
+        </button>
+      );
+    }
+
+    // a rating has been selected
+    if (value !== undefined) {
+      return (
         <button
           onClick={handleReset}
-          disabled={value === undefined}
-          className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 text-slate-400 ${
-            value === undefined
-              ? "cursor-not-allowed opacity-50"
-              : "hover:text-logo-red hover:bg-red-50"
-          }`}
+          className={`${baseStyles} hover:text-logo-red hover:bg-red-50`}
           title="Clear interaction"
         >
           <i className="bi bi-eraser text-lg"></i>
         </button>
-      )}
+      );
+    }
+
+    // default case (show help)
+    return (
+      <button
+        onClick={() => openModal("about")}
+        className={`${baseStyles} hover:bg-slate-50 hover:text-logo-blue`}
+        title="What is this?"
+      >
+        <i className="bi bi-question-lg text-lg"></i>
+      </button>
+    );
+  };
+
+  const authorName = authored ? "Your" : "Author's";
+  return (
+    <div className="flex items-center w-full h-8 select-none gap-4">
+      {renderActionButton()}
 
       {/* gradient bar/track container */}
       <div
@@ -205,6 +266,7 @@ export const InteractionSlider = ({
         }`}
       >
         <div
+          ref={sliderRef}
           className={`absolute left-0 right-0 h-4 top-1/2 -translate-y-1/2 rounded-xl border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
             isDimmed ? "opacity-40" : ""
           } ${isBlurred ? "blur-xs opacity-80" : ""}`}
@@ -214,6 +276,19 @@ export const InteractionSlider = ({
             backgroundClip: "padding-box",
           }}
         />
+
+        {(isReply || authored) && (
+          <PopupIndicator
+            triggerRef={sliderRef}
+            text={
+              isReply
+                ? `${authorName} stance: ${value}`
+                : authored
+                  ? "You can't rate your own post!"
+                  : ""
+            }
+          />
+        )}
 
         {showThumb && (
           <div
