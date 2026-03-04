@@ -229,7 +229,7 @@ export const InteractionSlider = ({
       return (
         <button
           onClick={handleReset}
-          className={`${baseStyles} hover:text-logo-red hover:bg-red-50`}
+          className={`${baseStyles} hover:text-(--disagree) hover:bg-red-50`}
           title="Clear interaction"
         >
           <i className="bi bi-eraser text-lg"></i>
@@ -261,7 +261,7 @@ export const InteractionSlider = ({
         onPointerMove={(e) => state.current.isDragging && handlePointer(e)}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        className={`relative flex-1 h-10 flex items-center touch-none transition-all duration-300 ${
+        className={`relative flex-1 h-10 flex items-center touch-none transition-all duration-300 mx-2 ${
           isDisabled ? "cursor-not-allowed" : "cursor-crosshair"
         }`}
       >
