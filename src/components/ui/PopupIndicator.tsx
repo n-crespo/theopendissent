@@ -7,12 +7,18 @@ interface PopupProps {
   text: string;
   triggerRef: React.RefObject<HTMLElement | null>;
   onClick?: () => void;
+  yOffset?: number;
 }
 
 /**
  * Renders a portal-based tooltip that handles edge collisions and bundled interaction logic.
  */
-export const PopupIndicator = ({ text, triggerRef, onClick }: PopupProps) => {
+export const PopupIndicator = ({
+  text,
+  triggerRef,
+  onClick,
+  yOffset = 10,
+}: PopupProps) => {
   const [visible, setVisible] = useState(false);
 
   // separate refs for the entire portal container and the bubble itself
@@ -93,7 +99,8 @@ export const PopupIndicator = ({ text, triggerRef, onClick }: PopupProps) => {
 
       // place container centered above the trigger
       container.style.position = "absolute";
-      container.style.top = `${rect.top + window.scrollY - 6}px`;
+      // Use the yOffset prop here to create more clearance
+      container.style.top = `${rect.top + window.scrollY - yOffset}px`;
       container.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
       container.style.transform = "translate(-50%, -100%)";
 
@@ -125,7 +132,7 @@ export const PopupIndicator = ({ text, triggerRef, onClick }: PopupProps) => {
       window.removeEventListener("scroll", updatePosition);
       window.removeEventListener("resize", updatePosition);
     };
-  }, [visible, triggerRef]);
+  }, [visible, triggerRef, yOffset]);
 
   if (!visible) return null;
 
@@ -143,9 +150,6 @@ export const PopupIndicator = ({ text, triggerRef, onClick }: PopupProps) => {
       >
         {text}
       </div>
-
-      {/* the arrow is decoupled: always centered within the main container */}
-      {/* and thus always centered over the triggerRef center point */}
       <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45" />
     </div>,
     document.body,
