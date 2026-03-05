@@ -43,9 +43,9 @@ export const NotificationItem = memo(
         onClick={() =>
           onClick(notification.id, notification.id, notification.type)
         }
-        className={`group flex items-center gap-4 p-4 border border-border-subtle shadow-sm rounded-xl transition-all duration-200 cursor-pointer active:scale-[0.99] ${
-          !notification.isRead ? "bg-slate-50/30" : "bg-white"
-        }`}
+        className={
+          "group flex items-center gap-4 p-4 border border-border-subtle shadow-md rounded-xl transition-all duration-200 cursor-pointer active:scale-[0.99] bg-white"
+        }
       >
         <div
           className="flex items-center justify-center shrink-0 w-6 h-6"
