@@ -75,9 +75,7 @@ export const NotificationItem = memo(
             {renderMessage()}
           </p>
           <div className="flex items-center gap-2">
-            {!notification.isRead && (
-              <span className="w-2 h-2 rounded-full bg-logo-red animate-pulse" />
-            )}
+            <span className="w-2 h-2 rounded-full bg-logo-red animate-pulse" />
             <span className="flex items-center flex-wrap gap-1 text-[10px] text-slate-400 font-medium tracking-tight">
               {formattedTime}
             </span>
