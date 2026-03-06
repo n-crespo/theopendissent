@@ -564,29 +564,3 @@ export const deleteNotifications = async (
   });
   return update(ref(db), updates);
 };
-
-/**
- * Helper to subscribe specifically to the unread count for the Header bubble.
- * This is more performant than fetching the whole list if you only need the number.
- */
-export const subscribeToUnreadCount = (
-  userId: string,
-  callback: (count: number) => void,
-) => {
-  const notifRef = ref(db, `users/${userId}/notifications`);
-
-  return onValue(notifRef, (snapshot) => {
-    if (!snapshot.exists()) {
-      callback(0);
-      return;
-    }
-
-    let unread = 0;
-    snapshot.forEach((child) => {
-      if (child.val().isRead === false) {
-        unread++;
-      }
-    });
-    callback(unread);
-  });
-};
