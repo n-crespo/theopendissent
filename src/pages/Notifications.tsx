@@ -42,7 +42,7 @@ export const Notifications = () => {
       toggleSelect(id);
       return;
     }
-    markAsRead(id);
+    // markAsRead(id);
     removeBatch([id]);
     if (type === "reply") navigate(`/post/${targetId}`);
   };
