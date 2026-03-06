@@ -101,8 +101,11 @@ export const FeedItem = memo(
 
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-slate-900 leading-tight">
-                  {isOwner ? "You" : item.userId.substring(0, 10) + "..."}
+                <span
+                  className={`text-sm font-semibold text-slate-900 leading-tight ${!isOwner && "blur-sm"}
+`}
+                >
+                  {isOwner ? "You" : "Anonymous User"}
                 </span>
               </div>
 
