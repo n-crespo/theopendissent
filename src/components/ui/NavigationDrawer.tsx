@@ -51,7 +51,7 @@ export const NavigationDrawer = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-100 bg-slate-900/10 backdrop-blur-[2px] cursor-pointer"
+            className="fixed inset-0 z-100 bg-slate-900/10 cursor-pointer"
           />
 
           {/* Drawer: Width constrained to ensure it never covers the full screen */}
@@ -65,7 +65,7 @@ export const NavigationDrawer = ({
             `}
           >
             {/* Scrollable Content: pt-8 replaces the header for top spacing */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 pt-8">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-1 pt-2">
               <div className="flex flex-col gap-1">{children}</div>
             </div>
           </motion.div>
@@ -91,15 +91,15 @@ export const DrawerItem = ({
 }) => (
   <button
     onClick={onClick}
-    className={`flex w-full items-center gap-4 px-4 py-3 rounded-2xl text-left text-md font-semibold transition-all active:scale-[0.98] hover:bg-slate-100
+    className={`flex w-full items-center gap-4 px-4 py-3 rounded-2xl text-left text-base font-semibold transition-all active:scale-[0.98] hover:scale-[0.98]
       ${variant === "danger" ? "text-logo-red" : "text-slate-800"}`}
   >
     {icon && (
       <div
-        className={`w-8 h-8 rounded-xl flex items-center justify-center
+        className={`h-8 rounded-xl flex items-center justify-center
         ${variant === "danger" ? "text-logo-red" : "text-slate-800"}`}
       >
-        <i className={`bi ${icon} text-lg`}></i>
+        <i className={`bi ${icon} text-xl`}></i>
       </div>
     )}
     {label}

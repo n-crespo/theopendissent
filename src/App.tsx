@@ -20,24 +20,25 @@ import { Terms } from "./pages/Terms";
 import { PostDetails } from "./pages/PostDetails";
 import { Notifications } from "./pages/Notifications";
 import { FeedSortProvider } from "./context/FeedSortContext";
+import { SidebarContent } from "./components/layout/SidebarContent";
+import { useModal } from "./context/ModalContext";
 
 function Layout() {
   const { user, loading } = useAuth();
   const { pathname } = useLocation();
+  const { openModal } = useModal();
+
   const navType = useNavigationType();
 
-  // true while we check localStorage and Auth
   const [isInitialCheck, setIsInitialCheck] = useState(true);
   const [showLanding, setShowLanding] = useState(false);
 
   useDeepLinkHandler();
 
   useEffect(() => {
-    // check permanent and session-based dismiss status
     const skipPermanent = localStorage.getItem("skipLanding") === "true";
     const skipSession = sessionStorage.getItem("landingDismissed") === "true";
 
-    // 2. if no user and hasn't skipped (either way), we must show landing
     if (!loading) {
       if (
         !user &&
@@ -58,20 +59,14 @@ function Layout() {
 
   const handleContinue = (dontShowAgain: boolean) => {
     if (dontShowAgain) localStorage.setItem("skipLanding", "true");
-
-    // mark as dismissed for the current session to prevent re-triggering on back-nav
     sessionStorage.setItem("landingDismissed", "true");
     setShowLanding(false);
   };
 
-  // prevent ANY rendering of the header/footer during the auth/storage check
   if (isInitialCheck) return null;
 
   return (
     <div className="min-h-screen bg-logo-offwhite">
-      {/* render landing page at the top level.
-          uses fixed inset-0 so it covers the header below.
-      */}
       {showLanding && <LandingPage onContinue={handleContinue} />}
 
       <div
@@ -80,9 +75,36 @@ function Layout() {
         }`}
       >
         <Header />
-        <main className="mx-auto w-full max-w-125 px-4 pb-4 pt-16">
-          <Outlet />
-        </main>
+
+        {/* responsive layout wrapper */}
+        <div className="mx-auto flex w-full max-w-7xl justify-center gap-4 lg:gap-9 pt-16 px-4">
+          {/* navigation sidebar (Left)
+      Shrink to w-64 on lg to ensure it fits, expand to w-80 on xl
+  */}
+          <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4">
+            <SidebarContent />
+          </aside>
+
+          {/* main feed (Center) */}
+          <main className="w-full max-w-115 shrink-0 pb-4 px-2">
+            <Outlet />
+          </main>
+
+          {/* notifications sidebar (Right)
+      Only show actual content on xl (1280px+) to prevent clipping.
+      On lg, we show a ghost spacer to keep the feed perfectly centered.
+  */}
+          <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4">
+            {pathname !== "/notifications" && user ? (
+              <div className="hidden xl:block pr-2">
+                <Notifications />
+              </div>
+            ) : null}
+
+            {/* ghost spacer: matches left width on lg to maintain center alignment */}
+            <div className="xl:hidden w-full h-full" />
+          </aside>
+        </div>
 
         <GlobalModal />
         <Footer />
