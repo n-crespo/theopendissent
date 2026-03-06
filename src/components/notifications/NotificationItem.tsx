@@ -76,7 +76,7 @@ export const NotificationItem = memo(
           </p>
           <div className="flex items-center gap-2">
             <span className="aspect-square h-2.5 w-auto flex-none rounded-full bg-logo-red animate-pulse" />
-            <span className="flex items-center flex-wrap gap-1 text-[0.625rem text-slate-400 font-medium tracking-tight">
+            <span className="flex items-center flex-wrap gap-1 text-[0.7rem] text-slate-400 font-medium tracking-tight">
               {formattedTime}
             </span>
           </div>
