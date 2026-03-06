@@ -7,8 +7,6 @@ import { PostInput } from "../components/feed/PostInput";
 import { useAuth } from "../context/AuthContext";
 import { interactionStore } from "../lib/interactionStore";
 import { Post } from "../types";
-import { ScrollableRail } from "../components/ui/ScrollableRail";
-import { Chip } from "../components/ui/Chip";
 import { FeedItemSkeleton } from "../components/ui/FeedItemSkeleton";
 
 export const PostDetails = () => {
