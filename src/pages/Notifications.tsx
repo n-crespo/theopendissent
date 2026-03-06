@@ -99,7 +99,7 @@ export const Notifications = ({ showHeader }: NotificationsProps) => {
       )}
 
       <div className="flex flex-col gap-3">
-        {notifications.length === 0 ? (
+        {notifications.length === 0 && showHeader ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.4 }}
