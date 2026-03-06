@@ -71,12 +71,12 @@ export const NotificationItem = memo(
 
         {/* Text Section */}
         <div className="flex flex-col flex-1 gap-0.5">
-          <p className="text-slate-800 leading-[1.6] whitespace-pre-wrap wrap-break-word">
+          <p className="text-slate-800 leading-[1.6] whitespace-pre-wrap wrap-break-word text-sm">
             {renderMessage()}
           </p>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-logo-red animate-pulse" />
-            <span className="flex items-center flex-wrap gap-1 text-[10px] text-slate-400 font-medium tracking-tight">
+            <span className="aspect-square h-2.5 w-auto flex-none rounded-full bg-logo-red animate-pulse" />
+            <span className="flex items-center flex-wrap gap-1 text-[0.625rem] text-slate-400 font-medium tracking-tight">
               {formattedTime}
             </span>
           </div>
