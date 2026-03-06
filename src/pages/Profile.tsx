@@ -64,49 +64,50 @@ export const Profile = () => {
       />
 
       <div className="min-h-100">
-        {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-4 text-slate-300">
-            <LoadingDots className="scale-125" />
-            <span className="text-xs font-bold tracking-wider">
-              Loading {filter}...
-            </span>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            <AnimatePresence mode="popLayout" initial={false}>
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="py-20 flex flex-col items-center justify-center gap-4 text-slate-300"
+            >
+              <LoadingDots className="scale-125" />
+              <span className="text-xs font-bold tracking-wider">
+                Loading {filter}...
+              </span>
+            </motion.div>
+          ) : (
+            <motion.div
+              key={filter}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="flex flex-col gap-4"
+            >
               {posts.length === 0 ? (
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="py-20 text-center border-2 border-dashed border-slate-100 rounded-3xl"
-                >
+                <div className="py-20 text-center border-2 border-dashed border-slate-100 rounded-3xl">
                   <i className="bi bi-cloud-slash text-4xl text-slate-100 mb-3 block"></i>
                   <p className="text-slate-400 font-medium italic">
                     No {filter} found.
                   </p>
-                </motion.div>
+                </div>
               ) : (
                 posts.map((item) => (
-                  <motion.div
-                    layout
-                    key={`${filter}-${item.id}`}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.98 }}
-                    transition={{ duration: 0.2 }}
-                  >
+                  <div key={item.id}>
                     {filter === "replies" ? (
                       <ProfileReplyItem reply={item} />
                     ) : (
                       <FeedItem item={item} isReply={!!item.parentPostId} />
                     )}
-                  </motion.div>
+                  </div>
                 ))
               )}
-            </AnimatePresence>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
