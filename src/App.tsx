@@ -21,12 +21,10 @@ import { PostDetails } from "./pages/PostDetails";
 import { Notifications } from "./pages/Notifications";
 import { FeedSortProvider } from "./context/FeedSortContext";
 import { SidebarContent } from "./components/layout/SidebarContent";
-import { useModal } from "./context/ModalContext";
 
 function Layout() {
   const { user, loading } = useAuth();
   const { pathname } = useLocation();
-  const { openModal } = useModal();
 
   const navType = useNavigationType();
 
@@ -89,7 +87,7 @@ function Layout() {
 
           <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4">
             {pathname !== "/notifications" && user ? (
-              <div className="hidden lg:block pr-2">
+              <div className="hidden lg:block px-2">
                 <Notifications showHeader={false} />
               </div>
             ) : null}
