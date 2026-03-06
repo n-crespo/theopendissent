@@ -110,14 +110,18 @@ export const PostDetails = () => {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <ScrollableRail>
-          <Chip
+        {/* Header Grid */}
+        <div className="grid grid-cols-3 w-full">
+          <button
+            className="justify-self-start p-2 cursor-pointer"
             onClick={handleBack}
-            icon={<i className="bi bi-arrow-left"></i>}
           >
-            Back
-          </Chip>
-        </ScrollableRail>
+            <i className="bi bi-arrow-left rounded-xl text-2xl col-start-1"></i>
+          </button>
+          <h1 className="my-2 col-start-2 justify-self-center text-xl font-bold text-slate-900 tracking-tight text-nowrap">
+            Post
+          </h1>
+        </div>
       </div>
       {/* Main Post: Real Item OR Skeleton */}
       {isLoadingPost || authLoading ? (
