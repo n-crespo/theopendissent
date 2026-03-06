@@ -1,8 +1,6 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ScrollableRail } from "../components/ui/ScrollableRail";
-import { Chip } from "../components/ui/Chip";
 import { FeedItem } from "../components/feed/FeedItem";
 import { ProfileReplyItem } from "../components/feed/ProfileReplyItem";
 import { LoadingDots } from "../components/ui/LoadingDots";
@@ -10,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { useUserActivity } from "../hooks/useUserActivity";
 import { useUserCounts } from "../hooks/useUserCounts";
 import { formatCompactNumber } from "../utils";
+import { TabSwitcher } from "../components/ui/TabSwicher";
 
 type FilterType = "posts" | "replies" | "interacted";
 
@@ -36,50 +35,33 @@ export const Profile = () => {
   if (!user) return null;
 
   const tabs = [
-    {
-      id: "posts",
-      label: "Your Posts",
-      icon: "bi-file-text",
-      count: counts.posts,
-    },
+    { id: "posts", label: "Posts", count: formatCompactNumber(counts.posts) },
     {
       id: "replies",
-      label: "Your Replies",
-      icon: "bi-chat",
-      count: counts.replies,
+      label: "Replies",
+      count: formatCompactNumber(counts.replies),
     },
     {
       id: "interacted",
-      label: "Your Interactions",
-      icon: "bi-sliders",
-      count: counts.interacted,
+      label: "Interactions",
+      count: formatCompactNumber(counts.interacted),
     },
   ];
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Header Grid */}
-      <div className="grid grid-cols-1 items-center w-full">
-        <h1 className="my-2 col-start-1 row-start-1 justify-self-center text-xl font-bold text-slate-900 tracking-tight text-nowrap">
+      <div className="grid grid-cols-1 items-center w-full px-4">
+        <h1 className="my-2 col-start-1 row-start-1 justify-self-center text-xl font-bold text-slate-900 tracking-tight">
           Your Profile
         </h1>
       </div>
 
-      <ScrollableRail>
-        {tabs.map((tab) => (
-          <Chip
-            key={tab.id}
-            isActive={filter === tab.id}
-            onClick={() => handleFilterChange(tab.id as FilterType)}
-            icon={<i className={`bi ${tab.icon}`}></i>}
-          >
-            {tab.label}{" "}
-            <span className="opacity-50 ml-1">
-              {formatCompactNumber(tab.count)}
-            </span>
-          </Chip>
-        ))}
-      </ScrollableRail>
+      <TabSwitcher
+        tabs={tabs}
+        activeId={filter}
+        onChange={(id) => handleFilterChange(id as FilterType)}
+        underlineWidth="w-16"
+      />
 
       <div className="min-h-100">
         {loading ? (
