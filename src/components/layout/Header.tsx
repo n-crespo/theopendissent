@@ -18,7 +18,7 @@ export const Header = () => {
       {/* grid-cols-3 ensures the center of the middle column is the exact center of the header.
         h-14 gives the header a consistent height for the logo to scale within.
       */}
-      <div className="mx-auto grid h-14 grid-cols-[17%_66%_17%] items-center max-w-115 lg:max-w-7xl">
+      <div className="mx-auto grid h-14 grid-cols-[17%_66%_17%] items-center max-w-115 lg:max-w-7xl px-2">
         {/* Left Column (10%): Mobile Menu Toggle */}
         <div className="flex justify-start">
           <div className="lg:hidden">
