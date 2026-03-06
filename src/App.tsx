@@ -78,9 +78,6 @@ function Layout() {
 
         {/* responsive layout wrapper */}
         <div className="mx-auto flex w-full max-w-7xl justify-center gap-4 lg:gap-9 pt-16 px-4">
-          {/* navigation sidebar (Left)
-      Shrink to w-64 on lg to ensure it fits, expand to w-80 on xl
-  */}
           <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4">
             <SidebarContent />
           </aside>
@@ -90,10 +87,6 @@ function Layout() {
             <Outlet />
           </main>
 
-          {/* notifications sidebar (Right)
-      Only show actual content on xl (1280px+) to prevent clipping.
-      On lg, we show a ghost spacer to keep the feed perfectly centered.
-  */}
           <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4">
             {pathname !== "/notifications" && user ? (
               <div className="hidden lg:block pr-2">

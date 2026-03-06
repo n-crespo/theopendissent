@@ -15,11 +15,8 @@ export const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-slate-200 bg-logo-offwhite transform-gpu">
-      {/* grid-cols-3 ensures the center of the middle column is the exact center of the header.
-        h-14 gives the header a consistent height for the logo to scale within.
-      */}
       <div className="mx-auto grid h-14 grid-cols-[17%_66%_17%] items-center max-w-115 lg:max-w-7xl px-2">
-        {/* Left Column (10%): Mobile Menu Toggle */}
+        {/* Left Column */}
         <div className="flex justify-start">
           <div className="lg:hidden">
             {!loading && (
@@ -37,7 +34,7 @@ export const Header = () => {
           </div>
         </div>
 
-        {/* Center Column (80%): Logo (Massive) */}
+        {/* Center Column */}
         <div className="flex justify-center h-full py-1">
           <Link
             to="/"
@@ -52,7 +49,7 @@ export const Header = () => {
           </Link>
         </div>
 
-        {/* Right Column (10%): Actions */}
+        {/* Right Column */}
         <div className="flex items-center justify-end lg:hidden">
           {loading ? (
             <div className="h-10 w-10 rounded-xl bg-slate-100 animate-pulse" />
