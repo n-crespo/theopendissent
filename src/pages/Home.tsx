@@ -1,11 +1,11 @@
-import { DiscoveryRail } from "../components/discovery/DiscoveryRail";
-import { PostInput } from "../components/feed/PostInput";
 import { FeedContainer } from "../components/feed/FeedContainer";
+import { PostInput } from "../components/feed/PostInput";
+import { FeedSortToggle } from "../components/home/FeedSortToggle";
 
 export const Home = () => {
   return (
     <div className="flex flex-col gap-3">
-      <DiscoveryRail />
+      <FeedSortToggle />
       <PostInput />
       <FeedContainer />
     </div>
