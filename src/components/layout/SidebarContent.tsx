@@ -28,7 +28,7 @@ export const SidebarContent = ({
         <DrawerItem
           icon="bi-house-door"
           label="Home"
-          onClick={() => handleNav("/profile")}
+          onClick={() => handleNav("/")}
         />
 
         {user && (
