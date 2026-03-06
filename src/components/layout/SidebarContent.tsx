@@ -38,7 +38,6 @@ export const SidebarContent = ({
               label="Your Profile"
               onClick={() => handleNav("/profile")}
             />
-            <div className="my-2 border-t border-slate-200" />
           </>
         )}
 
