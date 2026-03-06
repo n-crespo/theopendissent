@@ -97,7 +97,7 @@ function Layout() {
           <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4">
             {pathname !== "/notifications" && user ? (
               <div className="hidden lg:block pr-2">
-                <Notifications />
+                <Notifications showHeader={false} />
               </div>
             ) : null}
 
@@ -123,7 +123,10 @@ export default function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="privacy" element={<Privacy />} />
           <Route path="terms" element={<Terms />} />
-          <Route path="notifications" element={<Notifications />} />
+          <Route
+            path="notifications"
+            element={<Notifications showHeader={true} />}
+          />
           <Route path="post/:postId" element={<PostDetails />} />
         </Route>
       </Routes>

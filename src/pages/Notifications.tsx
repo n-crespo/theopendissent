@@ -4,7 +4,11 @@ import { useNotifications } from "../hooks/useNotifications";
 import { NotificationItem } from "../components/notifications/NotificationItem";
 import { motion } from "framer-motion";
 
-export const Notifications = () => {
+interface NotificationsProps {
+  showHeader: boolean;
+}
+
+export const Notifications = ({ showHeader }: NotificationsProps) => {
   const navigate = useNavigate();
   const { notifications, markAsRead, removeBatch } = useNotifications();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -50,23 +54,17 @@ export const Notifications = () => {
   return (
     <div className="flex flex-col gap-3 pb-10">
       <div className="grid grid-cols-1 items-center w-full">
-        <h1 className="my-2 col-start-1 row-start-1 justify-self-center text-xl font-bold text-slate-900 tracking-tight text-nowrap">
-          Notifications
-        </h1>
+        {showHeader && (
+          <h1 className="my-2 col-start-1 row-start-1 justify-self-center text-xl font-bold text-slate-900 tracking-tight text-nowrap">
+            Notifications
+          </h1>
+        )}
       </div>
 
       {notifications.length > 0 && (
         <div className="flex items-center justify-between px-1 mb-1">
-          <div className="flex gap-4">
-            {/* select / cancel toggle */}
-            <button
-              onClick={isSelecting ? handleCancel : () => setIsSelecting(true)}
-              className="text-[11px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-wider transition-colors"
-            >
-              {isSelecting ? "Cancel" : "Select"}
-            </button>
-
-            {/* select all appears only when isSelecting is true */}
+          {/* bulk selection toggle on the left */}
+          <div className="flex">
             {isSelecting && (
               <button
                 onClick={toggleAll}
@@ -79,14 +77,24 @@ export const Notifications = () => {
             )}
           </div>
 
-          {selectedIds.size > 0 && (
+          {/* action buttons grouped on the right */}
+          <div className="flex gap-4">
+            {selectedIds.size > 0 && (
+              <button
+                onClick={handleDeleteSelected}
+                className="text-[11px] font-bold text-logo-red hover:text-red-700 uppercase tracking-wider transition-colors"
+              >
+                Delete ({selectedIds.size})
+              </button>
+            )}
+
             <button
-              onClick={handleDeleteSelected}
-              className="text-[11px] font-bold text-logo-red hover:text-red-700 uppercase tracking-wider transition-colors"
+              onClick={isSelecting ? handleCancel : () => setIsSelecting(true)}
+              className="text-[11px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-wider transition-colors"
             >
-              Delete ({selectedIds.size})
+              {isSelecting ? "Cancel" : "Select"}
             </button>
-          )}
+          </div>
         </div>
       )}
 
