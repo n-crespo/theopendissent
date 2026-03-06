@@ -53,7 +53,7 @@ export const Header = () => {
         </div>
 
         {/* Right Column (10%): Actions */}
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end lg:hidden">
           {loading ? (
             <div className="h-10 w-10 rounded-xl bg-slate-100 animate-pulse" />
           ) : user ? (
@@ -69,17 +69,12 @@ export const Header = () => {
               )}
             </Link>
           ) : (
-            <div className="lg:hidden">
-              <button
-                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-slate-500 transition-all active:scale-95"
-                onClick={() => openModal("signin")}
-              >
-                {/* <span className="text-[13px] font-bold whitespace-nowrap"> */}
-                {/*   Sign In */}
-                {/* </span> */}
-                <i className="bi bi-box-arrow-in-left text-2xl"></i>
-              </button>
-            </div>
+            <button
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-slate-500 transition-all active:scale-95"
+              onClick={() => openModal("signin")}
+            >
+              <i className="bi bi-box-arrow-in-left text-2xl"></i>
+            </button>
           )}
         </div>
       </div>
