@@ -65,7 +65,7 @@ export const NavigationDrawer = ({
             `}
           >
             {/* Scrollable Content: pt-8 replaces the header for top spacing */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-1 pt-2">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-1 pt-2 bg-logo-offwhite">
               <div className="flex flex-col gap-1">{children}</div>
             </div>
           </motion.div>

@@ -96,7 +96,7 @@ function Layout() {
   */}
           <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4">
             {pathname !== "/notifications" && user ? (
-              <div className="hidden xl:block pr-2">
+              <div className="hidden lg:block pr-2">
                 <Notifications />
               </div>
             ) : null}
