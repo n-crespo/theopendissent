@@ -41,14 +41,14 @@ export const Notifications = ({ showHeader }: NotificationsProps) => {
   };
 
   const handleNotifClick = (notification: any) => {
-    const { id, type, latestReplyId } = notification;
+    const { id, type, latestReplyId, isRead } = notification;
 
     if (isSelecting) {
       toggleSelect(id);
       return;
     }
 
-    removeBatch([id]);
+    if (!isRead) markAsRead(id);
 
     if (type === "reply") {
       // build path using the reply ID if it exists
