@@ -90,10 +90,9 @@ function Layout() {
               <div className="hidden lg:block px-2">
                 <Notifications showHeader={false} />
               </div>
-            ) : null}
-
-            {/* ghost spacer: matches left width on lg to maintain center alignment */}
-            <div className="xl:hidden w-full h-full" />
+            ) : (
+              <div className="xl:hidden w-full" />
+            )}
           </aside>
         </div>
 
