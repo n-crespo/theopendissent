@@ -118,7 +118,7 @@ export const SidebarContent = ({
       </div>
 
       {/* sticky footer for social links */}
-      <div className="mt-auto px-6 py-6 backdrop-blur-sm">
+      <div className="mt-auto py-6 backdrop-blur-sm">
         <SocialLinksRow />
       </div>
     </div>
