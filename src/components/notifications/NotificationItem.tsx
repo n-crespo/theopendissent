@@ -7,7 +7,7 @@ interface NotificationItemProps {
   selected: boolean;
   isSelecting: boolean;
   onToggle: (id: string) => void;
-  onClick: (id: string, targetId: string, type: string) => void;
+  onClick: (notification: Notification) => void;
 }
 
 export const NotificationItem = memo(
@@ -40,9 +40,7 @@ export const NotificationItem = memo(
 
     return (
       <div
-        onClick={() =>
-          onClick(notification.id, notification.id, notification.type)
-        }
+        onClick={() => onClick(notification)}
         className={
           "group flex items-center gap-4 p-4 border border-border-subtle shadow-md rounded-xl transition-all duration-200 cursor-pointer active:scale-[0.99] bg-white"
         }

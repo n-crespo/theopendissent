@@ -40,15 +40,24 @@ export const Notifications = ({ showHeader }: NotificationsProps) => {
     setIsSelecting(false);
   };
 
-  const handleNotifClick = (id: string, targetId: string, type: string) => {
-    // only navigate if not in selection mode
+  const handleNotifClick = (notification: any) => {
+    const { id, type, latestReplyId } = notification;
+
     if (isSelecting) {
       toggleSelect(id);
       return;
     }
-    // markAsRead(id);
+
     removeBatch([id]);
-    if (type === "reply") navigate(`/post/${targetId}`);
+
+    if (type === "reply") {
+      // build path using the reply ID if it exists
+      const path = latestReplyId
+        ? `/post/${id}?reply=${latestReplyId}`
+        : `/post/${id}`;
+      console.log("navigating to:", path);
+      navigate(path);
+    }
   };
 
   return (

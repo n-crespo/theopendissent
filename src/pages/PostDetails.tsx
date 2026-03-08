@@ -71,10 +71,25 @@ export const PostDetails = () => {
       setIsLoadingReplies(false);
 
       if (highlightReplyId) {
-        setTimeout(() => {
-          const element = document.getElementById(`reply-${highlightReplyId}`);
-          element?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 300);
+        const replyExists = list.some((r) => r.id === highlightReplyId);
+
+        if (replyExists) {
+          setTimeout(() => {
+            const element = document.getElementById(
+              `reply-${highlightReplyId}`,
+            );
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth", block: "center" });
+
+              // use window.history instead of setSearchParams
+              // to prevent a React re-render
+              setTimeout(() => {
+                const newUrl = window.location.pathname;
+                window.history.replaceState(null, "", newUrl);
+              }, 1000);
+            }
+          }, 300);
+        }
       }
     });
     return () => unsubscribe();

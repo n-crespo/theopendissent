@@ -482,6 +482,7 @@ export const onReplyCreatedNotification = onValueCreated(
           return {
             ...current,
             count: (current.count || 1) + 1,
+            latestReplyId: replyId,
             isRead: false,
             updatedAt: now,
           };
@@ -490,6 +491,7 @@ export const onReplyCreatedNotification = onValueCreated(
           return {
             type: "reply",
             count: 1,
+            latestReplyId: replyId,
             isRead: false,
             createdAt: now,
             updatedAt: now,
