@@ -91,7 +91,7 @@ export const DrawerItem = ({
 }) => (
   <button
     onClick={onClick}
-    className={`flex w-full items-center gap-4 px-4 py-3 rounded-2xl text-left text-base font-semibold transition-all active:scale-[0.98] hover:scale-[0.98]
+    className={`flex w-full items-center gap-4 px-4 py-3 rounded-2xl text-left text-base font-semibold transition-all active:scale-[0.98] hover:scale-[0.98] whitespace-nowrap
       ${variant === "danger" ? "text-logo-red" : "text-slate-800"}`}
   >
     {icon && (
