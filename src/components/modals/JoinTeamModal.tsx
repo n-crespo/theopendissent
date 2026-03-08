@@ -12,7 +12,7 @@ export const JoinTeamModal = () => {
         <i className="bi bi-rocket-takeoff text-4xl"></i>
       </div>
 
-      <h2 className="mb-2 text-2xl font-bold text-slate-800">Join the Team</h2>
+      <h2 className="mb-2 text-2xl font-bold text-slate-800">Internships</h2>
 
       <p className="mb-8 max-w-xs text-center text-sm text-slate-500 leading-relaxed">
         We have open positions in <strong>Research</strong>,{" "}
