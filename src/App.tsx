@@ -81,7 +81,7 @@ function Layout() {
           </aside>
 
           {/* main feed (Center) */}
-          <main className="w-full max-w-115 shrink-0 pb-4 px-2">
+          <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2">
             <Outlet />
           </main>
 
