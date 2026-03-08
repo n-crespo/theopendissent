@@ -171,17 +171,17 @@ export const PostInput = ({
         className={`
           flex items-center justify-center font-bold text-white transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap
           bg-linear-to-r from-logo-blue via-logo-green to-logo-red bg-size-[300%_100%] animate-shimmer
-          rounded-xl h-[44px]
+          rounded-xl h-11 shadow-md
           ${
             hasNoInteraction
               ? "w-0 min-w-0 px-0 opacity-0 pointer-events-none border-none"
-              : "w-24 min-w-24 px-4 text-sm opacity-100 shadow-2xl ml-2"
+              : "w-24 min-w-24 px-4 text-sm opacity-100 ml-2"
           }
           ${
             isSubmitDisabled && !hasNoInteraction
               ? "grayscale-[0.6] opacity-50 cursor-not-allowed"
               : !hasNoInteraction
-                ? "cursor-pointer hover:shadow-2xl active:scale-95"
+                ? "cursor-pointer active:scale-95"
                 : ""
           }
         `}
