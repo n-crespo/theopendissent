@@ -24,8 +24,19 @@ class NotificationStore {
     if (this.unsubscribe) this.unsubscribe();
 
     this.unsubscribe = subscribeToNotifications(userId, (data) => {
-      this.notifications = data;
+      // Apply sorting whenever fresh data arrives from Firebase
+      this.notifications = this.sortNotifications(data);
       this.notify();
+    });
+  }
+
+  /**  Helper to sort notifications. Unread first, then recently updated. */
+  private sortNotifications(data: Notification[]): Notification[] {
+    return [...data].sort((a, b) => {
+      if (a.isRead !== b.isRead) {
+        return a.isRead ? 1 : -1;
+      }
+      return b.updatedAt - a.updatedAt;
     });
   }
 
@@ -50,10 +61,12 @@ class NotificationStore {
 
   /** Actions wrapper */
   async markAsRead(userId: string, notifId: string) {
-    // Optimistic update
-    this.notifications = this.notifications.map((n) =>
+    // Update the flag AND re-sort so the item drops down immediately in the UI.
+    const updatedList = this.notifications.map((n) =>
       n.id === notifId ? { ...n, isRead: true } : n,
     );
+
+    this.notifications = this.sortNotifications(updatedList);
     this.notify();
 
     return markNotificationAsRead(userId, notifId);
