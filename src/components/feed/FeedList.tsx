@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoadingDots } from "../ui/LoadingDots";
 import { FeedItem } from "./FeedItem";
 import { FeedItemSkeleton } from "../ui/FeedItemSkeleton";
 import { Post } from "../../types";
+import { useInfiniteScroll } from "../../hooks/useInfininteScroll";
 
 interface FeedListProps {
   posts: Post[];
@@ -11,6 +12,7 @@ interface FeedListProps {
   loading: boolean;
   hasMore: boolean;
   onLoadMore: () => void;
+  sortKey: string;
 }
 
 export const FeedList = ({
@@ -19,26 +21,24 @@ export const FeedList = ({
   loading,
   hasMore,
   onLoadMore,
+  sortKey,
 }: FeedListProps) => {
-  const bottomBoundaryRef = useRef<HTMLDivElement>(null);
+  const bottomBoundaryRef = useInfiniteScroll({
+    loading,
+    hasMore,
+    onLoadMore,
+  });
 
-  // New state to delay the skeleton visibility
   const [showLoadingUI, setShowLoadingUI] = useState(false);
 
-  // --- Delay Logic ---
+  // Skeleton delay logic
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-
     if (loading) {
-      // If loading starts, wait 1000ms before showing the skeleton
-      timeoutId = setTimeout(() => {
-        setShowLoadingUI(true);
-      }, 1000);
+      timeoutId = setTimeout(() => setShowLoadingUI(true), 1000);
     } else {
-      // If loading finishes, hide it immediately and clear any pending timer
       setShowLoadingUI(false);
     }
-
     return () => clearTimeout(timeoutId);
   }, [loading]);
 
@@ -61,63 +61,65 @@ export const FeedList = ({
     };
   }, [hasMore, loading, onLoadMore]);
 
-  const renderItem = (post: Post, isHighlighted = false) => (
-    <motion.div
-      layout={isHighlighted ? "position" : undefined}
-      key={isHighlighted ? `highlighted-${post.id}` : post.id}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, transition: { duration: 0.1 } }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-    >
-      <FeedItem
-        item={post}
-        highlighted={isHighlighted}
-        isReply={!!post.parentPostId}
-      />
-    </motion.div>
-  );
-
   return (
-    <div className="flex flex-col w-full max-w-2xl mx-auto gap-3">
-      {/* INITIAL LOAD SKELETONS
-         Only show if:
-         1. We have no posts (initial load)
-         2. loading is TRUE (technically)
-         3. showLoadingUI is TRUE (the 1s timer has passed)
-      */}
-      {loading && showLoadingUI && posts.length === 0 && (
-        <div className="flex flex-col gap-3">
-          {[1, 2, 3, 4].map((i) => (
-            <FeedItemSkeleton key={i} />
-          ))}
-        </div>
-      )}
-
-      {/* Render Posts */}
-      <AnimatePresence initial={false}>
-        {highlightedPost && renderItem(highlightedPost, true)}
-        {posts.map((post) => renderItem(post))}
+    <div className="flex flex-col w-full max-w-2xl mx-auto gap-3 min-h-100">
+      <AnimatePresence mode="wait">
+        {loading && showLoadingUI && posts.length === 0 ? (
+          <motion.div
+            key="loading-skeletons"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col gap-3"
+          >
+            {[1, 2, 3, 4].map((i) => (
+              <FeedItemSkeleton key={i} />
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div
+            key={sortKey}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="flex flex-col gap-3"
+          >
+            {highlightedPost && (
+              <FeedItem
+                item={highlightedPost}
+                highlighted={true}
+                isReply={!!highlightedPost.parentPostId}
+              />
+            )}
+            {posts.map((post) => (
+              <FeedItem
+                key={post.id}
+                item={post}
+                isReply={!!post.parentPostId}
+              />
+            ))}
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Bottom Boundary / Infinite Scroll Loader */}
       <div
         ref={bottomBoundaryRef}
-        className="mt-2 flex items-center justify-center w-full"
+        className="mt-6 flex flex-col items-center justify-center w-full min-h-24 pb-12"
       >
-        {/* We use standard 'loading' here so the user gets immediate feedback
-            when they hit the bottom of the page, as delays feel laggy while scrolling. */}
         {loading && hasMore && posts.length > 0 ? (
-          <div className="flex items-center gap-3 text-slate-400 text-sm font-semibold">
+          <div className="flex items-center gap-3 text-slate-400 text-sm font-semibold animate-in fade-in duration-500">
             <LoadingDots />
-            <span>Finding more perspectives...</span>
+            <span className="tracking-tight">Finding more perspectives...</span>
           </div>
         ) : (
           !hasMore &&
           posts.length > 0 && (
-            <div className="items-center opacity-40">
-              <span className="text-slate-500 text-[11px] font-bold tracking-wider uppercase">
-                You've reached the end!
+            <div className="flex flex-col items-center gap-2 opacity-40 py-8">
+              <div className="h-px w-12 bg-slate-300 mb-2" />
+              <span className="text-slate-500 text-[10px] font-bold tracking-[0.2em] uppercase">
+                End of the feed
               </span>
             </div>
           )
