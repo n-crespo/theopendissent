@@ -13,18 +13,15 @@ export const AboutModal = () => {
 
   return (
     <div className="flex flex-col text-slate-700 px-4">
-      {/* title */}
       <h2 className="text-2xl mb-0 text-slate-900 text-center tracking-tight font-bold">
         Welcome to The Open Dissent!
       </h2>
 
       <div className="mx-2 mb-4">
-        {/* sub header */}
         <h3 className="text-center font-medium text-slate-500 text-sm tracking-wide mt-2">
           Here's how this all works:
         </h3>
 
-        {/* contents */}
         <ul className="space-y-8 text-sm mt-6">
           <li className="flex flex-col gap-2">
             <div className="flex gap-3">
@@ -64,9 +61,7 @@ export const AboutModal = () => {
                 /* content */
               },
             ) => {
-              // TODO: add a little popup here that encourages user to make a
-              // real post
-              // console.log("mock post submitted from tutorial:", content);
+              // console.log("mock post submitted:", content);
             }}
           />
 
@@ -79,7 +74,7 @@ export const AboutModal = () => {
               </span>
             </div>
           </li>
-          <div className="flex justify-center">
+          <div className="flex justify-center pb-4">
             <button
               onClick={() => openModal("listen")}
               className="text-white self-start flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-colors active:scale-95 shadow-2xl bg-linear-to-r from-logo-blue via-logo-green to-logo-red text-md animate-bounceJiggle"
