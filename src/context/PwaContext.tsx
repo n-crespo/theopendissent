@@ -42,7 +42,7 @@ export const PwaProvider = ({ children }: { children: ReactNode }) => {
       setDeferredPrompt(null);
 
       if (outcome === "accepted") {
-        console.log("user accepted the pwa install");
+        console.log("PWA installation successful");
       }
     } catch (err) {
       console.error("pwa installation failed:", err);

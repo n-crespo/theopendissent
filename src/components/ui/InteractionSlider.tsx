@@ -200,11 +200,7 @@ export const InteractionSlider = ({
       return (
         <button ref={btnRef} className={`${baseStyles}`}>
           <i className="bi bi-question-lg text-lg"></i>
-          <PopupIndicator
-            text={msg}
-            triggerRef={btnRef}
-            onClick={() => console.log(msg)}
-          />
+          <PopupIndicator text={msg} triggerRef={btnRef} />
         </button>
       );
     }
@@ -215,11 +211,7 @@ export const InteractionSlider = ({
       return (
         <button ref={btnRef} className={`${baseStyles} ${disabledStyles}`}>
           <i className="bi bi-lock text-lg"></i>
-          <PopupIndicator
-            text={msg}
-            triggerRef={btnRef}
-            onClick={() => console.log(msg)}
-          />
+          <PopupIndicator text={msg} triggerRef={btnRef} />
         </button>
       );
     }

@@ -55,7 +55,6 @@ export const Notifications = ({ showHeader }: NotificationsProps) => {
       const path = latestReplyId
         ? `/post/${id}?reply=${latestReplyId}`
         : `/post/${id}`;
-      console.log("navigating to:", path);
       navigate(path);
     }
   };
