@@ -27,7 +27,7 @@ export const SEO = ({ title, description }: SeoProps) => {
       <meta name="twitter:description" content={desc} />
       <meta
         name="twitter:image"
-        content="https://theopendissent.com/og-image.png"
+        content="https://theopendissent.com/og-image.jpg"
       />
       <meta property="twitter:domain" content="theopendissent.com" />
       <meta property="twitter:url" content={canonicalUrl} />
@@ -38,7 +38,7 @@ export const SEO = ({ title, description }: SeoProps) => {
       <meta property="og:url" content={canonicalUrl} />
       <meta
         property="og:image"
-        content="https://theopendissent.com/og-image.png"
+        content="https://theopendissent.com/og-image.jpg"
       />
     </Helmet>
   );
