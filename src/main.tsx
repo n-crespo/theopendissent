@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./styles/index.css";
@@ -16,14 +17,16 @@ if ("serviceWorker" in navigator) {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <PwaProvider>
-          <ModalProvider>
-            <App />
-          </ModalProvider>
-        </PwaProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <PwaProvider>
+            <ModalProvider>
+              <App />
+            </ModalProvider>
+          </PwaProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </HelmetProvider>
   </React.StrictMode>,
 );

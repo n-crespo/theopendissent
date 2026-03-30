@@ -1,6 +1,9 @@
+import { SEO } from "../components/ui/Seo";
+
 export const Terms = () => {
   return (
     <div className="flex flex-col gap-6 text-slate-800">
+      <SEO title="Terms" description="Terms of Service" />
       {/* Header Area */}
       <div className="flex flex-col gap-3">
         <div>

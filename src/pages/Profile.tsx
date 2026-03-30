@@ -9,6 +9,7 @@ import { useUserActivity } from "../hooks/useUserActivity";
 import { useUserCounts } from "../hooks/useUserCounts";
 import { formatCompactNumber } from "../utils";
 import { TabSwitcher } from "../components/ui/TabSwicher";
+import { SEO } from "../components/ui/Seo";
 
 type FilterType = "posts" | "replies" | "interacted";
 
@@ -48,8 +49,13 @@ export const Profile = () => {
     },
   ];
 
+  // Find the tab object that matches the current filter
+  const selectedTab = tabs.find((tab) => tab.id === filter);
+  const title = selectedTab ? `Your ${selectedTab.label}` : "Your";
+
   return (
     <div className="flex flex-col gap-3">
+      <SEO title={title} description="Your Profile" />
       <div className="grid grid-cols-1 items-center w-full px-4">
         <h1 className="my-2 col-start-1 row-start-1 justify-self-center text-xl font-bold text-slate-900 tracking-tight">
           Your Profile

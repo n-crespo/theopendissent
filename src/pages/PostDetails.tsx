@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { SEO } from "../components/ui/Seo";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { subscribeToPost, subscribeToReplies } from "../lib/firebase";
@@ -120,8 +121,20 @@ export const PostDetails = () => {
     }
   };
 
+  const postSnippet = livePost?.postContent
+    ? livePost.postContent.length > 30
+      ? livePost.postContent.substring(0, 30).trim() + "..."
+      : livePost.postContent.trim()
+    : "Loading Post...";
+
   return (
     <div className="flex flex-col gap-4">
+      {livePost && (
+        <SEO
+          title={postSnippet}
+          description={livePost.postContent.substring(0, 160)}
+        />
+      )}
       <div>
         {/* Header Grid */}
         <div className="grid grid-cols-3 w-full">
