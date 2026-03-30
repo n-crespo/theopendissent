@@ -131,7 +131,7 @@ export const PostDetails = () => {
       {livePost && (
         <SEO
           title={`Post by ${postAuthor}`}
-          description="Join the conversation!"
+          description='Join the conversation!'
         />
       )}
       <div>
