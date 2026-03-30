@@ -131,7 +131,7 @@ export const PostDetails = () => {
       {livePost && (
         <SEO
           title={`Post by ${postAuthor}`}
-          description={livePost.postContent.substring(0, 160)}
+          description="Join the conversation!"
         />
       )}
       <div>
