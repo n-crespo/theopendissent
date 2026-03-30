@@ -121,17 +121,16 @@ export const PostDetails = () => {
     }
   };
 
-  const postSnippet = livePost?.postContent
-    ? livePost.postContent.length > 30
-      ? livePost.postContent.substring(0, 30).trim() + "..."
-      : livePost.postContent.trim()
-    : "Loading Post...";
+  const postAuthor =
+    uid == livePost?.userId
+      ? "You"
+      : `@${livePost?.userId.substring(0, 10)}...`;
 
   return (
     <div className="flex flex-col gap-4">
       {livePost && (
         <SEO
-          title={postSnippet}
+          title={`Post by ${postAuthor}`}
           description={livePost.postContent.substring(0, 160)}
         />
       )}
