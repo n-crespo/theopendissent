@@ -32,8 +32,10 @@ const cardVariants: Variants = {
     opacity: 1,
     scale: 1,
     transition: {
-      x: { type: "spring", stiffness: 400, damping: 40 },
-      opacity: { duration: 0.2 },
+      // bez-curve provides the nonlinear slide without spring overhead
+      x: { duration: 0.45, ease: [0.21, 0.47, 0.32, 0.98] },
+      opacity: { duration: 0.25 },
+      scale: { duration: 0.3, ease: "easeOut" },
     },
   },
   exit: (direction: number) => ({
@@ -41,7 +43,7 @@ const cardVariants: Variants = {
     opacity: 0,
     scale: 0.98,
     transition: {
-      x: { type: "spring", stiffness: 400, damping: 40 },
+      x: { duration: 0.4, ease: [0.21, 0.47, 0.32, 0.98] },
       opacity: { duration: 0.2 },
     },
   }),
