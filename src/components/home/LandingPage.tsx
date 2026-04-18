@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import { motion, Variants } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import logoUrl from "../../assets/Flat-Logo.svg";
 import { SocialLinksRow } from "./SocialLinksRow";
 
@@ -20,189 +21,200 @@ const fadeIn: Variants = {
   }),
 };
 
+// optimized for high-speed "popLayout" transitions
+const cardVariants: Variants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? "100%" : "-100%",
+    opacity: 0,
+    scale: 0.95,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+    transition: {
+      x: { type: "spring", stiffness: 400, damping: 40 },
+      opacity: { duration: 0.2 },
+    },
+  },
+  exit: (direction: number) => ({
+    x: direction < 0 ? "100%" : "-100%",
+    opacity: 0,
+    scale: 0.95,
+    transition: {
+      x: { type: "spring", stiffness: 400, damping: 40 },
+      opacity: { duration: 0.2 },
+    },
+  }),
+};
+
 export const LandingPage = ({ onContinue }: LandingPageProps) => {
-  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
 
   const handleExit = () => {
     setIsExiting(true);
-    setTimeout(() => onContinue(dontShowAgain), 500);
+    setTimeout(() => onContinue(false), 500);
+  };
+
+  const paginate = (newDirection: number) => {
+    const newIndex = activeIndex + newDirection;
+    if (newIndex >= 0 && newIndex <= 1) {
+      setDirection(newDirection);
+      setActiveIndex(newIndex);
+    }
   };
 
   return (
     <div
-      className={`fixed inset-0 z-100 bg-logo-offwhite transition-opacity duration-700
-        snap-y snap-mandatory overflow-y-auto overflow-x-hidden custom-scrollbar
+      className={`fixed inset-0 z-100 bg-logo-offwhite transition-opacity duration-700 overflow-hidden flex flex-col items-center
         ${isExiting ? "opacity-0 pointer-events-none" : "opacity-100"}`}
     >
-      {/* 1. Header Overlay (Fixed) */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-[30vh] pointer-events-none bg-linear-to-b from-logo-offwhite via-logo-offwhite to-transparent flex justify-center pt-12 px-6">
-        <motion.header
-          custom={0}
-          initial="hidden"
-          animate="visible"
-          variants={fadeIn}
-          className="max-w-xl w-full text-center pointer-events-auto"
-        >
-          <img
-            src={logoUrl}
-            alt="The Open Dissent"
-            className="w-full mb-4"
-            draggable="false"
-          />
-          <p className="text-slate-400 font-medium tracking-[0.2em] uppercase text-[11px]">
-            Humanizing Political Discourse
-          </p>
-          <div className="mt-4">
-            <SocialLinksRow />
-          </div>
-        </motion.header>
-      </div>
+      <motion.header
+        custom={0}
+        initial="hidden"
+        animate="visible"
+        variants={fadeIn}
+        className="max-w-xl w-full text-center pt-12 px-6 relative z-50"
+      >
+        <img
+          src={logoUrl}
+          alt="The Open Dissent"
+          className="w-full mb-4"
+          draggable="false"
+        />
+        <p className="text-slate-400 font-medium tracking-[0.2em] uppercase text-[11px]">
+          Disagree Better
+        </p>
+        <div className="mt-4">
+          <SocialLinksRow />
+        </div>
+      </motion.header>
 
-      {/* scrollable content */}
-      <main className="relative z-10 w-full">
-        {/* text a - centered on load */}
-        <section className="snap-start snap-always min-h-screen flex flex-col items-center justify-center px-6 text-center">
-          <motion.div
-            custom={1}
-            initial="hidden"
-            animate="visible"
-            variants={fadeIn}
-            className="max-w-md w-full flex flex-col items-center pt-[5vh]"
-          >
-            <div className="mb-6 space-y-2">
-              <h3 className="text-xl font-bold text-slate-900 tracking-tight pt-[5vh]">
-                Modern social media is broken.
-              </h3>
-            </div>
-            <div className="relative w-full bg-white/50 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
-              {/* Content Area */}
-              <div className="p-10 space-y-7 text-slate-700 text-[16px] leading-relaxed">
-                <p className="relative">
-                  Addictive algorithms fuels polarity and division.
-                </p>
+      <main className="flex-1 w-full flex items-center justify-center relative px-4">
+        {/* Container for the cards with popLayout context */}
+        <div className="max-w-md w-full relative h-112.5">
+          <AnimatePresence initial={false} custom={direction} mode="popLayout">
+            <motion.div
+              key={activeIndex}
+              custom={direction}
+              variants={cardVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              // position absolute is required for clean popLayout behavior
+              className="absolute inset-0 w-full flex flex-col"
+            >
+              <div className="mb-6 text-center">
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                  {activeIndex === 0
+                    ? "Modern social media is ruining politics."
+                    : "Here's how we're fixing it:"}
+                </h3>
+              </div>
 
-                <p>
-                  Ragebait and corporate interests litter our (digital) public
-                  square.
-                </p>
+              <div className="bg-white/50 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col h-full">
+                <div className="p-10 flex-1 flex items-center justify-center text-[16px]">
+                  {activeIndex === 0 ? (
+                    <div className="space-y-7 text-slate-700 leading-relaxed text-center">
+                      <p>
+                        Addictive algorithms fuels <b>polarity</b> and{" "}
+                        <b>division</b>.
+                      </p>
+                      <p>
+                        <b>Ragebait</b> and <b>corporate interests</b> litter
+                        our digital public square.
+                      </p>
+                      <b>
+                        Stop interacting with a system that profits from your
+                        anger.
+                      </b>
+                    </div>
+                  ) : (
+                    <ul className="list-disc space-y-6 marker:text-slate-300 text-left w-fit pl-6 text-slate-700">
+                      <li className="leading-snug">
+                        <strong className="text-slate-900">
+                          real, human discussions
+                        </strong>
+                        <p className="text-[13px] text-slate-500 mt-0.5">
+                          From our website to our podcast.
+                        </p>
+                      </li>
+                      <li className="leading-snug">
+                        <strong className="text-slate-900">
+                          no predatory algorithms
+                        </strong>
+                        <p className="text-[13px] text-slate-500 mt-0.5">
+                          Posts are randomly shuffled.
+                        </p>
+                      </li>
+                      <li className="leading-snug">
+                        <strong className="text-slate-900">
+                          zero visible metrics
+                        </strong>
+                        <p className="text-[13px] text-slate-500 mt-0.5">
+                          To avoid crowd bias.
+                        </p>
+                      </li>
+                    </ul>
+                  )}
+                </div>
 
-                <p className="font-medium text-slate-900">
-                  Stop interacting with a system that profits from your anger.
-                </p>
+                <div className="border-t border-slate-100 p-4 grid grid-cols-3 items-center">
+                  <div className="flex justify-start">
+                    <button
+                      onClick={() => paginate(-1)}
+                      className={`p-2 text-slate-400 hover:text-slate-900 transition-all active:scale-90
+                        ${activeIndex === 0 ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+                    >
+                      <i className="bi bi-arrow-left text-lg"></i>
+                    </button>
+                  </div>
 
-                <div className="animate-bounce text-slate-300 mt-[5vh]">
-                  <i className="bi bi-chevron-down text-xl"></i>
+                  <div className="flex justify-center gap-2">
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full transition-colors duration-300
+                      ${activeIndex === 0 ? "bg-slate-900" : "bg-slate-200"}`}
+                    />
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full transition-colors duration-300
+                      ${activeIndex === 1 ? "bg-slate-900" : "bg-slate-200"}`}
+                    />
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => paginate(1)}
+                      className={`p-2 text-slate-400 hover:text-slate-900 transition-all active:scale-90
+                        ${activeIndex === 1 ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+                    >
+                      <i className="bi bi-arrow-right text-lg"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
-        </section>
-
-        {/* TEXT B: Scrolled View */}
-        <section className="snap-start snap-always min-h-screen flex flex-col items-center justify-center px-6 text-center">
-          <div className="max-w-md w-full flex flex-col items-center">
-            <div className="mb-6 space-y-2">
-              <h3 className="text-xl font-bold text-slate-900 tracking-tight">
-                Here's how we're fixing it:
-              </h3>
-            </div>
-
-            {/* THE CLEAN CARD */}
-            <div className="relative w-full bg-white/50 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
-              {/* Scrollable Area with Fade Masks */}
-              <div className="relative flex-1 max-h-[40vh] overflow-y-auto custom-scrollbar p-8">
-                <ul className="list-disc space-y-6 marker:text-slate-300 text-left w-fit mx-auto pl-6 text-slate-700">
-                  <li className="leading-snug">
-                    <strong className="text-slate-900">
-                      fully anonymous profiles
-                    </strong>
-                    <p className="text-[13px] text-slate-500 mt-0.5">
-                      No popularity contests.
-                    </p>
-                  </li>
-                  <li className="leading-snug">
-                    <strong className="text-slate-900">
-                      no predatory algorithms
-                    </strong>
-                    <p className="text-[13px] text-slate-500 mt-0.5">
-                      Posts are randomly shuffled.
-                    </p>
-                  </li>
-                  <li className="leading-snug">
-                    <strong className="text-slate-900">
-                      zero visible metrics
-                    </strong>
-                    <p className="text-[13px] text-slate-500 mt-0.5">
-                      To avoid crowd bias.
-                    </p>
-                  </li>
-                  <li className="leading-snug">
-                    <strong className="text-slate-900">
-                      sliders for interaction
-                    </strong>
-                    <p className="text-[13px] text-slate-500 mt-0.5">
-                      Real issues have nuance.
-                    </p>
-                  </li>
-                  <li className="leading-snug">
-                    <strong className="text-slate-900">
-                      our companion podcast
-                    </strong>
-                    <p className="text-[13px] text-slate-500 mt-0.5">
-                      Where online discussions come to life.
-                    </p>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </main>
 
-      {/* footer overlay */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 h-[35vh] pointer-events-none bg-linear-to-t from-logo-offwhite via-logo-offwhite/95 to-transparent flex flex-col items-center justify-end pb-8 px-6 gap-4">
-        <motion.strong
-          custom={2}
-          initial="hidden"
-          animate="visible"
-          variants={fadeIn}
-          className="text-slate-900 pointer-events-auto"
-        >
-          Join the conversation today.
-        </motion.strong>
-
+      <footer className="w-full max-w-xl pb-12 px-6 flex flex-col items-center relative z-50">
         <motion.div
-          custom={3}
+          custom={1}
           initial="hidden"
           animate="visible"
           variants={fadeIn}
-          className="flex w-full justify-center pointer-events-auto"
+          className="w-full flex justify-center"
         >
           <button
             onClick={handleExit}
-            className="w-full max-w-xs py-3.5 text-white hover:brightness-110 transition-all active:scale-95 shadow-2xl rounded-2xl bg-linear-to-r from-logo-red via-logo-green to-logo-blue flex items-center justify-center"
+            className="w-full max-w-xs py-4 text-white hover:brightness-110 transition-all active:scale-95 shadow-2xl rounded-2xl bg-linear-to-r from-logo-red via-logo-green to-logo-blue font-bold tracking-wide"
           >
-            <i className="bi bi-arrow-right text-[32px] leading-none"></i>
+            Join the conversation.
           </button>
         </motion.div>
-
-        <motion.label
-          custom={5}
-          initial="hidden"
-          animate="visible"
-          variants={fadeIn}
-          className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider hover:text-slate-600 cursor-pointer select-none transition-colors pointer-events-auto"
-        >
-          <input
-            type="checkbox"
-            className="rounded-sm border-slate-300 text-slate-900 focus:ring-slate-900 h-3.5 w-3.5"
-            checked={dontShowAgain}
-            onChange={(e) => setDontShowAgain(e.target.checked)}
-          />
-          Don't show me this message again
-        </motion.label>
-      </div>
+      </footer>
     </div>
   );
 };
