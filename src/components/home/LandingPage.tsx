@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import logoUrl from "../../assets/Flat-Logo.svg";
-import { SocialLinksRow } from "./SocialLinksRow";
 import { InfoCard } from "../ui/InfoCard";
 
 interface LandingPageProps {
@@ -26,7 +25,7 @@ const cardVariants: Variants = {
   enter: (direction: number) => ({
     x: direction > 0 ? "100%" : "-100%",
     opacity: 0,
-    scale: 0.95,
+    scale: 0.98,
   }),
   center: {
     x: 0,
@@ -40,7 +39,7 @@ const cardVariants: Variants = {
   exit: (direction: number) => ({
     x: direction < 0 ? "100%" : "-100%",
     opacity: 0,
-    scale: 0.95,
+    scale: 0.98,
     transition: {
       x: { type: "spring", stiffness: 400, damping: 40 },
       opacity: { duration: 0.2 },
@@ -52,6 +51,14 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
+
+  // prevent background scrolling
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
 
   const handleExit = () => {
     setIsExiting(true);
@@ -66,7 +73,6 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
     }
   };
 
-  /** helper to render the navigation elements inside the generic footer slot */
   const renderFooter = () => (
     <>
       <div className="flex justify-start">
@@ -103,7 +109,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
 
   return (
     <div
-      className={`fixed inset-0 z-100 bg-logo-offwhite transition-opacity duration-700 overflow-hidden flex flex-col items-center
+      className={`fixed inset-0 z-100 bg-logo-offwhite transition-opacity duration-700 overflow-y-auto flex flex-col items-center
         ${isExiting ? "opacity-0 pointer-events-none" : "opacity-100"}`}
     >
       <motion.header
@@ -111,7 +117,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
         initial="hidden"
         animate="visible"
         variants={fadeIn}
-        className="max-w-xl w-full text-center pt-12 px-6 relative z-50"
+        className="max-w-xl w-full text-center pt-12 px-6 shrink-0"
       >
         <img
           src={logoUrl}
@@ -122,82 +128,77 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
         <p className="text-slate-400 font-medium tracking-[0.2em] uppercase text-[11px]">
           Disagree Better
         </p>
-        <div className="mt-4">
-          <SocialLinksRow />
-        </div>
       </motion.header>
 
-      <main className="flex-1 w-full flex items-center justify-center relative px-4">
-        <div className="max-w-md w-full relative h-112.5">
-          <AnimatePresence initial={false} custom={direction} mode="popLayout">
-            <motion.div
-              key={activeIndex}
-              custom={direction}
-              variants={cardVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              className="absolute inset-0 w-full"
-            >
-              {activeIndex === 0 ? (
-                <InfoCard
-                  title="Modern social media is ruining politics."
-                  footer={renderFooter()}
-                >
-                  <div className="space-y-7 text-slate-700 leading-relaxed text-center">
-                    <p>
-                      Addictive algorithms fuels <b>polarity</b> and{" "}
-                      <b>division</b>.
+      {/* Main Container: Removed relative h-112.5 to allow growth */}
+      <main className="w-full max-w-md px-4 py-12 flex-1 flex flex-col justify-center">
+        <AnimatePresence initial={false} custom={direction} mode="popLayout">
+          <motion.div
+            key={activeIndex}
+            custom={direction}
+            variants={cardVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            className="w-full"
+          >
+            {activeIndex === 0 ? (
+              <InfoCard
+                title="Modern social media is ruining politics."
+                footer={renderFooter()}
+              >
+                <div className="space-y-7 text-slate-700 leading-relaxed text-center">
+                  <p>
+                    Addictive algorithms fuels <b>polarity</b> and{" "}
+                    <b>division</b>.
+                  </p>
+                  <p>
+                    <b>Ragebait</b> and <b>corporate interests</b> litter our
+                    digital public square.
+                  </p>
+                  <b>
+                    Stop interacting with a system that profits from your anger.
+                  </b>
+                </div>
+              </InfoCard>
+            ) : (
+              <InfoCard
+                title="Here's how we're fixing it:"
+                footer={renderFooter()}
+              >
+                <ul className="list-disc space-y-6 marker:text-slate-300 text-left w-fit pl-6 text-slate-700">
+                  <li className="leading-snug">
+                    <strong className="text-slate-900">
+                      real, human discussions
+                    </strong>
+                    <p className="text-[13px] text-slate-500 mt-0.5">
+                      From our website to our podcast.
                     </p>
-                    <p>
-                      <b>Ragebait</b> and <b>corporate interests</b> litter our
-                      digital public square.
+                  </li>
+                  <li className="leading-snug">
+                    <strong className="text-slate-900">
+                      no predatory algorithms
+                    </strong>
+                    <p className="text-[13px] text-slate-500 mt-0.5">
+                      Posts are randomly shuffled.
                     </p>
-                    <b>
-                      Stop interacting with a system that profits from your
-                      anger.
-                    </b>
-                  </div>
-                </InfoCard>
-              ) : (
-                <InfoCard
-                  title="Here's how we're fixing it:"
-                  footer={renderFooter()}
-                >
-                  <ul className="list-disc space-y-6 marker:text-slate-300 text-left w-fit pl-6 text-slate-700">
-                    <li className="leading-snug">
-                      <strong className="text-slate-900">
-                        real, human discussions
-                      </strong>
-                      <p className="text-[13px] text-slate-500 mt-0.5">
-                        From our website to our podcast.
-                      </p>
-                    </li>
-                    <li className="leading-snug">
-                      <strong className="text-slate-900">
-                        no predatory algorithms
-                      </strong>
-                      <p className="text-[13px] text-slate-500 mt-0.5">
-                        Posts are randomly shuffled.
-                      </p>
-                    </li>
-                    <li className="leading-snug">
-                      <strong className="text-slate-900">
-                        zero visible metrics
-                      </strong>
-                      <p className="text-[13px] text-slate-500 mt-0.5">
-                        To avoid crowd bias.
-                      </p>
-                    </li>
-                  </ul>
-                </InfoCard>
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+                  </li>
+                  <li className="leading-snug">
+                    <strong className="text-slate-900">
+                      zero visible metrics
+                    </strong>
+                    <p className="text-[13px] text-slate-500 mt-0.5">
+                      To avoid crowd bias.
+                    </p>
+                  </li>
+                </ul>
+              </InfoCard>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
-      <footer className="w-full max-w-xl pb-12 px-6 flex flex-col items-center relative z-50">
+      <footer className="w-full max-w-xl pb-12 px-6 shrink-0">
         <motion.div
           custom={1}
           initial="hidden"
