@@ -37,13 +37,16 @@ function Layout() {
     const skipPermanent = localStorage.getItem("skipLanding") === "true";
     const skipSession = sessionStorage.getItem("landingDismissed") === "true";
 
+    // check if we are in vite development mode
+    const isDev = import.meta.env.DEV;
+
     if (!loading) {
-      if (
-        !user &&
-        !skipPermanent &&
-        !skipSession &&
-        (pathname === "/" || pathname === "/share")
-      ) {
+      const isCorrectPath = pathname === "/" || pathname === "/share";
+      const shouldShowInProd =
+        !user && !skipPermanent && !skipSession && isCorrectPath;
+
+      // always show in dev, or show in prod based on auth/storage state
+      if (isDev || shouldShowInProd) {
         setShowLanding(true);
       }
       setIsInitialCheck(false);
@@ -74,13 +77,11 @@ function Layout() {
       >
         <Header />
 
-        {/* responsive layout wrapper */}
         <div className="mx-auto flex w-full max-w-7xl justify-center gap-4 lg:gap-9 pt-16 px-4">
           <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4 pl-20">
             <SidebarContent />
           </aside>
 
-          {/* main feed (Center) */}
           <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2">
             <Outlet />
           </main>
