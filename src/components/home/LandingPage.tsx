@@ -134,8 +134,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
         </div>
       </motion.header>
 
-      {/* Main Container: Removed relative h-112.5 to allow growth */}
-      <main className="w-full max-w-md px-4 py-12 flex-1 flex flex-col justify-center">
+      <main className="w-md max-w-[60vw] py-12 flex-1 flex flex-col justify-center">
         <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.div
             key={activeIndex}
@@ -170,42 +169,42 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                 title="Here's how we're fixing it:"
                 footer={renderFooter()}
               >
-                <div className="w-full">
-                  <ul className="list-disc space-y-6 marker:text-slate-500 text-left w-fit mx-auto pl-6 text-slate-700">
-                    <li className="leading-snug">
-                      <strong className="text-slate-900">
-                        real, human discussions
-                      </strong>
-                      <p className="text-[13px] text-slate-500 mt-0.5">
-                        From our website to our podcast.
-                      </p>
-                    </li>
-                    <li className="leading-snug">
-                      <strong className="text-slate-900">
-                        no predatory algorithms
-                      </strong>
-                      <p className="text-[13px] text-slate-500 mt-0.5">
-                        Posts are randomly shuffled.
-                      </p>
-                    </li>
-                    <li className="leading-snug">
-                      <strong className="text-slate-900">
-                        no engagement metrics
-                      </strong>
-                      <p className="text-[13px] text-slate-500 mt-0.5">
-                        Quality &gt; Click Count
-                      </p>
-                    </li>
-                    <li className="leading-snug">
-                      <strong className="text-slate-900">
-                        (optional) anonymity
-                      </strong>
-                      <p className="text-[13px] text-slate-500 mt-0.5">
-                        Judge ideas, not individuals.
-                      </p>
-                    </li>
-                  </ul>
-                </div>
+                {/* <div className="w-full"> */}
+                <ul className="list-disc px-[6vw] space-y-6 marker:text-slate-500 text-left w-fit text-slate-700">
+                  <li className="leading-snug">
+                    <strong className="text-slate-900">
+                      real, human discussions
+                    </strong>
+                    <p className="text-sm text-slate-500 mt-0.5">
+                      From our website to our podcast.
+                    </p>
+                  </li>
+                  <li className="leading-snug">
+                    <strong className="text-slate-900">
+                      no predatory algorithms
+                    </strong>
+                    <p className="text-sm text-slate-500 mt-0.5">
+                      Posts are randomly shuffled.
+                    </p>
+                  </li>
+                  <li className="leading-snug">
+                    <strong className="text-slate-900">
+                      no engagement metrics
+                    </strong>
+                    <p className="text-sm text-slate-500 mt-0.5">
+                      Quality &gt; Click Count
+                    </p>
+                  </li>
+                  <li className="leading-snug">
+                    <strong className="text-slate-900">
+                      (optional) anonymity
+                    </strong>
+                    <p className="text-sm text-slate-500 mt-0.5">
+                      Judge ideas, not individuals.
+                    </p>
+                  </li>
+                </ul>
+                {/* </div> */}
               </InfoCard>
             )}
           </motion.div>

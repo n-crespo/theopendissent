@@ -17,7 +17,7 @@ export const InfoCard = ({ title, children, footer }: InfoCardProps) => {
       </div>
 
       {/* card body */}
-      <div className="w-md bg-white/50 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
+      <div className="bg-white/50 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
         <div className="pt-7 px-12 text-lg items-center">{children}</div>
 
         {/* fixed height footer */}
