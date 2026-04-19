@@ -17,7 +17,7 @@ export const TabSwitcher = ({
   tabs,
   activeId,
   onChange,
-  underlineWidth = "w-12",
+  underlineWidth = "w-full",
 }: TabSwitcherProps) => {
   return (
     <div className="flex w-full border-b border-slate-100">

@@ -66,7 +66,6 @@ export const Profile = () => {
         tabs={tabs}
         activeId={filter}
         onChange={(id) => handleFilterChange(id as FilterType)}
-        underlineWidth="w-16"
       />
 
       <div className="min-h-100">
