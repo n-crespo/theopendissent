@@ -36,19 +36,20 @@ function Layout() {
   useEffect(() => {
     const skipPermanent = localStorage.getItem("skipLanding") === "true";
     const skipSession = sessionStorage.getItem("landingDismissed") === "true";
-
-    // check if we are in vite development mode
     const isDev = import.meta.env.DEV;
 
     if (!loading) {
       const isCorrectPath = pathname === "/" || pathname === "/share";
+
       const shouldShowInProd =
         !user && !skipPermanent && !skipSession && isCorrectPath;
 
-      // always show in dev, or show in prod based on auth/storage state
-      if (isDev || shouldShowInProd) {
+      const shouldShowInDev = isDev && !skipSession && isCorrectPath;
+
+      if (shouldShowInDev || shouldShowInProd) {
         setShowLanding(true);
       }
+
       setIsInitialCheck(false);
     }
   }, [user, loading, pathname]);
