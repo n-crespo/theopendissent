@@ -1,19 +1,18 @@
-import { memo, useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { memo } from "react";
 import { Post } from "../../types";
 import { timeAgo } from "../../utils";
 import { usePostActions } from "../../hooks/usePostActions";
 import { useShare } from "../../hooks/useShare";
 import { useReport } from "../../hooks/useReport";
 import { useNavigate } from "react-router-dom";
-import { InteractionSlider } from "../ui/InteractionSlider";
-import { useModal } from "../../context/ModalContext.tsx";
+import { getInterpolatedColor, DEFAULT_STOPS } from "../../color-utils";
 
 interface FeedItemProps {
   item: Post;
   isReply?: boolean;
   highlighted?: boolean;
   disableClick?: boolean;
-  onInteraction?: (score: number | undefined) => void;
 }
 
 export const FeedItem = memo(
@@ -22,22 +21,15 @@ export const FeedItem = memo(
     isReply = false,
     highlighted = false,
     disableClick = false,
-    onInteraction,
   }: FeedItemProps) => {
     if (!item || !item.userId) return null;
-
-    const { openModal } = useModal();
 
     const navigate = useNavigate();
     const { sharePost } = useShare();
     const { reportPost } = useReport();
-    const [isJiggling, setIsJiggling] = useState(false);
 
     const {
       uid,
-      // localMetrics,
-      currentScore,
-      handleScoreChange,
       isEditing,
       setIsEditing,
       editContent,
@@ -52,8 +44,12 @@ export const FeedItem = memo(
     const charsLeft = 600 - editContent.length;
     const isNearLimit = charsLeft < 50;
 
-    const replyScore = item.interactionScore ?? 0;
-    const hasReply = item.replyCount && item.replyCount > 0;
+    const hasReply = typeof item.replyCount === "number" && item.replyCount > 0;
+
+    // Stance Score calculation
+    const score = item.interactionScore ?? 0;
+    const displayScore = score > 0 ? `+${score}` : `${score}`;
+    const stanceColor = getInterpolatedColor(score, DEFAULT_STOPS);
 
     const formattedTime = timeAgo(
       new Date(typeof item.timestamp === "number" ? item.timestamp : 0),
@@ -62,186 +58,156 @@ export const FeedItem = memo(
       ? timeAgo(new Date(item.editedAt))
       : null;
 
-    const triggerJiggle = () => {
-      setIsJiggling(false);
-      window.requestAnimationFrame(() => setIsJiggling(true));
-      setTimeout(() => setIsJiggling(false), 500);
-    };
-
-    /** Handles both new scores and deletion (eraser) */
-    const onSliderChange = (val: number | undefined) => {
-      const isFirstInteraction =
-        currentScore === undefined && val !== undefined;
-
-      handleScoreChange(val as any);
-
-      if (onInteraction) onInteraction(val);
-      if (isFirstInteraction) triggerJiggle();
-    };
-
     const handleAction = (e: React.MouseEvent, action: () => void) => {
       e.stopPropagation();
       action();
     };
 
+    // Shared button styles for consistency
+    const actionButtonClass =
+      "flex items-center justify-center py-4 text-slate-400 hover:bg-slate-100 active:bg-slate-200/60 transition-all";
+
     return (
       <div
-        className={`flex flex-col gap-4 p-4 bg-white border transition-all duration-200 rounded-xl ${
+        className={`flex flex-col bg-white border transition-all duration-200 rounded-2xl overflow-hidden ${
           highlighted
-            ? "border-logo-blue ring-2 ring-logo-blue/10 shadow-md scale-[1.01]"
-            : "border-border-subtle shadow-sm"
+            ? "border-logo-blue ring-2 ring-logo-blue/10 shadow-md"
+            : "border-slate-200 shadow-sm"
         }`}
       >
-        {/* HEADER */}
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 shrink-0 border border-slate-200/50">
-              <i className="bi bi-person-fill"></i>
-            </div>
-
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`text-sm font-semibold text-slate-900 leading-tight`}
-                >
+        <div className="p-[clamp(1rem,3vw,1.25rem)] flex flex-col gap-y-4">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-x-3">
+              <div className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 shrink-0 border border-slate-200/50">
+                <i className="bi bi-person-fill text-lg"></i>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-slate-900 leading-tight">
                   {isOwner ? "You" : item.userId.substring(0, 10) + "..."}
                 </span>
+                <div className="flex items-center flex-wrap gap-x-1 text-[0.625rem] text-slate-400 font-medium tracking-tight">
+                  <span>{formattedTime}</span>
+                  {formattedEditTime && (
+                    <span className="flex items-center italic text-slate-300">
+                      <span className="mx-1">·</span> edited {formattedEditTime}
+                    </span>
+                  )}
+                </div>
               </div>
+            </div>
 
-              <div className="flex items-center flex-wrap gap-1 text-[10px] text-slate-400 font-medium tracking-tight">
-                <span>{formattedTime}</span>
-                {formattedEditTime && (
-                  <span className="flex items-center italic text-slate-300">
-                    <span className="mx-1">·</span> edited {formattedEditTime}
-                  </span>
-                )}
-              </div>
+            <div className="flex items-center gap-x-2">
+              {isOwner ? (
+                <button
+                  onClick={(e) => handleAction(e, () => setIsEditing(true))}
+                  className="p-2 rounded-lg text-slate-400 hover:text-logo-blue hover:bg-slate-50 transition-colors"
+                >
+                  <i className="bi bi-pencil-square text-base"></i>
+                </button>
+              ) : uid ? (
+                <button
+                  onClick={(e) =>
+                    handleAction(e, () => uid && reportPost(item.id, uid))
+                  }
+                  className="p-2 rounded-lg text-slate-400 hover:text-logo-red hover:bg-slate-50 transition-colors"
+                >
+                  <i className="bi bi-flag text-base"></i>
+                </button>
+              ) : null}
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {isOwner ? (
-              <button
-                onClick={(e) => handleAction(e, () => setIsEditing(true))}
-                className="px-3 py-1.5 flex items-center justify-center rounded-lg text-slate-400 hover:text-logo-blue hover:bg-slate-50 transition-colors"
-              >
-                <i className="bi bi-pencil-square text-[14px]"></i>
-              </button>
-            ) : uid ? (
-              <button
-                onClick={(e) =>
-                  handleAction(e, () => uid && reportPost(item.id, uid))
-                }
-                className="px-3 py-1.5 flex items-center justify-center rounded-lg text-slate-400 hover:text-logo-red hover:bg-slate-50 transition-colors"
-              >
-                <i className="bi bi-flag text-[15px]"></i>
-              </button>
-            ) : null}
-          </div>
+          {isEditing ? (
+            <div
+              className="flex flex-col gap-y-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative">
+                <textarea
+                  autoFocus
+                  className="resize-none w-full p-3 border border-slate-200 rounded-xl outline-none min-h-[6rem] text-sm focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10 transition-all"
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  disabled={isSaving}
+                />
+                <span
+                  className={`absolute right-3 bottom-3 text-[0.6rem] font-bold uppercase ${isNearLimit ? "text-logo-red" : "text-slate-300"}`}
+                >
+                  {charsLeft}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex gap-x-2">
+                  <button
+                    className="px-5 py-2 bg-logo-blue text-white rounded-lg text-xs font-bold disabled:opacity-50"
+                    onClick={(e) => handleAction(e, saveEdit)}
+                    disabled={isSaving || !editContent.trim()}
+                  >
+                    {isSaving ? "Saving..." : "Save"}
+                  </button>
+                  <button
+                    className="px-5 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold"
+                    onClick={handleCancel}
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <button
+                  className="h-9 w-9 flex items-center justify-center text-slate-400 rounded-lg hover:text-logo-red hover:bg-red-50 transition-colors"
+                  onClick={(e) => handleAction(e, triggerDelete)}
+                >
+                  <i className="bi bi-trash3 text-base"></i>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-slate-800 text-[0.9375rem] leading-relaxed whitespace-pre-wrap wrap-break-word">
+              {item.postContent}
+            </p>
+          )}
         </div>
 
-        {/* CONTENT */}
-        {isEditing ? (
-          <div
-            className="flex flex-col gap-2"
-            onClick={(e) => e.stopPropagation()}
+        {/* Action Footer */}
+        <div className="grid grid-cols-2 border-t border-slate-100 bg-slate-50/20">
+          {/* LHS: Share button */}
+          <button
+            onClick={(e) => handleAction(e, () => sharePost(item))}
+            className={`${actionButtonClass} border-r border-slate-100`}
           >
-            <div className="relative">
-              <textarea
-                autoFocus
-                className="resize-none custom-scrollbar w-full p-3 border border-border-subtle rounded-lg outline-none min-h-24 text-[15px] focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10 transition-all"
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                disabled={isSaving}
-              />
+            <i className="bi bi-box-arrow-up text-lg"></i>
+          </button>
+
+          {/* RHS: Discussion Button OR Stance Score */}
+          {isReply ? (
+            <div className="flex items-center justify-center py-4">
               <span
-                className={`absolute right-2 bottom-2 text-[10px] font-bold uppercase ${isNearLimit ? "text-logo-red" : "text-slate-300"}`}
+                className="font-black text-lg tracking-tight select-none"
+                style={{ color: stanceColor }}
               >
-                {charsLeft}
+                {displayScore}
               </span>
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
-                <button
-                  className="px-4 py-1.5 bg-logo-blue text-white rounded-lg text-sm font-semibold disabled:opacity-50"
-                  onClick={(e) => handleAction(e, saveEdit)}
-                  disabled={isSaving || !editContent.trim()}
-                >
-                  {isSaving ? "Saving..." : "Save"}
-                </button>
-                <button
-                  className="px-4 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-semibold"
-                  onClick={handleCancel}
-                >
-                  Cancel
-                </button>
-              </div>
-              <button
-                className="w-8 h-8 flex items-center justify-center text-slate-400 rounded-lg hover:text-(--disagree) hover:bg-red-50"
-                onClick={(e) => handleAction(e, triggerDelete)}
-              >
-                <i className="bi bi-trash3 text-[16px]"></i>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <p className="text-slate-800 leading-[1.6] whitespace-pre-wrap wrap-break-word">
-            {item.postContent}
-          </p>
-        )}
-
-        {/* FOOTER */}
-        <div
-          className={`flex items-center justify-between border-t-2 border-border-subtle gap-4 pt-4`}
-        >
-          <div className="flex-1" onClick={(e) => e.stopPropagation()}>
-            <InteractionSlider
-              onChange={onSliderChange}
-              value={isReply ? replyScore : currentScore}
-              authored={isOwner}
-              isReply={isReply}
-              loggedIn={!!uid}
-              onDisabledInteraction={() => {
-                if (!uid) openModal("signin");
-              }}
-            />
-          </div>
-
-          <div className="flex items-center gap-2 ml-auto">
-            {!isReply && (
-              <button
-                onClick={(e) =>
-                  handleAction(
-                    e,
-                    () => !disableClick && navigate(`/post/${item.id}`),
-                  )
-                }
-                disabled={disableClick}
-                className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg origin-center active:scale-95 transition-all
-                    ${isJiggling ? "animate-jiggle" : ""}
-                    ${disableClick ? "text-logo-blue" : "text-slate-400 hover:bg-slate-50 hover:text-logo-blue"}`}
-              >
-                <div className="relative flex items-center justify-center">
-                  <i
-                    className={`bi ${disableClick ? "bi-chat-fill" : "bi-chat"} text-[16px]`}
-                  ></i>
-                  {hasReply && !disableClick ? (
-                    <span
-                      /* added transition-all to sync with parent hover */
-                      className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white transition-all group-hover:ring-slate-50"
-                    ></span>
-                  ) : null}
-                </div>
-              </button>
-            )}
-
+          ) : (
             <button
-              onClick={(e) => handleAction(e, () => sharePost(item))}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-logo-blue  active:scale-95 transition-all"
+              onClick={(e) =>
+                handleAction(
+                  e,
+                  () => !disableClick && navigate(`/post/${item.id}`),
+                )
+              }
+              disabled={disableClick}
+              className={`${actionButtonClass} disabled:opacity-50`}
             >
-              <i className="bi bi-box-arrow-up text-[16px]"></i>
+              <div className="relative flex items-center justify-center">
+                <i
+                  className={`bi ${disableClick ? "bi-chat-fill text-logo-blue" : "bi-chat"} text-lg`}
+                ></i>
+                {hasReply && !disableClick && (
+                  <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white"></span>
+                )}
+              </div>
             </button>
-          </div>
+          )}
         </div>
       </div>
     );
@@ -251,6 +217,7 @@ export const FeedItem = memo(
     p.item.postContent === n.item.postContent &&
     p.item.replyCount === n.item.replyCount &&
     p.item.editedAt === n.item.editedAt &&
+    p.item.interactionScore === n.item.interactionScore &&
     p.highlighted === n.highlighted &&
     JSON.stringify(p.item.userInteractions) ===
       JSON.stringify(n.item.userInteractions),
