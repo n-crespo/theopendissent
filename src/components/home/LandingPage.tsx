@@ -134,7 +134,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
         </div>
       </motion.header>
 
-      <main className="w-md max-w-[60vw] py-12 flex-1 flex flex-col justify-center">
+      <main className="w-md max-w-[65vw] py-12 flex-1 flex flex-col justify-center">
         <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.div
             key={activeIndex}
