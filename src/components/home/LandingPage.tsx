@@ -127,9 +127,11 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
           className="w-full mb-4"
           draggable="false"
         />
-        <p className="text-slate-400 font-medium tracking-[0.2em] uppercase text-[11px]">
-          Disagree Better
-        </p>
+        <div className="mx-auto w-max bg-linear-to-r from-logo-red via-logo-green to-logo-blue bg-clip-text text-transparent">
+          <p className="font-bold tracking-widest uppercase text-md">
+            Disagree Better
+          </p>
+        </div>
       </motion.header>
 
       {/* Main Container: Removed relative h-112.5 to allow growth */}
