@@ -170,32 +170,42 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                 title="Here's how we're fixing it:"
                 footer={renderFooter()}
               >
-                <ul className="list-disc space-y-6 marker:text-slate-300 text-left w-fit pl-6 text-slate-700">
-                  <li className="leading-snug">
-                    <strong className="text-slate-900">
-                      real, human discussions
-                    </strong>
-                    <p className="text-[13px] text-slate-500 mt-0.5">
-                      From our website to our podcast.
-                    </p>
-                  </li>
-                  <li className="leading-snug">
-                    <strong className="text-slate-900">
-                      no predatory algorithms
-                    </strong>
-                    <p className="text-[13px] text-slate-500 mt-0.5">
-                      Posts are randomly shuffled.
-                    </p>
-                  </li>
-                  <li className="leading-snug">
-                    <strong className="text-slate-900">
-                      zero visible metrics
-                    </strong>
-                    <p className="text-[13px] text-slate-500 mt-0.5">
-                      To avoid crowd bias.
-                    </p>
-                  </li>
-                </ul>
+                <div className="w-full">
+                  <ul className="list-disc space-y-6 marker:text-slate-500 text-left w-fit mx-auto pl-6 text-slate-700">
+                    <li className="leading-snug">
+                      <strong className="text-slate-900">
+                        real, human discussions
+                      </strong>
+                      <p className="text-[13px] text-slate-500 mt-0.5">
+                        From our website to our podcast.
+                      </p>
+                    </li>
+                    <li className="leading-snug">
+                      <strong className="text-slate-900">
+                        no predatory algorithms
+                      </strong>
+                      <p className="text-[13px] text-slate-500 mt-0.5">
+                        Posts are randomly shuffled.
+                      </p>
+                    </li>
+                    <li className="leading-snug">
+                      <strong className="text-slate-900">
+                        no engagement metrics
+                      </strong>
+                      <p className="text-[13px] text-slate-500 mt-0.5">
+                        Quality &gt; Click Count
+                      </p>
+                    </li>
+                    <li className="leading-snug">
+                      <strong className="text-slate-900">
+                        (optional) anonymity
+                      </strong>
+                      <p className="text-[13px] text-slate-500 mt-0.5">
+                        Judge ideas, not individuals.
+                      </p>
+                    </li>
+                  </ul>
+                </div>
               </InfoCard>
             )}
           </motion.div>
