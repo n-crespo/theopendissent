@@ -41,16 +41,6 @@ export const SidebarContent = ({
             />
           )}
 
-          <div className="my-2 border-t border-slate-200" />
-          <DrawerItem
-            icon="bi-info-circle"
-            label="How it works"
-            onClick={() => {
-              if (closeDrawer) closeDrawer();
-              openModal("about");
-            }}
-          />
-
           {(deferredPrompt || isIOS) && (
             <DrawerItem
               icon="bi-download"
