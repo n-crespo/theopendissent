@@ -81,15 +81,18 @@ function Layout() {
       >
         <Header />
 
-        <div className="mx-auto flex w-full max-w-7xl justify-center gap-4 lg:gap-9 pt-16 px-4">
+        <div className="relative mx-auto flex w-full max-w-7xl justify-center gap-4 lg:gap-9 pt-16 px-4">
+          {/* SIDEBAR LEFT */}
           <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4 pl-20">
             <SidebarContent />
           </aside>
 
+          {/* FEED (CENTER) */}
           <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2">
             <Outlet context={{ setActiveParent, setIsComposeOpen }} />
           </main>
 
+          {/* SIDEBAR RIGHT */}
           <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4">
             {pathname !== "/notifications" && user ? (
               <div className="hidden lg:block px-2">
@@ -99,10 +102,19 @@ function Layout() {
               <div className="xl:hidden w-full" />
             )}
           </aside>
+
+          {/* --- THE FAB FIX --- */}
+          {/* We place it inside the 7xl div, but use a fixed wrapper */}
+          <div className="fixed inset-0 pointer-events-none z-40">
+            <div className="mx-auto max-w-7xl h-full relative">
+              <div className="absolute bottom-8 right-4 lg:right-8 pointer-events-auto">
+                <CreatePostFAB onClick={() => setIsComposeOpen(true)} />
+              </div>
+            </div>
+          </div>
         </div>
 
         <GlobalModal />
-        <CreatePostFAB onClick={() => setIsComposeOpen(true)} />
         <ComposeModal
           isOpen={isComposeOpen}
           onClose={() => setIsComposeOpen(false)}

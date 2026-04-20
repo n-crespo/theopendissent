@@ -13,6 +13,7 @@ import { FeedItem } from "../components/feed/FeedItem";
 import { useAuth } from "../context/AuthContext";
 import { Post } from "../types";
 import { FeedItemSkeleton } from "../components/ui/FeedItemSkeleton";
+import { ComposeTrigger } from "../components/feed/ComposeTrigger";
 
 export const PostDetails = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -126,6 +127,7 @@ export const PostDetails = () => {
         </div>
 
         <section className="flex flex-col gap-y-4">
+          <ComposeTrigger placeholder="Your thoughts?" />
           <AnimatePresence mode="popLayout">
             {isLoadingReplies ? (
               <motion.div

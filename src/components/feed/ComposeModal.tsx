@@ -101,7 +101,7 @@ export const ComposeModal = ({
               </button>
 
               <span className="text-sm font-bold text-logo-blue opacity-30">
-                {isReply ? "Thoughts?" : "Speak your mind..."}
+                {isReply ? "Your thoughts?" : "What's on your mind?"}
               </span>
 
               <button
