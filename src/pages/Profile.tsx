@@ -11,7 +11,7 @@ import { formatCompactNumber } from "../utils";
 import { TabSwitcher } from "../components/ui/TabSwicher";
 import { SEO } from "../components/ui/Seo";
 
-type FilterType = "posts" | "replies" | "interacted";
+type FilterType = "posts" | "replies";
 
 export const Profile = () => {
   const { user } = useAuth();
@@ -41,11 +41,6 @@ export const Profile = () => {
       id: "replies",
       label: "Replies",
       count: formatCompactNumber(counts.replies),
-    },
-    {
-      id: "interacted",
-      label: "Interactions",
-      count: formatCompactNumber(counts.interacted),
     },
   ];
 
