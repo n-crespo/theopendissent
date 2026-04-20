@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import {
   useLocation,
@@ -21,13 +22,18 @@ import { PostDetails } from "./pages/PostDetails";
 import { Notifications } from "./pages/Notifications";
 import { FeedSortProvider } from "./context/FeedSortContext";
 import { SidebarContent } from "./components/layout/SidebarContent";
+import { Post } from "./types/index";
+import { CreatePostFAB } from "./components/feed/CreatePostFAB";
+import { ComposeModal } from "./components/feed/ComposeModal";
 
+// removed 'export default' here
 function Layout() {
   const { user, loading } = useAuth();
   const { pathname } = useLocation();
-
   const navType = useNavigationType();
 
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
+  const [activeParent, setActiveParent] = useState<Post | null>(null);
   const [isInitialCheck, setIsInitialCheck] = useState(true);
   const [showLanding, setShowLanding] = useState(false);
 
@@ -40,16 +46,13 @@ function Layout() {
 
     if (!loading) {
       const isCorrectPath = pathname === "/" || pathname === "/share";
-
       const shouldShowInProd =
         !user && !skipPermanent && !skipSession && isCorrectPath;
-
       const shouldShowInDev = isDev && !skipSession && isCorrectPath;
 
       if (shouldShowInDev || shouldShowInProd) {
         setShowLanding(true);
       }
-
       setIsInitialCheck(false);
     }
   }, [user, loading, pathname]);
@@ -84,7 +87,7 @@ function Layout() {
           </aside>
 
           <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2">
-            <Outlet />
+            <Outlet context={{ setActiveParent, setIsComposeOpen }} />
           </main>
 
           <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4">
@@ -99,6 +102,12 @@ function Layout() {
         </div>
 
         <GlobalModal />
+        <CreatePostFAB onClick={() => setIsComposeOpen(true)} />
+        <ComposeModal
+          isOpen={isComposeOpen}
+          onClose={() => setIsComposeOpen(false)}
+          parentPost={activeParent}
+        />
         <Footer />
       </div>
     </div>
