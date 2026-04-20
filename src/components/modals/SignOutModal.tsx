@@ -1,5 +1,6 @@
 import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Simplified sign out content for the global modal container.
@@ -8,11 +9,13 @@ import { useModal } from "../../context/ModalContext";
 export const SignOutModal = () => {
   const { user, signOut } = useAuth();
   const { closeModal } = useModal();
+  const navigate = useNavigate();
 
   const handleConfirm = async () => {
     try {
       await signOut();
       closeModal();
+      navigate("/");
     } catch (error) {
       console.error("failed to sign out:", error);
     }
