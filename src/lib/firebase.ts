@@ -99,7 +99,6 @@ export const createPost = async (
   parentPostId?: string,
   score?: number,
 ) => {
-  console.log("creating post...");
   const mainTree = parentPostId ? `replies/${parentPostId}` : "posts";
   const newKey = push(child(ref(db), mainTree)).key;
   if (!newKey) return;
@@ -127,7 +126,6 @@ export const createPost = async (
   }
 
   update(ref(db), updates);
-  console.log(updates);
   return newKey;
 };
 
