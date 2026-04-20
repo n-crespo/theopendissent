@@ -1,12 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { SEO } from "../components/ui/Seo";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  useParams,
+  useNavigate,
+  useSearchParams,
+  useOutletContext,
+} from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { subscribeToPost, subscribeToReplies } from "../lib/firebase";
 import { FeedItem } from "../components/feed/FeedItem";
 import { useAuth } from "../context/AuthContext";
-import { interactionStore } from "../lib/interactionStore";
 import { Post } from "../types";
 import { FeedItemSkeleton } from "../components/ui/FeedItemSkeleton";
 
@@ -16,6 +20,9 @@ export const PostDetails = () => {
   const highlightReplyId = searchParams.get("reply");
   const navigate = useNavigate();
 
+  // grab the setters from Layout
+  const { setActiveParent }: any = useOutletContext();
+
   const [replies, setReplies] = useState<Post[]>([]);
   const [isLoadingReplies, setIsLoadingReplies] = useState(true);
   const [livePost, setLivePost] = useState<Post | null>(null);
@@ -24,21 +31,15 @@ export const PostDetails = () => {
   const { user, loading: authLoading } = useAuth();
   const uid = user?.uid;
 
-  // Optimistic score helper
-  const getCalculatedScore = (
-    post: Post,
-    userId: string | undefined,
-  ): number | undefined => {
-    if (!userId) return undefined;
-    const storeData = interactionStore.get(post.id);
-    if (storeData[userId] !== undefined) return storeData[userId];
-    if (post.userInteractions && post.userInteractions[userId] !== undefined) {
-      return post.userInteractions[userId];
+  // set the active parent for the FAB when the post loads
+  useEffect(() => {
+    if (livePost) {
+      setActiveParent(livePost);
     }
-    return undefined;
-  };
+    // cleanup: reset parent when leaving the thread
+    return () => setActiveParent(null);
+  }, [livePost, setActiveParent]);
 
-  // Sync Post
   useEffect(() => {
     if (!postId) return;
     const unsubscribe = subscribeToPost(postId, (post) => {
@@ -49,7 +50,6 @@ export const PostDetails = () => {
     return () => unsubscribe();
   }, [postId, navigate]);
 
-  // Sync Replies & Auto-scroll logic
   useEffect(() => {
     if (!postId) return;
     setIsLoadingReplies(true);
@@ -97,7 +97,6 @@ export const PostDetails = () => {
         />
       )}
 
-      {/* Header Bar */}
       <header className="grid grid-cols-3 items-center w-full">
         <button
           className="justify-self-start p-2 -ml-2 rounded-xl text-slate-400 hover:text-slate-900 transition-all active:scale-95"
@@ -110,9 +109,7 @@ export const PostDetails = () => {
         </h1>
       </header>
 
-      {/* Primary Content Area */}
       <main className="flex flex-col gap-y-8">
-        {/* The Parent Post */}
         <section>
           {isLoadingPost || authLoading ? (
             <FeedItemSkeleton />
@@ -121,7 +118,6 @@ export const PostDetails = () => {
           ) : null}
         </section>
 
-        {/* Separator / Reply Header */}
         <div className="flex items-center gap-x-4 px-2">
           <h4 className="text-[0.65rem] font-extrabold tracking-wider uppercase text-slate-400 whitespace-nowrap">
             Discussion
@@ -129,7 +125,6 @@ export const PostDetails = () => {
           <div className="h-px w-full bg-slate-100"></div>
         </div>
 
-        {/* Replies List */}
         <section className="flex flex-col gap-y-4">
           <AnimatePresence mode="popLayout">
             {isLoadingReplies ? (
@@ -143,17 +138,6 @@ export const PostDetails = () => {
                 {[1, 2].map((i) => (
                   <FeedItemSkeleton key={i} />
                 ))}
-              </motion.div>
-            ) : replies.length === 0 ? (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="py-12 text-center"
-              >
-                <p className="text-sm font-medium italic text-slate-400">
-                  No replies yet.
-                </p>
               </motion.div>
             ) : (
               replies.map((reply) => (
