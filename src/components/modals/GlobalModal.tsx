@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useModal } from "../../context/ModalContext";
 import { SignInModal } from "./SignInModal";
-import { AboutModal } from "./AboutModal";
 import { InstallPwaModal } from "./InstallPwaModal";
 import { SignOutModal } from "./SignOutModal";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
@@ -84,7 +83,6 @@ export const GlobalModal = () => {
                 `}
               >
                 {modal.type === "signin" && <SignInModal />}
-                {modal.type === "about" && <AboutModal />}
                 {modal.type === "installPwa" && <InstallPwaModal />}
                 {modal.type === "signOut" && <SignOutModal />}
                 {modal.type === "deleteConfirm" && (
