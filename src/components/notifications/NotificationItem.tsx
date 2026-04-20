@@ -46,11 +46,11 @@ export const NotificationItem = memo(
     return (
       <div
         onClick={() => onClick(notification)}
-        className={`group flex items-center gap-4 p-4 border transition-all duration-200 cursor-pointer active:scale-[0.99] rounded-xl shadow-md
+        className={`group flex items-center gap-x-4 p-[clamp(1rem,3vw,1.25rem)] border transition-all duration-200 cursor-pointer overflow-hidden rounded-2xl
           ${
             isRead
-              ? "bg-slate-50/50 border-slate-100 opacity-70"
-              : "bg-white border-border-subtle"
+              ? "bg-slate-50 border-slate-100 opacity-80"
+              : "bg-white border-slate-200 shadow-sm hover:shadow-md"
           }`}
       >
         {/* Left Icon / Checkbox Section */}
