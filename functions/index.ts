@@ -406,40 +406,6 @@ export const sharePost = onRequest(async (req, res) => {
 });
 
 /**
- * handles setup tasks when a new reply is created.
- * links the reply to the user's profile and stores path metadata.
- */
-// export const onReplyCreated = onValueCreated(
-//   "/replies/{parentId}/{replyId}",
-//   async (event) => {
-//     const { parentId, replyId } = event.params;
-//     const replyData = event.data.val();
-//     const db = admin.database();
-//
-//     if (!replyData) return null;
-//
-//     const updates: Record<string, string | boolean | null> = {};
-//
-//     // link to user's profile
-//     if (replyData.userId) {
-//       updates[`users/${replyData.userId}/replies/${parentId}/${replyId}`] =
-//         true;
-//     }
-//
-//     try {
-//       await db.ref().update(updates);
-//       console.log(
-//         `successfully linked reply ${replyId} to user ${replyData.userId}`,
-//       );
-//     } catch (error) {
-//       console.error(`failed to link reply ${replyId}:`, error);
-//     }
-//
-//     return null;
-//   },
-// );
-
-/**
  * Automatically creates or updates a notification for the post owner when a new reply is created.
  */
 export const onReplyCreatedNotification = onValueCreated(

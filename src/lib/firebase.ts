@@ -63,7 +63,8 @@ export const postsRef = ref(db, "posts");
 const getSortableTimestamp = (timestamp: number | object | undefined) => {
   if (typeof timestamp === "number") return timestamp;
   // Pending server timestamp placeholders should be treated as newest.
-  if (timestamp && typeof timestamp === "object") return Number.MAX_SAFE_INTEGER;
+  if (timestamp && typeof timestamp === "object")
+    return Number.MAX_SAFE_INTEGER;
   return 0;
 };
 
@@ -120,7 +121,11 @@ export const createPost = async (
     postContent: content,
     timestamp: serverTimestamp(),
     replyCount: 0,
-    ...(parentPostId && { parentPostId, interactionScore: score, isThreadAuthor }),
+    ...(parentPostId && {
+      parentPostId,
+      interactionScore: score,
+      isThreadAuthor,
+    }),
   };
 
   const updates: Record<string, any> = {};
@@ -135,7 +140,6 @@ export const createPost = async (
     updates[`users/${userId}/posts/${newKey}`] = true;
   }
 
-  console.log("creating post...", updates);
   await update(ref(db), updates);
   return newKey;
 };
