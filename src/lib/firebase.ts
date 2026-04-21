@@ -96,6 +96,7 @@ export const setInteraction = async (
 export const createPost = async (
   userId: string,
   content: string,
+  authorDisplay: string,
   parentPostId?: string,
   score?: number,
 ) => {
@@ -105,11 +106,10 @@ export const createPost = async (
 
   const postData = {
     id: newKey,
-    userId,
+    authorDisplay,
     postContent: content,
     timestamp: serverTimestamp(),
     replyCount: 0,
-    userInteractions: {},
     ...(parentPostId && { parentPostId, interactionScore: score }),
   };
 
@@ -125,7 +125,8 @@ export const createPost = async (
     updates[`users/${userId}/posts/${newKey}`] = true;
   }
 
-  update(ref(db), updates);
+  console.log("creating post...", updates);
+  await update(ref(db), updates);
   return newKey;
 };
 
@@ -297,6 +298,7 @@ export const subscribeToFeed = (
       .map(([postId, postData]: [string, any]) => ({
         id: postId,
         userId: postData.userId,
+        authorDisplay: postData.authorDisplay,
         postContent: postData.postContent || postData.content,
         timestamp: postData.timestamp || 0,
         editedAt: postData.editedAt,

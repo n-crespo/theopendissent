@@ -25,6 +25,7 @@ export const ComposeModal = ({
   const [content, setContent] = useState("");
   const [score, setScore] = useState(0);
   const [isPosting, setIsPosting] = useState(false);
+  const [authorDisplay, setAuthorDisplay] = useState("Anonymous User");
 
   const limit = 600;
   const charsLeft = limit - content.length;
@@ -34,6 +35,7 @@ export const ComposeModal = ({
     if (isOpen) {
       setContent("");
       setScore(0);
+      setAuthorDisplay("Anonymous User");
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -63,6 +65,7 @@ export const ComposeModal = ({
           const newKey = await createPost(
             user.uid,
             content.trim(),
+            authorDisplay,
             parentPost?.id,
             isReply ? score : undefined,
           );
@@ -121,12 +124,38 @@ export const ComposeModal = ({
             </div>
 
             <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8">
+              {/* Post As Selector */}
+              <div className="space-y-4">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  Post As
+                </label>
+                <div className="relative">
+                  <select
+                    value={authorDisplay}
+                    onChange={(e) => setAuthorDisplay(e.target.value)}
+                    className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 font-medium text-sm rounded-xl py-3 pl-4 pr-10 outline-none focus:ring-2 focus:ring-logo-blue/20 transition-all cursor-pointer"
+                  >
+                    <option value="Anonymous User">🎭 Anonymous User</option>
+                    <option value={`User_${user?.uid?.substring(0, 8)}`}>
+                      🆔 User_{user?.uid?.substring(0, 8)}
+                    </option>
+                    {user?.displayName && (
+                      <option value={user.displayName}>
+                        👤 {user.displayName}
+                      </option>
+                    )}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                    <i className="bi bi-chevron-down text-xs border border-slate-200 rounded-md p-1 bg-white"></i>
+                  </div>
+                </div>
+              </div>
               {/* Context area for replies */}
               {isReply && (
                 <div className="border-l-2 border-slate-100 pl-4 py-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                      Replying to {parentPost?.userId.substring(0, 8)}...
+                    <span className="text-xs font-semibold text-slate-500">
+                      Replying to {parentPost?.authorDisplay || parentPost?.userId?.substring(0, 8) || "Anonymous"}...
                     </span>
                   </div>
                   <p className="text-sm text-slate-500 line-clamp-2 italic leading-relaxed">
