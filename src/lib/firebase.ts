@@ -169,23 +169,25 @@ export const updatePost = async (
  */
 export const deletePost = async (
   postId: string,
-  userId: string, // need userId to find the reference in users/ node
+  userId: string,
   parentPostId?: string,
 ) => {
   try {
     const updates: Record<string, any> = {};
 
     if (parentPostId) {
-      // Remove data
+      // remove reply data
       updates[`replies/${parentPostId}/${postId}`] = null;
-      // Remove user reference
+      // remove user reference (the receipt)
       updates[`users/${userId}/replies/${parentPostId}/${postId}`] = null;
     } else {
-      // Remove data
+      // remove post data
       updates[`posts/${postId}`] = null;
-      updates[`replies/${postId}`] = null; // Delete all replies to this post
-      // Remove user reference
+      // remove user reference (the receipt)
       updates[`users/${userId}/posts/${postId}`] = null;
+
+      // note: we don't delete replies/${postId} here.
+      // cloud function handles the cascade to avoid permission errors.
     }
 
     await update(ref(db), updates);
