@@ -34,7 +34,14 @@ export const ComposeModal = ({
     if (isOpen) {
       setContent("");
       setScore(0);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
     }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, [isOpen]);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -75,13 +82,13 @@ export const ComposeModal = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-start pt-[5vh] sm:items-center sm:pt-0 justify-center px-4">
+        <div className="fixed inset-0 z-50 flex flex-col sm:items-center sm:justify-center sm:px-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-slate-900/20 backdrop-blur-md"
+            className="absolute inset-0 bg-slate-900/20 backdrop-blur-md hidden sm:block"
           />
 
           <motion.div
@@ -89,7 +96,7 @@ export const ComposeModal = ({
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 220 }}
-            className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden border border-slate-200"
+            className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[85vh] sm:max-w-xl bg-white sm:rounded-3xl sm:shadow-2xl flex flex-col overflow-hidden sm:border sm:border-slate-200"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5">
