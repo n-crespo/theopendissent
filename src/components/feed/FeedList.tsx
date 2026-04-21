@@ -118,8 +118,8 @@ export const FeedList = ({
           posts.length > 0 && (
             <div className="flex flex-col items-center gap-2 opacity-40 py-8">
               <div className="h-px w-12 bg-slate-300 mb-2" />
-              <span className="text-slate-500 text-[10px] font-bold tracking-[0.2em] uppercase">
-                End of the feed
+              <span className="text-slate-500 text-[10px] font-bold tracking-wider uppercase">
+                You've reached the end!
               </span>
             </div>
           )
