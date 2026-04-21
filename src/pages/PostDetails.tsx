@@ -88,13 +88,9 @@ export const PostDetails = () => {
 
   const isOwner = (livePost?.userId && uid === livePost.userId) || (livePost && ownedPosts.has(livePost.id));
   
-  let postAuthor = "Anonymous User";
-  if (isOwner) {
-    if (livePost?.authorDisplay && livePost.authorDisplay !== "Anonymous User") postAuthor = `You, as ${livePost.authorDisplay}`;
-    else postAuthor = "You, anonymously";
-  } else {
-    postAuthor = livePost?.authorDisplay && livePost.authorDisplay !== "Anonymous User" ? livePost.authorDisplay : "Anonymous User";
-  }
+  const postAuthor = livePost?.authorDisplay && livePost.authorDisplay !== "Anonymous User"
+    ? livePost.authorDisplay
+    : "Anonymous User";
 
   return (
     <div className="flex flex-col gap-y-6">
@@ -163,6 +159,7 @@ export const PostDetails = () => {
                     item={reply}
                     isReply={true}
                     highlighted={highlightReplyId === reply.id}
+                    threadAuthorUserId={livePost?.userId}
                   />
                 </motion.div>
               ))
