@@ -95,6 +95,8 @@ export const usePostActions = (post: Post) => {
     }
     openModal("deleteConfirm", {
       name: post.postContent || "this post",
+      authorDisplay: post.authorDisplay,
+      isThreadAuthor: post.isThreadAuthor,
       onConfirm: async () => {
         try {
           await deletePost(post.id, uid, post.parentPostId);

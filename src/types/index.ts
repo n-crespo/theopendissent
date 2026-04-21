@@ -11,6 +11,7 @@ export interface Post {
   userInteractions: PostInteractions;
   parentPostId?: string;
   interactionScore?: number; // -3 to 3
+  isThreadAuthor?: boolean;
 }
 
 export interface UserProfile {
