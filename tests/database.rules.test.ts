@@ -136,6 +136,66 @@ describe("Realtime Database rules", () => {
     });
   });
 
+  describe("Anonymity & Identity Protection", () => {
+    // NOTE: tests anonymity.
+    it("allows creating a post without a public userId (Anonymous Post)", async () => {
+      const dbA = authedDb(uidA);
+      const anonPostId = "anon_post_123";
+
+      await assertSucceeds(
+        dbUpdate(dbA, "/", {
+          [`posts/${anonPostId}`]: {
+            id: anonPostId,
+            postContent: "this is anonymous",
+            timestamp: { ".sv": "timestamp" },
+            replyCount: 0,
+            // userId is omitted here for anonymity
+          },
+          [`users/${uidA}/posts/${anonPostId}`]: true,
+        }),
+      );
+    });
+
+    // NOTE: tests anonymity.
+    it("allows anonymous owner to delete via private index 'receipt'", async () => {
+      const dbA = authedDb(uidA);
+      const anonPostId = "anon_to_delete";
+
+      // setup: seed an anonymous post with no userId field, but indexed for user_a
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`posts/${anonPostId}`]: {
+            postContent: "hidden author",
+            timestamp: Date.now(),
+            replyCount: 0,
+          },
+          [`users/${uidA}/posts/${anonPostId}`]: true,
+        });
+      });
+
+      // should succeed because user_a has the index link (the "receipt")
+      await assertSucceeds(dbRemove(dbA, `posts/${anonPostId}`));
+    });
+
+    // NOTE: tests anonymity.
+    it("denies access to another user's post/reply indexes (Anti-Scraping)", async () => {
+      const dbB = authedDb(uidB);
+
+      // prevent user_b from seeing which posts user_a authored
+      await assertFails(dbGet(dbB, `users/${uidA}/posts`));
+      await assertFails(dbGet(dbB, `users/${uidA}/replies`));
+    });
+
+    // NOTE: tests anonymity.
+    it("denies access to another user's interaction receipts", async () => {
+      const dbB = authedDb(uidB);
+
+      // prevent user_b from seeing what user_a has rated
+      await assertFails(dbGet(dbB, `users/${uidA}/postInteractions`));
+    });
+  });
+
   describe("Authorized User Access", () => {
     it("allows users to read/write their own users tree", async () => {
       const dbA = authedDb(uidA);
