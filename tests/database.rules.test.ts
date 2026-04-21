@@ -80,6 +80,7 @@ describe("Realtime Database rules", () => {
     }
   });
 
+  // NOTE: tests anonymity.
   it("allows users to read/write their own users tree and denies others", async () => {
     const dbA = authedDb(uidA);
     const dbB = authedDb(uidB);
@@ -96,6 +97,7 @@ describe("Realtime Database rules", () => {
     await assertFails(dbSet(dbB, `users/${uidA}/posts/evil`, true));
   });
 
+  // NOTE: tests anonymity.
   it("allows public reads of posts/replies and denies unauthenticated writes", async () => {
     const db = anonDb();
 
@@ -388,7 +390,6 @@ describe("Realtime Database rules", () => {
     const dbA = authedDb(uidA);
     const dbB = authedDb(uidB);
 
-    // With current rules, owner write access on /posts/$post_id is broad enough to permit these.
     await assertSucceeds(dbSet(dbA, `posts/${postId}/replyCount`, 999));
     await assertSucceeds(
       dbSet(dbA, `posts/${postId}/userInteractions/${uidA}`, 3),
@@ -400,7 +401,7 @@ describe("Realtime Database rules", () => {
     );
   });
 
-  // NOTE: tests legacy data
+  // NOTE: tests anonymity.
   it("legacy post shape still reads correctly (no authorDisplay/isThreadAuthor)", async () => {
     const db = anonDb();
     const snap = await assertSucceeds(dbGet(db, `posts/${postId}`));
