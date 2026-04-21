@@ -83,12 +83,12 @@ function Layout() {
 
         <div className="relative mx-auto flex w-full max-w-7xl justify-center gap-4 lg:gap-9 pt-16 px-4">
           {/* SIDEBAR LEFT */}
-          <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4 pl-20">
-            <SidebarContent />
+          <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4 lg:pl-10 xl:pl-20">
+            <SidebarContent onCompose={() => setIsComposeOpen(true)} />
           </aside>
 
           {/* FEED (CENTER) */}
-          <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2">
+          <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2 relative">
             <Outlet context={{ setActiveParent, setIsComposeOpen }} />
           </main>
 
@@ -99,15 +99,15 @@ function Layout() {
                 <Notifications showHeader={false} />
               </div>
             ) : (
-              <div className="xl:hidden w-full" />
+              <div className="lg:hidden w-full" />
             )}
           </aside>
 
           {/* --- THE FAB FIX --- */}
           {/* We place it inside the 7xl div, but use a fixed wrapper */}
-          <div className="fixed inset-0 pointer-events-none z-40">
+          <div className="fixed inset-0 pointer-events-none z-40 lg:hidden">
             <div className="mx-auto max-w-7xl h-full relative">
-              <div className="absolute bottom-8 right-4 lg:right-8 pointer-events-auto">
+              <div className="absolute bottom-10 right-8 md:bottom-12 md:right-10 pointer-events-auto">
                 <CreatePostFAB onClick={() => setIsComposeOpen(true)} />
               </div>
             </div>
