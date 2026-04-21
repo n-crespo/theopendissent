@@ -25,7 +25,9 @@ export const ComposeModal = ({
   const [content, setContent] = useState("");
   const [score, setScore] = useState(0);
   const [isPosting, setIsPosting] = useState(false);
-  const [authorDisplay, setAuthorDisplay] = useState("Anonymous User");
+  const [isAnonymous, setIsAnonymous] = useState(true);
+  const authorDisplay =
+    isAnonymous || !user?.displayName ? "Anonymous User" : user.displayName;
 
   const limit = 600;
   const charsLeft = limit - content.length;
@@ -35,7 +37,7 @@ export const ComposeModal = ({
     if (isOpen) {
       setContent("");
       setScore(0);
-      setAuthorDisplay("Anonymous User");
+      setIsAnonymous(true);
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -124,38 +126,42 @@ export const ComposeModal = ({
             </div>
 
             <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8">
-              {/* Post As Selector */}
-              <div className="space-y-4">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                  Post As
-                </label>
-                <div className="relative">
-                  <select
-                    value={authorDisplay}
-                    onChange={(e) => setAuthorDisplay(e.target.value)}
-                    className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 font-medium text-sm rounded-xl py-3 pl-4 pr-10 outline-none focus:ring-2 focus:ring-logo-blue/20 transition-all cursor-pointer"
-                  >
-                    <option value="Anonymous User">🎭 Anonymous User</option>
-                    <option value={`User_${user?.uid?.substring(0, 8)}`}>
-                      🆔 User_{user?.uid?.substring(0, 8)}
-                    </option>
-                    {user?.displayName && (
-                      <option value={user.displayName}>
-                        👤 {user.displayName}
-                      </option>
-                    )}
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
-                    <i className="bi bi-chevron-down text-xs border border-slate-200 rounded-md p-1 bg-white"></i>
-                  </div>
+              {/* Post As Toggle */}
+              <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <div className="flex flex-col gap-y-1">
+                  <span className="text-sm font-bold text-slate-900">
+                    Post Anonymously?
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    {isAnonymous
+                      ? "Your identity will be hidden from everyone."
+                      : `Posting publicly as ${user?.displayName || "Anonymous User"}.`}
+                  </span>
                 </div>
+                <button
+                  onClick={() => setIsAnonymous(!isAnonymous)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    isAnonymous ? "bg-logo-blue" : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isAnonymous ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
               </div>
               {/* Context area for replies */}
               {isReply && (
                 <div className="border-l-2 border-slate-100 pl-4 py-1">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xs font-semibold text-slate-500">
-                      Replying to {parentPost?.authorDisplay || parentPost?.userId?.substring(0, 8) || "Anonymous"}...
+                      Replying to{" "}
+                      {parentPost?.authorDisplay &&
+                      parentPost.authorDisplay !== "Anonymous User"
+                        ? parentPost.authorDisplay
+                        : "Anonymous User"}
+                      ...
                     </span>
                   </div>
                   <p className="text-sm text-slate-500 line-clamp-2 italic leading-relaxed">

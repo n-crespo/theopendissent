@@ -90,11 +90,10 @@ export const PostDetails = () => {
   
   let postAuthor = "Anonymous User";
   if (isOwner) {
-    if (livePost?.authorDisplay === "Anonymous User") postAuthor = "You, anonymously";
-    else if (livePost?.authorDisplay) postAuthor = `You, as ${livePost.authorDisplay.replace("🆔 ", "").replace("👤 ", "")}`;
-    else postAuthor = "You";
+    if (livePost?.authorDisplay && livePost.authorDisplay !== "Anonymous User") postAuthor = `You, as ${livePost.authorDisplay}`;
+    else postAuthor = "You, anonymously";
   } else {
-    postAuthor = livePost?.authorDisplay || (livePost?.userId ? `@${livePost.userId.substring(0, 10)}...` : "Anonymous User");
+    postAuthor = livePost?.authorDisplay && livePost.authorDisplay !== "Anonymous User" ? livePost.authorDisplay : "Anonymous User";
   }
 
   return (

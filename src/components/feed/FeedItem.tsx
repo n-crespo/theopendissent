@@ -88,11 +88,10 @@ export const FeedItem = memo(
                 <span className="text-sm font-semibold text-slate-900 leading-tight">
                   {(() => {
                     if (isOwner) {
-                      if (item.authorDisplay === "Anonymous User") return "You, anonymously";
-                      if (item.authorDisplay) return `You, as ${item.authorDisplay.replace("🆔 ", "").replace("👤 ", "")}`;
-                      return "You";
+                      if (item.authorDisplay && item.authorDisplay !== "Anonymous User") return `You, as ${item.authorDisplay}`;
+                      return "You, anonymously";
                     }
-                    return item.authorDisplay || (item.userId ? item.userId.substring(0, 10) + "..." : "Anonymous User");
+                    return item.authorDisplay && item.authorDisplay !== "Anonymous User" ? item.authorDisplay : "Anonymous User";
                   })()}
                 </span>
                 <div className="flex items-center flex-wrap gap-x-1 text-[0.625rem] text-slate-400 font-medium tracking-tight">
