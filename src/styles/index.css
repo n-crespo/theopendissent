@@ -4,7 +4,7 @@
   --color-logo-red: #70161e;
   --color-logo-green: #4d5e19;
   --color-logo-blue: #043f63;
-  --color-logo-offwhite: #f8f2e8;
+  --color-logo-offwhite: #faf7f2;
 
   --color-logo-green-light: rgba(77, 94, 25, 0.1);
   --color-logo-red-light: rgba(112, 22, 30, 0.1);
@@ -16,7 +16,7 @@
   --radius-input: 12px;
 
   --color-border-subtle: #f1f5f9;
-  --color-bg-preview: #f8fafc80; /* slate-50 with 50% opacity */
+  --color-bg-preview: #faf7f280;
 
   --shadow-modal: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 10px 30px rgba(0, 0, 0, 0.1);
 
@@ -78,8 +78,8 @@
 }
 
 :root {
-  background-color: #f8f2e8;
-  --offwhite-background: #f8f2e8;
+  background-color: #faf7f2;
+  --offwhite-background: #faf7f2;
   --red: #70161e;
   --green: #4d5e19;
   --blue: #043f63;

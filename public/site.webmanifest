@@ -7,9 +7,13 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "theme_color": "#f8f2e8",
-  "background_color": "#f8f2e8",
-  "categories": ["social", "politics", "education"],
+  "theme_color": "#faf7f2",
+  "background_color": "#faf7f2",
+  "categories": [
+    "social",
+    "politics",
+    "education"
+  ],
   "icons": [
     {
       "src": "/favicons/web-app-manifest-192x192.png",
