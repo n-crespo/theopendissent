@@ -75,7 +75,7 @@ export const ComposeModal = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
+        <div className="fixed inset-0 z-50 flex items-start pt-[5vh] sm:items-center sm:pt-0 justify-center px-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -86,10 +86,10 @@ export const ComposeModal = ({
 
           <motion.div
             initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 220 }}
-            className="relative w-full max-w-xl bg-white rounded-t-4xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden border-t border-slate-100"
+            className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden border border-slate-200"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5">
