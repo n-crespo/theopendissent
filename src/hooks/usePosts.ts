@@ -56,6 +56,13 @@ export const usePosts = (initialLimit: number = 20, sortType: SortOption) => {
         finalPosts.sort((a, b) => getPostWeight(a.id) - getPostWeight(b.id));
       }
 
+      // Always keep explicitly pinned newly created posts at the top.
+      finalPosts.sort((a, b) => {
+        const aPinned = getPostWeight(a.id) === -1 ? 1 : 0;
+        const bPinned = getPostWeight(b.id) === -1 ? 1 : 0;
+        return bPinned - aPinned;
+      });
+
       // update state and cache
       setPosts(finalPosts);
       cachedPosts = finalPosts;

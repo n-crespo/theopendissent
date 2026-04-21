@@ -60,6 +60,13 @@ googleProvider.setCustomParameters({
 
 export const postsRef = ref(db, "posts");
 
+const getSortableTimestamp = (timestamp: number | object | undefined) => {
+  if (typeof timestamp === "number") return timestamp;
+  // Pending server timestamp placeholders should be treated as newest.
+  if (timestamp && typeof timestamp === "object") return Number.MAX_SAFE_INTEGER;
+  return 0;
+};
+
 /**
  * atomic update to add or remove an interaction score in the user's tree.
  * cloud function handles syncing this to the public post/reply.
@@ -99,6 +106,8 @@ export const createPost = async (
   authorDisplay: string,
   parentPostId?: string,
   score?: number,
+  isThreadAuthor?: boolean,
+  includePublicUserId = false,
 ) => {
   const mainTree = parentPostId ? `replies/${parentPostId}` : "posts";
   const newKey = push(child(ref(db), mainTree)).key;
@@ -106,11 +115,12 @@ export const createPost = async (
 
   const postData = {
     id: newKey,
+    ...(includePublicUserId ? { userId } : {}),
     authorDisplay,
     postContent: content,
     timestamp: serverTimestamp(),
     replyCount: 0,
-    ...(parentPostId && { parentPostId, interactionScore: score }),
+    ...(parentPostId && { parentPostId, interactionScore: score, isThreadAuthor }),
   };
 
   const updates: Record<string, any> = {};
@@ -267,7 +277,10 @@ export const subscribeToReplies = (
         replyCount: val.replyCount || 0,
         userInteractions: val.userInteractions || {},
       }))
-      .sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
+      .sort(
+        (a, b) =>
+          getSortableTimestamp(b.timestamp) - getSortableTimestamp(a.timestamp),
+      );
 
     callback(list);
   });
@@ -307,7 +320,10 @@ export const subscribeToFeed = (
         parentPostId: postData.parentPostId,
       }))
       .filter((post) => post.postContent && !post.parentPostId)
-      .sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
+      .sort(
+        (a, b) =>
+          getSortableTimestamp(b.timestamp) - getSortableTimestamp(a.timestamp),
+      );
 
     callback(postsArray);
   });
