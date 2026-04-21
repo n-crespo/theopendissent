@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Post } from "../../types";
@@ -28,12 +27,15 @@ export const ComposeModal = ({
   const [content, setContent] = useState("");
   const [score, setScore] = useState(0);
   const [isPosting, setIsPosting] = useState(false);
-  const isThreadAuthor = Boolean(parentPost?.id && ownedPosts.has(parentPost.id));
-  
+  const isThreadAuthor = Boolean(
+    parentPost?.id && ownedPosts.has(parentPost.id),
+  );
+
   // lock anonymity if user is thread author
   const [isAnonymousState, setIsAnonymous] = useState(true);
-  const isAnonymous = isThreadAuthor 
-    ? (!parentPost?.authorDisplay || parentPost.authorDisplay === "Anonymous User")
+  const isAnonymous = isThreadAuthor
+    ? !parentPost?.authorDisplay ||
+      parentPost.authorDisplay === "Anonymous User"
     : isAnonymousState;
 
   const authorDisplay =
@@ -145,14 +147,16 @@ export const ComposeModal = ({
                 <div className="flex flex-col gap-y-1">
                   <span className="text-sm font-bold text-slate-900 leading-tight flex items-center gap-x-1.5">
                     <span>Post Anonymously?</span>
-                    {isThreadAuthor && <Badge label="Locked (Author)" variant="slate" />}
+                    {isThreadAuthor && (
+                      <Badge label="Locked (Author)" variant="slate" />
+                    )}
                   </span>
                   <span className="text-xs text-slate-500">
                     {isThreadAuthor
                       ? `Posting as ${authorDisplay}.`
                       : isAnonymous
-                      ? "Your identity will be hidden from everyone."
-                      : `Posting publicly as ${user?.displayName || "Anonymous User"}.`}
+                        ? "Your identity will be hidden from everyone."
+                        : `Posting publicly as ${user?.displayName || "Anonymous User"}.`}
                   </span>
                 </div>
                 <button
