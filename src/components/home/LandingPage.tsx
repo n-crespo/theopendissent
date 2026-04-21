@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import logoUrl from "../../assets/Flat-Logo.svg";
 import { InfoCard } from "../ui/InfoCard";
+import { useModal } from "../../context/ModalContext";
 
 interface LandingPageProps {
   onContinue: (dontShowAgain: boolean) => void;
@@ -62,9 +63,19 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
     };
   }, []);
 
+  const { openModal } = useModal();
+
   const handleExit = () => {
     setIsExiting(true);
     setTimeout(() => onContinue(false), 500);
+  };
+
+  const handleListen = () => {
+    setIsExiting(true);
+    setTimeout(() => {
+      onContinue(false);
+      openModal("listen");
+    }, 500);
   };
 
   const paginate = (newDirection: number) => {
@@ -215,13 +226,20 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
           initial="hidden"
           animate="visible"
           variants={fadeIn}
-          className="w-full flex justify-center"
+          className="w-full flex flex-col-reverse sm:flex-row justify-center gap-3"
         >
           <button
-            onClick={handleExit}
-            className="w-full max-w-xs py-4 text-white hover:brightness-110 transition-all active:scale-95 shadow-2xl rounded-2xl bg-linear-to-r from-logo-red via-logo-green to-logo-blue font-bold tracking-wide"
+            onClick={handleListen}
+            className="w-full sm:w-auto px-8 py-4 bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-all active:scale-95 shadow-sm rounded-2xl flex items-center justify-center gap-2"
           >
-            Join the conversation.
+            <i className="bi bi-headphones"></i> Listen
+          </button>
+
+          <button
+            onClick={handleExit}
+            className="w-full sm:flex-1 py-4 text-white hover:brightness-110 transition-all active:scale-95 shadow-lg rounded-2xl bg-linear-to-r from-logo-red via-logo-green to-logo-blue font-bold tracking-wide animate-shimmer bg-[length:200%_auto] flex items-center justify-center gap-2"
+          >
+            Join the conversation. <i className="bi bi-arrow-right"></i>
           </button>
         </motion.div>
       </footer>
