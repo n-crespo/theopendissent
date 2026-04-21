@@ -161,7 +161,7 @@ export const FeedItem = memo(
               </div>
             </div>
           ) : (
-            <p className="text-slate-800 text-[0.9375rem] leading-relaxed whitespace-pre-wrap wrap-break-word">
+            <p className="text-slate-800 text-[1.0625rem] leading-relaxed whitespace-pre-wrap break-words">
               {item.postContent}
             </p>
           )}
