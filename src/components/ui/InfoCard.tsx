@@ -17,11 +17,13 @@ export const InfoCard = ({ title, children, footer }: InfoCardProps) => {
       </div>
 
       {/* card body */}
-      <div className="bg-white/50 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
-        <div className="pt-7 px-12 text-lg items-center">{children}</div>
+      <div className="w-full min-h-[22rem] bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-all duration-200">
+        <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-[15px] flex flex-col justify-center items-center">
+          {children}
+        </div>
 
         {/* fixed height footer */}
-        <div className="p-4 mt-3 grid grid-cols-3 items-center shrink-0">
+        <div className="p-4 border-t border-slate-100 bg-slate-50/20 grid grid-cols-3 items-center shrink-0">
           {footer}
         </div>
       </div>
