@@ -164,7 +164,6 @@ export const ComposeModal = ({
               {/* Input Area */}
               <div className="relative">
                 <textarea
-                  autoFocus
                   maxLength={limit}
                   placeholder={
                     isReply
