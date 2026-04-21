@@ -111,7 +111,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
 
   return (
     <div
-      className={`fixed inset-0 z-100 bg-logo-offwhite transition-opacity duration-700 overflow-y-auto flex flex-col items-center
+      className={`fixed inset-0 z-100 bg-logo-offwhite transition-opacity duration-700 overflow-y-auto overscroll-none flex flex-col items-center
         ${isExiting ? "opacity-0 pointer-events-none" : "opacity-100"}`}
     >
       <motion.header
@@ -134,7 +134,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
         </div>
       </motion.header>
 
-      <main className="w-md max-w-[85vw] py-12 flex-1 flex flex-col justify-center">
+      <main className="w-full max-w-115 px-4 py-8 md:py-12 flex-1 flex flex-col justify-center">
         <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.div
             key={activeIndex}
@@ -150,18 +150,18 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                 title="Modern social media is ruining politics."
                 footer={renderFooter()}
               >
-                <div className="space-y-7 text-slate-700 leading-relaxed text-center">
+                <div className="space-y-5 text-slate-700 leading-relaxed text-center px-4 w-full max-w-md">
                   <p>
-                    Addictive algorithms fuels <b>polarity</b> and{" "}
-                    <b>division</b>.
+                    Algorithms are designed to prioritize <b>outrage</b> and{" "}
+                    <b>polarization</b> over nuanced conversation.
                   </p>
                   <p>
                     <b>Ragebait</b> and <b>corporate interests</b> litter our
                     digital public square.
                   </p>
-                  <b>
+                  <p className="font-bold text-slate-700">
                     Stop interacting with a system that profits from your anger.
-                  </b>
+                  </p>
                 </div>
               </InfoCard>
             ) : (
@@ -170,40 +170,38 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                 footer={renderFooter()}
               >
                 {/* <div className="w-full"> */}
-                <ul className="list-disc px-[6vw] space-y-6 marker:text-slate-500 text-left w-fit text-slate-700">
+                <ol className="list-decimal list-inside space-y-5 text-left w-fit text-slate-700 max-w-xs sm:max-w-max mx-auto marker:font-bold marker:text-slate-500 px-2">
                   <li className="leading-snug">
                     <strong className="text-slate-900">
-                      real, human discussions
+                      Real, Human Discussions
                     </strong>
-                    <p className="text-sm text-slate-500 mt-0.5">
-                      From our website to our podcast.
+                    <p className="text-sm text-slate-500 mt-1 pl-5">
+                      Genuine dialogue &gt; viral soundbites.
                     </p>
                   </li>
                   <li className="leading-snug">
                     <strong className="text-slate-900">
-                      no predatory algorithms
+                      No Predatory Algorithms
                     </strong>
-                    <p className="text-sm text-slate-500 mt-0.5">
+                    <p className="text-sm text-slate-500 mt-1 pl-5">
                       Posts are randomly shuffled.
                     </p>
                   </li>
                   <li className="leading-snug">
                     <strong className="text-slate-900">
-                      no engagement metrics
+                      Zero Engagement Metrics
                     </strong>
-                    <p className="text-sm text-slate-500 mt-0.5">
+                    <p className="text-sm text-slate-500 mt-1 pl-5">
                       Quality &gt; Click Count
                     </p>
                   </li>
                   <li className="leading-snug">
-                    <strong className="text-slate-900">
-                      (optional) anonymity
-                    </strong>
-                    <p className="text-sm text-slate-500 mt-0.5">
+                    <strong className="text-slate-900">Poster Anonymity</strong>
+                    <p className="text-sm text-slate-500 mt-1 pl-5">
                       Judge ideas, not individuals.
                     </p>
                   </li>
-                </ul>
+                </ol>
                 {/* </div> */}
               </InfoCard>
             )}

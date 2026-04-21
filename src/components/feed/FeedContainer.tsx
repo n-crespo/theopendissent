@@ -32,7 +32,7 @@ export const FeedContainer = () => {
         const target = await getPostById(sharedId);
         if (!target || !isMounted) return;
 
-        // if the link is for a reply, we want to highlight its parent post in the feed
+        // if the link is for a reply, highlight its parent post in the feed
         if (target.parentPostId) {
           const parent = await getPostById(target.parentPostId);
           if (parent && isMounted) setHighlightedPost(parent);

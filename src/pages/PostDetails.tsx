@@ -1,20 +1,28 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { SEO } from "../components/ui/Seo";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  useParams,
+  useNavigate,
+  useSearchParams,
+  useOutletContext,
+} from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { subscribeToPost, subscribeToReplies } from "../lib/firebase";
 import { FeedItem } from "../components/feed/FeedItem";
-import { PostInput } from "../components/feed/PostInput";
 import { useAuth } from "../context/AuthContext";
-import { interactionStore } from "../lib/interactionStore";
 import { Post } from "../types";
 import { FeedItemSkeleton } from "../components/ui/FeedItemSkeleton";
+import { ComposeTrigger } from "../components/feed/ComposeTrigger";
 
 export const PostDetails = () => {
   const { postId } = useParams<{ postId: string }>();
   const [searchParams] = useSearchParams();
   const highlightReplyId = searchParams.get("reply");
   const navigate = useNavigate();
+
+  // grab the setters from Layout
+  const { setActiveParent }: any = useOutletContext();
 
   const [replies, setReplies] = useState<Post[]>([]);
   const [isLoadingReplies, setIsLoadingReplies] = useState(true);
@@ -23,47 +31,26 @@ export const PostDetails = () => {
 
   const { user, loading: authLoading } = useAuth();
   const uid = user?.uid;
-  const isOwner = uid === livePost?.userId;
 
-  // store local score (number)
-  const [localScore, setLocalScore] = useState<number | undefined>(undefined);
-
-  // Helper to calculate score from Store (optimistic) or Post (server)
-  const getCalculatedScore = (
-    post: Post,
-    userId: string | undefined,
-  ): number | undefined => {
-    if (!userId) return undefined;
-
-    // check optimistic store
-    const storeData = interactionStore.get(post.id);
-    if (storeData[userId] !== undefined) {
-      return storeData[userId];
+  // set the active parent for the FAB when the post loads
+  useEffect(() => {
+    if (livePost) {
+      setActiveParent(livePost);
     }
+    // cleanup: reset parent when leaving the thread
+    return () => setActiveParent(null);
+  }, [livePost, setActiveParent]);
 
-    // check server data (which is now just a flat map { uid: score })
-    if (post.userInteractions && post.userInteractions[userId] !== undefined) {
-      return post.userInteractions[userId];
-    }
-
-    return undefined;
-  };
-
-  // Fetch Post
   useEffect(() => {
     if (!postId) return;
     const unsubscribe = subscribeToPost(postId, (post) => {
-      if (post) {
-        setLivePost(post);
-      } else {
-        navigate("/");
-      }
+      if (post) setLivePost(post);
+      else navigate("/", { replace: true });
       setIsLoadingPost(false);
     });
     return () => unsubscribe();
   }, [postId, navigate]);
 
-  // Sync Replies
   useEffect(() => {
     if (!postId) return;
     setIsLoadingReplies(true);
@@ -73,7 +60,6 @@ export const PostDetails = () => {
 
       if (highlightReplyId) {
         const replyExists = list.some((r) => r.id === highlightReplyId);
-
         if (replyExists) {
           setTimeout(() => {
             const element = document.getElementById(
@@ -81,9 +67,6 @@ export const PostDetails = () => {
             );
             if (element) {
               element.scrollIntoView({ behavior: "smooth", block: "center" });
-
-              // use window.history instead of setSearchParams
-              // to prevent a React re-render
               setTimeout(() => {
                 const newUrl = window.location.pathname;
                 window.history.replaceState(null, "", newUrl);
@@ -96,110 +79,67 @@ export const PostDetails = () => {
     return () => unsubscribe();
   }, [postId, highlightReplyId]);
 
-  // Calculate Stance
-  useEffect(() => {
-    if (livePost && uid) {
-      setLocalScore((prev) => {
-        // If we already have a local score (e.g. from interaction), keep it to avoid jitter
-        // Actually, for PostDetails parent -> input communication, we want the LATEST truth
-        // But getCalculatedScore handles the store lookup, so it is safe.
-        return getCalculatedScore(livePost, uid);
-      });
-    }
-  }, [livePost, uid]);
-
-  // Handler for FeedItem to update the local state when user slides
-  const handleInteractionChange = (newScore: number | undefined) => {
-    setLocalScore(newScore);
-  };
-
   const handleBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate("/", { replace: true });
-    }
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/", { replace: true });
   };
 
   const postAuthor =
-    uid == livePost?.userId
+    uid === livePost?.userId
       ? "You"
       : `@${livePost?.userId.substring(0, 10)}...`;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-y-6">
       {livePost && (
         <SEO
           title={`Post by ${postAuthor}`}
-          description='Join the conversation!'
+          description="Join the conversation!"
         />
       )}
-      <div>
-        {/* Header Grid */}
-        <div className="grid grid-cols-3 w-full">
-          <button
-            className="justify-self-start p-2 cursor-pointer"
-            onClick={handleBack}
-          >
-            <i className="bi bi-arrow-left rounded-xl text-2xl col-start-1"></i>
-          </button>
-          <h1 className="my-2 col-start-2 justify-self-center text-xl font-bold text-slate-900 tracking-tight text-nowrap">
-            Post
-          </h1>
-        </div>
-      </div>
-      {/* Main Post: Real Item OR Skeleton */}
-      {isLoadingPost || authLoading ? (
-        <FeedItemSkeleton />
-      ) : livePost ? (
-        <FeedItem
-          item={livePost}
-          disableClick={true}
-          onInteraction={handleInteractionChange}
-          isReply={false}
-        />
-      ) : null}
-      {/* Post Input: Real Input OR Skeleton */}
-      {/* This input is "locked" until localScore is defined */}
-      {isLoadingPost || !livePost ? (
-        <div className="h-15 w-full rounded-xl border border-slate-100 bg-white animate-pulse p-4 shadow-sm"></div>
-      ) : isOwner ? (
-        <></>
-      ) : (
-        <PostInput parentPostId={livePost.id} currentScore={localScore} />
-      )}
-      {/* Replies Section */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h4 className="text-[11px] font-bold tracking-wider uppercase text-slate-400">
-            Replies
+
+      <header className="grid grid-cols-3 items-center w-full">
+        <button
+          className="justify-self-start p-2 -ml-2 rounded-xl text-slate-400 hover:text-slate-900 transition-all active:scale-95"
+          onClick={handleBack}
+        >
+          <i className="bi bi-arrow-left text-2xl"></i>
+        </button>
+        <h1 className="justify-self-center text-lg font-bold text-slate-900 tracking-tight">
+          Post
+        </h1>
+      </header>
+
+      <main className="flex flex-col gap-y-8">
+        <section>
+          {isLoadingPost || authLoading ? (
+            <FeedItemSkeleton />
+          ) : livePost ? (
+            <FeedItem item={livePost} disableClick={true} isReply={false} />
+          ) : null}
+        </section>
+
+        <div className="flex items-center gap-x-4 px-2">
+          <h4 className="text-[0.65rem] font-extrabold tracking-wider uppercase text-slate-400 whitespace-nowrap">
+            Discussion
           </h4>
+          <div className="h-px w-full bg-slate-100"></div>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <section className="flex flex-col gap-y-4">
+          <ComposeTrigger placeholder="Your thoughts?" />
           <AnimatePresence mode="popLayout">
             {isLoadingReplies ? (
               <motion.div
                 key="skeletons"
-                className="flex flex-col gap-4"
-                initial={{ opacity: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                className="flex flex-col gap-y-4"
               >
                 {[1, 2].map((i) => (
                   <FeedItemSkeleton key={i} />
                 ))}
-              </motion.div>
-            ) : replies.length === 0 ? (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="rounded-xl py-16 text-center"
-              >
-                <p className="text-sm font-medium italic text-slate-400">
-                  No replies yet, you can be the first!
-                </p>
               </motion.div>
             ) : (
               replies.map((reply) => (
@@ -207,10 +147,10 @@ export const PostDetails = () => {
                   layout
                   key={reply.id}
                   id={`reply-${reply.id}`}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
                 >
                   <FeedItem
                     item={reply}
@@ -221,8 +161,8 @@ export const PostDetails = () => {
               ))
             )}
           </AnimatePresence>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import {
   useLocation,
@@ -21,13 +22,17 @@ import { PostDetails } from "./pages/PostDetails";
 import { Notifications } from "./pages/Notifications";
 import { FeedSortProvider } from "./context/FeedSortContext";
 import { SidebarContent } from "./components/layout/SidebarContent";
+import { Post } from "./types/index";
+import { CreatePostFAB } from "./components/feed/CreatePostFAB";
+import { ComposeModal } from "./components/feed/ComposeModal";
 
 function Layout() {
   const { user, loading } = useAuth();
   const { pathname } = useLocation();
-
   const navType = useNavigationType();
 
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
+  const [activeParent, setActiveParent] = useState<Post | null>(null);
   const [isInitialCheck, setIsInitialCheck] = useState(true);
   const [showLanding, setShowLanding] = useState(false);
 
@@ -40,16 +45,13 @@ function Layout() {
 
     if (!loading) {
       const isCorrectPath = pathname === "/" || pathname === "/share";
-
       const shouldShowInProd =
         !user && !skipPermanent && !skipSession && isCorrectPath;
-
       const shouldShowInDev = isDev && !skipSession && isCorrectPath;
 
       if (shouldShowInDev || shouldShowInProd) {
         setShowLanding(true);
       }
-
       setIsInitialCheck(false);
     }
   }, [user, loading, pathname]);
@@ -78,27 +80,43 @@ function Layout() {
       >
         <Header />
 
-        <div className="mx-auto flex w-full max-w-7xl justify-center gap-4 lg:gap-9 pt-16 px-4">
-          <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4 pl-20">
-            <SidebarContent />
+        <div className="relative mx-auto flex w-full max-w-7xl justify-center gap-4 lg:gap-9 pt-16 px-4">
+          {/* SIDEBAR LEFT */}
+          <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4 lg:pl-10 xl:pl-20">
+            <SidebarContent onCompose={() => setIsComposeOpen(true)} />
           </aside>
 
-          <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2">
-            <Outlet />
+          {/* FEED (CENTER) */}
+          <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2 relative">
+            <Outlet context={{ setActiveParent, setIsComposeOpen }} />
           </main>
 
+          {/* SIDEBAR RIGHT */}
           <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4">
             {pathname !== "/notifications" && user ? (
               <div className="hidden lg:block px-2">
                 <Notifications showHeader={false} />
               </div>
             ) : (
-              <div className="xl:hidden w-full" />
+              <div className="lg:hidden w-full" />
             )}
           </aside>
+
+          <div className="fixed inset-0 pointer-events-none z-40 lg:hidden">
+            <div className="mx-auto max-w-7xl h-full relative">
+              <div className="absolute bottom-10 right-8 md:bottom-12 md:right-10 pointer-events-auto">
+                <CreatePostFAB onClick={() => setIsComposeOpen(true)} />
+              </div>
+            </div>
+          </div>
         </div>
 
         <GlobalModal />
+        <ComposeModal
+          isOpen={isComposeOpen}
+          onClose={() => setIsComposeOpen(false)}
+          parentPost={activeParent}
+        />
         <Footer />
       </div>
     </div>

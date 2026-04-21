@@ -1,5 +1,6 @@
 import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Simplified sign out content for the global modal container.
@@ -8,11 +9,13 @@ import { useModal } from "../../context/ModalContext";
 export const SignOutModal = () => {
   const { user, signOut } = useAuth();
   const { closeModal } = useModal();
+  const navigate = useNavigate();
 
   const handleConfirm = async () => {
     try {
       await signOut();
       closeModal();
+      navigate("/");
     } catch (error) {
       console.error("failed to sign out:", error);
     }
@@ -26,7 +29,7 @@ export const SignOutModal = () => {
 
       {user && (
         /* user profile box: uses global preview and border tokens */
-        <div className="w-full bg-bg-preview rounded-xl p-4 mb-8 flex flex-col items-center border border-border-subtle">
+        <div className="w-full bg-slate-50 rounded-2xl p-[clamp(1rem,3vw,1.25rem)] mb-8 flex flex-col items-center border border-slate-200">
           <div className="font-semibold text-logo-blue text-base">
             {user.displayName || "UCLA Student"}
           </div>
@@ -38,7 +41,7 @@ export const SignOutModal = () => {
       <div className="w-full flex flex-col gap-2">
         {/* primary action: destructive sign out */}
         <button
-          className="inline-flex w-full items-center justify-center rounded-(--radius-button) bg-logo-red px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-(--disagree)"
+          className="inline-flex w-full items-center justify-center rounded-xl bg-logo-red px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-(--disagree)"
           onClick={handleConfirm}
         >
           Sign out
@@ -46,7 +49,7 @@ export const SignOutModal = () => {
 
         {/* secondary action: ghost style cancel */}
         <button
-          className="w-full rounded-(--radius-button) px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100"
+          className="w-full rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100"
           onClick={closeModal}
         >
           Stay signed in
