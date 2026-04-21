@@ -487,5 +487,31 @@ describe("Realtime Database rules", () => {
         dbSet(dbB, `posts/${postId}/userInteractions/${uidB}`, 1),
       );
     });
+
+    it("allows an anonymous author to delete their post using the index link", async () => {
+      const dbA = authedDb(uidA);
+      const anonPostId = "anon_post_to_delete";
+
+      // Setup: Create a post with NO userId, but with an index link for User A
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`posts/${anonPostId}`]: {
+            postContent: "I am anonymous",
+            timestamp: Date.now(),
+            replyCount: 0,
+          },
+          [`users/${uidA}/posts/${anonPostId}`]: true,
+        });
+      });
+
+      // Action: Attempt deletion
+      await assertSucceeds(
+        dbUpdate(dbA, "/", {
+          [`posts/${anonPostId}`]: null,
+          [`users/${uidA}/posts/${anonPostId}`]: null,
+        }),
+      );
+    });
   });
 });
