@@ -55,13 +55,9 @@ export const GlobalModal = () => {
                 layout: { duration: 0.35 },
               }}
               className={`
-                relative flex w-full max-w-120 flex-col overflow-hidden bg-white shadow-(--shadow-modal)
-                "min-h-[23vh] max-h-[83vh]"
+                relative flex w-full max-w-120 flex-col overflow-hidden bg-white shadow-xl rounded-2xl border border-slate-200
+                min-h-[23vh] max-h-[83vh]
               `}
-              style={{
-                borderRadius: "var(--radius-modal)",
-                border: "1px solid var(--color-border-subtle)",
-              }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -78,9 +74,7 @@ export const GlobalModal = () => {
               {/* Content Area */}
               {/* 'flex-1' and 'h-full' so the internal scrollbar area fills the fixed height */}
               <div
-                className={`
-                  custom-scrollbar overflow-y-auto p-4 pt-0 text-left}
-                `}
+                className="custom-scrollbar overflow-y-auto p-[clamp(1rem,3vw,1.25rem)] pt-0 text-left"
               >
                 {modal.type === "signin" && <SignInModal />}
                 {modal.type === "installPwa" && <InstallPwaModal />}

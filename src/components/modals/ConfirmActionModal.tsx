@@ -28,7 +28,7 @@ export const ConfirmActionModal = ({
       </h2>
 
       {/* preview area matching feeditem body geometry */}
-      <div className="w-full bg-slate-50/50 rounded-2xl p-5 mb-6 flex flex-col border border-slate-200 max-h-48 overflow-y-auto custom-scrollbar">
+      <div className="w-full bg-slate-50 rounded-2xl p-[clamp(1rem,3vw,1.25rem)] mb-6 flex flex-col border border-slate-200 max-h-48 overflow-y-auto custom-scrollbar">
         <div className="text-[15px] text-slate-700 leading-relaxed whitespace-pre-wrap break-words">
           {content}
         </div>

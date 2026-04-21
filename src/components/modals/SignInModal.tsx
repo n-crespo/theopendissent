@@ -56,7 +56,7 @@ export const SignInModal = () => {
           <p className="text-center text-sm text-slate-500 leading-relaxed">
             Confused?
             <button onClick={() => openModal("about")}>
-              <span className="whitespace-nowrap px-3 py-1 rounded-full border m-1 bg-logo-offwhite border-slate-200 shadow-sm">
+              <span className="whitespace-nowrap px-3 py-1 rounded-full border m-1 bg-slate-50 border-slate-200 shadow-sm">
                 Tap here!
               </span>
             </button>
@@ -66,7 +66,7 @@ export const SignInModal = () => {
 
       <div className="w-full flex flex-col gap-2">
         <button
-          className="inline-flex w-full items-center justify-center gap-3 rounded-(--radius-button) bg-[#4285f4] px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#357ae8] cursor-pointer border-none shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+          className="inline-flex w-full items-center justify-center gap-3 rounded-xl bg-[#4285f4] px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#357ae8] cursor-pointer border-none shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
           onClick={handleSignIn}
           disabled={isSigningIn} // Disable while loading
         >
@@ -84,7 +84,7 @@ export const SignInModal = () => {
         </button>
 
         <button
-          className="w-full rounded-(--radius-button) px-4 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100"
+          className="w-full rounded-xl px-4 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100"
           onClick={closeModal}
           disabled={isSigningIn}
         >
