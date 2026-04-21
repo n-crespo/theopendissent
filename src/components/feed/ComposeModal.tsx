@@ -4,9 +4,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Post } from "../../types";
 import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
+import { useOwnedPosts } from "../../context/OwnedPostsContext";
 import { createPost } from "../../lib/firebase";
 import { pinPostToTop } from "../../hooks/usePosts";
 import { getInterpolatedColor, DEFAULT_STOPS } from "../../color-utils";
+import { Badge } from "../ui/Badge";
 
 interface ComposeModalProps {
   isOpen: boolean;
@@ -21,11 +23,19 @@ export const ComposeModal = ({
 }: ComposeModalProps) => {
   const { user } = useAuth();
   const { openModal, closeModal } = useModal();
+  const ownedPosts = useOwnedPosts();
 
   const [content, setContent] = useState("");
   const [score, setScore] = useState(0);
   const [isPosting, setIsPosting] = useState(false);
-  const [isAnonymous, setIsAnonymous] = useState(true);
+  const isThreadAuthor = Boolean(parentPost?.id && ownedPosts.has(parentPost.id));
+  
+  // lock anonymity if user is thread author
+  const [isAnonymousState, setIsAnonymous] = useState(true);
+  const isAnonymous = isThreadAuthor 
+    ? (!parentPost?.authorDisplay || parentPost.authorDisplay === "Anonymous User")
+    : isAnonymousState;
+
   const authorDisplay =
     isAnonymous || !user?.displayName ? "Anonymous User" : user.displayName;
 
@@ -61,6 +71,8 @@ export const ComposeModal = ({
 
     openModal("confirmPost", {
       content: content.trim(),
+      authorDisplay,
+      isThreadAuthor,
       onConfirm: async () => {
         setIsPosting(true);
         try {
@@ -70,6 +82,8 @@ export const ComposeModal = ({
             authorDisplay,
             parentPost?.id,
             isReply ? score : undefined,
+            isThreadAuthor,
+            !isAnonymous,
           );
 
           if (newKey) pinPostToTop(newKey);
@@ -129,20 +143,28 @@ export const ComposeModal = ({
               {/* Post As Toggle */}
               <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-4">
                 <div className="flex flex-col gap-y-1">
-                  <span className="text-sm font-bold text-slate-900">
-                    Post Anonymously?
+                  <span className="text-sm font-bold text-slate-900 leading-tight flex items-center gap-x-1.5">
+                    <span>Post Anonymously?</span>
+                    {isThreadAuthor && <Badge label="Locked (Author)" variant="slate" />}
                   </span>
                   <span className="text-xs text-slate-500">
-                    {isAnonymous
+                    {isThreadAuthor
+                      ? `Posting as ${authorDisplay}.`
+                      : isAnonymous
                       ? "Your identity will be hidden from everyone."
                       : `Posting publicly as ${user?.displayName || "Anonymous User"}.`}
                   </span>
                 </div>
                 <button
-                  onClick={() => setIsAnonymous(!isAnonymous)}
+                  disabled={isThreadAuthor}
+                  onPointerDown={(e) => {
+                    // Prevent focus/click firing afterwards to avoid double-toggling
+                    e.preventDefault();
+                    if (!isThreadAuthor) setIsAnonymous(!isAnonymousState);
+                  }}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     isAnonymous ? "bg-logo-blue" : "bg-slate-300"
-                  }`}
+                  } ${isThreadAuthor ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${

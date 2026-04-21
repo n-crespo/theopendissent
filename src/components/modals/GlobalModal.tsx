@@ -82,6 +82,8 @@ export const GlobalModal = () => {
                 {modal.type === "deleteConfirm" && (
                   <ConfirmDeleteModal
                     itemName={modal.payload?.name || "this item"}
+                    authorDisplay={modal.payload?.authorDisplay}
+                    isThreadAuthor={modal.payload?.isThreadAuthor}
                     onConfirm={modal.payload?.onConfirm}
                     onClose={closeModal}
                   />
@@ -89,6 +91,8 @@ export const GlobalModal = () => {
                 {modal.type === "confirmPost" && (
                   <ConfirmPostModal
                     content={modal.payload?.content}
+                    authorDisplay={modal.payload?.authorDisplay}
+                    isThreadAuthor={modal.payload?.isThreadAuthor}
                     onConfirm={modal.payload?.onConfirm}
                     onClose={closeModal}
                   />
