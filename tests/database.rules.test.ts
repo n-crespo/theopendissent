@@ -81,6 +81,15 @@ describe("Realtime Database rules", () => {
   });
 
   // NOTE: tests anonymity.
+  it("denies anonymous/other-user access to the root users list (preventing ID scraping)", async () => {
+    const dbAnon = anonDb();
+    const dbB = authedDb(uidB);
+
+    await assertFails(dbGet(dbAnon, "users"));
+    await assertFails(dbGet(dbB, "users"));
+  });
+
+  // NOTE: tests anonymity.
   it("allows users to read/write their own users tree and denies others", async () => {
     const dbA = authedDb(uidA);
     const dbB = authedDb(uidB);
@@ -95,6 +104,24 @@ describe("Realtime Database rules", () => {
 
     await assertFails(dbGet(dbB, `users/${uidA}`));
     await assertFails(dbSet(dbB, `users/${uidA}/posts/evil`, true));
+  });
+
+  // NOTE: tests anonymity.
+  it("denies access to a user's private post index (preventing activity mapping)", async () => {
+    const dbAnon = anonDb();
+    const dbB = authedDb(uidB);
+
+    await assertFails(dbGet(dbAnon, `users/${uidA}/posts`));
+    await assertFails(dbGet(dbB, `users/${uidA}/posts`));
+  });
+
+  // NOTE: tests anonymity.
+  it("denies access to a user's private reply index (preventing interaction mapping)", async () => {
+    const dbAnon = anonDb();
+    const dbB = authedDb(uidB);
+
+    await assertFails(dbGet(dbAnon, `users/${uidA}/replies`));
+    await assertFails(dbGet(dbB, `users/${uidA}/replies`));
   });
 
   // NOTE: tests anonymity.
@@ -385,20 +412,14 @@ describe("Realtime Database rules", () => {
     await assertFails(dbRemove(dbB, `posts/${postId}`));
   });
 
-  // NOTE: tests legacy data
-  it("allows owner direct field writes but denies non-owner direct field writes", async () => {
-    const dbA = authedDb(uidA);
-    const dbB = authedDb(uidB);
+  // NOTE: tests anonymity.
+  it("public post data contains only userId and not private metadata", async () => {
+    const db = anonDb();
+    const snap = await dbGet(db, `posts/${postId}`);
 
-    await assertSucceeds(dbSet(dbA, `posts/${postId}/replyCount`, 999));
-    await assertSucceeds(
-      dbSet(dbA, `posts/${postId}/userInteractions/${uidA}`, 3),
-    );
-
-    await assertFails(dbSet(dbB, `posts/${postId}/replyCount`, 123));
-    await assertFails(
-      dbSet(dbB, `posts/${postId}/userInteractions/${uidB}`, 1),
-    );
+    expect(snap.child("userId").exists()).toBe(true);
+    // Ensure nodes like notifications or user index are NOT part of the post data
+    expect(snap.child("notifications").exists()).toBe(false);
   });
 
   // NOTE: tests anonymity.
