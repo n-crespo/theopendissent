@@ -12,6 +12,7 @@ import { Footer } from "./components/layout/Footer";
 import { GlobalModal } from "./components/modals/GlobalModal";
 import { useDeepLinkHandler } from "./hooks/useDeepLinkHandler";
 import { useAuth } from "./context/AuthContext";
+import { useModal } from "./context/ModalContext";
 import { LandingPage } from "./components/home/LandingPage";
 
 import { Home } from "./pages/Home";
@@ -35,6 +36,16 @@ function Layout() {
   const [activeParent, setActiveParent] = useState<Post | null>(null);
   const [isInitialCheck, setIsInitialCheck] = useState(true);
   const [showLanding, setShowLanding] = useState(false);
+
+  const { openModal } = useModal();
+
+  const handleOpenCompose = (val: boolean) => {
+    if (val && !user) {
+      openModal("signin");
+      return;
+    }
+    setIsComposeOpen(val);
+  };
 
   useDeepLinkHandler();
 
@@ -83,12 +94,14 @@ function Layout() {
         <div className="relative mx-auto flex w-full max-w-7xl justify-center gap-4 lg:gap-9 pt-16 px-4">
           {/* SIDEBAR LEFT */}
           <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4 lg:pl-10 xl:pl-20">
-            <SidebarContent onCompose={() => setIsComposeOpen(true)} />
+            <SidebarContent onCompose={() => handleOpenCompose(true)} />
           </aside>
 
           {/* FEED (CENTER) */}
           <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2 relative">
-            <Outlet context={{ setActiveParent, setIsComposeOpen }} />
+            <Outlet
+              context={{ setActiveParent, setIsComposeOpen: handleOpenCompose }}
+            />
           </main>
 
           {/* SIDEBAR RIGHT */}
@@ -105,7 +118,7 @@ function Layout() {
           <div className="fixed inset-0 pointer-events-none z-40 lg:hidden">
             <div className="mx-auto max-w-7xl h-full relative">
               <div className="absolute bottom-10 right-8 md:bottom-12 md:right-10 pointer-events-auto">
-                <CreatePostFAB onClick={() => setIsComposeOpen(true)} />
+                <CreatePostFAB onClick={() => handleOpenCompose(true)} />
               </div>
             </div>
           </div>
@@ -114,7 +127,7 @@ function Layout() {
         <GlobalModal />
         <ComposeModal
           isOpen={isComposeOpen}
-          onClose={() => setIsComposeOpen(false)}
+          onClose={() => handleOpenCompose(false)}
           parentPost={activeParent}
         />
         <Footer />
