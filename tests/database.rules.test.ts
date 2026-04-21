@@ -513,5 +513,31 @@ describe("Realtime Database rules", () => {
         }),
       );
     });
+
+    it("denies User B from deleting User A's anonymous post", async () => {
+      const dbB = authedDb(uidB);
+      const anonPostId = "uidA_secret_post";
+
+      // Setup: Post belongs to User A (via index), but is anonymous publicly
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`posts/${anonPostId}`]: {
+            postContent: "Anonymous but owned by A",
+            timestamp: Date.now(),
+            replyCount: 0,
+          },
+          [`users/${uidA}/posts/${anonPostId}`]: true,
+        });
+      });
+
+      // Action: User B tries to delete the post and their own fake index
+      await assertFails(
+        dbUpdate(dbB, "/", {
+          [`posts/${anonPostId}`]: null,
+          [`users/${uidB}/posts/${anonPostId}`]: null,
+        }),
+      );
+    });
   });
 });
