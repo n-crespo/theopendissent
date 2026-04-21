@@ -178,7 +178,7 @@ const getWhitelistedEmails = (): string[] => {
   return rawValue.split(",").map((email) => email.trim().toLowerCase());
 };
 
-/**
+/*
  * Validates that the signing-in user has a legitimate UCLA-affiliated email.
  * This includes students (@g.ucla.edu), faculty (@ucla.edu), and departments (@cs.ucla.edu).
  */
@@ -336,9 +336,7 @@ export const sharePost = onRequest(async (req, res) => {
     const cleanContent = escapeHtml(rawContent);
 
     // prepare author ID
-    const rawUserId = data.userId || "";
-    const authorDisplay =
-      rawUserId.length > 5 ? `${rawUserId.slice(0, 5)}...` : rawUserId;
+    const authorDisplay = data.authorDisplay || "Anonymous User";
 
     // increased limit to 200 chars for better iMessage utilization
     const maxLength = 300;
@@ -411,35 +409,35 @@ export const sharePost = onRequest(async (req, res) => {
  * handles setup tasks when a new reply is created.
  * links the reply to the user's profile and stores path metadata.
  */
-export const onReplyCreated = onValueCreated(
-  "/replies/{parentId}/{replyId}",
-  async (event) => {
-    const { parentId, replyId } = event.params;
-    const replyData = event.data.val();
-    const db = admin.database();
-
-    if (!replyData) return null;
-
-    const updates: Record<string, string | boolean | null> = {};
-
-    // link to user's profile
-    if (replyData.userId) {
-      updates[`users/${replyData.userId}/replies/${parentId}/${replyId}`] =
-        true;
-    }
-
-    try {
-      await db.ref().update(updates);
-      console.log(
-        `successfully linked reply ${replyId} to user ${replyData.userId}`,
-      );
-    } catch (error) {
-      console.error(`failed to link reply ${replyId}:`, error);
-    }
-
-    return null;
-  },
-);
+// export const onReplyCreated = onValueCreated(
+//   "/replies/{parentId}/{replyId}",
+//   async (event) => {
+//     const { parentId, replyId } = event.params;
+//     const replyData = event.data.val();
+//     const db = admin.database();
+//
+//     if (!replyData) return null;
+//
+//     const updates: Record<string, string | boolean | null> = {};
+//
+//     // link to user's profile
+//     if (replyData.userId) {
+//       updates[`users/${replyData.userId}/replies/${parentId}/${replyId}`] =
+//         true;
+//     }
+//
+//     try {
+//       await db.ref().update(updates);
+//       console.log(
+//         `successfully linked reply ${replyId} to user ${replyData.userId}`,
+//       );
+//     } catch (error) {
+//       console.error(`failed to link reply ${replyId}:`, error);
+//     }
+//
+//     return null;
+//   },
+// );
 
 /**
  * Automatically creates or updates a notification for the post owner when a new reply is created.

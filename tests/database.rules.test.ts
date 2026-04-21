@@ -276,9 +276,10 @@ describe("Realtime Database rules", () => {
     });
 
     // NOTE: tests legacy data
-    it("denies non-owner reply create", async () => {
+    it("allows any authenticated user to reply if they bundle a score and index", async () => {
       const dbB = authedDb(uidB);
-      await assertFails(
+
+      await assertSucceeds(
         dbUpdate(dbB, "/", {
           [`replies/${postId}/${replyId}`]: {
             id: replyId,
@@ -290,6 +291,40 @@ describe("Realtime Database rules", () => {
             interactionScore: 2,
           },
           [`users/${uidB}/replies/${postId}/${replyId}`]: true,
+        }),
+      );
+    });
+
+    it("denies reply if interactionScore is missing (Contract Violation)", async () => {
+      const dbB = authedDb(uidB);
+      await assertFails(
+        dbUpdate(dbB, "/", {
+          [`replies/${postId}/${replyId}`]: {
+            id: replyId,
+            userId: uidB,
+            postContent: "no score here",
+            timestamp: Date.now(),
+            replyCount: 0,
+            parentPostId: postId,
+            // interactionScore is missing!
+          },
+          [`users/${uidB}/replies/${postId}/${replyId}`]: true,
+        }),
+      );
+    });
+
+    it("denies reply if user fails to index it in their profile (Security Violation)", async () => {
+      const dbB = authedDb(uidB);
+      await assertFails(
+        // Trying to write only to the public tree without the private index
+        dbSet(dbB, `replies/${postId}/${replyId}`, {
+          id: replyId,
+          userId: uidB,
+          postContent: "trying to skip the index",
+          timestamp: Date.now(),
+          replyCount: 0,
+          parentPostId: postId,
+          interactionScore: 1,
         }),
       );
     });
