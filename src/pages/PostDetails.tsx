@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { subscribeToPost, subscribeToReplies } from "../lib/firebase";
 import { FeedItem } from "../components/feed/FeedItem";
 import { useAuth } from "../context/AuthContext";
+import { useOwnedPosts } from "../context/OwnedPostsContext";
 import { Post } from "../types";
 import { FeedItemSkeleton } from "../components/ui/FeedItemSkeleton";
 import { ComposeTrigger } from "../components/feed/ComposeTrigger";
@@ -31,6 +32,7 @@ export const PostDetails = () => {
 
   const { user, loading: authLoading } = useAuth();
   const uid = user?.uid;
+  const ownedPosts = useOwnedPosts();
 
   // set the active parent for the FAB when the post loads
   useEffect(() => {
@@ -84,10 +86,16 @@ export const PostDetails = () => {
     else navigate("/", { replace: true });
   };
 
-  const postAuthor =
-    uid === livePost?.userId
-      ? "You"
-      : `@${livePost?.userId.substring(0, 10)}...`;
+  const isOwner = (livePost?.userId && uid === livePost.userId) || (livePost && ownedPosts.has(livePost.id));
+  
+  let postAuthor = "Anonymous User";
+  if (isOwner) {
+    if (livePost?.authorDisplay === "Anonymous User") postAuthor = "You, anonymously";
+    else if (livePost?.authorDisplay) postAuthor = `You, as ${livePost.authorDisplay.replace("🆔 ", "").replace("👤 ", "")}`;
+    else postAuthor = "You";
+  } else {
+    postAuthor = livePost?.authorDisplay || (livePost?.userId ? `@${livePost.userId.substring(0, 10)}...` : "Anonymous User");
+  }
 
   return (
     <div className="flex flex-col gap-y-6">

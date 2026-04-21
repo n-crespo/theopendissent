@@ -7,6 +7,7 @@ import { useShare } from "../../hooks/useShare";
 import { useReport } from "../../hooks/useReport";
 import { useNavigate } from "react-router-dom";
 import { getInterpolatedColor, DEFAULT_STOPS } from "../../color-utils";
+import { useOwnedPosts } from "../../context/OwnedPostsContext";
 
 interface FeedItemProps {
   item: Post;
@@ -22,7 +23,7 @@ export const FeedItem = memo(
     highlighted = false,
     disableClick = false,
   }: FeedItemProps) => {
-    if (!item || !item.userId) return null;
+    if (!item || (!item.userId && !item.authorDisplay)) return null;
 
     const navigate = useNavigate();
     const { sharePost } = useShare();
@@ -40,7 +41,9 @@ export const FeedItem = memo(
       triggerDelete,
     } = usePostActions(item);
 
-    const isOwner = uid === item.userId;
+    const ownedPosts = useOwnedPosts();
+    const isOwner = (item.userId && uid === item.userId) || ownedPosts.has(item.id);
+    
     const charsLeft = 600 - editContent.length;
     const isNearLimit = charsLeft < 50;
 
@@ -83,7 +86,14 @@ export const FeedItem = memo(
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold text-slate-900 leading-tight">
-                  {isOwner ? "You" : item.userId.substring(0, 10) + "..."}
+                  {(() => {
+                    if (isOwner) {
+                      if (item.authorDisplay === "Anonymous User") return "You, anonymously";
+                      if (item.authorDisplay) return `You, as ${item.authorDisplay.replace("🆔 ", "").replace("👤 ", "")}`;
+                      return "You";
+                    }
+                    return item.authorDisplay || (item.userId ? item.userId.substring(0, 10) + "..." : "Anonymous User");
+                  })()}
                 </span>
                 <div className="flex items-center flex-wrap gap-x-1 text-[0.625rem] text-slate-400 font-medium tracking-tight">
                   <span>{formattedTime}</span>

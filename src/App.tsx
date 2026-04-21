@@ -21,6 +21,7 @@ import { Privacy } from "./pages/Privacy";
 import { Terms } from "./pages/Terms";
 import { PostDetails } from "./pages/PostDetails";
 import { Notifications } from "./pages/Notifications";
+import { OwnedPostsProvider } from "./context/OwnedPostsContext";
 import { FeedSortProvider } from "./context/FeedSortContext";
 import { SidebarContent } from "./components/layout/SidebarContent";
 import { Post } from "./types/index";
@@ -138,21 +139,23 @@ function Layout() {
 
 export default function App() {
   return (
-    <FeedSortProvider>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="share" element={<Home />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="privacy" element={<Privacy />} />
-          <Route path="terms" element={<Terms />} />
-          <Route
-            path="notifications"
-            element={<Notifications showHeader={true} />}
-          />
-          <Route path="post/:postId" element={<PostDetails />} />
-        </Route>
-      </Routes>
-    </FeedSortProvider>
+    <OwnedPostsProvider>
+      <FeedSortProvider>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="share" element={<Home />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="privacy" element={<Privacy />} />
+            <Route path="terms" element={<Terms />} />
+            <Route
+              path="notifications"
+              element={<Notifications showHeader={true} />}
+            />
+            <Route path="post/:postId" element={<PostDetails />} />
+          </Route>
+        </Routes>
+      </FeedSortProvider>
+    </OwnedPostsProvider>
   );
 }
