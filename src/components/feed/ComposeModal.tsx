@@ -166,9 +166,7 @@ export const ComposeModal = ({
                 <textarea
                   maxLength={limit}
                   placeholder={
-                    isReply
-                      ? "What's your counter-point?"
-                      : "Speak your mind..."
+                    isReply ? "What do you think?" : "Speak your mind..."
                   }
                   value={content}
                   onChange={handleTextChange}
