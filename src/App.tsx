@@ -26,7 +26,6 @@ import { Post } from "./types/index";
 import { CreatePostFAB } from "./components/feed/CreatePostFAB";
 import { ComposeModal } from "./components/feed/ComposeModal";
 
-// removed 'export default' here
 function Layout() {
   const { user, loading } = useAuth();
   const { pathname } = useLocation();
@@ -103,8 +102,6 @@ function Layout() {
             )}
           </aside>
 
-          {/* --- THE FAB FIX --- */}
-          {/* We place it inside the 7xl div, but use a fixed wrapper */}
           <div className="fixed inset-0 pointer-events-none z-40 lg:hidden">
             <div className="mx-auto max-w-7xl h-full relative">
               <div className="absolute bottom-10 right-8 md:bottom-12 md:right-10 pointer-events-auto">
