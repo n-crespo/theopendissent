@@ -2,7 +2,8 @@ export type PostInteractions = Record<string, number>;
 
 export interface Post {
   id: string;
-  userId: string;
+  userId?: string; // Optional for newer anonymous posts
+  authorDisplay?: string; // e.g., "Anonymous User", "User_...", or "Display Name"
   postContent: string;
   timestamp: number | object;
   editedAt?: number;
@@ -10,6 +11,7 @@ export interface Post {
   userInteractions: PostInteractions;
   parentPostId?: string;
   interactionScore?: number; // -3 to 3
+  isThreadAuthor?: boolean;
 }
 
 export interface UserProfile {

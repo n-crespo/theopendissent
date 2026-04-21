@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { subscribeToPost, subscribeToReplies } from "../lib/firebase";
 import { FeedItem } from "../components/feed/FeedItem";
 import { useAuth } from "../context/AuthContext";
+import { useOwnedPosts } from "../context/OwnedPostsContext";
 import { Post } from "../types";
 import { FeedItemSkeleton } from "../components/ui/FeedItemSkeleton";
 import { ComposeTrigger } from "../components/feed/ComposeTrigger";
@@ -31,6 +32,7 @@ export const PostDetails = () => {
 
   const { user, loading: authLoading } = useAuth();
   const uid = user?.uid;
+  const ownedPosts = useOwnedPosts();
 
   // set the active parent for the FAB when the post loads
   useEffect(() => {
@@ -84,10 +86,11 @@ export const PostDetails = () => {
     else navigate("/", { replace: true });
   };
 
-  const postAuthor =
-    uid === livePost?.userId
-      ? "You"
-      : `@${livePost?.userId.substring(0, 10)}...`;
+  const isOwner = (livePost?.userId && uid === livePost.userId) || (livePost && ownedPosts.has(livePost.id));
+  
+  const postAuthor = livePost?.authorDisplay && livePost.authorDisplay !== "Anonymous User"
+    ? livePost.authorDisplay
+    : "Anonymous User";
 
   return (
     <div className="flex flex-col gap-y-6">
@@ -156,6 +159,7 @@ export const PostDetails = () => {
                     item={reply}
                     isReply={true}
                     highlighted={highlightReplyId === reply.id}
+                    threadAuthorUserId={livePost?.userId}
                   />
                 </motion.div>
               ))

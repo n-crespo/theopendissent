@@ -7,12 +7,15 @@ import { useShare } from "../../hooks/useShare";
 import { useReport } from "../../hooks/useReport";
 import { useNavigate } from "react-router-dom";
 import { getInterpolatedColor, DEFAULT_STOPS } from "../../color-utils";
+import { useOwnedPosts } from "../../context/OwnedPostsContext";
+import { Badge } from "../ui/Badge";
 
 interface FeedItemProps {
   item: Post;
   isReply?: boolean;
   highlighted?: boolean;
   disableClick?: boolean;
+  threadAuthorUserId?: string;
 }
 
 export const FeedItem = memo(
@@ -21,8 +24,9 @@ export const FeedItem = memo(
     isReply = false,
     highlighted = false,
     disableClick = false,
+    threadAuthorUserId,
   }: FeedItemProps) => {
-    if (!item || !item.userId) return null;
+    if (!item || (!item.userId && !item.authorDisplay)) return null;
 
     const navigate = useNavigate();
     const { sharePost } = useShare();
@@ -40,7 +44,18 @@ export const FeedItem = memo(
       triggerDelete,
     } = usePostActions(item);
 
-    const isOwner = uid === item.userId;
+    const ownedPosts = useOwnedPosts();
+    const isOwner =
+      (item.userId && uid === item.userId) || ownedPosts.has(item.id);
+    const isThreadAuthor =
+      item.isThreadAuthor ??
+      Boolean(
+        isReply &&
+          item.userId &&
+          threadAuthorUserId &&
+          item.userId === threadAuthorUserId,
+      );
+
     const charsLeft = 600 - editContent.length;
     const isNearLimit = charsLeft < 50;
 
@@ -82,8 +97,14 @@ export const FeedItem = memo(
                 <i className="bi bi-person-fill text-lg"></i>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-semibold text-slate-900 leading-tight">
-                  {isOwner ? "You" : item.userId.substring(0, 10) + "..."}
+                <span className="text-sm font-semibold text-slate-900 leading-tight flex items-center gap-x-1.5">
+                  {isOwner && <Badge label="You" variant="blue" />}
+                  {isThreadAuthor && <Badge label="Author" variant="green" />}
+                  <span>
+                    {item.authorDisplay && item.authorDisplay !== "Anonymous User"
+                      ? item.authorDisplay
+                      : "Anonymous User"}
+                  </span>
                 </span>
                 <div className="flex items-center flex-wrap gap-x-1 text-[0.625rem] text-slate-400 font-medium tracking-tight">
                   <span>{formattedTime}</span>
