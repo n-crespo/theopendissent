@@ -29,13 +29,11 @@ export const SidebarContent = ({
       <div className="flex-1 overflow-y-auto custom-scrollbar font-bold text-xl px-4 py-2 flex flex-col items-center">
         {/* wrapper to control the width of the centered block */}
         <div className="w-full max-w-70">
-            <DrawerItem
-              icon="bi-house-door"
-              label="Home"
-              onClick={() => handleNav("/")}
-            />
-
-
+          <DrawerItem
+            icon="bi-house-door"
+            label="Home"
+            onClick={() => handleNav("/")}
+          />
 
           {user && (
             <DrawerItem
