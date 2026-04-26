@@ -348,88 +348,65 @@ export const getDeepLinkData = async (
 };
 
 /**
- * Fetches lists of content based on user profile filters.
+ * fetches user activity and performs lazy cleanup on dangling receipts in users tree.
  */
 export const getUserActivity = async (
   userId: string,
   filter: "posts" | "replies",
 ): Promise<Post[]> => {
   try {
-    let indexRef;
-    if (filter === "posts") {
-      indexRef = ref(db, `users/${userId}/posts`);
-    } else if (filter === "replies") {
-      indexRef = ref(db, `users/${userId}/replies`);
-    } else {
-      // no other options
-      return [];
-    }
-
-    const snapshot = await get(indexRef);
+    const snapshot = await get(ref(db, `users/${userId}/${filter}`));
     if (!snapshot.exists()) return [];
 
     const data = snapshot.val();
-    const promises: Promise<Post | null>[] = [];
+    const deadReceipts: Record<string, null> = {};
+    const tasks: Promise<Post | null>[] = [];
 
+    // normalize the index into a list of fetch tasks
     if (filter === "posts") {
-      Object.keys(data).forEach((postId) => {
-        promises.push(getPostById(postId));
-      });
-    } else if (filter === "replies") {
-      // Structure: { parentId: { replyId: true } }
-      Object.entries(data).forEach(([parentId, repliesObj]: [string, any]) => {
-        Object.keys(repliesObj).forEach((replyId) => {
-          const fetchWithParent = async () => {
-            const reply = await getPostById(replyId, parentId);
-            if (!reply) return null;
-
-            // Fetch parent for context
-            const parent = await getPostById(parentId);
-
-            // Return reply with attached parent
-            return { ...reply, parentPost: parent || undefined };
-          };
-          promises.push(fetchWithParent());
-        });
+      Object.keys(data).forEach((id) => {
+        tasks.push(
+          (async () => {
+            const post = await getPostById(id);
+            if (!post) deadReceipts[`users/${userId}/posts/${id}`] = null;
+            return post;
+          })(),
+        );
       });
     } else {
-      // Structure: { itemId: { score: 5, parentId: "..." } }
-      Object.entries(data).forEach(([itemId, val]: [string, any]) => {
-        // Robust extraction of parentId.
-        // If val is just a number (legacy), parentId is undefined (assumes top-level).
-        // If val.parentId is "top", parentId is undefined (top-level).
-        // Otherwise, it's a specific parent ID string.
-        const parentId =
-          typeof val === "object" && val.parentId && val.parentId !== "top"
-            ? val.parentId
-            : undefined;
-
-        const fetchContent = async () => {
-          // Efficient lookup: We know exactly where the content lives (posts/ or replies/ParentID)
-          const item = await getPostById(itemId, parentId);
-
-          if (!item) return null;
-
-          // If we determined it's a reply (parentId exists), fetch the parent for context
-          if (parentId) {
-            const parent = await getPostById(parentId);
-            return { ...item, parentPost: parent || undefined };
-          }
-
-          return item;
-        };
-        promises.push(fetchContent());
+      Object.entries(data).forEach(([parentId, replies]) => {
+        Object.keys(replies as object).forEach((id) => {
+          tasks.push(
+            (async () => {
+              const reply = await getPostById(id, parentId);
+              if (!reply) {
+                deadReceipts[`users/${userId}/replies/${parentId}/${id}`] =
+                  null;
+                return null;
+              }
+              // fetch parent for context
+              const parent = await getPostById(parentId);
+              return { ...reply, parentPost: parent ?? undefined };
+            })(),
+          );
+        });
       });
     }
 
-    const results = await Promise.all(promises);
+    const results = await Promise.all(tasks);
 
-    // Filter nulls and sort by timestamp descending
+    // perform atomic cleanup of identified orphans
+    if (Object.keys(deadReceipts).length > 0) {
+      update(ref(db), deadReceipts).catch((e) =>
+        console.error("lazy cleanup failed:", e),
+      );
+    }
+
     return results
-      .filter((post): post is Post => post !== null)
-      .sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
+      .filter((p): p is Post => p !== null)
+      .sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
   } catch (error) {
-    console.error(`Error fetching user activity for ${filter}:`, error);
+    console.error(`error fetching ${filter}:`, error);
     return [];
   }
 };
