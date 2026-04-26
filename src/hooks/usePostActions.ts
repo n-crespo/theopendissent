@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Post } from "../types";
 import { deletePost, updatePost } from "../lib/firebase";
-import { interactionStore } from "../lib/interactionStore";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
 
@@ -13,50 +12,12 @@ export const usePostActions = (post: Post) => {
   const { openModal } = useModal();
   const uid = user?.uid;
 
-  // Initialize from Store (if available) or Server Data
-  const [localScores, setLocalScores] = useState<Record<string, number>>(() => {
-    const cached = interactionStore.get(post.id);
-    // if cache has keys, use it, otherwise fall back to post data
-    return Object.keys(cached).length > 0
-      ? cached
-      : post.userInteractions || {};
-  });
-
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.postContent);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    if (post.userInteractions) {
-      // feed server data into the store. don't update local state directly here,
-      // the store will handle the optimistic lock and notify() if an update is needed.
-      interactionStore.syncFromServer(post.id, post.userInteractions, uid);
-    }
-  }, [post.id, post.userInteractions, uid]);
-
-  // sync store changes to local state
-  useEffect(() => {
-    return interactionStore.subscribe(post.id, (newScores) => {
-      setLocalScores(newScores);
-    });
-  }, [post.id]);
-
-  // fallback to raw post data if local state is lagging
-  const currentScore = uid
-    ? (localScores[uid] ?? post.userInteractions?.[uid])
-    : undefined;
-
   const localMetrics = {
     replyCount: post.replyCount || 0,
-  };
-
-  /* handles both score updates and removals (undefined) */
-  const handleScoreChange = (newScore: number | undefined) => {
-    if (!uid) {
-      openModal("signin");
-      return;
-    }
-    interactionStore.setScore(post.id, uid, newScore, post.parentPostId);
   };
 
   const handleCancel = () => {
@@ -111,9 +72,6 @@ export const usePostActions = (post: Post) => {
   return {
     uid,
     localMetrics,
-    currentScore,
-    handleScoreChange,
-
     isEditing,
     setIsEditing,
     editContent,

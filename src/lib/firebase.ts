@@ -69,36 +69,6 @@ const getSortableTimestamp = (timestamp: number | object | undefined) => {
 };
 
 /**
- * atomic update to add or remove an interaction score in the user's tree.
- * cloud function handles syncing this to the public post/reply.
- */
-export const setInteraction = async (
-  postId: string,
-  uid: string,
-  score: number | null | undefined,
-  parentPostId?: string,
-) => {
-  const sanitizedScore = // sanitize the score to exactly one decimal place if it's a number
-    typeof score === "number" ? Math.round(score * 10) / 10 : score;
-
-  // if removing, value is null.
-  // if adding/updating, value is the object { score, parentId }
-  const value =
-    sanitizedScore === null || sanitizedScore === undefined
-      ? null
-      : {
-          score: sanitizedScore,
-          parentId: parentPostId || "top",
-        };
-
-  const updates: Record<string, any> = {
-    [`users/${uid}/postInteractions/${postId}`]: value,
-  };
-
-  return update(ref(db), updates);
-};
-
-/**
  * creates a new post or a reply.
  */
 export const createPost = async (
