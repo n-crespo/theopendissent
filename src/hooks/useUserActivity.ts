@@ -5,7 +5,7 @@ import { Post } from "../types";
 // module-level cache survives route changes but resets on page reload
 const activityCache: Record<string, Post[]> = {};
 
-type ActivityFilter = "posts" | "replies" | "interacted";
+type ActivityFilter = "posts" | "replies";
 
 export const useUserActivity = (userId?: string, filter?: ActivityFilter) => {
   const cacheKey = userId && filter ? `${userId}-${filter}` : null;

@@ -69,36 +69,6 @@ const getSortableTimestamp = (timestamp: number | object | undefined) => {
 };
 
 /**
- * atomic update to add or remove an interaction score in the user's tree.
- * cloud function handles syncing this to the public post/reply.
- */
-export const setInteraction = async (
-  postId: string,
-  uid: string,
-  score: number | null | undefined,
-  parentPostId?: string,
-) => {
-  const sanitizedScore = // sanitize the score to exactly one decimal place if it's a number
-    typeof score === "number" ? Math.round(score * 10) / 10 : score;
-
-  // if removing, value is null.
-  // if adding/updating, value is the object { score, parentId }
-  const value =
-    sanitizedScore === null || sanitizedScore === undefined
-      ? null
-      : {
-          score: sanitizedScore,
-          parentId: parentPostId || "top",
-        };
-
-  const updates: Record<string, any> = {
-    [`users/${uid}/postInteractions/${postId}`]: value,
-  };
-
-  return update(ref(db), updates);
-};
-
-/**
  * creates a new post or a reply.
  */
 export const createPost = async (
@@ -219,7 +189,6 @@ export const getPostById = async (
         ...data,
         // normalize fields to match the post type structure
         replyCount: data.replyCount || 0,
-        userInteractions: data.userInteractions || {},
       };
     }
 
@@ -251,7 +220,6 @@ export const subscribeToPost = (
       callback({
         id: postId,
         ...data,
-        userInteractions: data.userInteractions || {},
       });
     } else {
       callback(null);
@@ -281,7 +249,6 @@ export const subscribeToReplies = (
         id,
         ...val,
         replyCount: val.replyCount || 0,
-        userInteractions: val.userInteractions || {},
       }))
       .sort(
         (a, b) =>
@@ -322,7 +289,6 @@ export const subscribeToFeed = (
         timestamp: postData.timestamp || 0,
         editedAt: postData.editedAt,
         replyCount: postData.replyCount || 0,
-        userInteractions: postData.userInteractions || {},
         parentPostId: postData.parentPostId,
       }))
       .filter((post) => post.postContent && !post.parentPostId)
@@ -386,7 +352,7 @@ export const getDeepLinkData = async (
  */
 export const getUserActivity = async (
   userId: string,
-  filter: "posts" | "replies" | "interacted",
+  filter: "posts" | "replies",
 ): Promise<Post[]> => {
   try {
     let indexRef;
@@ -395,7 +361,8 @@ export const getUserActivity = async (
     } else if (filter === "replies") {
       indexRef = ref(db, `users/${userId}/replies`);
     } else {
-      indexRef = ref(db, `users/${userId}/postInteractions`);
+      // no other options
+      return [];
     }
 
     const snapshot = await get(indexRef);
@@ -502,20 +469,10 @@ export const subscribeToUserCounts = (
     emit();
   });
 
-  // Interactions Listener
-  const interactionsUnsub = onValue(
-    ref(db, `${userRef}/postInteractions`),
-    (snapshot) => {
-      currentCounts.interacted = snapshot.size; // Just count total number of keys in the map
-      emit();
-    },
-  );
-
   // Return a master unsubscribe function
   return () => {
     postsUnsub();
     repliesUnsub();
-    interactionsUnsub();
   };
 };
 

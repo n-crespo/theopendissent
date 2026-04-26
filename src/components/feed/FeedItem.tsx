@@ -51,9 +51,9 @@ export const FeedItem = memo(
       item.isThreadAuthor ??
       Boolean(
         isReply &&
-          item.userId &&
-          threadAuthorUserId &&
-          item.userId === threadAuthorUserId,
+        item.userId &&
+        threadAuthorUserId &&
+        item.userId === threadAuthorUserId,
       );
 
     const charsLeft = 600 - editContent.length;
@@ -101,7 +101,8 @@ export const FeedItem = memo(
                   {isOwner && <Badge label="You" variant="blue" />}
                   {isThreadAuthor && <Badge label="Author" variant="green" />}
                   <span>
-                    {item.authorDisplay && item.authorDisplay !== "Anonymous User"
+                    {item.authorDisplay &&
+                    item.authorDisplay !== "Anonymous User"
                       ? item.authorDisplay
                       : "Anonymous User"}
                   </span>
@@ -239,7 +240,5 @@ export const FeedItem = memo(
     p.item.replyCount === n.item.replyCount &&
     p.item.editedAt === n.item.editedAt &&
     p.item.interactionScore === n.item.interactionScore &&
-    p.highlighted === n.highlighted &&
-    JSON.stringify(p.item.userInteractions) ===
-      JSON.stringify(n.item.userInteractions),
+    p.highlighted === n.highlighted,
 );

@@ -67,7 +67,6 @@ describe("Realtime Database rules", () => {
           timestamp: Date.now(),
           replyCount: 0,
           userId: uidA,
-          userInteractions: {},
         },
         [`users/${uidA}/posts/${postId}`]: true,
       });
@@ -693,7 +692,6 @@ describe("Realtime Database rules", () => {
             timestamp: Date.now(),
             replyCount: 0,
             userId: uidA,
-            userInteractions: {},
           },
           [`users/${uidA}/posts/${postId}`]: true,
         });

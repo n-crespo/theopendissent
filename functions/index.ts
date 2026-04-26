@@ -85,55 +85,6 @@ const deleteRepliesInBatches = async (postId: string) => {
 };
 
 /**
- * Syncs user interaction SCALAR SCORE from the user's private tree to the public content.
- * Trigger: /users/{userId}/postInteractions/{postId}
- */
-export const syncInteractionToPost = onValueWritten(
-  "/users/{userId}/postInteractions/{postId}",
-  async (event) => {
-    const { userId, postId } = event.params;
-
-    const rawVal = event.data.after.val();
-    const exists = event.data.after.exists();
-
-    // Extract Score
-    // Handle both new object format and potential legacy numbers during transition
-    const newScore = exists
-      ? typeof rawVal === "object"
-        ? rawVal.score
-        : rawVal
-      : null;
-
-    // 2. Extract Parent ID (for self-repairing path lookup)
-    const storedParentId =
-      exists && typeof rawVal === "object" ? rawVal.parentId : undefined;
-
-    // If storedParentId is "top", we treat it as undefined for getContentRef logic
-    const parentId = storedParentId === "top" ? undefined : storedParentId;
-
-    try {
-      // Use the stored parentId to find the content efficiently
-      const contentRef = await getContentRef(postId, parentId);
-
-      if (!contentRef) {
-        // If content doesn't exist, we clean up the user's orphan record
-        if (exists) await event.data.after.ref.set(null);
-        return null;
-      }
-
-      // Write the score directly to the content's userInteractions map
-      // Path: posts/{postId}/userInteractions/{userId} = 4.5
-      await contentRef
-        .child(`userInteractions/${userId}`)
-        .set(exists ? newScore : null);
-    } catch (error) {
-      console.error(`sync error for ${userId} on ${postId}:`, error);
-    }
-    return null;
-  },
-);
-
-/**
  * updates the replyCount on the parent (Post or Reply) when replies are created/deleted.
  */
 export const updateReplyCount = onValueWritten(
@@ -228,39 +179,6 @@ export const beforesignedin = beforeUserSignedIn((event) => {
 });
 
 /**
- * Clean up user interaction references when a post or reply is deleted.
- * @param {string} postId - the ID of the post or reply being cleaned up.
- * @param {Record<string, number>} interactions - the map of { userId: score }.
- */
-const cleanupUserInteractions = async (
-  postId: string,
-  interactions: Record<string, number> | undefined,
-): Promise<void> => {
-  if (!interactions) return;
-
-  const updates: Record<string, null> = {};
-
-  // interactions is { "user_abc": 5, "user_xyz": -2 }
-  Object.keys(interactions).forEach((uid) => {
-    // Remove the record from the user's profile
-    updates[`users/${uid}/postInteractions/${postId}`] = null;
-  });
-
-  // chunk updates to prevent payload from being too large for single Firebase write
-  const keys = Object.keys(updates);
-  if (keys.length === 0) return;
-
-  // Split into batches of 500
-  for (let i = 0; i < keys.length; i += 500) {
-    const batch: Record<string, null> = {};
-    keys.slice(i, i + 500).forEach((key) => {
-      batch[key] = null;
-    });
-    await admin.database().ref().update(batch);
-  }
-};
-
-/**
  * Cleanup for top-level posts.
  * Only triggers when a post is removed.
  */
@@ -273,8 +191,6 @@ export const onPostDeletedCleanup = onValueDeleted(
 
     if (!postData) return;
 
-    // immediate cleanup of the post's own interactions
-    await cleanupUserInteractions(postId, postData.userInteractions);
     const replyCount = postData.replyCount || 0;
 
     if (replyCount < 100) {
@@ -296,15 +212,15 @@ export const onReplyDeletedCleanup = onValueDeleted(
   async (event) => {
     const { parentId, replyId } = event.params;
     const replyData = event.data.val();
-    const db = admin.database();
-
     if (!replyData) return;
 
-    await cleanupUserInteractions(replyId, replyData.userInteractions);
-
-    // cleanup from flat map
+    const db = admin.database();
     const updates: Record<string, null> = {};
 
+    // if the post was made non-anonymously, clean up the user receipt.
+    // otherwise, it'll be cleaned up later.
+    // TODO: ensure dangling pointer is self-deleted on read (to avoid
+    // performance overhead of doing it automatically)
     if (replyData?.userId) {
       updates[`users/${replyData.userId}/replies/${parentId}/${replyId}`] =
         null;
