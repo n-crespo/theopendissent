@@ -31,13 +31,15 @@
         },
         "posts": {
           "$post_id": {
-            ".validate": "newData.val() === true"
+            ".validate": "newData.val() === true",
+            ".write": "auth != null && auth.uid === $uid && ( (!data.exists() ? newData.parent().parent().parent().parent().child('posts/' + $post_id).exists() : true) && (!newData.exists() ? !newData.parent().parent().parent().parent().child('posts/' + $post_id).exists() : true) )"
           }
         },
         "replies": {
           "$post_id": {
             "$reply_id": {
-              ".validate": "newData.val() === true"
+              ".validate": "newData.val() === true",
+              ".write": "auth != null && auth.uid === $uid && ( (!data.exists() ? newData.parent().parent().parent().parent().parent().child('replies/' + $post_id + '/' + $reply_id).exists() : true) && (!newData.exists() ? !newData.parent().parent().parent().parent().parent().child('replies/' + $post_id + '/' + $reply_id).exists() : true) )"
             }
           }
         },
