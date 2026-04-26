@@ -43,6 +43,8 @@ production is handled via GitHub Actions.
 
 ## Database Layout
 
+<!-- TODO: update mermaid/database layout documentation -->
+
 ```mermaid
 erDiagram
   USERS ||--o{ POSTS : "indexes"
@@ -53,7 +55,6 @@ erDiagram
     String userId PK
     Map posts "{postId}: true"
     Map replies "{postId}: {replyId}: true"
-    Object interactions "{agreed|dissented}: {postID|postID:replyID}: true"
   }
 
   POSTS {
@@ -62,8 +63,6 @@ erDiagram
     String timestamp
     String editedAt
     String postContent
-    Object metrics "{agreed|dissented|replied}: Number"
-    Object userInteractions "{agreed|dissented}: {userId}: true"
   }
 
   REPLIES {
@@ -73,7 +72,6 @@ erDiagram
     String timestamp
     String editedAt
     String postContent
-    String userInteractionType "agreed|dissented"
   }
 
 ```
@@ -102,15 +100,6 @@ erDiagram
     - editedAt: Date (String)
     - userId: String
     - postContent: String
-    - metrics
-      - agreedCount: Number
-      - dissentedCount: Number
-      - repliedCount: Number
-    - userInteractions
-      - agreed
-        - {userId}: true
-      - dissented
-        - {userId}: true
 - replies
   - {parentPostId}
     - {replyId}
@@ -118,7 +107,6 @@ erDiagram
       - editedAt: String
       - userId: String
       - parentPostId: String
-      - userInteractionType: "agreed" | "dissented"
       - postContent: String
 ```
 
@@ -164,15 +152,6 @@ Example JSON:
         "dissentedCount": 2,
         "repliedCount": 5
       },
-      "userInteractions": {
-        "agreed": {
-          "user_456": true,
-          "user_789": true
-        },
-        "dissented": {
-          "user_000": true
-        }
-      }
     }
   },
   "replies": {
@@ -182,7 +161,6 @@ Example JSON:
         "editedAt": "2025-12-28T20:30:00Z",
         "userId": "user_456",
         "parentPostId": "post_999",
-        "userInteractionType": "agreed",
         "postContent": "i completely agree with this point"
       }
     }
