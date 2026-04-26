@@ -3,7 +3,6 @@
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid",
         "notifications": {
           ".indexOn": [
             "updatedAt"
@@ -31,26 +30,20 @@
         },
         "posts": {
           "$post_id": {
-            ".validate": "newData.val() === true"
+            ".validate": "newData.val() === true",
+            ".write": "auth != null && auth.uid === $uid && ( (!data.exists() ? newData.parent().parent().parent().parent().child('posts/' + $post_id).exists() : true) && (!newData.exists() ? !newData.parent().parent().parent().parent().child('posts/' + $post_id).exists() : true) )"
           }
         },
         "replies": {
           "$post_id": {
             "$reply_id": {
-              ".validate": "newData.val() === true"
+              ".validate": "newData.val() === true",
+              ".write": "auth != null && auth.uid === $uid && ( (!data.exists() ? newData.parent().parent().parent().parent().parent().child('replies/' + $post_id + '/' + $reply_id).exists() : true) && (!newData.exists() ? !newData.parent().parent().parent().parent().parent().child('replies/' + $post_id + '/' + $reply_id).exists() : true) )"
             }
           }
         },
         "postInteractions": {
-          "$post_id": {
-            ".validate": "newData.hasChildren(['score', 'parentId'])",
-            "score": {
-              ".validate": "newData.isNumber() && newData.val() >= -3 && newData.val() <= 3"
-            },
-            "parentId": {
-              ".validate": "newData.isString()"
-            }
-          }
+          ".write": "false"
         }
       }
     },
@@ -60,11 +53,11 @@
       ],
       ".read": true,
       "$post_id": {
-        ".write": "auth != null && ( (data.exists() && (data.child('userId').val() === auth.uid || root.child('users/' + auth.uid + '/posts/' + $post_id).exists())) || (!data.exists() && newData.parent().parent().child('users/' + auth.uid + '/posts/' + $post_id).exists()) )",
+        ".write": "auth != null && ( (data.exists() && (data.child('userId').val() === auth.uid || root.child('users/' + auth.uid + '/posts/' + $post_id).exists()) && (!newData.exists() ? !newData.parent().parent().child('users/' + auth.uid + '/posts/' + $post_id).exists() : true)) || (!data.exists() && newData.parent().parent().child('users/' + auth.uid + '/posts/' + $post_id).exists()) )",
         ".validate": "!newData.exists() || (data.exists() || newData.hasChildren(['postContent', 'timestamp', 'replyCount']))",
         "replyCount": {
           ".write": false,
-          ".validate": "newData.isNumber()"
+          ".validate": "newData.isNumber() && newData.val() == 0"
         },
         "userInteractions": {
           ".write": false
@@ -91,14 +84,14 @@
         ".read": true,
         ".write": false,
         "$reply_id": {
-          ".write": "auth != null && ( (!data.exists() && newData.parent().parent().parent().child('users/' + auth.uid + '/replies/' + $post_id + '/' + $reply_id).exists()) || (data.exists() && (data.child('userId').val() === auth.uid || root.child('users/' + auth.uid + '/replies/' + $post_id + '/' + $reply_id).exists())) )",
+          ".write": "auth != null && ( (data.exists() && (data.child('userId').val() === auth.uid || root.child('users/' + auth.uid + '/replies/' + $post_id + '/' + $reply_id).exists()) && (!newData.exists() ? !newData.parent().parent().parent().child('users/' + auth.uid + '/replies/' + $post_id + '/' + $reply_id).exists() : true)) || (!data.exists() && newData.parent().parent().parent().child('users/' + auth.uid + '/replies/' + $post_id + '/' + $reply_id).exists()) )",
           ".validate": "!newData.exists() || (data.exists() || newData.hasChildren(['postContent', 'timestamp', 'parentPostId', 'interactionScore', 'replyCount']))",
           "userInteractions": {
             ".write": false
           },
           "replyCount": {
             ".write": false,
-            ".validate": "newData.isNumber()"
+            ".validate": "newData.isNumber() && newData.val() == 0"
           },
           "userId": {
             ".validate": "!newData.exists() || newData.val() === auth.uid"
