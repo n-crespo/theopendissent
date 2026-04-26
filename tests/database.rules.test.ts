@@ -338,6 +338,33 @@ describe("Realtime Database rules", () => {
       );
     });
 
+    it("allows deleting a post created non-anonymously", async () => {
+      const dbA = authedDb(uidA);
+      const nonAnonPostId = "non-anonymous-user";
+
+      // seed an anonymous post with no userId field, but indexed for user_a
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`posts/${nonAnonPostId}`]: {
+            userId: nonAnonPostId,
+            postContent: "not anonymous!",
+            timestamp: Date.now(),
+            replyCount: 0,
+          },
+          [`users/${uidA}/posts/${nonAnonPostId}`]: true,
+        });
+      });
+
+      // note that both paths must be deleted together
+      await assertSucceeds(
+        dbUpdate(dbA, "/", {
+          [`posts/${nonAnonPostId}`]: null,
+          [`users/${uidA}/posts/${nonAnonPostId}`]: null,
+        }),
+      );
+    });
+
     it("denies post creation if content exceeds 600 chars", async () => {
       const dbA = authedDb(uidA);
       const newPost = "post_too_long";
