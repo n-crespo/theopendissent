@@ -105,34 +105,79 @@ describe("Realtime Database rules", () => {
     });
   });
 
-  describe("Unauthorized Reads (Privacy & Anonymity)", () => {
-    // NOTE: tests anonymity.
-    it("denies access to the root users list (preventing ID scraping)", async () => {
+  describe("Unauthorized Private User Data Access", () => {
+    // unauthorized access
+    it("denies unauthorized access to root users list (preventing ID scraping)", async () => {
       const dbAnon = anonDb();
       const dbB = authedDb(uidB);
       await assertFails(dbGet(dbAnon, "users"));
       await assertFails(dbGet(dbB, "users"));
     });
 
-    // NOTE: tests anonymity.
-    it("denies access to a user's private post index", async () => {
+    // unauthorized access
+    it("denies anonymous access to a user's private profile data", async () => {
       const dbAnon = anonDb();
-      const dbB = authedDb(uidB);
+      await assertFails(dbGet(dbAnon, `users/${uidA}`));
+    });
+
+    it("denies anonymous access to a user's posts", async () => {
+      const dbAnon = anonDb();
       await assertFails(dbGet(dbAnon, `users/${uidA}/posts`));
+    });
+
+    it("denies anonymous access to a user's replies", async () => {
+      const dbAnon = anonDb();
+      await assertFails(dbGet(dbAnon, `users/${uidA}/replies`));
+    });
+
+    it("denies anonymous access to a user's notifications", async () => {
+      const dbAnon = anonDb();
+      await assertFails(dbGet(dbAnon, `users/${uidA}/notifications`));
+    });
+
+    it("denies anonymous access to a user's displayName", async () => {
+      const dbAnon = anonDb();
+      await assertFails(dbGet(dbAnon, `users/${uidA}/displayName`));
+    });
+
+    it("denies anonymous access to a user's email", async () => {
+      const dbAnon = anonDb();
+      await assertFails(dbGet(dbAnon, `users/${uidA}/email`));
+    });
+
+    it("denies anonymous access to a user's postInteractions (legacy field)", async () => {
+      const dbAnon = anonDb();
+      await assertFails(dbGet(dbAnon, `users/${uidA}/postInteractions`));
+    });
+
+    it("denies other user access to a user's posts", async () => {
+      const dbB = authedDb(uidB);
       await assertFails(dbGet(dbB, `users/${uidA}/posts`));
     });
 
-    // NOTE: tests anonymity.
-    it("denies access to a user's private reply index", async () => {
-      const dbAnon = anonDb();
+    it("denies other user access to a user's replies", async () => {
       const dbB = authedDb(uidB);
-      await assertFails(dbGet(dbAnon, `users/${uidA}/replies`));
       await assertFails(dbGet(dbB, `users/${uidA}/replies`));
     });
 
-    it("denies reading another user's private tree", async () => {
+    it("denies other user access to a user's notifications", async () => {
       const dbB = authedDb(uidB);
-      await assertFails(dbGet(dbB, `users/${uidA}`));
+      await assertFails(dbGet(dbB, `users/${uidA}/notifications`));
+    });
+
+    it("denies other user access to a user's displayName", async () => {
+      const dbB = authedDb(uidB);
+      await assertFails(dbGet(dbB, `users/${uidA}/displayName`));
+    });
+
+    it("denies other user access to a user's email", async () => {
+      const dbB = authedDb(uidB);
+      await assertFails(dbGet(dbB, `users/${uidA}/email`));
+    });
+
+    it("denies other user access to a user's postInteractions (legacy field)", async () => {
+      const dbB = authedDb(uidB);
+      await assertFails(dbGet(dbB, `users/${uidA}/postInteractions`));
     });
   });
 
