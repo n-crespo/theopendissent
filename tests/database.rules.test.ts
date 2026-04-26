@@ -105,7 +105,7 @@ describe("Realtime Database rules", () => {
     });
   });
 
-  describe("Unauthorized Private User Data Access", () => {
+  describe("Unauthorized Reads", () => {
     // unauthorized access
     it("denies unauthorized access to root users list (preventing ID scraping)", async () => {
       const dbAnon = anonDb();
@@ -181,7 +181,43 @@ describe("Realtime Database rules", () => {
     });
   });
 
-  describe("Anonymous Post and Delete", () => {
+  describe("Unauthorized Writes", () => {
+    it("denies unauthenticated user post creation", async () => {
+      const db = anonDb();
+      await assertFails(
+        dbSet(db, "posts/post_x", {
+          postContent: "anon write",
+          timestamp: Date.now(),
+          replyCount: 0,
+        }),
+      );
+    });
+
+    it("denies users from writing to another user's profile/index", async () => {
+      const dbB = authedDb(uidB);
+      await assertFails(dbSet(dbB, `users/${uidA}/posts/evil`, true));
+    });
+  });
+
+  describe("Anonymous Posting and Deleting", () => {
+    it("denies creating a anonymous post without linking to users/", async () => {
+      const dbA = authedDb(uidA);
+      const anonPostId = "anon_post_123";
+
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          [`posts/${anonPostId}`]: {
+            id: anonPostId,
+            postContent: "this is anonymous",
+            timestamp: { ".sv": "timestamp" },
+            replyCount: 0,
+            // userId is omitted here for anonymity
+          },
+          // no write to users/
+        }),
+      );
+    });
+
     it("allows creating a post without a public userId (Anonymous Post)", async () => {
       const dbA = authedDb(uidA);
       const anonPostId = "anon_post_123";
@@ -236,27 +272,8 @@ describe("Realtime Database rules", () => {
     });
   });
 
-  describe("Unauthorized Writes", () => {
-    // NOTE: tests anonymity.
-    it("denies unauthenticated writes to posts", async () => {
-      const db = anonDb();
-      await assertFails(
-        dbSet(db, "posts/post_x", {
-          postContent: "anon write",
-          timestamp: Date.now(),
-          replyCount: 0,
-        }),
-      );
-    });
-
-    it("denies users from writing to another user's profile/index", async () => {
-      const dbB = authedDb(uidB);
-      await assertFails(dbSet(dbB, `users/${uidA}/posts/evil`, true));
-    });
-  });
-
   describe("Post Creation Logic & Validation", () => {
-    it("allows creating a top-level post with required fields", async () => {
+    it("allows creating a top-level post with required fields (legacy format)", async () => {
       const dbA = authedDb(uidA);
       const newPost = "post_new";
       await assertSucceeds(
@@ -268,13 +285,12 @@ describe("Realtime Database rules", () => {
             timestamp: { ".sv": "timestamp" },
             replyCount: 0,
           },
-          [`users/${uidA}/posts/${newPost}`]: true,
+          [`users/${uidA}/posts/${newPost}`]: true, // this is REQUIRED
         }),
       );
     });
 
-    // NOTE: tests legacy data
-    it("denies creating a post when users index path is missing", async () => {
+    it("denies creating a post without linking to users/ (legacy format)", async () => {
       const dbA = authedDb(uidA);
       const newPost = "post_no_index";
       await assertFails(
@@ -284,10 +300,10 @@ describe("Realtime Database rules", () => {
           timestamp: Date.now(),
           replyCount: 0,
         }),
+        // users/ write is missing
       );
     });
 
-    // NOTE: tests legacy data
     it("denies post creation with mismatched userId", async () => {
       const dbA = authedDb(uidA);
       const newPost = "post_wrong_uid";
