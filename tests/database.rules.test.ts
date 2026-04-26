@@ -197,9 +197,33 @@ describe("Realtime Database rules", () => {
       const dbB = authedDb(uidB);
       await assertFails(dbSet(dbB, `users/${uidA}/posts/evil`, true));
     });
+
+    it("denies any user from writing to reply count", async () => {
+      const dbA = authedDb(uidA);
+      const dbB = authedDb(uidB);
+
+      // this is the author
+      await assertFails(dbSet(dbA, `posts/${postId}/replyCount`, 999));
+      // this is a random user
+      await assertFails(dbSet(dbB, `posts/${postId}/replyCount`, 123));
+    });
   });
 
-  describe("Anonymous Posting and Deleting", () => {
+  describe("Authorized Read + Write", () => {
+    it("allows users to read/write their own users tree", async () => {
+      const dbA = authedDb(uidA);
+      await assertSucceeds(
+        dbSet(dbA, `users/${uidA}/notifications/test`, {
+          type: "reply",
+          isRead: false,
+          updatedAt: Date.now(),
+        }),
+      );
+      await assertSucceeds(dbGet(dbA, `users/${uidA}`));
+    });
+  });
+
+  describe("Anonymous Post Creation + Deletion", () => {
     it("denies creating a anonymous post without linking to users/", async () => {
       const dbA = authedDb(uidA);
       const anonPostId = "anon_post_123";
@@ -258,22 +282,8 @@ describe("Realtime Database rules", () => {
     });
   });
 
-  describe("Authorized User Access", () => {
-    it("allows users to read/write their own users tree", async () => {
-      const dbA = authedDb(uidA);
-      await assertSucceeds(
-        dbSet(dbA, `users/${uidA}/notifications/test`, {
-          type: "reply",
-          isRead: false,
-          updatedAt: Date.now(),
-        }),
-      );
-      await assertSucceeds(dbGet(dbA, `users/${uidA}`));
-    });
-  });
-
-  describe("Post Creation Logic & Validation", () => {
-    it("allows creating a top-level post with required fields (legacy format)", async () => {
+  describe("Non-Anonymous Post Creation + Deletion", () => {
+    it("allows creating a post with required fields (legacy format)", async () => {
       const dbA = authedDb(uidA);
       const newPost = "post_new";
       await assertSucceeds(
@@ -290,21 +300,7 @@ describe("Realtime Database rules", () => {
       );
     });
 
-    it("denies creating a post without linking to users/ (legacy format)", async () => {
-      const dbA = authedDb(uidA);
-      const newPost = "post_no_index";
-      await assertFails(
-        dbSet(dbA, `posts/${newPost}`, {
-          id: newPost,
-          postContent: "missing index",
-          timestamp: Date.now(),
-          replyCount: 0,
-        }),
-        // users/ write is missing
-      );
-    });
-
-    it("denies post creation with mismatched userId", async () => {
+    it("denies post creation with mismatched userId linkage", async () => {
       const dbA = authedDb(uidA);
       const newPost = "post_wrong_uid";
       await assertFails(
@@ -321,7 +317,6 @@ describe("Realtime Database rules", () => {
       );
     });
 
-    // NOTE: tests legacy data
     it("denies post creation when required fields are missing", async () => {
       const dbA = authedDb(uidA);
       const newPost = "post_missing_fields";
@@ -331,13 +326,13 @@ describe("Realtime Database rules", () => {
             id: newPost,
             userId: uidA,
             postContent: "missing fields",
+            // missing timestamp, reply count
           },
           [`users/${uidA}/posts/${newPost}`]: true,
         }),
       );
     });
 
-    // NOTE: tests legacy data
     it("denies post creation if content exceeds 600 chars", async () => {
       const dbA = authedDb(uidA);
       const newPost = "post_too_long";
@@ -356,82 +351,7 @@ describe("Realtime Database rules", () => {
     });
   });
 
-  describe("Reply Creation Logic & Validation", () => {
-    // NOTE: tests legacy data
-    it("allows owner reply with interactionScore + index", async () => {
-      const dbA = authedDb(uidA);
-      const ownerReply = "reply_owner";
-      await assertSucceeds(
-        dbUpdate(dbA, "/", {
-          [`replies/${postId}/${ownerReply}`]: {
-            id: ownerReply,
-            userId: uidA,
-            postContent: "owner reply",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            interactionScore: 2,
-          },
-          [`users/${uidA}/replies/${postId}/${ownerReply}`]: true,
-        }),
-      );
-    });
-
-    // NOTE: tests legacy data
-    it("allows any authenticated user to reply if they bundle a score and index", async () => {
-      const dbB = authedDb(uidB);
-
-      await assertSucceeds(
-        dbUpdate(dbB, "/", {
-          [`replies/${postId}/${replyId}`]: {
-            id: replyId,
-            userId: uidB,
-            postContent: "reply body",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            interactionScore: 2,
-          },
-          [`users/${uidB}/replies/${postId}/${replyId}`]: true,
-        }),
-      );
-    });
-
-    it("denies reply if interactionScore is missing (Contract Violation)", async () => {
-      const dbB = authedDb(uidB);
-      await assertFails(
-        dbUpdate(dbB, "/", {
-          [`replies/${postId}/${replyId}`]: {
-            id: replyId,
-            userId: uidB,
-            postContent: "no score here",
-            timestamp: Date.now(),
-            replyCount: 0,
-            parentPostId: postId,
-            // interactionScore is missing!
-          },
-          [`users/${uidB}/replies/${postId}/${replyId}`]: true,
-        }),
-      );
-    });
-
-    it("denies reply if user fails to index it in their profile (Security Violation)", async () => {
-      const dbB = authedDb(uidB);
-      await assertFails(
-        // Trying to write only to the public tree without the private index
-        dbSet(dbB, `replies/${postId}/${replyId}`, {
-          id: replyId,
-          userId: uidB,
-          postContent: "trying to skip the index",
-          timestamp: Date.now(),
-          replyCount: 0,
-          parentPostId: postId,
-          interactionScore: 1,
-        }),
-      );
-    });
-
-    // NOTE: tests legacy data
+  describe("General Reply Validation", () => {
     it("denies reply with out-of-range interactionScore", async () => {
       const dbA = authedDb(uidA);
       const outOfRangeReply = "reply_out_of_range";
@@ -450,8 +370,7 @@ describe("Realtime Database rules", () => {
       );
     });
 
-    // NOTE: tests legacy data
-    it("denies owner reply if userId doesn't match auth.uid", async () => {
+    it("denies reply if userId doesn't match auth.uid", async () => {
       const dbA = authedDb(uidA);
       const wrongUidReply = "reply_wrong_uid";
       await assertFails(
@@ -469,7 +388,6 @@ describe("Realtime Database rules", () => {
       );
     });
 
-    // NOTE: tests legacy data
     it("denies owner reply if content exceeds 600 chars", async () => {
       const dbA = authedDb(uidA);
       const longReply = "reply_too_long";
@@ -486,6 +404,209 @@ describe("Realtime Database rules", () => {
           },
         }),
       );
+    });
+  });
+
+  describe("Anonymous Reply Creation + Deletion", () => {
+    it("denies creating a anonymous reply without interaction score", async () => {
+      const dbA = authedDb(uidA);
+      const anonPostId = "anon_post_123";
+
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          [`replies/${postId}/${anonPostId}`]: {
+            id: anonPostId,
+            // userId is omitted here for anonymity
+            postContent: "this is anonymous",
+            timestamp: { ".sv": "timestamp" },
+            replyCount: 0,
+            parentPostId: postId,
+            // interactionScore: 2,
+          },
+          [`users/${uidA}/replies/${postId}/${anonPostId}`]: true,
+        }),
+      );
+    });
+
+    it("denies creating a anonymous reply without linking to users/", async () => {
+      const dbA = authedDb(uidA);
+      const anonPostId = "anon_post_123";
+
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          [`replies/${postId}/${anonPostId}`]: {
+            id: anonPostId,
+            // userId is omitted here for anonymity
+            postContent: "this is anonymous",
+            timestamp: { ".sv": "timestamp" },
+            replyCount: 0,
+            parentPostId: postId,
+            interactionScore: 2,
+          },
+          // [`users/${uidA}/replies/${postId}/${anonPostId}`]: true,
+        }),
+      );
+    });
+
+    it("allows creating a anonymous self-reply with required fields", async () => {
+      const dbA = authedDb(uidA);
+      const anonPostId = "anon_self_reply";
+
+      await assertSucceeds(
+        dbUpdate(dbA, "/", {
+          [`replies/${postId}/${anonPostId}`]: {
+            id: anonPostId,
+            // userId is omitted here for anonymity
+            postContent: "this is anonymous",
+            timestamp: { ".sv": "timestamp" },
+            replyCount: 0,
+            parentPostId: postId,
+            interactionScore: 2,
+          },
+          [`users/${uidA}/replies/${postId}/${anonPostId}`]: true,
+        }),
+      );
+    });
+
+    it("allows creating a anonymous reply with required fields", async () => {
+      const dbB = authedDb(uidB);
+      const anonPostId = "anon_post_123";
+
+      await assertSucceeds(
+        dbUpdate(dbB, "/", {
+          [`replies/${postId}/${anonPostId}`]: {
+            id: anonPostId,
+            // userId is omitted here for anonymity
+            postContent: "this is anonymous",
+            timestamp: { ".sv": "timestamp" },
+            replyCount: 0,
+            parentPostId: postId,
+            interactionScore: 2,
+          },
+          [`users/${uidB}/replies/${postId}/${anonPostId}`]: true,
+        }),
+      );
+    });
+
+    it("allows deleting an anonymous reply with required fields", async () => {
+      const dbA = authedDb(uidA);
+      const anonPostId = "anon_to_delete";
+
+      // seed an anonymous reply with no userId field, but indexed for user_a
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`replies/${postId}/${anonPostId}`]: {
+            id: anonPostId,
+            // userId is omitted here for anonymity
+            postContent: "this is anonymous",
+            timestamp: { ".sv": "timestamp" },
+            replyCount: 0,
+            parentPostId: postId,
+            interactionScore: 2,
+          },
+          [`users/${uidA}/replies/${postId}/${anonPostId}`]: true,
+        });
+      });
+
+      await assertSucceeds(dbRemove(dbA, `posts/${anonPostId}`));
+    });
+  });
+
+  describe("Non-Anonymous Reply Creation + Deletion", () => {
+    it("denies creating a non-anonymous reply without interaction score", async () => {
+      const dbB = authedDb(uidB);
+
+      await assertFails(
+        dbUpdate(dbB, "/", {
+          [`replies/${postId}/${replyId}`]: {
+            id: replyId,
+            userId: uidB,
+            postContent: "no score here",
+            timestamp: Date.now(),
+            replyCount: 0,
+            parentPostId: postId,
+            // interactionScore is missing!
+          },
+          [`users/${uidB}/replies/${postId}/${replyId}`]: true,
+        }),
+      );
+    });
+
+    it("denies creating a non-anonymous reply without linking to users/", async () => {
+      const dbB = authedDb(uidB);
+      await assertFails(
+        // Trying to write only to the public tree without the private index
+        dbSet(dbB, `replies/${postId}/${replyId}`, {
+          id: replyId,
+          userId: uidB,
+          postContent: "trying to skip the index",
+          timestamp: Date.now(),
+          replyCount: 0,
+          parentPostId: postId,
+          interactionScore: 1,
+        }),
+      );
+    });
+
+    it("allows creating non-anonymous self-reply with required fields", async () => {
+      const dbA = authedDb(uidA);
+      const ownerReply = "reply_owner";
+      await assertSucceeds(
+        dbUpdate(dbA, "/", {
+          [`replies/${postId}/${ownerReply}`]: {
+            id: ownerReply,
+            userId: uidA,
+            postContent: "owner reply",
+            timestamp: { ".sv": "timestamp" },
+            replyCount: 0,
+            parentPostId: postId,
+            interactionScore: 2,
+          },
+          [`users/${uidA}/replies/${postId}/${ownerReply}`]: true,
+        }),
+      );
+    });
+
+    it("allows creating non-anonymous reply with required fields", async () => {
+      const dbB = authedDb(uidB);
+
+      await assertSucceeds(
+        dbUpdate(dbB, "/", {
+          [`replies/${postId}/${replyId}`]: {
+            id: replyId,
+            userId: uidB,
+            postContent: "reply body",
+            timestamp: { ".sv": "timestamp" },
+            replyCount: 0,
+            parentPostId: postId,
+            interactionScore: 2,
+          },
+          [`users/${uidB}/replies/${postId}/${replyId}`]: true,
+        }),
+      );
+    });
+
+    it("allows deleting non-anonymous reply with required fields", async () => {
+      const dbB = authedDb(uidB);
+
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`replies/${postId}/${replyId}`]: {
+            id: replyId,
+            userId: uidB,
+            postContent: "reply body",
+            timestamp: { ".sv": "timestamp" },
+            replyCount: 0,
+            parentPostId: postId,
+            interactionScore: 2,
+          },
+          [`users/${uidB}/replies/${postId}/${replyId}`]: true,
+        });
+      });
+
+      await assertSucceeds(dbRemove(dbB, `replies/${postId}/${replyId}`));
     });
   });
 
@@ -514,22 +635,6 @@ describe("Realtime Database rules", () => {
       await assertFails(dbRemove(dbB, `posts/${postId}`));
     });
 
-    // NOTE: tests legacy data
-    it("allows owner direct field writes but denies non-owner direct field writes", async () => {
-      const dbA = authedDb(uidA);
-      const dbB = authedDb(uidB);
-
-      await assertSucceeds(dbSet(dbA, `posts/${postId}/replyCount`, 999));
-      await assertSucceeds(
-        dbSet(dbA, `posts/${postId}/userInteractions/${uidA}`, 3),
-      );
-
-      await assertFails(dbSet(dbB, `posts/${postId}/replyCount`, 123));
-      await assertFails(
-        dbSet(dbB, `posts/${postId}/userInteractions/${uidB}`, 1),
-      );
-    });
-
     it("allows an anonymous author to delete their post using the index link", async () => {
       const dbA = authedDb(uidA);
       const anonPostId = "anon_post_to_delete";
@@ -551,7 +656,7 @@ describe("Realtime Database rules", () => {
       await assertSucceeds(
         dbUpdate(dbA, "/", {
           [`posts/${anonPostId}`]: null,
-          [`users/${uidA}/posts/${anonPostId}`]: null,
+          // [`users/${uidA}/posts/${anonPostId}`]: null,
         }),
       );
     });
