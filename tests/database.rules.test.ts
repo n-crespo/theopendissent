@@ -80,14 +80,14 @@ describe("Realtime Database rules", () => {
     }
   });
 
-  describe("Public Content Access (Anonymous)", () => {
-    // NOTE: tests anonymity.
-    it("allows public reads of posts/replies", async () => {
+  describe("Public + Legacy Read Access", () => {
+    // public access
+    it("allow public reads to posts/replies", async () => {
       const db = anonDb();
       await assertSucceeds(dbGet(db, `posts/${postId}`));
     });
 
-    // NOTE: tests anonymity.
+    // legacy compatibility
     it("legacy post shape still reads correctly (no authorDisplay/isThreadAuthor)", async () => {
       const db = anonDb();
       const snap = await assertSucceeds(dbGet(db, `posts/${postId}`));
@@ -96,7 +96,7 @@ describe("Realtime Database rules", () => {
       expect(snap.child("userId").val()).toBe(uidA);
     });
 
-    // NOTE: tests anonymity.
+    // data security
     it("public post data contains only userId and not private metadata", async () => {
       const db = anonDb();
       const snap = await dbGet(db, `posts/${postId}`);
