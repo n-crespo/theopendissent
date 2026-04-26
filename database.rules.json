@@ -60,7 +60,7 @@
       ],
       ".read": true,
       "$post_id": {
-        ".write": "auth != null && ( (data.exists() && (data.child('userId').val() === auth.uid || root.child('users/' + auth.uid + '/posts/' + $post_id).exists())) || (!data.exists() && newData.parent().parent().child('users/' + auth.uid + '/posts/' + $post_id).exists()) )",
+        ".write": "auth != null && ( (data.exists() && (data.child('userId').val() === auth.uid || root.child('users/' + auth.uid + '/posts/' + $post_id).exists()) && (!newData.exists() ? !newData.parent().parent().child('users/' + auth.uid + '/posts/' + $post_id).exists() : true)) || (!data.exists() && newData.parent().parent().child('users/' + auth.uid + '/posts/' + $post_id).exists()) )",
         ".validate": "!newData.exists() || (data.exists() || newData.hasChildren(['postContent', 'timestamp', 'replyCount']))",
         "replyCount": {
           ".write": false,
@@ -91,7 +91,7 @@
         ".read": true,
         ".write": false,
         "$reply_id": {
-          ".write": "auth != null && ( (!data.exists() && newData.parent().parent().parent().child('users/' + auth.uid + '/replies/' + $post_id + '/' + $reply_id).exists()) || (data.exists() && (data.child('userId').val() === auth.uid || root.child('users/' + auth.uid + '/replies/' + $post_id + '/' + $reply_id).exists())) )",
+          ".write": "auth != null && ( (data.exists() && (data.child('userId').val() === auth.uid || root.child('users/' + auth.uid + '/replies/' + $post_id + '/' + $reply_id).exists()) && (!newData.exists() ? !newData.parent().parent().parent().child('users/' + auth.uid + '/replies/' + $post_id + '/' + $reply_id).exists() : true)) || (!data.exists() && newData.parent().parent().parent().child('users/' + auth.uid + '/replies/' + $post_id + '/' + $reply_id).exists()) )",
           ".validate": "!newData.exists() || (data.exists() || newData.hasChildren(['postContent', 'timestamp', 'parentPostId', 'interactionScore', 'replyCount']))",
           "userInteractions": {
             ".write": false
