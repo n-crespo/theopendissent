@@ -64,7 +64,7 @@
         ".validate": "!newData.exists() || (data.exists() || newData.hasChildren(['postContent', 'timestamp', 'replyCount']))",
         "replyCount": {
           ".write": false,
-          ".validate": "newData.isNumber()"
+          ".validate": "newData.isNumber() && newData.val() == 0"
         },
         "userInteractions": {
           ".write": false
@@ -98,7 +98,7 @@
           },
           "replyCount": {
             ".write": false,
-            ".validate": "newData.isNumber()"
+            ".validate": "newData.isNumber() && newData.val() == 0"
           },
           "userId": {
             ".validate": "!newData.exists() || newData.val() === auth.uid"
