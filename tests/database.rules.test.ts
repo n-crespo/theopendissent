@@ -260,7 +260,7 @@ describe("Realtime Database rules", () => {
       );
     });
 
-    it("allows anonymous owner to delete via private index 'receipt'", async () => {
+    it("allows deleting a post created anonymously", async () => {
       const dbA = authedDb(uidA);
       const anonPostId = "anon_to_delete";
 
@@ -277,8 +277,13 @@ describe("Realtime Database rules", () => {
         });
       });
 
-      // should succeed because user_a has the index link (the "receipt")
-      await assertSucceeds(dbRemove(dbA, `posts/${anonPostId}`));
+      // note that both paths must be deleted together
+      await assertSucceeds(
+        dbUpdate(dbA, "/", {
+          [`posts/${anonPostId}`]: null,
+          [`users/${uidA}/posts/${anonPostId}`]: null,
+        }),
+      );
     });
   });
 
@@ -509,7 +514,12 @@ describe("Realtime Database rules", () => {
         });
       });
 
-      await assertSucceeds(dbRemove(dbA, `posts/${anonPostId}`));
+      await assertSucceeds(
+        dbUpdate(dbA, "/", {
+          [`replies/${postId}/${anonPostId}`]: null,
+          [`users/${uidA}/replies/${postId}/${anonPostId}`]: null,
+        }),
+      );
     });
   });
 
@@ -606,7 +616,12 @@ describe("Realtime Database rules", () => {
         });
       });
 
-      await assertSucceeds(dbRemove(dbB, `replies/${postId}/${replyId}`));
+      await assertSucceeds(
+        dbUpdate(dbB, "/", {
+          [`replies/${postId}/${replyId}`]: null,
+          [`users/${uidB}/replies/${postId}/${replyId}`]: null,
+        }),
+      );
     });
   });
 
@@ -635,7 +650,12 @@ describe("Realtime Database rules", () => {
       const dbA = authedDb(uidA);
       const dbB = authedDb(uidB);
 
-      await assertSucceeds(dbRemove(dbA, `posts/${postId}`));
+      await assertSucceeds(
+        dbUpdate(dbA, "/", {
+          [`posts/${postId}`]: null,
+          [`users/${uidA}/posts/${postId}`]: null,
+        }),
+      );
 
       // Re-seed post
       await testEnv.withSecurityRulesDisabled(async (context) => {
@@ -652,7 +672,12 @@ describe("Realtime Database rules", () => {
         });
       });
 
-      await assertFails(dbRemove(dbB, `posts/${postId}`));
+      await assertFails(
+        dbUpdate(dbB, "/", {
+          [`posts/${postId}`]: null,
+          [`users/${uidA}/posts/${postId}`]: null,
+        }),
+      );
     });
 
     it("denies User B from deleting User A's anonymous post", async () => {
@@ -672,7 +697,7 @@ describe("Realtime Database rules", () => {
         });
       });
 
-      // Action: User B tries to delete the post and their own fake index
+      // User B tries to delete the post and their own fake index
       await assertFails(
         dbUpdate(dbB, "/", {
           [`posts/${anonPostId}`]: null,
