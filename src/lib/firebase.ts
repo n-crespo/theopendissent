@@ -396,6 +396,7 @@ export const getUserActivity = async (
     const results = await Promise.all(tasks);
 
     // perform atomic cleanup of identified orphans
+    // TODO: write some docs on why we need to do this!
     if (Object.keys(deadReceipts).length > 0) {
       update(ref(db), deadReceipts).catch((e) =>
         console.error("lazy cleanup failed:", e),
