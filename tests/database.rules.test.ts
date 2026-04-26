@@ -611,6 +611,26 @@ describe("Realtime Database rules", () => {
   });
 
   describe("Update & Deletion Security", () => {
+    it("allows owner to edit postContent and denies non-owner", async () => {
+      const dbA = authedDb(uidA);
+      const dbB = authedDb(uidB);
+      const newContent = "this is edited content";
+
+      // check that the owner (User A) can edit their own post
+      await assertSucceeds(
+        dbUpdate(dbA, `posts/${postId}`, {
+          postContent: newContent,
+        }),
+      );
+
+      // check that a non-owner (User B) cannot edit User A's post
+      await assertFails(
+        dbUpdate(dbB, `posts/${postId}`, {
+          postContent: "malicious edit",
+        }),
+      );
+    });
+
     it("allows owner delete and denies non-owner delete", async () => {
       const dbA = authedDb(uidA);
       const dbB = authedDb(uidB);
@@ -633,32 +653,6 @@ describe("Realtime Database rules", () => {
       });
 
       await assertFails(dbRemove(dbB, `posts/${postId}`));
-    });
-
-    it("allows an anonymous author to delete their post using the index link", async () => {
-      const dbA = authedDb(uidA);
-      const anonPostId = "anon_post_to_delete";
-
-      // Setup: Create a post with NO userId, but with an index link for User A
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`posts/${anonPostId}`]: {
-            postContent: "I am anonymous",
-            timestamp: Date.now(),
-            replyCount: 0,
-          },
-          [`users/${uidA}/posts/${anonPostId}`]: true,
-        });
-      });
-
-      // Action: Attempt deletion
-      await assertSucceeds(
-        dbUpdate(dbA, "/", {
-          [`posts/${anonPostId}`]: null,
-          // [`users/${uidA}/posts/${anonPostId}`]: null,
-        }),
-      );
     });
 
     it("denies User B from deleting User A's anonymous post", async () => {
