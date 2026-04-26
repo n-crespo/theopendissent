@@ -732,5 +732,43 @@ describe("Realtime Database rules", () => {
         }),
       );
     });
+
+    it("denies deleting reply without receipt or main object cleanup", async () => {
+      const dbB = authedDb(uidB);
+
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`replies/${postId}/${replyId}`]: {
+            id: replyId,
+            userId: uidB,
+            postContent: "reply body",
+            timestamp: { ".sv": "timestamp" },
+            replyCount: 0,
+            parentPostId: postId,
+            interactionScore: 2,
+          },
+          [`users/${uidB}/replies/${postId}/${replyId}`]: true,
+        });
+      });
+
+      // note that remove does the same thing as : null underneath
+      await assertFails(
+        dbRemove(dbB, `users/${uidB}/replies/${postId}/${replyId}`),
+      );
+      await assertFails(
+        dbUpdate(dbB, "/", {
+          [`users/${uidB}/replies/${postId}/${replyId}`]: null,
+        }),
+      );
+
+      // note that remove does the same thing as : null underneath
+      await assertFails(dbRemove(dbB, `replies/${postId}/${replyId}`));
+      await assertFails(
+        dbUpdate(dbB, "/", {
+          [`replies/${postId}/${replyId}`]: null,
+        }),
+      );
+    });
   });
 });
