@@ -768,5 +768,45 @@ describe("Realtime Database rules", () => {
         }),
       );
     });
+
+    it("allows 'lazy cleanup' of a dangling receipt when the public post is already gone", async () => {
+      const dbA = authedDb(uidA);
+      const orphanPostId = "orphan_post_999";
+
+      // create an orphan (receipt exists, but public post is null/missing)
+      // mimics a thread author deleting a post, leaving our receipt dangling
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`users/${uidA}/posts/${orphanPostId}`]: true,
+          // note: we do NOT create posts/${orphanPostId} here
+        });
+      });
+
+      // this should succeed: the rules see the public post is already gone,
+      // so deleting the receipt restores consistency (the "self-healing" path)
+      await assertSucceeds(
+        dbRemove(dbA, `users/${uidA}/posts/${orphanPostId}`),
+      );
+    });
+
+    it("allows 'lazy cleanup' of a dangling reply receipt when the public thread is gone", async () => {
+      const dbB = authedDb(uidB);
+      const orphanReplyId = "orphan_reply_888";
+      const deadPostId = "dead_parent_post";
+
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`users/${uidB}/replies/${deadPostId}/${orphanReplyId}`]: true,
+          // public replies tree is empty/null
+        });
+      });
+
+      // client performs self-healing cleanup
+      await assertSucceeds(
+        dbRemove(dbB, `users/${uidB}/replies/${deadPostId}/${orphanReplyId}`),
+      );
+    });
   });
 });
