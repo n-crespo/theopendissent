@@ -42,15 +42,7 @@
           }
         },
         "postInteractions": {
-          "$post_id": {
-            ".validate": "newData.hasChildren(['score', 'parentId'])",
-            "score": {
-              ".validate": "newData.isNumber() && newData.val() >= -3 && newData.val() <= 3"
-            },
-            "parentId": {
-              ".validate": "newData.isString()"
-            }
-          }
+          ".write": "false"
         }
       }
     },
