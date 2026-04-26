@@ -8,7 +8,7 @@ export const JoinTeamModal = () => {
   return (
     <div className="flex flex-col items-center justify-center p-8 pt-4 text-center">
       {/* Icon Header */}
-      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 shadow-inner border border-slate-100">
+      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-50 text-logo-blue shadow-inner border border-slate-100">
         <i className="bi bi-rocket-takeoff text-4xl"></i>
       </div>
 
