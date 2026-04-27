@@ -809,4 +809,417 @@ describe("Realtime Database rules", () => {
       );
     });
   });
+
+  describe("Sub-Reply Read Access", () => {
+    const subReplyId = "subreply_read_1";
+
+    beforeEach(async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            postContent: "a sub-reply",
+            timestamp: Date.now(),
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "Anonymous User",
+          },
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        });
+      });
+    });
+
+    it("allows unauthenticated reads to subreplies/", async () => {
+      const db = anonDb();
+      await assertSucceeds(
+        dbGet(db, `subreplies/${postId}/${replyId}/${subReplyId}`),
+      );
+    });
+
+    it("allows authenticated reads to subreplies/", async () => {
+      const db = authedDb(uidB);
+      await assertSucceeds(
+        dbGet(db, `subreplies/${postId}/${replyId}/${subReplyId}`),
+      );
+    });
+  });
+
+  describe("Anonymous Sub-Reply Creation + Deletion", () => {
+    const subReplyId = "subreply_anon_1";
+
+    it("denies creating an anonymous sub-reply without a receipt", async () => {
+      const dbA = authedDb(uidA);
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            postContent: "missing receipt",
+            timestamp: { ".sv": "timestamp" },
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "Anonymous User",
+          },
+          // no users/ receipt
+        }),
+      );
+    });
+
+    it("denies creating a receipt without the main subreply object", async () => {
+      const dbA = authedDb(uidA);
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          // no subreplies/ object
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        }),
+      );
+    });
+
+    it("allows creating an anonymous sub-reply with required fields + receipt", async () => {
+      const dbA = authedDb(uidA);
+      await assertSucceeds(
+        dbUpdate(dbA, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            postContent: "anonymous sub-reply",
+            timestamp: { ".sv": "timestamp" },
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "Anonymous User",
+          },
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        }),
+      );
+    });
+
+    it("allows another user to create an anonymous sub-reply", async () => {
+      const dbB = authedDb(uidB);
+      const subReplyIdB = "subreply_anon_user_b"; // distinct ID — avoids state from prior test
+      await assertSucceeds(
+        dbUpdate(dbB, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyIdB}`]: {
+            id: subReplyIdB,
+            postContent: "user B anonymous sub",
+            timestamp: { ".sv": "timestamp" },
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "Anonymous User",
+          },
+          [`users/${uidB}/subreplies/${postId}/${replyId}/${subReplyIdB}`]: true,
+        }),
+      );
+    });
+
+    it("allows deleting an anonymous sub-reply with receipt", async () => {
+      const dbA = authedDb(uidA);
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            postContent: "to delete",
+            timestamp: Date.now(),
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "Anonymous User",
+          },
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        });
+      });
+
+      await assertSucceeds(
+        dbUpdate(dbA, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: null,
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: null,
+        }),
+      );
+    });
+
+    it("denies deleting only the sub-reply object (without receipt)", async () => {
+      const dbA = authedDb(uidA);
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            postContent: "to delete",
+            timestamp: Date.now(),
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "Anonymous User",
+          },
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        });
+      });
+
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: null,
+        }),
+      );
+    });
+
+    it("denies deleting only the receipt (without sub-reply object)", async () => {
+      const dbA = authedDb(uidA);
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            postContent: "to delete",
+            timestamp: Date.now(),
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "Anonymous User",
+          },
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        });
+      });
+
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: null,
+        }),
+      );
+    });
+  });
+
+  describe("Non-Anonymous Sub-Reply Creation + Deletion", () => {
+    const subReplyId = "subreply_named_1";
+
+    it("allows creating a non-anonymous sub-reply with userId", async () => {
+      const dbB = authedDb(uidB);
+      await assertSucceeds(
+        dbUpdate(dbB, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            userId: uidB,
+            postContent: "named sub-reply",
+            timestamp: { ".sv": "timestamp" },
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "User B",
+          },
+          [`users/${uidB}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        }),
+      );
+    });
+
+    it("denies creating a sub-reply with a mismatched userId", async () => {
+      const dbA = authedDb(uidA);
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            userId: uidB, // wrong — auth is user_a
+            postContent: "spoofed identity",
+            timestamp: { ".sv": "timestamp" },
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "User B",
+          },
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        }),
+      );
+    });
+
+    it("allows deleting a non-anonymous sub-reply (with receipt)", async () => {
+      const dbB = authedDb(uidB);
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            userId: uidB,
+            postContent: "named sub to delete",
+            timestamp: Date.now(),
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "User B",
+          },
+          [`users/${uidB}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        });
+      });
+
+      await assertSucceeds(
+        dbUpdate(dbB, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: null,
+          [`users/${uidB}/subreplies/${postId}/${replyId}/${subReplyId}`]: null,
+        }),
+      );
+    });
+
+    it("denies a non-owner from deleting another user's sub-reply", async () => {
+      const dbA = authedDb(uidA);
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            userId: uidB,
+            postContent: "belongs to B",
+            timestamp: Date.now(),
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "User B",
+          },
+          [`users/${uidB}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        });
+      });
+
+      // User A tries to delete user B's sub-reply using their own receipt slot
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: null,
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: null,
+        }),
+      );
+    });
+  });
+
+  describe("Sub-Reply Validation", () => {
+    const subReplyId = "subreply_validate_1";
+
+    it("denies sub-reply with missing required fields", async () => {
+      const dbA = authedDb(uidA);
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            postContent: "missing timestamp & parentReplyId",
+            parentPostId: postId,
+            authorDisplay: "Anonymous User",
+            // missing: timestamp, parentReplyId
+          },
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        }),
+      );
+    });
+
+    it("denies sub-reply with wrong parentReplyId", async () => {
+      const dbA = authedDb(uidA);
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            postContent: "wrong parentReplyId",
+            timestamp: { ".sv": "timestamp" },
+            parentPostId: postId,
+            parentReplyId: "wrong_reply_id",
+            authorDisplay: "Anonymous User",
+          },
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        }),
+      );
+    });
+
+    it("denies sub-reply with wrong parentPostId", async () => {
+      const dbA = authedDb(uidA);
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            postContent: "wrong parentPostId",
+            timestamp: { ".sv": "timestamp" },
+            parentPostId: "wrong_post_id",
+            parentReplyId: replyId,
+            authorDisplay: "Anonymous User",
+          },
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        }),
+      );
+    });
+
+    it("denies sub-reply with wrong id field", async () => {
+      const dbA = authedDb(uidA);
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: "some_other_id", // does not match $subreply_id
+            postContent: "bad id",
+            timestamp: { ".sv": "timestamp" },
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "Anonymous User",
+          },
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        }),
+      );
+    });
+
+    it("denies sub-reply with postContent exceeding 600 chars", async () => {
+      const dbA = authedDb(uidA);
+      await assertFails(
+        dbUpdate(dbA, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            postContent: "x".repeat(601),
+            timestamp: { ".sv": "timestamp" },
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "Anonymous User",
+          },
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+        }),
+      );
+    });
+
+    it("denies unauthenticated sub-reply creation", async () => {
+      const db = anonDb();
+      await assertFails(
+        dbUpdate(db, "/", {
+          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+            id: subReplyId,
+            postContent: "anon write attempt",
+            timestamp: { ".sv": "timestamp" },
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "Anonymous User",
+          },
+        }),
+      );
+    });
+  });
+
+  describe("Sub-Reply Protected Fields", () => {
+    it("denies client from writing hasSubReply = true to a reply", async () => {
+      const dbA = authedDb(uidA);
+      // user_a owns post_1 (seeded in beforeEach), try to fake hasSubReply
+      await assertFails(
+        dbSet(dbA, `replies/${postId}/${replyId}/hasSubReply`, true),
+      );
+    });
+
+    it("denies client from writing hasSubReply via update", async () => {
+      const dbA = authedDb(uidA);
+      await assertFails(
+        dbUpdate(dbA, `replies/${postId}`, {
+          [`${replyId}/hasSubReply`]: true,
+        }),
+      );
+    });
+  });
+
+  describe("Sub-Reply Lazy Cleanup (orphan receipt)", () => {
+    it("allows lazy cleanup of a dangling subreply receipt when public object is gone", async () => {
+      const orphanSubReplyId = "orphan_subreply_999";
+
+      // seed only the receipt, no public object (mimics cloud-fn cascade delete)
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const db = dbFromContext(context);
+        await dbUpdate(db, "/", {
+          [`users/${uidA}/subreplies/${postId}/${replyId}/${orphanSubReplyId}`]: true,
+          // note: subreplies/ object is intentionally absent
+        });
+      });
+
+      // client self-heals the dangling receipt
+      await assertSucceeds(
+        dbRemove(
+          authedDb(uidA),
+          `users/${uidA}/subreplies/${postId}/${replyId}/${orphanSubReplyId}`,
+        ),
+      );
+    });
+  });
 });
