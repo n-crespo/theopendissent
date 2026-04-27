@@ -13,12 +13,15 @@ interface ComposeModalProps {
   isOpen: boolean;
   onClose: () => void;
   parentPost?: Post | null;
+  /** set when composing a sub-reply — the direct reply being responded to */
+  parentReply?: Post | null;
 }
 
 export const ComposeModal = ({
   isOpen,
   onClose,
   parentPost,
+  parentReply,
 }: ComposeModalProps) => {
   const { user } = useAuth();
   const { openModal, closeModal } = useModal();
@@ -30,6 +33,8 @@ export const ComposeModal = ({
   const isThreadAuthor = Boolean(
     parentPost?.id && ownedPosts.has(parentPost.id),
   );
+  const isSubReply = !!parentReply;
+  const isReply = !!parentPost || isSubReply;
 
   // lock anonymity if user is thread author
   const [isAnonymousState, setIsAnonymous] = useState(true);
@@ -43,7 +48,6 @@ export const ComposeModal = ({
 
   const limit = 600;
   const charsLeft = limit - content.length;
-  const isReply = !!parentPost;
 
   useEffect(() => {
     if (isOpen) {
@@ -83,7 +87,8 @@ export const ComposeModal = ({
             content: content.trim(),
             authorDisplay,
             parentPostId: parentPost?.id,
-            score: isReply ? score : undefined,
+            parentReplyId: parentReply?.id,
+            score: isReply && !isSubReply ? score : undefined,
             isThreadAuthor,
             includePublicUserId: !isAnonymous,
           });
@@ -178,26 +183,31 @@ export const ComposeModal = ({
                 </button>
               </div>
               {/* Context area for replies */}
-              {isReply && (
+              {(isReply || isSubReply) && (
                 <div className="border-l-2 border-slate-100 pl-4 py-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-bold text-logo-blue opacity-30">
+                    <span className="text-xs font-semibold text-slate-500">
                       Replying to{" "}
-                      {parentPost?.authorDisplay &&
-                      parentPost.authorDisplay !== "Anonymous User"
-                        ? parentPost.authorDisplay
-                        : "Anonymous User"}
-                      ...
+                      {isSubReply
+                        ? (parentReply?.authorDisplay &&
+                          parentReply.authorDisplay !== "Anonymous User"
+                            ? parentReply.authorDisplay
+                            : "Anonymous User")
+                        : (parentPost?.authorDisplay &&
+                          parentPost.authorDisplay !== "Anonymous User"
+                            ? parentPost.authorDisplay
+                            : "Anonymous User")
+                      }...
                     </span>
                   </div>
                   <p className="text-sm text-slate-500 line-clamp-2 italic leading-relaxed">
-                    "{parentPost?.postContent}"
+                    "{isSubReply ? parentReply?.postContent : parentPost?.postContent}"
                   </p>
                 </div>
               )}
 
-              {/* Stance Selector: Only for replies */}
-              {isReply && (
+              {/* Stance Selector: only for direct replies (not sub-replies) */}
+              {isReply && !isSubReply && (
                 <div className="space-y-4">
                   <label className="text-sm font-bold text-logo-blue opacity-30">
                     Your Stance:
