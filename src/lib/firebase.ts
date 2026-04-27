@@ -308,31 +308,28 @@ export const subscribeToReplies = (
 };
 
 /**
- * Lazily subscribes to sub-replies for a given reply.
- * Re-call with a higher limit to load more ("load more" button).
- * Sub-replies are sorted oldest-first (chronological reading order).
+ * Lazily subscribes to sub-replies for a given reply using a gap-loading strategy.
+ * Subscribes to the oldest `topLimit` items and the newest 2 items.
  */
-export const subscribeToSubReplies = (
+export const subscribeToSubRepliesWithGap = (
   rootPostId: string,
   parentReplyId: string,
-  limit: number,
-  callback: (subReplies: Post[]) => void,
+  topLimit: number,
+  callback: (subReplies: Post[], hasGap: boolean) => void,
 ) => {
   const subRepliesRef = ref(db, `subreplies/${rootPostId}/${parentReplyId}`);
-  const q = query(
-    subRepliesRef,
-    orderByChild("timestamp"),
-    limitToFirst(limit),
-  );
+  
+  const qTop = query(subRepliesRef, orderByChild("timestamp"), limitToFirst(topLimit));
+  const qBottom = query(subRepliesRef, orderByChild("timestamp"), limitToLast(2));
 
-  return onValue(q, (snapshot) => {
-    if (!snapshot.exists()) {
-      callback([]);
-      return;
-    }
+  let topData: Record<string, any> | null = null;
+  let bottomData: Record<string, any> | null = null;
 
-    const data = snapshot.val();
-    const list: Post[] = Object.entries(data)
+  const emit = () => {
+    if (topData === null || bottomData === null) return;
+    
+    const mergedData = { ...topData, ...bottomData };
+    const list: Post[] = Object.entries(mergedData)
       .map(([id, val]: [string, any]) => ({
         id,
         ...val,
@@ -344,8 +341,31 @@ export const subscribeToSubReplies = (
           getSortableTimestamp(a.timestamp) - getSortableTimestamp(b.timestamp),
       );
 
-    callback(list);
+    const topKeys = Object.keys(topData);
+    const bottomKeys = Object.keys(bottomData);
+    
+    // Gap exists if top limit is reached AND top/bottom don't overlap
+    const topHitLimit = topKeys.length === topLimit;
+    const intersect = topKeys.some(k => bottomKeys.includes(k));
+    const hasGap = topHitLimit && !intersect;
+
+    callback(list, hasGap);
+  };
+
+  const unsubTop = onValue(qTop, (snapshot) => {
+    topData = snapshot.exists() ? snapshot.val() : {};
+    emit();
   });
+
+  const unsubBottom = onValue(qBottom, (snapshot) => {
+    bottomData = snapshot.exists() ? snapshot.val() : {};
+    emit();
+  });
+
+  return () => {
+    unsubTop();
+    unsubBottom();
+  };
 };
 
 /**

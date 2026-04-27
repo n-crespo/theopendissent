@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Post } from "../../types";
-import { subscribeToSubReplies } from "../../lib/firebase";
+import { subscribeToSubRepliesWithGap } from "../../lib/firebase";
 import { FeedItem } from "./FeedItem";
 
 const PAGE_SIZE = 3;
@@ -9,49 +9,74 @@ const PAGE_SIZE = 3;
 interface SubReplyThreadProps {
   rootPostId: string;
   parentReply: Post;
+  recentlyRepliedToId?: string | null;
+  setRecentlyRepliedToId?: (id: string | null) => void;
   onReply: () => void;
 }
 
 /**
  * Inline expand/collapse thread of sub-replies for a given reply.
  * Rendered immediately below the parent reply's FeedItem in PostDetails.
- *
- * Collapse methods:
- *  1. Click the vertical thread line on the left
- *  2. "Collapse" button at the top-right of the thread
- *  3. "Collapse" button at the bottom-right of the thread
  */
 export const SubReplyThread = ({
   rootPostId,
   parentReply,
+  recentlyRepliedToId,
+  setRecentlyRepliedToId,
   onReply,
 }: SubReplyThreadProps) => {
   const [expanded, setExpanded] = useState(false);
-  const [limit, setLimit] = useState(PAGE_SIZE);
+  const [topLimit, setTopLimit] = useState(2);
   const [subReplies, setSubReplies] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
+  const [shouldScroll, setShouldScroll] = useState(false);
+  const [hasGap, setHasGap] = useState(false);
+
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   const collapse = () => {
     setExpanded(false);
     // Keep cached data so re-opening is instant and avoids height-jumps
-    // setSubReplies([]);
-    // setLimit(PAGE_SIZE);
   };
+
+  // Auto-expand and scroll on new reply
+  useEffect(() => {
+    if (recentlyRepliedToId === parentReply.id) {
+      setExpanded(true);
+      setTopLimit(100); // Load all to avoid gaps when auto-scrolling to newest
+      setShouldScroll(true);
+    }
+  }, [recentlyRepliedToId, parentReply.id]);
+
+  // Execute scroll once data is loaded
+  useEffect(() => {
+    if (shouldScroll && subReplies.length > 0 && !loading) {
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        if (setRecentlyRepliedToId) setRecentlyRepliedToId(null);
+      }, 100);
+      setShouldScroll(false);
+    }
+  }, [shouldScroll, subReplies.length, loading, setRecentlyRepliedToId]);
 
   useEffect(() => {
     if (!expanded) return;
     setLoading(true);
-    const unsub = subscribeToSubReplies(
+    const unsub = subscribeToSubRepliesWithGap(
       rootPostId,
       parentReply.id,
-      limit,
-      (replies) => {
+      topLimit,
+      (replies, gap) => {
         setSubReplies(replies);
+        setHasGap(gap);
         setLoading(false);
       },
     );
     return unsub;
-  }, [expanded, limit, rootPostId, parentReply.id]);
+  }, [expanded, topLimit, rootPostId, parentReply.id]);
 
   const isInitialLoading = expanded && loading && subReplies.length === 0;
 
@@ -69,17 +94,17 @@ export const SubReplyThread = ({
       >
         {isInitialLoading ? (
           <>
-            <i className="bi bi-arrow-repeat animate-spin leading-none" />
+            <i className="bi bi-arrow-repeat animate-spin text-base leading-none" />
             <span>Loading...</span>
           </>
         ) : expanded ? (
           <>
-            <i className="bi bi-arrow-down-short leading-none" />
+            <i className="bi bi-arrow-down-short text-base leading-none" />
             <span>Collapse</span>
           </>
         ) : (
           <>
-            <i className="bi bi-arrow-right-short leading-none" />
+            <i className="bi bi-arrow-right-short text-base leading-none" />
             <span>Replies</span>
           </>
         )}
@@ -96,7 +121,7 @@ export const SubReplyThread = ({
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="overflow-hidden"
           >
-            <div className="flex gap-x-1 pt-1 pb-2">
+            <div className="flex gap-x-2 pt-1">
               {/* thread line (vertical bar). clicking collapses the thread. */}
               <button
                 onClick={collapse}
@@ -110,51 +135,58 @@ export const SubReplyThread = ({
               {/* Sub-reply list */}
               <div className="flex-1 flex flex-col gap-y-2 min-w-0">
                 <AnimatePresence>
-                  {subReplies.map((sr) => (
-                    <motion.div
-                      key={sr.id}
-                      layout
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
-                    >
-                      <FeedItem
-                        item={sr}
-                        isReply={true}
-                        threadAuthorUserId={parentReply.userId}
-                        onReply={onReply}
-                      />
-                    </motion.div>
-                  ))}
+                  {subReplies.map((sr, index) => {
+                    // Check if this is the end of the top block (index = topLimit - 1)
+                    const isEndOfTop = hasGap && index === topLimit - 1;
+                    return (
+                      <div key={sr.id} className="flex flex-col">
+                        <motion.div
+                          layout
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                        >
+                          <FeedItem
+                            item={sr}
+                            isReply={true}
+                            threadAuthorUserId={parentReply.userId}
+                            onReply={onReply}
+                          />
+                        </motion.div>
+
+                        {isEndOfTop && (
+                          <div className="flex justify-center py-2">
+                            <button
+                              onClick={() => setTopLimit((l) => l + PAGE_SIZE)}
+                              className="text-sm font-semibold text-logo-blue hover:text-logo-blue/80 transition-colors flex items-center gap-x-1.5 bg-logo-blue/10 hover:bg-logo-blue/15 px-4 py-2 rounded-full"
+                            >
+                              <i className="bi bi-three-dots"></i>
+                              Show hidden replies
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </AnimatePresence>
 
                 {/* Empty state */}
                 {!loading && subReplies.length === 0 && (
-                  <p className="text-xs text-slate-300 px-2 py-1 italic">
+                  <p className="text-sm text-slate-300 px-2 py-1 italic">
                     No replies yet.
                   </p>
                 )}
 
-                {/* Bottom row: load more (left) + collapse (right) */}
-                <div className="flex items-center justify-between px-1 pt-1">
-                  {subReplies.length >= limit ? (
-                    <button
-                      onClick={() => setLimit((l) => l + PAGE_SIZE)}
-                      className="flex items-center gap-x-1 text-sm font-semibold text-slate-400 hover:text-slate-600 py-1 transition-colors"
-                    >
-                      <i className="bi bi-plus text-sm" />
-                      Load more
-                    </button>
-                  ) : (
-                    <span />
-                  )}
+                <div ref={bottomRef} className="h-0 w-full" />
 
+                {/* Bottom row: collapse (right) */}
+                <div className="flex items-center justify-end px-1 -mt-1">
                   <button
                     onClick={collapse}
-                    className="flex items-center gap-x-1 text-sm font-semibold text-slate-400 hover:text-slate-600 py-1 transition-colors"
+                    className="flex items-center gap-x-1 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors"
                   >
-                    <i className="bi bi-arrow-up-short text-xs" />
+                    <i className="bi bi-arrow-up text-sm" />
                     Collapse
                   </button>
                 </div>

@@ -15,6 +15,7 @@ interface ComposeModalProps {
   parentPost?: Post | null;
   /** set when composing a sub-reply — the direct reply being responded to */
   parentReply?: Post | null;
+  onReplyPosted?: (parentId: string) => void;
 }
 
 export const ComposeModal = ({
@@ -22,6 +23,7 @@ export const ComposeModal = ({
   onClose,
   parentPost,
   parentReply,
+  onReplyPosted,
 }: ComposeModalProps) => {
   const { user } = useAuth();
   const { openModal, closeModal } = useModal();
@@ -94,6 +96,9 @@ export const ComposeModal = ({
           });
 
           if (newKey) pinPostToTop(newKey);
+          if (parentReply && onReplyPosted) {
+            onReplyPosted(parentReply.id);
+          }
           onClose();
           closeModal();
         } catch (error) {

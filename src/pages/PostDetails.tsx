@@ -24,7 +24,7 @@ export const PostDetails = () => {
   const navigate = useNavigate();
 
   // grab the setters from Layout
-  const { setActiveParent, setIsComposeOpen, setActiveReplyTo }: any =
+  const { setActiveParent, setIsComposeOpen, setActiveReplyTo, recentlyRepliedToId, setRecentlyRepliedToId }: any =
     useOutletContext();
 
   const [replies, setReplies] = useState<Post[]>([]);
@@ -173,6 +173,8 @@ export const PostDetails = () => {
                   <SubReplyThread
                     rootPostId={postId!}
                     parentReply={reply}
+                    recentlyRepliedToId={recentlyRepliedToId}
+                    setRecentlyRepliedToId={setRecentlyRepliedToId}
                     onReply={() => {
                       setActiveReplyTo(reply);
                       setIsComposeOpen(true);

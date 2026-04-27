@@ -36,6 +36,7 @@ function Layout() {
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [activeParent, setActiveParent] = useState<Post | null>(null);
   const [activeReplyTo, setActiveReplyTo] = useState<Post | null>(null);
+  const [recentlyRepliedToId, setRecentlyRepliedToId] = useState<string | null>(null);
   const [isInitialCheck, setIsInitialCheck] = useState(true);
   const [showLanding, setShowLanding] = useState(false);
 
@@ -102,7 +103,13 @@ function Layout() {
           {/* FEED (CENTER) */}
           <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2 relative">
             <Outlet
-              context={{ setActiveParent, setIsComposeOpen: handleOpenCompose, setActiveReplyTo }}
+              context={{ 
+                setActiveParent, 
+                setIsComposeOpen: handleOpenCompose, 
+                setActiveReplyTo,
+                recentlyRepliedToId,
+                setRecentlyRepliedToId
+              }}
             />
           </main>
 
@@ -132,6 +139,7 @@ function Layout() {
           onClose={() => { handleOpenCompose(false); setActiveReplyTo(null); }}
           parentPost={activeParent}
           parentReply={activeReplyTo}
+          onReplyPosted={(replyId) => setRecentlyRepliedToId(replyId)}
         />
         <Footer />
       </div>
