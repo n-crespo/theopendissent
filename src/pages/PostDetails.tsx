@@ -24,8 +24,13 @@ export const PostDetails = () => {
   const navigate = useNavigate();
 
   // grab the setters from Layout
-  const { setActiveParent, setIsComposeOpen, setActiveReplyTo, recentlyRepliedToId, setRecentlyRepliedToId }: any =
-    useOutletContext();
+  const {
+    setActiveParent,
+    setIsComposeOpen,
+    setActiveReplyTo,
+    recentlyRepliedToId,
+    setRecentlyRepliedToId,
+  }: any = useOutletContext();
 
   const [replies, setReplies] = useState<Post[]>([]);
   const [isLoadingReplies, setIsLoadingReplies] = useState(true);
