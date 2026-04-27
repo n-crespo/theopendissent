@@ -218,15 +218,62 @@ export const onReplyDeletedCleanup = onValueDeleted(
     const updates: Record<string, null> = {};
 
     // if the post was made non-anonymously, clean up the user receipt.
-    // otherwise, it'll be cleaned up later.
-    // TODO: ensure dangling pointer is self-deleted on read (to avoid
-    // performance overhead of doing it automatically)
+    // otherwise, it'll be cleaned up later. dangling pointer is self-deleted on
+    // read to avoid performance overhead of doing it automatically.
     if (replyData?.userId) {
       updates[`users/${replyData.userId}/replies/${parentId}/${replyId}`] =
         null;
     }
 
+    // cascade: remove all sub-replies for this reply.
+    // each deletion fires onSubReplyWritten + onSubReplyDeletedCleanup
+    // to handle hasSubReply and user receipt cleanup automatically.
+    await db.ref(`subreplies/${parentId}/${replyId}`).remove();
+
     return db.ref().update(updates);
+  },
+);
+
+/**
+ * Manages the hasSubReply flag on parent reply when sub-replies are created or deleted.
+ */
+export const onSubReplyWritten = onValueWritten(
+  "/subreplies/{rootPostId}/{parentReplyId}/{subReplyId}",
+  async (event) => {
+    const { rootPostId, parentReplyId } = event.params;
+    const db = admin.database();
+
+    const created = event.data.after.exists() && !event.data.before.exists();
+    const deleted = !event.data.after.exists() && event.data.before.exists();
+
+    if (!created && !deleted) return null;
+
+    const parentReplyRef = db.ref(
+      `replies/${rootPostId}/${parentReplyId}/hasSubReply`,
+    );
+
+    if (created) {
+      return parentReplyRef.set(true);
+    }
+
+    // on delete: guard against ghost-node creation when the parent reply
+    // was already removed (e.g. cascade from onReplyDeletedCleanup)
+    const parentReplySnap = await db
+      .ref(`replies/${rootPostId}/${parentReplyId}`)
+      .once("value");
+    if (!parentReplySnap.exists()) return null;
+
+    // only clear the flag if no siblings remain
+    const siblingsSnap = await db
+      .ref(`subreplies/${rootPostId}/${parentReplyId}`)
+      .limitToFirst(1)
+      .once("value");
+
+    if (!siblingsSnap.exists()) {
+      return parentReplyRef.set(false);
+    }
+
+    return null;
   },
 );
 
@@ -380,6 +427,72 @@ export const onReplyCreatedNotification = onValueCreated(
       });
     } catch (error) {
       console.error(`Notification trigger failed for reply ${replyId}:`, error);
+      return null;
+    }
+  },
+);
+
+// TODO:: currently notifications are only sent on non-anonymous posts/replies.
+// there would be high performance overhead for enabling it for anonymous posts
+// too (doesn't scale well). Is there a good compromise?
+
+/**
+ * Automatically creates or updates a notification for the direct reply owner
+ * when a new sub-reply is created.
+ */
+export const onSubReplyCreatedNotification = onValueCreated(
+  "/subreplies/{rootPostId}/{parentReplyId}/{subReplyId}",
+  async (event) => {
+    const { rootPostId, parentReplyId, subReplyId } = event.params;
+    const subReplyData = event.data.val();
+    const db = admin.database();
+
+    // only send notifications for non-anonymous sub-replies
+    if (!subReplyData || !subReplyData.userId) return null;
+
+    try {
+      // find the owner of the direct reply being replied to
+      const parentReplySnap = await db
+        .ref(`replies/${rootPostId}/${parentReplyId}`)
+        .once("value");
+      const parentReplyData = parentReplySnap.val();
+      const ownerId = parentReplyData?.userId;
+
+      // don't notify if the user is replying to their own reply
+      if (!ownerId || ownerId === subReplyData.userId) return null;
+
+      // aggregate under the parentReplyId so notifications for the same reply
+      // are grouped together (same pattern as post reply notifications)
+      const notifRef = db.ref(
+        `users/${ownerId}/notifications/${parentReplyId}`,
+      );
+      const now = Date.now();
+
+      return notifRef.transaction((current) => {
+        if (current) {
+          return {
+            ...current,
+            count: (current.count || 1) + 1,
+            latestReplyId: subReplyId,
+            isRead: false,
+            updatedAt: now,
+          };
+        } else {
+          return {
+            type: "reply",
+            count: 1,
+            latestReplyId: subReplyId,
+            isRead: false,
+            createdAt: now,
+            updatedAt: now,
+          };
+        }
+      });
+    } catch (error) {
+      console.error(
+        `Notification trigger failed for sub-reply ${subReplyId}:`,
+        error,
+      );
       return null;
     }
   },
