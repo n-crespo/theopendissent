@@ -237,7 +237,6 @@ export const getPostById = async (
         id: postId,
         ...data,
         replyCount: data.replyCount || 0,
-        subReplyCount: data.subReplyCount || 0,
       };
     }
 
@@ -269,7 +268,6 @@ export const subscribeToPost = (
       callback({
         id: postId,
         ...data,
-        subReplyCount: data.subReplyCount || 0,
       });
     } else {
       callback(null);
@@ -299,7 +297,6 @@ export const subscribeToReplies = (
         id,
         ...val,
         replyCount: val.replyCount || 0,
-        subReplyCount: val.subReplyCount || 0,
       }))
       .sort(
         (a, b) =>

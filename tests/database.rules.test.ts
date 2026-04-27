@@ -1181,24 +1181,6 @@ describe("Realtime Database rules", () => {
     });
   });
 
-  describe("Sub-Reply Protected Fields", () => {
-    it("denies client from writing subReplyCount = 1 to a reply", async () => {
-      const dbA = authedDb(uidA);
-      // user_a owns post_1 (seeded in beforeEach), try to fake subReplyCount
-      await assertFails(
-        dbSet(dbA, `replies/${postId}/${replyId}/subReplyCount`, 1),
-      );
-    });
-
-    it("denies client from writing subReplyCount via update", async () => {
-      const dbA = authedDb(uidA);
-      await assertFails(
-        dbUpdate(dbA, `replies/${postId}`, {
-          [`${replyId}/subReplyCount`]: 1,
-        }),
-      );
-    });
-  });
 
   describe("Sub-Reply Lazy Cleanup (orphan receipt)", () => {
     it("allows lazy cleanup of a dangling subreply receipt when public object is gone", async () => {

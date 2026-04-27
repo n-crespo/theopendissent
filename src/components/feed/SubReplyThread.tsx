@@ -78,7 +78,7 @@ export const SubReplyThread = ({
 
   const isInitialLoading = expanded && loading && subReplies.length === 0;
 
-  const totalReplies = parentReply.subReplyCount || 0;
+  const totalReplies = parentReply.replyCount || 0;
   if (totalReplies === 0 && !expanded) return null;
 
   // Gap exists if we haven't fetched all known replies

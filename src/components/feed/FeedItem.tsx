@@ -234,7 +234,7 @@ export const FeedItem = memo(
             >
               <div className="relative flex items-center justify-center">
                 <i className="bi bi-chat text-lg"></i>
-                {!isSubReply && (item.subReplyCount || 0) > 0 && (
+                {!isSubReply && (item.replyCount || 0) > 0 && (
                   <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-100 transition-all"></span>
                 )}
               </div>
@@ -272,7 +272,6 @@ export const FeedItem = memo(
     p.item.id === n.item.id &&
     p.item.postContent === n.item.postContent &&
     p.item.replyCount === n.item.replyCount &&
-    p.item.subReplyCount === n.item.subReplyCount &&
     p.item.editedAt === n.item.editedAt &&
     p.item.interactionScore === n.item.interactionScore &&
     p.highlighted === n.highlighted,

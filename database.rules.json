@@ -103,10 +103,6 @@
             ".write": false,
             ".validate": "newData.isNumber() && newData.val() == 0"
           },
-          "subReplyCount": {
-            ".write": false,
-            ".validate": "newData.isNumber() && newData.val() == 0"
-          },
           "userId": {
             ".validate": "!newData.exists() || newData.val() === auth.uid"
           },
@@ -131,7 +127,9 @@
     "subreplies": {
       "$post_id": {
         "$reply_id": {
-          ".indexOn": ["timestamp"],
+          ".indexOn": [
+            "timestamp"
+          ],
           ".read": true,
           ".write": false,
           "$subreply_id": {

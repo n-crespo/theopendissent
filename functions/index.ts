@@ -84,6 +84,37 @@ const deleteRepliesInBatches = async (postId: string) => {
   }
 };
 
+/*
+ * Shared helper to synchronize a parent's replyCount.
+ * Safely guards against ghost-node creation during cascading deletes.
+ */
+const syncReplyCount = async (
+  parentRef: admin.database.Reference,
+  created: boolean,
+  deleted: boolean,
+  parentIdLog: string,
+) => {
+  if (!created && !deleted) return null;
+
+  const increment = created ? 1 : -1;
+
+  try {
+    // on delete: guard against ghost-node creation when the parent
+    // was already removed (e.g. cascade delete)
+    if (deleted) {
+      const parentSnap = await parentRef.once("value");
+      if (!parentSnap.exists()) return null;
+    }
+
+    return parentRef.child("replyCount").transaction((current) => {
+      return Math.max(0, (current || 0) + increment);
+    });
+  } catch (error) {
+    console.error(`counter sync failed for parent ${parentIdLog}:`, error);
+    return null;
+  }
+};
+
 /**
  * updates the replyCount on the parent (Post or Reply) when replies are created/deleted.
  */
@@ -96,25 +127,15 @@ export const updateReplyCount = onValueWritten(
     const created = event.data.after.exists() && !event.data.before.exists();
     const deleted = !event.data.after.exists() && event.data.before.exists();
 
-    // ignore edits to post content
     if (!created && !deleted) return null;
 
-    const increment = created ? 1 : -1;
-
-    try {
-      const parentRef = await getContentRef(parentId);
-      if (!parentRef) {
-        console.warn(`orphaned reply: parent ${parentId} not found.`);
-        return null;
-      }
-
-      return parentRef.child("replyCount").transaction((current) => {
-        return Math.max(0, (current || 0) + increment);
-      });
-    } catch (error) {
-      console.error(`counter sync failed for parent ${parentId}:`, error);
+    const parentRef = await getContentRef(parentId);
+    if (!parentRef) {
+      console.warn(`orphaned reply: parent ${parentId} not found.`);
       return null;
     }
+
+    return syncReplyCount(parentRef, created, deleted, parentId);
   },
 );
 
@@ -237,7 +258,7 @@ export const onReplyDeletedCleanup = onValueDeleted(
 /**
  * Manages the subReplyCount counter on parent reply when sub-replies are created or deleted.
  */
-export const onSubReplyWritten = onValueWritten(
+export const updateSubReplyCount = onValueWritten(
   "/subreplies/{rootPostId}/{parentReplyId}/{subReplyId}",
   async (event) => {
     const { rootPostId, parentReplyId } = event.params;
@@ -246,27 +267,8 @@ export const onSubReplyWritten = onValueWritten(
     const created = event.data.after.exists() && !event.data.before.exists();
     const deleted = !event.data.after.exists() && event.data.before.exists();
 
-    if (!created && !deleted) return null;
-
-    const increment = created ? 1 : -1;
-
-    try {
-      const parentReplyRef = db.ref(`replies/${rootPostId}/${parentReplyId}`);
-      
-      // on delete: guard against ghost-node creation when the parent reply
-      // was already removed (e.g. cascade from onReplyDeletedCleanup)
-      if (deleted) {
-        const parentReplySnap = await parentReplyRef.once("value");
-        if (!parentReplySnap.exists()) return null;
-      }
-
-      return parentReplyRef.child("subReplyCount").transaction((current) => {
-        return Math.max(0, (current || 0) + increment);
-      });
-    } catch (error) {
-      console.error(`counter sync failed for sub-reply parent ${parentReplyId}:`, error);
-      return null;
-    }
+    const parentReplyRef = db.ref(`replies/${rootPostId}/${parentReplyId}`);
+    return syncReplyCount(parentReplyRef, created, deleted, parentReplyId);
   },
 );
 
