@@ -56,7 +56,7 @@ export const SubReplyThread = ({
           block: "center",
         });
         if (setRecentlyRepliedToId) setRecentlyRepliedToId(null);
-      }, 100);
+      }, 400);
       setShouldScroll(false);
     }
   }, [shouldScroll, subReplies.length, loading, setRecentlyRepliedToId]);
@@ -101,12 +101,12 @@ export const SubReplyThread = ({
           </>
         ) : expanded ? (
           <>
-            <i className="bi bi-arrow-down-short text-base leading-none" />
+            <i className="bi bi-arrow-down text-base leading-none" />
             <span>Collapse</span>
           </>
         ) : (
           <>
-            <i className="bi bi-arrow-right-short text-base leading-none" />
+            <i className="bi bi-arrow-return-right text-base leading-none" />
             <span>Replies</span>
           </>
         )}
@@ -158,13 +158,16 @@ export const SubReplyThread = ({
                         </motion.div>
 
                         {isEndOfTop && (
-                          <div className="flex justify-center py-2">
+                          <div className="flex justify-center pt-2">
                             <button
                               onClick={() => setTopLimit((l) => l + PAGE_SIZE)}
-                              className="text-sm font-semibold text-logo-blue hover:text-logo-blue/80 transition-colors flex items-center gap-x-1.5 bg-logo-blue/10 hover:bg-logo-blue/15 px-4 py-2 rounded-full"
+                              className="text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-x-1.5 px-4 py-2 rounded-full"
                             >
                               <i className="bi bi-three-dots"></i>
-                              Show {totalReplies - subReplies.length} hidden replies
+                              Show {totalReplies - subReplies.length}{" "}
+                              {totalReplies - subReplies.length === 1
+                                ? "hidden reply"
+                                : "hidden replies"}
                             </button>
                           </div>
                         )}
