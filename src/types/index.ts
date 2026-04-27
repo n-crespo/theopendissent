@@ -9,7 +9,7 @@ export interface Post {
   parentPostId?: string;
   interactionScore?: number; // -3 to 3
   isThreadAuthor?: boolean;
-  parentReplyId?: string;  // sub-reply only: ID of the direct reply being responded to
+  parentReplyId?: string; // sub-reply only: ID of the direct reply being responded to
 }
 
 export interface UserProfile {

@@ -194,7 +194,9 @@ export const deletePost = async (
     if (parentReplyId && parentPostId) {
       // sub-reply: atomic delete of object + receipt
       dbUpdates[`subreplies/${parentPostId}/${parentReplyId}/${id}`] = null;
-      dbUpdates[`users/${userId}/subreplies/${parentPostId}/${parentReplyId}/${id}`] = null;
+      dbUpdates[
+        `users/${userId}/subreplies/${parentPostId}/${parentReplyId}/${id}`
+      ] = null;
     } else if (parentPostId) {
       // reply: atomic delete of object + receipt
       dbUpdates[`replies/${parentPostId}/${id}`] = null;
@@ -318,16 +320,24 @@ export const subscribeToSubRepliesWithGap = (
   callback: (subReplies: Post[]) => void,
 ) => {
   const subRepliesRef = ref(db, `subreplies/${rootPostId}/${parentReplyId}`);
-  
-  const qTop = query(subRepliesRef, orderByChild("timestamp"), limitToFirst(topLimit));
-  const qBottom = query(subRepliesRef, orderByChild("timestamp"), limitToLast(2));
+
+  const qTop = query(
+    subRepliesRef,
+    orderByChild("timestamp"),
+    limitToFirst(topLimit),
+  );
+  const qBottom = query(
+    subRepliesRef,
+    orderByChild("timestamp"),
+    limitToLast(2),
+  );
 
   let topData: Record<string, any> | null = null;
   let bottomData: Record<string, any> | null = null;
 
   const emit = () => {
     if (topData === null || bottomData === null) return;
-    
+
     const mergedData = { ...topData, ...bottomData };
     const list: Post[] = Object.entries(mergedData)
       .map(([id, val]: [string, any]) => ({
