@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   useLocation,
   useNavigationType,
@@ -36,19 +36,24 @@ function Layout() {
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [activeParent, setActiveParent] = useState<Post | null>(null);
   const [activeReplyTo, setActiveReplyTo] = useState<Post | null>(null);
-  const [recentlyRepliedToId, setRecentlyRepliedToId] = useState<string | null>(null);
+  const [recentlyRepliedToId, setRecentlyRepliedToId] = useState<string | null>(
+    null,
+  );
   const [isInitialCheck, setIsInitialCheck] = useState(true);
   const [showLanding, setShowLanding] = useState(false);
 
   const { openModal } = useModal();
 
-  const handleOpenCompose = (val: boolean) => {
-    if (val && !user) {
-      openModal("signin");
-      return;
-    }
-    setIsComposeOpen(val);
-  };
+  const handleOpenCompose = useCallback(
+    (val: boolean) => {
+      if (val && !user) {
+        openModal("signin");
+        return;
+      }
+      setIsComposeOpen(val);
+    },
+    [user, openModal],
+  );
 
   useDeepLinkHandler();
 
@@ -103,12 +108,12 @@ function Layout() {
           {/* FEED (CENTER) */}
           <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2 relative">
             <Outlet
-              context={{ 
-                setActiveParent, 
-                setIsComposeOpen: handleOpenCompose, 
+              context={{
+                setActiveParent,
+                setIsComposeOpen: handleOpenCompose,
                 setActiveReplyTo,
                 recentlyRepliedToId,
-                setRecentlyRepliedToId
+                setRecentlyRepliedToId,
               }}
             />
           </main>
@@ -136,7 +141,10 @@ function Layout() {
         <GlobalModal />
         <ComposeModal
           isOpen={isComposeOpen}
-          onClose={() => { handleOpenCompose(false); setActiveReplyTo(null); }}
+          onClose={() => {
+            handleOpenCompose(false);
+            setActiveReplyTo(null);
+          }}
           parentPost={activeParent}
           parentReply={activeReplyTo}
           onReplyPosted={(replyId) => setRecentlyRepliedToId(replyId)}
