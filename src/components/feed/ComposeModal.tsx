@@ -145,13 +145,13 @@ export const ComposeModal = ({
               {/* Post As Toggle */}
               <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-4">
                 <div className="flex flex-col gap-y-1">
-                  <span className="text-sm font-bold text-slate-900 leading-tight flex items-center gap-x-1.5">
+                  <span className="text-sm font-bold text-slate-900 flex items-center gap-x-1.5">
                     <span>Post Anonymously?</span>
                     {isThreadAuthor && (
                       <Badge label="Locked (Author)" variant="slate" />
                     )}
                   </span>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs  text-slate-500">
                     {isThreadAuthor
                       ? `Posting as ${authorDisplay}.`
                       : isAnonymous
@@ -181,7 +181,7 @@ export const ComposeModal = ({
               {isReply && (
                 <div className="border-l-2 border-slate-100 pl-4 py-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-semibold text-slate-500">
+                    <span className="text-xs font-bold text-logo-blue opacity-30">
                       Replying to{" "}
                       {parentPost?.authorDisplay &&
                       parentPost.authorDisplay !== "Anonymous User"
@@ -199,8 +199,8 @@ export const ComposeModal = ({
               {/* Stance Selector: Only for replies */}
               {isReply && (
                 <div className="space-y-4">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    Your Stance
+                  <label className="text-sm font-bold text-logo-blue opacity-30">
+                    Your Stance:
                   </label>
                   <div className="flex justify-between gap-2 my-2">
                     {[-3, -2, -1, 0, 1, 2, 3].map((val) => {

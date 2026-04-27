@@ -12,7 +12,7 @@ const variantStyles: Record<BadgeProps["variant"], string> = {
 
 export const Badge = ({ label, variant }: BadgeProps) => (
   <span
-    className={`text-sm font-semibold leading-tight px-1.5 py-0.5 rounded ${variantStyles[variant]}`}
+    className={`text-xs font-semibold leading-tight px-1.5 py-0.5 rounded ${variantStyles[variant]}`}
   >
     {label}
   </span>
