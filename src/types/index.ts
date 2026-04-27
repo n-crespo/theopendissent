@@ -9,6 +9,8 @@ export interface Post {
   parentPostId?: string;
   interactionScore?: number; // -3 to 3
   isThreadAuthor?: boolean;
+  parentReplyId?: string;  // sub-reply only: ID of the direct reply being responded to
+  hasSubReply?: boolean;   // reply only: cloud-fn managed; drives expand affordance
 }
 
 export interface UserProfile {
