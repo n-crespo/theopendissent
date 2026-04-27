@@ -43,6 +43,22 @@ export interface UserCounts {
   interacted: number;
 }
 
+/** Options for creating a new post, reply, or sub-reply. */
+export interface CreatePostOptions {
+  userId: string;
+  content: string;
+  authorDisplay: string;
+  /** root post being replied to; absent for top-level posts */
+  parentPostId?: string;
+  /** direct reply being responded to; present only for sub-replies */
+  parentReplyId?: string;
+  /** stance score — replies only */
+  score?: number;
+  isThreadAuthor?: boolean;
+  /** include userId in the public object (non-anonymous mode) */
+  includePublicUserId?: boolean;
+}
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
@@ -73,16 +89,16 @@ const getSortableTimestamp = (timestamp: number | object | undefined) => {
  * creates a new post, reply, or sub-reply.
  * pass parentReplyId to write to the subreplies/ tree instead of replies/.
  */
-export const createPost = async (
-  userId: string,
-  content: string,
-  authorDisplay: string,
-  parentPostId?: string,
-  score?: number,
-  isThreadAuthor?: boolean,
+export const createPost = async ({
+  userId,
+  content,
+  authorDisplay,
+  parentPostId,
+  parentReplyId,
+  score,
+  isThreadAuthor,
   includePublicUserId = false,
-  parentReplyId?: string,
-) => {
+}: CreatePostOptions) => {
   const mainTree =
     parentReplyId && parentPostId
       ? `subreplies/${parentPostId}/${parentReplyId}`
@@ -143,58 +159,54 @@ export const createPost = async (
 
 /**
  * updates content in the correct tree (posts/, replies/, or subreplies/).
+ * accepts the post object directly so callers don’t thread multiple id params.
  */
 export const updatePost = async (
-  postId: string,
+  post: Pick<Post, "id" | "parentPostId" | "parentReplyId">,
   updates: Partial<Pick<Post, "postContent" | "editedAt">>,
-  parentPostId?: string,
-  parentReplyId?: string,
 ) => {
+  const { id, parentPostId, parentReplyId } = post;
   const path =
     parentReplyId && parentPostId
-      ? `subreplies/${parentPostId}/${parentReplyId}/${postId}`
+      ? `subreplies/${parentPostId}/${parentReplyId}/${id}`
       : parentPostId
-        ? `replies/${parentPostId}/${postId}`
-        : `posts/${postId}`;
+        ? `replies/${parentPostId}/${id}`
+        : `posts/${id}`;
 
-  const multiUpdates: Record<string, any> = {
+  return update(ref(db), {
     [`${path}/postContent`]: updates.postContent,
     [`${path}/editedAt`]: updates.editedAt,
-  };
-
-  return update(ref(db), multiUpdates);
+  });
 };
 
 /**
  * removes a post, reply, or sub-reply and cleans up all associated references atomically.
+ * accepts the post object directly so callers don’t thread multiple id params.
  */
 export const deletePost = async (
-  postId: string,
+  post: Pick<Post, "id" | "parentPostId" | "parentReplyId">,
   userId: string,
-  parentPostId?: string,
-  parentReplyId?: string,
 ) => {
+  const { id, parentPostId, parentReplyId } = post;
   try {
-    const updates: Record<string, any> = {};
+    const dbUpdates: Record<string, any> = {};
 
     if (parentReplyId && parentPostId) {
       // sub-reply: atomic delete of object + receipt
-      updates[`subreplies/${parentPostId}/${parentReplyId}/${postId}`] = null;
-      updates[
-        `users/${userId}/subreplies/${parentPostId}/${parentReplyId}/${postId}`
-      ] = null;
+      dbUpdates[`subreplies/${parentPostId}/${parentReplyId}/${id}`] = null;
+      dbUpdates[`users/${userId}/subreplies/${parentPostId}/${parentReplyId}/${id}`] = null;
     } else if (parentPostId) {
       // reply: atomic delete of object + receipt
-      updates[`replies/${parentPostId}/${postId}`] = null;
-      updates[`users/${userId}/replies/${parentPostId}/${postId}`] = null;
+      dbUpdates[`replies/${parentPostId}/${id}`] = null;
+      dbUpdates[`users/${userId}/replies/${parentPostId}/${id}`] = null;
     } else {
       // post: delete object + receipt
-      updates[`posts/${postId}`] = null;
-      updates[`users/${userId}/posts/${postId}`] = null;
+      dbUpdates[`posts/${id}`] = null;
+      dbUpdates[`users/${userId}/posts/${id}`] = null;
       // cloud function handles cascade to replies/ to avoid permission errors
     }
 
-    await update(ref(db), updates);
+    await update(ref(db), dbUpdates);
   } catch (error) {
     console.error("error deleting content:", error);
     throw error;

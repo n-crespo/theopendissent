@@ -78,15 +78,15 @@ export const ComposeModal = ({
       onConfirm: async () => {
         setIsPosting(true);
         try {
-          const newKey = await createPost(
-            user.uid,
-            content.trim(),
+          const newKey = await createPost({
+            userId: user.uid,
+            content: content.trim(),
             authorDisplay,
-            parentPost?.id,
-            isReply ? score : undefined,
+            parentPostId: parentPost?.id,
+            score: isReply ? score : undefined,
             isThreadAuthor,
-            !isAnonymous,
-          );
+            includePublicUserId: !isAnonymous,
+          });
 
           if (newKey) pinPostToTop(newKey);
           onClose();
