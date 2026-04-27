@@ -30,7 +30,6 @@ export const SubReplyThread = ({
   const [subReplies, setSubReplies] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const [shouldScroll, setShouldScroll] = useState(false);
-  const [hasGap, setHasGap] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -69,9 +68,8 @@ export const SubReplyThread = ({
       rootPostId,
       parentReply.id,
       topLimit,
-      (replies, gap) => {
+      (replies) => {
         setSubReplies(replies);
-        setHasGap(gap);
         setLoading(false);
       },
     );
@@ -80,7 +78,11 @@ export const SubReplyThread = ({
 
   const isInitialLoading = expanded && loading && subReplies.length === 0;
 
-  if (!parentReply.hasSubReply && !expanded) return null;
+  const totalReplies = parentReply.subReplyCount || 0;
+  if (totalReplies === 0 && !expanded) return null;
+
+  // Gap exists if we haven't fetched all known replies
+  const hasGap = subReplies.length < totalReplies;
 
   return (
     <div>
@@ -162,7 +164,7 @@ export const SubReplyThread = ({
                               className="text-sm font-semibold text-logo-blue hover:text-logo-blue/80 transition-colors flex items-center gap-x-1.5 bg-logo-blue/10 hover:bg-logo-blue/15 px-4 py-2 rounded-full"
                             >
                               <i className="bi bi-three-dots"></i>
-                              Show hidden replies
+                              Show {totalReplies - subReplies.length} hidden replies
                             </button>
                           </div>
                         )}

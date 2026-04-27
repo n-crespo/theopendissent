@@ -235,7 +235,7 @@ export const onReplyDeletedCleanup = onValueDeleted(
 );
 
 /**
- * Manages the hasSubReply flag on parent reply when sub-replies are created or deleted.
+ * Manages the subReplyCount counter on parent reply when sub-replies are created or deleted.
  */
 export const onSubReplyWritten = onValueWritten(
   "/subreplies/{rootPostId}/{parentReplyId}/{subReplyId}",
@@ -248,32 +248,25 @@ export const onSubReplyWritten = onValueWritten(
 
     if (!created && !deleted) return null;
 
-    const parentReplyRef = db.ref(
-      `replies/${rootPostId}/${parentReplyId}/hasSubReply`,
-    );
+    const increment = created ? 1 : -1;
 
-    if (created) {
-      return parentReplyRef.set(true);
+    try {
+      const parentReplyRef = db.ref(`replies/${rootPostId}/${parentReplyId}`);
+      
+      // on delete: guard against ghost-node creation when the parent reply
+      // was already removed (e.g. cascade from onReplyDeletedCleanup)
+      if (deleted) {
+        const parentReplySnap = await parentReplyRef.once("value");
+        if (!parentReplySnap.exists()) return null;
+      }
+
+      return parentReplyRef.child("subReplyCount").transaction((current) => {
+        return Math.max(0, (current || 0) + increment);
+      });
+    } catch (error) {
+      console.error(`counter sync failed for sub-reply parent ${parentReplyId}:`, error);
+      return null;
     }
-
-    // on delete: guard against ghost-node creation when the parent reply
-    // was already removed (e.g. cascade from onReplyDeletedCleanup)
-    const parentReplySnap = await db
-      .ref(`replies/${rootPostId}/${parentReplyId}`)
-      .once("value");
-    if (!parentReplySnap.exists()) return null;
-
-    // only clear the flag if no siblings remain
-    const siblingsSnap = await db
-      .ref(`subreplies/${rootPostId}/${parentReplyId}`)
-      .limitToFirst(1)
-      .once("value");
-
-    if (!siblingsSnap.exists()) {
-      return parentReplyRef.set(false);
-    }
-
-    return null;
   },
 );
 

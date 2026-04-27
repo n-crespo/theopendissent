@@ -103,9 +103,9 @@
             ".write": false,
             ".validate": "newData.isNumber() && newData.val() == 0"
           },
-          "hasSubReply": {
+          "subReplyCount": {
             ".write": false,
-            ".validate": "newData.isBoolean()"
+            ".validate": "newData.isNumber() && newData.val() == 0"
           },
           "userId": {
             ".validate": "!newData.exists() || newData.val() === auth.uid"

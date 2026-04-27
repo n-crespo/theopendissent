@@ -237,6 +237,7 @@ export const getPostById = async (
         id: postId,
         ...data,
         replyCount: data.replyCount || 0,
+        subReplyCount: data.subReplyCount || 0,
       };
     }
 
@@ -268,6 +269,7 @@ export const subscribeToPost = (
       callback({
         id: postId,
         ...data,
+        subReplyCount: data.subReplyCount || 0,
       });
     } else {
       callback(null);
@@ -297,6 +299,7 @@ export const subscribeToReplies = (
         id,
         ...val,
         replyCount: val.replyCount || 0,
+        subReplyCount: val.subReplyCount || 0,
       }))
       .sort(
         (a, b) =>
@@ -315,7 +318,7 @@ export const subscribeToSubRepliesWithGap = (
   rootPostId: string,
   parentReplyId: string,
   topLimit: number,
-  callback: (subReplies: Post[], hasGap: boolean) => void,
+  callback: (subReplies: Post[]) => void,
 ) => {
   const subRepliesRef = ref(db, `subreplies/${rootPostId}/${parentReplyId}`);
   
@@ -341,15 +344,7 @@ export const subscribeToSubRepliesWithGap = (
           getSortableTimestamp(a.timestamp) - getSortableTimestamp(b.timestamp),
       );
 
-    const topKeys = Object.keys(topData);
-    const bottomKeys = Object.keys(bottomData);
-    
-    // Gap exists if top limit is reached AND top/bottom don't overlap
-    const topHitLimit = topKeys.length === topLimit;
-    const intersect = topKeys.some(k => bottomKeys.includes(k));
-    const hasGap = topHitLimit && !intersect;
-
-    callback(list, hasGap);
+    callback(list);
   };
 
   const unsubTop = onValue(qTop, (snapshot) => {
