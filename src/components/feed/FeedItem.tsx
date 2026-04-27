@@ -16,6 +16,8 @@ interface FeedItemProps {
   highlighted?: boolean;
   disableClick?: boolean;
   threadAuthorUserId?: string;
+  /** called when the Replies button is tapped on a reply card (opens sub-reply compose) */
+  onReply?: () => void;
 }
 
 export const FeedItem = memo(
@@ -25,6 +27,7 @@ export const FeedItem = memo(
     highlighted = false,
     disableClick = false,
     threadAuthorUserId,
+    onReply,
   }: FeedItemProps) => {
     if (!item || (!item.userId && !item.authorDisplay)) return null;
 
@@ -60,6 +63,7 @@ export const FeedItem = memo(
     const isNearLimit = charsLeft < 50;
 
     const hasReply = typeof item.replyCount === "number" && item.replyCount > 0;
+    const isSubReply = !!item.parentReplyId;
 
     // Stance Score calculation
     const score = item.interactionScore ?? 0;
@@ -189,47 +193,80 @@ export const FeedItem = memo(
           )}
         </div>
 
-        {/* Action Footer */}
-        <div className="grid grid-cols-2 border-t border-slate-100 bg-slate-50/20">
-          {/* LHS: Share button */}
+        {/* Action Footer — 3-col for replies (Share | Stance | Replies), 2-col for posts, full-width for sub-replies */}
+        <div
+          className={`border-t border-slate-100 bg-slate-50/20 ${
+            isSubReply
+              ? "flex"
+              : isReply && item.interactionScore !== undefined
+                ? "grid grid-cols-3"
+                : "grid grid-cols-2"
+          }`}
+        >
+          {/* Share */}
           <button
             onClick={(e) => handleAction(e, () => sharePost(item))}
-            className={`${actionButtonClass} border-r border-slate-100`}
+            className={`${actionButtonClass} border-r border-slate-100 ${isSubReply ? "flex-1" : ""}`}
           >
             <i className="bi bi-box-arrow-up text-lg"></i>
           </button>
 
-          {/* RHS: Discussion Button OR Stance Score */}
-          {isReply ? (
-            <div className="flex items-center justify-center py-4">
-              <span
-                className="font-black text-lg tracking-tight select-none"
-                style={{ color: stanceColor }}
+          {/* Stance — middle column, reply cards only */}
+          {isReply && item.interactionScore !== undefined && (
+            <div className="flex gap-3 items-center justify-center py-3 border-r border-slate-100">
+              <div className="text-sm font-semibold text-slate-400">
+                Stance:
+              </div>
+              <div
+                title={`Stance: ${displayScore}`}
+                style={{ backgroundColor: stanceColor }}
+                className="px-4 py-2 rounded-xl text-sm font-bold text-white select-none cursor-default"
               >
                 {displayScore}
-              </span>
-            </div>
-          ) : (
-            <button
-              onClick={(e) =>
-                handleAction(
-                  e,
-                  () => !disableClick && navigate(`/post/${item.id}`),
-                )
-              }
-              disabled={disableClick}
-              className={`${actionButtonClass} disabled:opacity-50 group`}
-            >
-              <div className="relative flex items-center justify-center">
-                <i
-                  className={`bi ${disableClick ? "bi-chat-fill text-transparent bg-clip-text bg-linear-to-r from-logo-red via-logo-green to-logo-blue" : "bi-chat"} text-lg`}
-                ></i>
-                {hasReply && !disableClick && (
-                  <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-100 transition-all"></span>
-                )}
               </div>
-            </button>
+            </div>
           )}
+
+          {/* Replies — hidden for sub-replies (max depth) */}
+          {!isSubReply &&
+            (isReply ? (
+              <button
+                onClick={(e) => handleAction(e, () => onReply?.())}
+                disabled={!onReply}
+                className={`${actionButtonClass} group disabled:opacity-30`}
+              >
+                <div className="relative flex items-center justify-center">
+                  <i className="bi bi-chat text-lg"></i>
+                  {item.hasSubReply && (
+                    <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-100 transition-all"></span>
+                  )}
+                </div>
+              </button>
+            ) : (
+              <button
+                onClick={(e) =>
+                  handleAction(
+                    e,
+                    () => !disableClick && navigate(`/post/${item.id}`),
+                  )
+                }
+                disabled={disableClick}
+                className={`${actionButtonClass} disabled:opacity-50 group`}
+              >
+                <div className="relative flex items-center justify-center">
+                  <i
+                    className={`bi ${
+                      disableClick
+                        ? "bi-chat-fill text-transparent bg-clip-text bg-linear-to-r from-logo-red via-logo-green to-logo-blue"
+                        : "bi-chat"
+                    } text-lg`}
+                  ></i>
+                  {hasReply && !disableClick && (
+                    <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-100 transition-all"></span>
+                  )}
+                </div>
+              </button>
+            ))}
         </div>
       </div>
     );
@@ -238,6 +275,7 @@ export const FeedItem = memo(
     p.item.id === n.item.id &&
     p.item.postContent === n.item.postContent &&
     p.item.replyCount === n.item.replyCount &&
+    p.item.hasSubReply === n.item.hasSubReply &&
     p.item.editedAt === n.item.editedAt &&
     p.item.interactionScore === n.item.interactionScore &&
     p.highlighted === n.highlighted,
