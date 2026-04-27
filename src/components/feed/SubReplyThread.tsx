@@ -8,26 +8,23 @@ const PAGE_SIZE = 3;
 
 interface SubReplyThreadProps {
   rootPostId: string;
-  /** The reply this thread hangs off — provides id, hasSubReply, userId */
   parentReply: Post;
+  onReply: () => void;
 }
 
 /**
  * Inline expand/collapse thread of sub-replies for a given reply.
  * Rendered immediately below the parent reply's FeedItem in PostDetails.
  *
- * Layout when expanded:
- *   │  [sub-reply 1]
- *   │  [sub-reply 2]
- *   │  [+ Load more]
- *      [↑ Collapse]
- *
- * The vertical line (│) collapses the thread on click.
- * A text "Collapse" button at the bottom also collapses.
+ * Collapse methods:
+ *  1. Click the vertical thread line on the left
+ *  2. "Collapse" button at the top-right of the thread
+ *  3. "Collapse" button at the bottom-right of the thread
  */
 export const SubReplyThread = ({
   rootPostId,
   parentReply,
+  onReply,
 }: SubReplyThreadProps) => {
   const [expanded, setExpanded] = useState(false);
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -36,8 +33,9 @@ export const SubReplyThread = ({
 
   const collapse = () => {
     setExpanded(false);
-    setSubReplies([]);
-    setLimit(PAGE_SIZE);
+    // Keep cached data so re-opening is instant and avoids height-jumps
+    // setSubReplies([]);
+    // setLimit(PAGE_SIZE);
   };
 
   useEffect(() => {
@@ -55,76 +53,95 @@ export const SubReplyThread = ({
     return unsub;
   }, [expanded, limit, rootPostId, parentReply.id]);
 
-  // nothing to show and nothing expanded
+  const isInitialLoading = expanded && loading && subReplies.length === 0;
+
   if (!parentReply.hasSubReply && !expanded) return null;
 
   return (
     <div>
-      {/* Expand trigger — hidden once expanded */}
-      <AnimatePresence>
-        {!expanded && (
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setExpanded(true)}
-            className="flex items-center gap-x-1.5 px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <i className="bi bi-arrow-right-short text-base leading-none" />
+      {/* Thread toggle */}
+      <button
+        onClick={() => {
+          if (expanded) collapse();
+          else setExpanded(true);
+        }}
+        className="flex items-center gap-x-1.5 px-4 py-2 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors"
+      >
+        {isInitialLoading ? (
+          <>
+            <i className="bi bi-arrow-repeat animate-spin leading-none" />
+            <span>Loading...</span>
+          </>
+        ) : expanded ? (
+          <>
+            <i className="bi bi-arrow-down-short leading-none" />
+            <span>Collapse</span>
+          </>
+        ) : (
+          <>
+            <i className="bi bi-arrow-right-short leading-none" />
             <span>Replies</span>
-          </motion.button>
+          </>
         )}
-      </AnimatePresence>
+      </button>
 
       {/* Expanded thread */}
       <AnimatePresence>
-        {expanded && (
+        {expanded && !isInitialLoading && (
           <motion.div
+            layout
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
             className="overflow-hidden"
           >
-            <div className="flex gap-x-2 pt-1 pb-2">
-              {/* Vertical thread line — click to collapse */}
+            <div className="flex gap-x-1 pt-1 pb-2">
+              {/* thread line (vertical bar). clicking collapses the thread. */}
               <button
                 onClick={collapse}
                 title="Collapse replies"
-                className="w-5 flex-shrink-0 flex justify-center group px-1"
+                className="w-6 shrink-0 relative group"
+                style={{ minHeight: "2rem" }}
               >
-                <div className="w-0.5 bg-slate-200 rounded-full h-full group-hover:bg-slate-400 transition-colors" />
+                <div className="absolute left-1/2 -translate-x-1/2 top-1 bottom-4 w-0.5 bg-slate-200 group-hover:bg-slate-400 transition-colors rounded-full mb-7" />
               </button>
 
               {/* Sub-reply list */}
               <div className="flex-1 flex flex-col gap-y-2 min-w-0">
-                {/* Loading skeleton */}
-                {loading && subReplies.length === 0 && (
-                  <div className="h-16 bg-slate-50 rounded-xl animate-pulse" />
-                )}
+                <AnimatePresence>
+                  {subReplies.map((sr) => (
+                    <motion.div
+                      key={sr.id}
+                      layout
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                    >
+                      <FeedItem
+                        item={sr}
+                        isReply={true}
+                        threadAuthorUserId={parentReply.userId}
+                        onReply={onReply}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
 
-                {subReplies.map((sr) => (
-                  <FeedItem
-                    key={sr.id}
-                    item={sr}
-                    isReply={true}
-                    threadAuthorUserId={parentReply.userId}
-                  />
-                ))}
-
-                {/* Empty state (e.g. all sub-replies deleted while expanded) */}
+                {/* Empty state */}
                 {!loading && subReplies.length === 0 && (
                   <p className="text-xs text-slate-300 px-2 py-1 italic">
                     No replies yet.
                   </p>
                 )}
 
+                {/* Bottom row: load more (left) + collapse (right) */}
                 <div className="flex items-center justify-between px-1 pt-1">
-                  {/* Load more */}
                   {subReplies.length >= limit ? (
                     <button
                       onClick={() => setLimit((l) => l + PAGE_SIZE)}
-                      className="flex items-center gap-x-1 text-xs font-semibold text-slate-400 hover:text-slate-600 py-1 transition-colors"
+                      className="flex items-center gap-x-1 text-sm font-semibold text-slate-400 hover:text-slate-600 py-1 transition-colors"
                     >
                       <i className="bi bi-plus text-sm" />
                       Load more
@@ -133,12 +150,11 @@ export const SubReplyThread = ({
                     <span />
                   )}
 
-                  {/* Collapse */}
                   <button
                     onClick={collapse}
-                    className="flex items-center gap-x-1 text-xs font-semibold text-slate-400 hover:text-slate-600 py-1 transition-colors"
+                    className="flex items-center gap-x-1 text-sm font-semibold text-slate-400 hover:text-slate-600 py-1 transition-colors"
                   >
-                    <i className="bi bi-arrow-up text-xs" />
+                    <i className="bi bi-arrow-up-short text-xs" />
                     Collapse
                   </button>
                 </div>

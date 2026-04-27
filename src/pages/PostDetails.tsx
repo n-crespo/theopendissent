@@ -10,6 +10,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { subscribeToPost, subscribeToReplies } from "../lib/firebase";
 import { FeedItem } from "../components/feed/FeedItem";
+import { SubReplyThread } from "../components/feed/SubReplyThread";
 import { useAuth } from "../context/AuthContext";
 import { useOwnedPosts } from "../context/OwnedPostsContext";
 import { Post } from "../types";
@@ -23,7 +24,8 @@ export const PostDetails = () => {
   const navigate = useNavigate();
 
   // grab the setters from Layout
-  const { setActiveParent }: any = useOutletContext();
+  const { setActiveParent, setIsComposeOpen, setActiveReplyTo }: any =
+    useOutletContext();
 
   const [replies, setReplies] = useState<Post[]>([]);
   const [isLoadingReplies, setIsLoadingReplies] = useState(true);
@@ -86,11 +88,14 @@ export const PostDetails = () => {
     else navigate("/", { replace: true });
   };
 
-  const isOwner = (livePost?.userId && uid === livePost.userId) || (livePost && ownedPosts.has(livePost.id));
-  
-  const postAuthor = livePost?.authorDisplay && livePost.authorDisplay !== "Anonymous User"
-    ? livePost.authorDisplay
-    : "Anonymous User";
+  const isOwner =
+    (livePost?.userId && uid === livePost.userId) ||
+    (livePost && ownedPosts.has(livePost.id));
+
+  const postAuthor =
+    livePost?.authorDisplay && livePost.authorDisplay !== "Anonymous User"
+      ? livePost.authorDisplay
+      : "Anonymous User";
 
   return (
     <div className="flex flex-col gap-y-6">
@@ -123,7 +128,7 @@ export const PostDetails = () => {
         </section>
 
         <div className="flex items-center gap-x-4 px-2">
-          <h4 className="text-[0.65rem] font-extrabold tracking-wider uppercase text-slate-400 whitespace-nowrap">
+          <h4 className="text-sm font-bold text-logo-blue opacity-30">
             Discussion
           </h4>
           <div className="h-px w-full bg-slate-100"></div>
@@ -160,6 +165,18 @@ export const PostDetails = () => {
                     isReply={true}
                     highlighted={highlightReplyId === reply.id}
                     threadAuthorUserId={livePost?.userId}
+                    onReply={() => {
+                      setActiveReplyTo(reply);
+                      setIsComposeOpen(true);
+                    }}
+                  />
+                  <SubReplyThread
+                    rootPostId={postId!}
+                    parentReply={reply}
+                    onReply={() => {
+                      setActiveReplyTo(reply);
+                      setIsComposeOpen(true);
+                    }}
                   />
                 </motion.div>
               ))

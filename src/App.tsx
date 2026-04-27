@@ -35,6 +35,7 @@ function Layout() {
 
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [activeParent, setActiveParent] = useState<Post | null>(null);
+  const [activeReplyTo, setActiveReplyTo] = useState<Post | null>(null);
   const [isInitialCheck, setIsInitialCheck] = useState(true);
   const [showLanding, setShowLanding] = useState(false);
 
@@ -101,7 +102,7 @@ function Layout() {
           {/* FEED (CENTER) */}
           <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2 relative">
             <Outlet
-              context={{ setActiveParent, setIsComposeOpen: handleOpenCompose }}
+              context={{ setActiveParent, setIsComposeOpen: handleOpenCompose, setActiveReplyTo }}
             />
           </main>
 
@@ -128,8 +129,9 @@ function Layout() {
         <GlobalModal />
         <ComposeModal
           isOpen={isComposeOpen}
-          onClose={() => handleOpenCompose(false)}
+          onClose={() => { handleOpenCompose(false); setActiveReplyTo(null); }}
           parentPost={activeParent}
+          parentReply={activeReplyTo}
         />
         <Footer />
       </div>
