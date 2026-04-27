@@ -118,7 +118,7 @@ export const FeedList = ({
           posts.length > 0 && (
             <div className="flex flex-col items-center gap-2 opacity-40 py-8">
               <div className="h-px w-12 bg-slate-300 mb-2" />
-              <span className="text-slate-500 text-[10px] font-bold tracking-wider uppercase">
+              <span className="text-sm font-semibold text-logo-blue opacity-30">
                 You've reached the end!
               </span>
             </div>
