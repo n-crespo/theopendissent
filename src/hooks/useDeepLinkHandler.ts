@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDeepLinkData } from "../lib/firebase";
 
+// TODO: update this to allow linking to subreplies
+
 /**
  * Handles incoming deep links via ?s=ID and optional ?p=PARENT_ID.
  * Automatically redirects to the /post/:id route.
