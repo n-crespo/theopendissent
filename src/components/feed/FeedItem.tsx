@@ -240,30 +240,30 @@ export const FeedItem = memo(
               </div>
             </button>
           ) : (
-              <button
-                onClick={(e) =>
-                  handleAction(
-                    e,
-                    () => !disableClick && navigate(`/post/${item.id}`),
-                  )
-                }
-                disabled={disableClick}
-                className={`${actionButtonClass} disabled:opacity-50 group`}
-              >
-                <div className="relative flex items-center justify-center">
-                  <i
-                    className={`bi ${
-                      disableClick
-                        ? "bi-chat-fill text-transparent bg-clip-text bg-linear-to-r from-logo-red via-logo-green to-logo-blue"
-                        : "bi-chat"
-                    } text-lg`}
-                  ></i>
-                  {hasReply && !disableClick && (
-                    <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-100 transition-all"></span>
-                  )}
-                </div>
-              </button>
-            )}
+            <button
+              onClick={(e) =>
+                handleAction(
+                  e,
+                  () => !disableClick && navigate(`/post/${item.id}`),
+                )
+              }
+              disabled={disableClick}
+              className={`${actionButtonClass} disabled:opacity-50 group`}
+            >
+              <div className="relative flex items-center justify-center">
+                <i
+                  className={`bi ${
+                    disableClick
+                      ? "bi-chat-fill text-transparent bg-clip-text bg-linear-to-r from-logo-red via-logo-green to-logo-blue"
+                      : "bi-chat"
+                  } text-lg`}
+                ></i>
+                {hasReply && !disableClick && (
+                  <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-100 transition-all"></span>
+                )}
+              </div>
+            </button>
+          )}
         </div>
       </div>
     );
@@ -274,5 +274,6 @@ export const FeedItem = memo(
     p.item.replyCount === n.item.replyCount &&
     p.item.editedAt === n.item.editedAt &&
     p.item.interactionScore === n.item.interactionScore &&
-    p.highlighted === n.highlighted,
+    p.highlighted === n.highlighted &&
+    p.onReply === n.onReply,
 );
