@@ -13,6 +13,7 @@ import {
   query,
   orderByChild,
   limitToLast,
+  limitToFirst,
 } from "firebase/database";
 import {
   onAuthStateChanged,
@@ -69,7 +70,8 @@ const getSortableTimestamp = (timestamp: number | object | undefined) => {
 };
 
 /**
- * creates a new post or a reply.
+ * creates a new post, reply, or sub-reply.
+ * pass parentReplyId to write to the subreplies/ tree instead of replies/.
  */
 export const createPost = async (
   userId: string,
@@ -79,34 +81,59 @@ export const createPost = async (
   score?: number,
   isThreadAuthor?: boolean,
   includePublicUserId = false,
+  parentReplyId?: string,
 ) => {
-  const mainTree = parentPostId ? `replies/${parentPostId}` : "posts";
+  const mainTree =
+    parentReplyId && parentPostId
+      ? `subreplies/${parentPostId}/${parentReplyId}`
+      : parentPostId
+        ? `replies/${parentPostId}`
+        : "posts";
+
   const newKey = push(child(ref(db), mainTree)).key;
   if (!newKey) return;
 
-  const postData = {
-    id: newKey,
-    ...(includePublicUserId ? { userId } : {}),
-    authorDisplay,
-    postContent: content,
-    timestamp: serverTimestamp(),
-    replyCount: 0,
-    ...(parentPostId && {
+  const updates: Record<string, any> = {};
+
+  if (parentReplyId && parentPostId) {
+    // sub-reply: no replyCount, no interactionScore
+    updates[`subreplies/${parentPostId}/${parentReplyId}/${newKey}`] = {
+      id: newKey,
+      ...(includePublicUserId ? { userId } : {}),
+      authorDisplay,
+      postContent: content,
+      timestamp: serverTimestamp(),
+      parentPostId,
+      parentReplyId,
+      ...(isThreadAuthor ? { isThreadAuthor } : {}),
+    };
+    updates[
+      `users/${userId}/subreplies/${parentPostId}/${parentReplyId}/${newKey}`
+    ] = true;
+  } else if (parentPostId) {
+    // reply
+    updates[`replies/${parentPostId}/${newKey}`] = {
+      id: newKey,
+      ...(includePublicUserId ? { userId } : {}),
+      authorDisplay,
+      postContent: content,
+      timestamp: serverTimestamp(),
+      replyCount: 0,
       parentPostId,
       interactionScore: score,
       isThreadAuthor,
-    }),
-  };
-
-  const updates: Record<string, any> = {};
-
-  if (parentPostId) {
-    updates[`replies/${parentPostId}/${newKey}`] = postData;
-    // Store reference in user's profile: users/UID/replies/PARENT_ID/REPLY_ID = true
+    };
     updates[`users/${userId}/replies/${parentPostId}/${newKey}`] = true;
   } else {
-    updates[`posts/${newKey}`] = postData;
-    // Store reference in user's profile: users/UID/posts/POST_ID = true
+    // top-level post
+    updates[`posts/${newKey}`] = {
+      id: newKey,
+      ...(includePublicUserId ? { userId } : {}),
+      authorDisplay,
+      postContent: content,
+      timestamp: serverTimestamp(),
+      replyCount: 0,
+    };
     updates[`users/${userId}/posts/${newKey}`] = true;
   }
 
@@ -115,16 +142,20 @@ export const createPost = async (
 };
 
 /**
- * updates content in the correct tree.
+ * updates content in the correct tree (posts/, replies/, or subreplies/).
  */
 export const updatePost = async (
   postId: string,
   updates: Partial<Pick<Post, "postContent" | "editedAt">>,
   parentPostId?: string,
+  parentReplyId?: string,
 ) => {
-  const path = parentPostId
-    ? `replies/${parentPostId}/${postId}`
-    : `posts/${postId}`;
+  const path =
+    parentReplyId && parentPostId
+      ? `subreplies/${parentPostId}/${parentReplyId}/${postId}`
+      : parentPostId
+        ? `replies/${parentPostId}/${postId}`
+        : `posts/${postId}`;
 
   const multiUpdates: Record<string, any> = {
     [`${path}/postContent`]: updates.postContent,
@@ -135,29 +166,32 @@ export const updatePost = async (
 };
 
 /**
- * removes a post or reply and cleans up all associated references atomically.
+ * removes a post, reply, or sub-reply and cleans up all associated references atomically.
  */
 export const deletePost = async (
   postId: string,
   userId: string,
   parentPostId?: string,
+  parentReplyId?: string,
 ) => {
   try {
     const updates: Record<string, any> = {};
 
-    if (parentPostId) {
-      // remove reply data
+    if (parentReplyId && parentPostId) {
+      // sub-reply: atomic delete of object + receipt
+      updates[`subreplies/${parentPostId}/${parentReplyId}/${postId}`] = null;
+      updates[
+        `users/${userId}/subreplies/${parentPostId}/${parentReplyId}/${postId}`
+      ] = null;
+    } else if (parentPostId) {
+      // reply: atomic delete of object + receipt
       updates[`replies/${parentPostId}/${postId}`] = null;
-      // remove user reference (the receipt)
       updates[`users/${userId}/replies/${parentPostId}/${postId}`] = null;
     } else {
-      // remove post data
+      // post: delete object + receipt
       updates[`posts/${postId}`] = null;
-      // remove user reference (the receipt)
       updates[`users/${userId}/posts/${postId}`] = null;
-
-      // note: we don't delete replies/${postId} here.
-      // cloud function handles the cascade to avoid permission errors.
+      // cloud function handles cascade to replies/ to avoid permission errors
     }
 
     await update(ref(db), updates);
@@ -168,17 +202,20 @@ export const deletePost = async (
 };
 
 /**
- * Fetches a single post or reply by its id.
+ * Fetches a single post, reply, or sub-reply by its id.
  */
 export const getPostById = async (
   postId: string,
   parentPostId?: string,
+  parentReplyId?: string,
 ): Promise<Post | null> => {
   try {
-    // determine path based on whether parent id is provided
-    const contentPath = parentPostId
-      ? `replies/${parentPostId}/${postId}`
-      : `posts/${postId}`;
+    const contentPath =
+      parentReplyId && parentPostId
+        ? `subreplies/${parentPostId}/${parentReplyId}/${postId}`
+        : parentPostId
+          ? `replies/${parentPostId}/${postId}`
+          : `posts/${postId}`;
 
     const contentSnap = await get(ref(db, contentPath));
 
@@ -187,7 +224,6 @@ export const getPostById = async (
       return {
         id: postId,
         ...data,
-        // normalize fields to match the post type structure
         replyCount: data.replyCount || 0,
       };
     }
@@ -253,6 +289,47 @@ export const subscribeToReplies = (
       .sort(
         (a, b) =>
           getSortableTimestamp(b.timestamp) - getSortableTimestamp(a.timestamp),
+      );
+
+    callback(list);
+  });
+};
+
+/**
+ * Lazily subscribes to sub-replies for a given reply.
+ * Re-call with a higher limit to load more ("load more" button).
+ * Sub-replies are sorted oldest-first (chronological reading order).
+ */
+export const subscribeToSubReplies = (
+  rootPostId: string,
+  parentReplyId: string,
+  limit: number,
+  callback: (subReplies: Post[]) => void,
+) => {
+  const subRepliesRef = ref(db, `subreplies/${rootPostId}/${parentReplyId}`);
+  const q = query(
+    subRepliesRef,
+    orderByChild("timestamp"),
+    limitToFirst(limit),
+  );
+
+  return onValue(q, (snapshot) => {
+    if (!snapshot.exists()) {
+      callback([]);
+      return;
+    }
+
+    const data = snapshot.val();
+    const list: Post[] = Object.entries(data)
+      .map(([id, val]: [string, any]) => ({
+        id,
+        ...val,
+        parentPostId: rootPostId,
+        parentReplyId,
+      }))
+      .sort(
+        (a, b) =>
+          getSortableTimestamp(a.timestamp) - getSortableTimestamp(b.timestamp),
       );
 
     callback(list);
@@ -352,7 +429,7 @@ export const getDeepLinkData = async (
  */
 export const getUserActivity = async (
   userId: string,
-  filter: "posts" | "replies",
+  filter: "posts" | "replies" | "subreplies",
 ): Promise<Post[]> => {
   try {
     const snapshot = await get(ref(db, `users/${userId}/${filter}`));
@@ -362,7 +439,6 @@ export const getUserActivity = async (
     const deadReceipts: Record<string, null> = {};
     const tasks: Promise<Post | null>[] = [];
 
-    // normalize the index into a list of fetch tasks
     if (filter === "posts") {
       Object.keys(data).forEach((id) => {
         tasks.push(
@@ -373,7 +449,7 @@ export const getUserActivity = async (
           })(),
         );
       });
-    } else {
+    } else if (filter === "replies") {
       Object.entries(data).forEach(([parentId, replies]) => {
         Object.keys(replies as object).forEach((id) => {
           tasks.push(
@@ -384,19 +460,39 @@ export const getUserActivity = async (
                   null;
                 return null;
               }
-              // fetch parent for context
               const parent = await getPostById(parentId);
               return { ...reply, parentPost: parent ?? undefined };
             })(),
           );
         });
       });
+    } else {
+      // subreplies: 3-level receipt structure — postId → replyId → subReplyId
+      Object.entries(data).forEach(([postId, replyGroup]) => {
+        Object.entries(replyGroup as object).forEach(
+          ([replyId, subReplies]) => {
+            Object.keys(subReplies as object).forEach((id) => {
+              tasks.push(
+                (async () => {
+                  const subReply = await getPostById(id, postId, replyId);
+                  if (!subReply) {
+                    deadReceipts[
+                      `users/${userId}/subreplies/${postId}/${replyId}/${id}`
+                    ] = null;
+                    return null;
+                  }
+                  return subReply;
+                })(),
+              );
+            });
+          },
+        );
+      });
     }
 
     const results = await Promise.all(tasks);
 
     // perform atomic cleanup of identified orphans
-    // TODO: write some docs on why we need to do this!
     if (Object.keys(deadReceipts).length > 0) {
       update(ref(db), deadReceipts).catch((e) =>
         console.error("lazy cleanup failed:", e),
