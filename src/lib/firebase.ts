@@ -256,11 +256,14 @@ export const subscribeToPost = (
   postId: string,
   callback: (post: Post | null) => void,
   parentPostId?: string,
+  parentReplyId?: string,
 ) => {
-  // If parentPostId exists, look in replies tree. Otherwise, look in posts tree.
-  const path = parentPostId
-    ? `replies/${parentPostId}/${postId}`
-    : `posts/${postId}`;
+  const path =
+    parentReplyId && parentPostId
+      ? `subreplies/${parentPostId}/${parentReplyId}/${postId}`
+      : parentPostId
+        ? `replies/${parentPostId}/${postId}`
+        : `posts/${postId}`;
 
   const postRef = ref(db, path);
 
@@ -501,7 +504,7 @@ export const getUserActivity = async (
         });
       });
     } else {
-      // subreplies: 3-level receipt structure — postId → replyId → subReplyId
+      // Subreplies: Fetch the direct parent (the reply) for context
       Object.entries(data).forEach(([postId, replyGroup]) => {
         Object.entries(replyGroup as object).forEach(
           ([replyId, subReplies]) => {
@@ -515,7 +518,9 @@ export const getUserActivity = async (
                     ] = null;
                     return null;
                   }
-                  return subReply;
+                  // For sub-replies, we fetch the reply they responded to as the 'parentPost' context
+                  const parentReply = await getPostById(replyId, postId);
+                  return { ...subReply, parentPost: parentReply ?? undefined };
                 })(),
               );
             });
@@ -543,44 +548,57 @@ export const getUserActivity = async (
 };
 
 /**
- * Subscribes to posts, replies, and interacted counts for a user.
+ * Subscribes to posts and replies for a user.
  */
 export const subscribeToUserCounts = (
   userId: string,
   callback: (counts: UserCounts) => void,
 ) => {
   const userRef = `users/${userId}`;
+  const currentCounts: UserCounts = { posts: 0, replies: 0, interacted: 0 };
 
-  // Local cache to hold the latest values from each listener
-  const currentCounts: UserCounts = {
-    posts: 0,
-    replies: 0,
-    interacted: 0,
+  // Tracks counts for the two separate reply branches
+  let standardRepliesCount = 0;
+  let subRepliesCount = 0;
+
+  const emit = () => {
+    currentCounts.replies = standardRepliesCount + subRepliesCount;
+    callback({ ...currentCounts });
   };
 
-  // Helper to trigger the callback with a copy of current data
-  const emit = () => callback({ ...currentCounts });
-
-  // Posts Listener
   const postsUnsub = onValue(ref(db, `${userRef}/posts`), (snapshot) => {
     currentCounts.posts = snapshot.size;
     emit();
   });
 
-  // Replies Listener (Nested counting)
   const repliesUnsub = onValue(ref(db, `${userRef}/replies`), (snapshot) => {
     let total = 0;
     snapshot.forEach((threadSnap) => {
       total += threadSnap.size;
     });
-    currentCounts.replies = total;
+    standardRepliesCount = total;
     emit();
   });
 
-  // Return a master unsubscribe function
+  const subRepliesUnsub = onValue(
+    ref(db, `${userRef}/subreplies`),
+    (snapshot) => {
+      let total = 0;
+      // Nesting: postId -> replyId -> subReplyId
+      snapshot.forEach((postGroup) => {
+        postGroup.forEach((replyGroup) => {
+          total += replyGroup.size;
+        });
+      });
+      subRepliesCount = total;
+      emit();
+    },
+  );
+
   return () => {
     postsUnsub();
     repliesUnsub();
+    subRepliesUnsub();
   };
 };
 
