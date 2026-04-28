@@ -66,9 +66,9 @@ describe("Realtime Database rules", () => {
           postContent: "seed post",
           timestamp: Date.now(),
           replyCount: 0,
-          // userId: uidCurrent, // this is never needed anymore
         },
-        [`authorLookup/${postId}`]: uidCurrent, // this is now required! authorLookup is only accessible to admin, though
+        // authorLookup must be an object now to map the relational tree
+        [`authorLookup/${postId}`]: { uid: uidCurrent, type: "post" },
         [`users/${uidCurrent}/posts/${postId}`]: true,
       });
     });
@@ -81,7 +81,7 @@ describe("Realtime Database rules", () => {
   });
 
   describe("Reads", () => {
-    describe("Denied Reads", () => {
+    describe("Denied", () => {
       const sensitivePaths = [
         "users",
         `users/${uidCurrent}`,
@@ -94,7 +94,7 @@ describe("Realtime Database rules", () => {
         `users/${uidCurrent}/postInteractions`,
       ];
 
-      describe("by Guest User", () => {
+      describe("by Guest", () => {
         it.each(sensitivePaths)("access to %s", async (path) => {
           await assertFails(dbGet(guestDb(), path));
         });
@@ -114,7 +114,7 @@ describe("Realtime Database rules", () => {
       });
     });
 
-    describe("Allowed Reads", () => {
+    describe("Allowed", () => {
       const subReplyId = "sub_1";
 
       beforeAll(async () => {
@@ -225,7 +225,7 @@ describe("Realtime Database rules", () => {
         it("denies users from changing internal 'id' fields", async () => {
           const subReplyPath = `subreplies/${postId}/${replyId}/sub_target`;
 
-          // seed the sub-reply
+          // seed the sub-reply with the new object payload
           await testEnv.withSecurityRulesDisabled(async (context) => {
             const db = dbFromContext(context);
             await dbUpdate(db, "/", {
@@ -234,7 +234,12 @@ describe("Realtime Database rules", () => {
                 postContent: "original",
                 authorDisplay: "Anon",
               },
-              [`authorLookup/sub_target`]: uidCurrent,
+              [`authorLookup/sub_target`]: {
+                uid: uidCurrent,
+                type: "subreply",
+                postId: postId,
+                replyId: replyId,
+              },
               [`users/${uidCurrent}/${subReplyPath}`]: true,
             });
           });
@@ -276,16 +281,17 @@ describe("Realtime Database rules", () => {
       });
     });
 
-    describe("Post/Reply/SubReply Creation and Deletion", () => {
+    describe("To Object", () => {
       const newId = "new_id_123";
 
-      // shared scenarios
+      // shared scenarios include the new lookupData required for authorLookup
       const scenarios = [
         {
           label: "Post",
           path: `posts/${newId}`,
           profile: `users/${uidCurrent}/posts/${newId}`,
           lookup: `authorLookup/${newId}`,
+          lookupData: { uid: uidCurrent, type: "post" },
           validData: {
             id: newId,
             postContent: "test content",
@@ -298,6 +304,7 @@ describe("Realtime Database rules", () => {
           path: `replies/${postId}/${newId}`,
           profile: `users/${uidCurrent}/replies/${postId}/${newId}`,
           lookup: `authorLookup/${newId}`,
+          lookupData: { uid: uidCurrent, type: "reply", postId },
           validData: {
             id: newId,
             postContent: "test reply",
@@ -312,6 +319,7 @@ describe("Realtime Database rules", () => {
           path: `subreplies/${postId}/${replyId}/${newId}`,
           profile: `users/${uidCurrent}/subreplies/${postId}/${replyId}/${newId}`,
           lookup: `authorLookup/${newId}`,
+          lookupData: { uid: uidCurrent, type: "subreply", postId, replyId },
           validData: {
             id: newId,
             postContent: "test sub",
@@ -326,38 +334,38 @@ describe("Realtime Database rules", () => {
       describe("Shared Atomic Denials", () => {
         it.each(scenarios)(
           "denies partial $label creation writes",
-          async ({ path, profile, lookup, validData }) => {
+          async ({ path, profile, lookup, lookupData, validData }) => {
             const db = userDb(uidCurrent);
 
-            // - only main object
+            // only main object
             await assertFails(dbSet(db, path, validData));
-            // - only profile receipt
+            // only profile receipt
             await assertFails(dbSet(db, profile, true));
-            // - only ownership receipt
-            await assertFails(dbSet(db, lookup, uidCurrent));
-            // - only profile + ownership receipt
+            // only ownership receipt
+            await assertFails(dbSet(db, lookup, lookupData));
+            // only profile + ownership receipt
             await assertFails(
-              dbUpdate(db, "/", { [profile]: true, [lookup]: uidCurrent }),
+              dbUpdate(db, "/", { [profile]: true, [lookup]: lookupData }),
             );
-            // - only main + profile receipt
+            // only main + profile receipt
             await assertFails(
               dbUpdate(db, "/", { [path]: validData, [profile]: true }),
             );
-            // - only main + ownership receipt
+            // only main + ownership receipt
             await assertFails(
-              dbUpdate(db, "/", { [path]: validData, [lookup]: uidCurrent }),
+              dbUpdate(db, "/", { [path]: validData, [lookup]: lookupData }),
             );
           },
         );
 
         it.each(scenarios)(
           "denies unauthenticated creation of $label",
-          async ({ path, profile, lookup, validData }) => {
+          async ({ path, profile, lookup, lookupData, validData }) => {
             await assertFails(
               dbUpdate(guestDb(), "/", {
                 [path]: validData,
                 [profile]: true,
-                [lookup]: uidCurrent,
+                [lookup]: lookupData,
               }),
             );
           },
@@ -365,50 +373,50 @@ describe("Realtime Database rules", () => {
 
         it.each(scenarios)(
           "denies UID mismatch (User B on User A paths)",
-          async ({ path, profile, lookup, validData }) => {
-            // User B tries to claim they are the owner in the lookup or profile while authed as B
+          async ({ path, profile, lookup, lookupData, validData }) => {
+            // user B tries to claim they are the owner in the lookup or profile while authed as B
             await assertFails(
               dbUpdate(userDb(uidOther), "/", {
                 [path]: validData,
                 [profile]: true,
-                [`authorLookup/${newId}`]: uidCurrent,
+                [lookup]: lookupData,
               }),
             );
           },
         );
       });
 
-      describe("Post/Reply/SubReply Creation Validation", () => {
+      describe("All Creation Validation", () => {
         it.each(scenarios)(
           "denies $label creation with invalid fields",
-          async ({ path, profile, lookup, validData }) => {
+          async ({ path, profile, lookup, lookupData, validData }) => {
             const db = userDb(uidCurrent);
 
-            // - wrongly includes userId (Shadow Tree prohibits this)
+            // wrongly includes userId (shadow tree prohibits this)
             await assertFails(
               dbUpdate(db, "/", {
                 [path]: { ...validData, userId: uidCurrent },
                 [profile]: true,
-                [lookup]: uidCurrent,
+                [lookup]: lookupData,
               }),
             );
 
-            // - timestamp missing
+            // timestamp missing
             const { timestamp, ...noTime } = validData as any;
             await assertFails(
               dbUpdate(db, "/", {
                 [path]: noTime,
                 [profile]: true,
-                [lookup]: uidCurrent,
+                [lookup]: lookupData,
               }),
             );
 
-            // - over 600 chars
+            // over 600 chars
             await assertFails(
               dbUpdate(db, "/", {
                 [path]: { ...validData, postContent: "A".repeat(601) },
                 [profile]: true,
-                [lookup]: uidCurrent,
+                [lookup]: lookupData,
               }),
             );
           },
@@ -416,16 +424,26 @@ describe("Realtime Database rules", () => {
       });
 
       describe("Post Creation", () => {
-        it("allows: all required fields + both receipts", async () => {
+        it("allows: all required fields + both receipts (with cleanup)", async () => {
           const s = scenarios[0];
+          const db = userDb(uidCurrent);
+
+          // perform the atomic creation
           await assertSucceeds(
-            userDb(uidCurrent)
-              .ref("/")
-              .update({
-                [s.path]: s.validData,
-                [s.profile]: true,
-                [s.lookup]: uidCurrent,
-              }),
+            db.ref("/").update({
+              [s.path]: s.validData,
+              [s.profile]: true,
+              [s.lookup]: s.lookupData,
+            }),
+          );
+
+          // immediately perform an atomic deletion to clean up the state
+          await assertSucceeds(
+            db.ref("/").update({
+              [s.path]: null,
+              [s.profile]: null,
+              [s.lookup]: null,
+            }),
           );
         });
       });
@@ -466,17 +484,34 @@ describe("Realtime Database rules", () => {
             dbUpdate(userDb(uidCurrent), "/", {
               [s.path]: data,
               [s.profile]: true,
-              [s.lookup]: uidCurrent,
+              [s.lookup]: s.lookupData,
             }),
           );
         });
 
-        it("allows: all required fields + receipts", async () => {
+        it("allows: all required fields + receipts (with cleanup)", async () => {
+          const db = userDb(uidCurrent);
+          const payload = {
+            [s.path]: s.validData,
+            [s.profile]: true,
+            [s.lookup]: s.lookupData,
+          };
+
+          // print the payload to the console
+          console.log(
+            `Payload for ${s.label}:`,
+            JSON.stringify(payload, null, 2),
+          );
+
+          // verify atomic creation
+          await assertSucceeds(dbUpdate(db, "/", payload));
+
+          // verify atomic deletion cleanup
           await assertSucceeds(
-            dbUpdate(userDb(uidCurrent), "/", {
-              [s.path]: s.validData,
-              [s.profile]: true,
-              [s.lookup]: uidCurrent,
+            dbUpdate(db, "/", {
+              [s.path]: null,
+              [s.profile]: null,
+              [s.lookup]: null,
             }),
           );
         });
@@ -518,37 +553,54 @@ describe("Realtime Database rules", () => {
             dbUpdate(userDb(uidCurrent), "/", {
               [s.path]: data,
               [s.profile]: true,
-              [s.lookup]: uidCurrent,
+              [s.lookup]: s.lookupData,
             }),
           );
         });
 
-        it("allows: all required fields + receipts", async () => {
+        it("allows: all required fields + receipts (with cleanup)", async () => {
+          const db = userDb(uidCurrent);
+          const payload = {
+            [s.path]: s.validData,
+            [s.profile]: true,
+            [s.lookup]: s.lookupData,
+          };
+
+          // print the payload to the console
+          console.log(
+            `Payload for ${s.label}:`,
+            JSON.stringify(payload, null, 2),
+          );
+
+          // verify atomic creation
+          await assertSucceeds(dbUpdate(db, "/", payload));
+
+          // verify atomic deletion cleanup
           await assertSucceeds(
-            dbUpdate(userDb(uidCurrent), "/", {
-              [s.path]: s.validData,
-              [s.profile]: true,
-              [s.lookup]: uidCurrent,
+            dbUpdate(db, "/", {
+              [s.path]: null,
+              [s.profile]: null,
+              [s.lookup]: null,
             }),
           );
         });
       });
 
-      describe("Post/Reply/SubReply Deletion", () => {
+      describe("All Deletion", () => {
         it.each(scenarios)(
           "allows $label deletion: main object + both receipts sent",
-          async ({ path, profile, lookup, validData }) => {
+          async ({ path, profile, lookup, lookupData, validData }) => {
             const db = userDb(uidCurrent);
-            // Seed first
+            // seed first
             await testEnv.withSecurityRulesDisabled((c) =>
               dbUpdate(dbFromContext(c), "/", {
                 [path]: validData,
                 [profile]: true,
-                [lookup]: uidCurrent,
+                [lookup]: lookupData,
               }),
             );
 
-            // Atomic delete
+            // atomic delete
             await assertSucceeds(
               dbUpdate(db, "/", {
                 [path]: null,
@@ -561,12 +613,12 @@ describe("Realtime Database rules", () => {
 
         it.each(scenarios)(
           "denies deletion of $label by wrong user or guest",
-          async ({ path, profile, lookup, validData }) => {
+          async ({ path, profile, lookup, lookupData, validData }) => {
             await testEnv.withSecurityRulesDisabled((c) =>
               dbUpdate(dbFromContext(c), "/", {
                 [path]: validData,
                 [profile]: true,
-                [lookup]: uidCurrent,
+                [lookup]: lookupData,
               }),
             );
 
@@ -624,7 +676,7 @@ describe("Realtime Database rules", () => {
             timestamp: now,
             replyCount: 0,
           },
-          [scenarios[0].lookup]: uidCurrent,
+          [scenarios[0].lookup]: { uid: uidCurrent, type: "post" },
           [scenarios[0].profile]: true,
 
           [scenarios[1].path]: {
@@ -635,7 +687,7 @@ describe("Realtime Database rules", () => {
             interactionScore: 0,
             replyCount: 0,
           },
-          [scenarios[1].lookup]: uidCurrent,
+          [scenarios[1].lookup]: { uid: uidCurrent, type: "reply", postId },
           [scenarios[1].profile]: true,
 
           [scenarios[2].path]: {
@@ -646,13 +698,18 @@ describe("Realtime Database rules", () => {
             parentReplyId: replyId,
             authorDisplay: "Anon",
           },
-          [scenarios[2].lookup]: uidCurrent,
+          [scenarios[2].lookup]: {
+            uid: uidCurrent,
+            type: "subreply",
+            postId: postId,
+            replyId: replyId,
+          },
           [scenarios[2].profile]: true,
         });
       });
     });
 
-    describe("Allowed Edits", () => {
+    describe("Allowed", () => {
       it.each(scenarios)(
         "allows owner to edit postContent and editedAt for $label",
         async ({ path }) => {
@@ -667,19 +724,19 @@ describe("Realtime Database rules", () => {
       );
     });
 
-    describe("Denied Edits", () => {
+    describe("Denied", () => {
       it.each(scenarios)(
         "denies owner from editing protected fields in $label",
         async ({ path }) => {
           const db = userDb(uidCurrent);
 
-          // - owner edits id
+          // owner edits id
           await assertFails(dbUpdate(db, path, { id: "new_id" }));
-          // - owner edits timestamp
+          // owner edits timestamp
           await assertFails(
             dbUpdate(db, path, { timestamp: Date.now() + 1000 }),
           );
-          // - owner edits replyCount (if applicable)
+          // owner edits replyCount (if applicable)
           if (!path.includes("subreplies")) {
             await assertFails(dbUpdate(db, path, { replyCount: 99 }));
           }
