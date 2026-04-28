@@ -66,8 +66,9 @@ describe("Realtime Database rules", () => {
           postContent: "seed post",
           timestamp: Date.now(),
           replyCount: 0,
-          userId: uidA,
+          // userId: uidA, // this is never needed anymore
         },
+        [`authorLookup/${postId}`]: uidA, // this is now required! authorLookup is only accessible to admin, though
         [`users/${uidA}/posts/${postId}`]: true,
       });
     });
