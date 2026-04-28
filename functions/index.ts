@@ -274,16 +274,23 @@ export const updateSubReplyCount = onValueWritten(
 
 /**
  * Serves dynamic HTML with Open Graph tags for iMessage/Social previews.
- * Usage: https://site.com/share?s=<postId>&p=<parentId>
+ * Usage: https://site.com/share?s=<postId>&p=<parentId>&r=<rootId>
  */
 export const sharePost = onRequest(async (req, res) => {
   const postId = req.query.s as string;
   const parentId = req.query.p as string;
+  const rootId = req.query.r as string; // minimal change: added rootId
 
   if (!postId) return res.redirect(DOMAIN);
 
   try {
-    const contentRef = await getContentRef(postId, parentId);
+    // added rootId to support sub-reply lookups
+    const contentRef =
+      rootId && parentId
+        ? admin.database().ref(`subreplies/${rootId}/${parentId}/${postId}`)
+        : parentId
+          ? admin.database().ref(`replies/${parentId}/${postId}`)
+          : admin.database().ref(`posts/${postId}`);
     const snapshot = await contentRef?.once("value");
     const data = snapshot?.val();
 
@@ -296,25 +303,26 @@ export const sharePost = onRequest(async (req, res) => {
     // prepare author ID
     const authorDisplay = data.authorDisplay || "Anonymous User";
 
-    // increased limit to 200 chars for better iMessage utilization
     const maxLength = 300;
     const contentPreview =
       cleanContent.length > maxLength
         ? `${cleanContent.slice(0, maxLength)}...`
         : cleanContent;
 
-    // TODO: add reply count here
     const pageTitle = `@${authorDisplay} on TheOpenDissent.com`;
     const pageDescription = `“${contentPreview}”`;
 
-    // keep the shareUrl pointing to THIS function so meta tags work on re-shares
-    const shareUrl = `${DOMAIN}/share?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
+    // added rootId to shareUrl to maintain metadata on re-shares
+    const shareUrl = `${DOMAIN}/share?s=${postId}${parentId ? `&p=${parentId}` : ""}${rootId ? `&r=${rootId}` : ""}`;
 
-    // redirect to new "/post" route
+    // logic to determine the correct app route
     let appUrl = `${DOMAIN}/post/${postId}`;
 
-    // If parentId exists, 'postId' is actually the Reply ID (s), and 'parentId' is the Post (p)
-    if (parentId) {
+    if (rootId && parentId) {
+      // sub-reply deep link
+      appUrl = `${DOMAIN}/post/${rootId}?reply=${parentId}&subreply=${postId}`;
+    } else if (parentId) {
+      // standard reply deep link
       appUrl = `${DOMAIN}/post/${parentId}?reply=${postId}`;
     }
 
