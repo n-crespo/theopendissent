@@ -25,7 +25,7 @@ const dbFromContext = (context: RulesTestContext) =>
 const authedDb = (uid: string) =>
   dbFromContext(testEnv.authenticatedContext(uid));
 
-const anonDb = () => dbFromContext(testEnv.unauthenticatedContext());
+const unAuthedDb = () => dbFromContext(testEnv.unauthenticatedContext());
 
 const dbGet = (db: ReturnType<typeof authedDb>, path: string) =>
   db.ref(path).once("value");
@@ -83,7 +83,7 @@ describe("Realtime Database rules", () => {
   describe("Public + Legacy Read Access", () => {
     // public access
     it("allow public reads to posts/replies", async () => {
-      const db = anonDb();
+      const db = unAuthedDb();
       await assertSucceeds(dbGet(db, `posts/${postId}`));
     });
 
@@ -101,7 +101,7 @@ describe("Realtime Database rules", () => {
   describe("Unauthorized Reads", () => {
     // unauthorized access
     it("denies unauthorized access to root users list (preventing ID scraping)", async () => {
-      const dbAnon = anonDb();
+      const dbAnon = unAuthedDb();
       const dbB = authedDb(uidB);
       await assertFails(dbGet(dbAnon, "users"));
       await assertFails(dbGet(dbB, "users"));
@@ -109,37 +109,37 @@ describe("Realtime Database rules", () => {
 
     // unauthorized access
     it("denies anonymous access to a user's private profile data", async () => {
-      const dbAnon = anonDb();
+      const dbAnon = unAuthedDb();
       await assertFails(dbGet(dbAnon, `users/${uidA}`));
     });
 
     it("denies anonymous access to a user's posts", async () => {
-      const dbAnon = anonDb();
+      const dbAnon = unAuthedDb();
       await assertFails(dbGet(dbAnon, `users/${uidA}/posts`));
     });
 
     it("denies anonymous access to a user's replies", async () => {
-      const dbAnon = anonDb();
+      const dbAnon = unAuthedDb();
       await assertFails(dbGet(dbAnon, `users/${uidA}/replies`));
     });
 
     it("denies anonymous access to a user's notifications", async () => {
-      const dbAnon = anonDb();
+      const dbAnon = unAuthedDb();
       await assertFails(dbGet(dbAnon, `users/${uidA}/notifications`));
     });
 
     it("denies anonymous access to a user's displayName", async () => {
-      const dbAnon = anonDb();
+      const dbAnon = unAuthedDb();
       await assertFails(dbGet(dbAnon, `users/${uidA}/displayName`));
     });
 
     it("denies anonymous access to a user's email", async () => {
-      const dbAnon = anonDb();
+      const dbAnon = unAuthedDb();
       await assertFails(dbGet(dbAnon, `users/${uidA}/email`));
     });
 
     it("denies anonymous access to a user's postInteractions (legacy field)", async () => {
-      const dbAnon = anonDb();
+      const dbAnon = unAuthedDb();
       await assertFails(dbGet(dbAnon, `users/${uidA}/postInteractions`));
     });
 
@@ -176,7 +176,7 @@ describe("Realtime Database rules", () => {
 
   describe("Unauthorized Writes", () => {
     it("denies unauthenticated user post creation", async () => {
-      const db = anonDb();
+      const db = unAuthedDb();
       await assertFails(
         dbSet(db, "posts/post_x", {
           postContent: "anon write",
@@ -825,7 +825,7 @@ describe("Realtime Database rules", () => {
     });
 
     it("allows unauthenticated reads to subreplies/", async () => {
-      const db = anonDb();
+      const db = unAuthedDb();
       await assertSucceeds(
         dbGet(db, `subreplies/${postId}/${replyId}/${subReplyId}`),
       );
@@ -1159,7 +1159,7 @@ describe("Realtime Database rules", () => {
     });
 
     it("denies unauthenticated sub-reply creation", async () => {
-      const db = anonDb();
+      const db = unAuthedDb();
       await assertFails(
         dbUpdate(db, "/", {
           [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
