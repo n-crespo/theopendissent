@@ -38,7 +38,7 @@ export const SubReplyThread = ({
   useEffect(() => {
     if (targetSubReplyId) {
       setExpanded(true);
-      setTopLimit(100); // Load all to ensure the target is visible
+      setTopLimit(2);
       setShouldScroll(true);
     }
   }, [targetSubReplyId]);
@@ -52,7 +52,7 @@ export const SubReplyThread = ({
   useEffect(() => {
     if (recentlyRepliedToId === parentReply.id) {
       setExpanded(true);
-      setTopLimit(100); // Load all to avoid gaps when auto-scrolling to newest
+      setTopLimit(2);
       setShouldScroll(true);
     }
   }, [recentlyRepliedToId, parentReply.id]);
@@ -61,7 +61,6 @@ export const SubReplyThread = ({
   useEffect(() => {
     if (shouldScroll && subReplies.length > 0 && !loading) {
       setTimeout(() => {
-        // FIX: Ensure ID matches the one in the .map (subreply- vs post-)
         const targetEl = targetSubReplyId
           ? document.getElementById(`subreply-${targetSubReplyId}`)
           : null;
@@ -107,9 +106,11 @@ export const SubReplyThread = ({
         setSubReplies(replies);
         setLoading(false);
       },
+      targetSubReplyId,
     );
+
     return unsub;
-  }, [expanded, topLimit, rootPostId, parentReply.id]);
+  }, [expanded, topLimit, rootPostId, parentReply.id, targetSubReplyId]);
 
   const isInitialLoading = expanded && loading && subReplies.length === 0;
 
