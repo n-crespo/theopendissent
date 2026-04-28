@@ -6,27 +6,34 @@ import { getDeepLinkData } from "../lib/firebase";
 // FIX: share links show landing page instead of skipping it
 
 /**
- * Handles incoming deep links via ?s=ID and optional ?p=PARENT_ID.
- * Automatically redirects to the /post/:id route.
+ * Handles incoming deep links via ?s=ID, ?p=PARENT_ID, and ?r=ROOT_ID.
  */
 export const useDeepLinkHandler = () => {
   const navigate = useNavigate();
   const hasProcessed = useRef(false);
 
   useEffect(() => {
-    // If we already processed a link or there are no params, skip
     if (hasProcessed.current) return;
 
     const params = new URLSearchParams(window.location.search);
     const sharedId = params.get("s");
     const parentId = params.get("p");
+    const rootId = params.get("r"); // root post id for sub-replies
 
     if (!sharedId) return;
 
     const handleDeepLink = async () => {
       hasProcessed.current = true;
 
-      // resolve post data from the library
+      // logic for sub-replies (3 levels)
+      if (rootId && parentId && sharedId) {
+        navigate(`/post/${rootId}?reply=${parentId}&subreply=${sharedId}`, {
+          replace: true,
+        });
+        return;
+      }
+
+      // existing logic for posts/replies (1-2 levels)
       const data = await getDeepLinkData(sharedId, parentId);
 
       if (data && data.displayPost) {

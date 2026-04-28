@@ -314,13 +314,14 @@ export const subscribeToReplies = (
 
 /**
  * Lazily subscribes to sub-replies for a given reply using a gap-loading strategy.
- * Subscribes to the oldest `topLimit` items and the newest 2 items.
+ * Subscribes to the oldest `topLimit` items, the newest 2 items, and an optional target item.
  */
 export const subscribeToSubRepliesWithGap = (
   rootPostId: string,
   parentReplyId: string,
   topLimit: number,
   callback: (subReplies: Post[]) => void,
+  targetId?: string | null,
 ) => {
   const subRepliesRef = ref(db, `subreplies/${rootPostId}/${parentReplyId}`);
 
@@ -337,11 +338,13 @@ export const subscribeToSubRepliesWithGap = (
 
   let topData: Record<string, any> | null = null;
   let bottomData: Record<string, any> | null = null;
+  // wait for target data if an ID is provided
+  let targetData: Record<string, any> | null = targetId ? null : {};
 
   const emit = () => {
-    if (topData === null || bottomData === null) return;
+    if (topData === null || bottomData === null || targetData === null) return;
 
-    const mergedData = { ...topData, ...bottomData };
+    const mergedData = { ...topData, ...bottomData, ...targetData };
     const list: Post[] = Object.entries(mergedData)
       .map(([id, val]: [string, any]) => ({
         id,
@@ -367,9 +370,18 @@ export const subscribeToSubRepliesWithGap = (
     emit();
   });
 
+  let unsubTarget = () => {};
+  if (targetId) {
+    unsubTarget = onValue(child(subRepliesRef, targetId), (snapshot) => {
+      targetData = snapshot.exists() ? { [targetId]: snapshot.val() } : {};
+      emit();
+    });
+  }
+
   return () => {
     unsubTop();
     unsubBottom();
+    unsubTarget();
   };
 };
 
@@ -441,24 +453,51 @@ export const signInWithGoogle = async () => {
 export const signOutUser = () => signOut(auth);
 
 /**
- * fetches data required for deep-linking based on post and parent ids.
+ * fetches data required for deep-linking based on post, parent, and root ids.
  */
 export const getDeepLinkData = async (
   sharedId: string,
   parentId?: string | null,
+  rootId?: string | null,
 ) => {
-  // if p exists, we are looking for a reply. if not, a top-level post.
-  const targetPost = await getPostById(sharedId, parentId || undefined);
+  // 1. Fetch the target item (could be post, reply, or sub-reply)
+  const targetPost = await getPostById(
+    sharedId,
+    parentId || undefined,
+    rootId || undefined,
+  );
   if (!targetPost) return null;
 
-  if (parentId) {
-    const parent = await getPostById(parentId);
-    if (parent) {
-      return { displayPost: parent, highlightReplyId: sharedId };
+  // it's a sub-reply (r and p exist)
+  if (rootId && parentId) {
+    const root = await getPostById(rootId);
+    if (root) {
+      return {
+        displayPost: root,
+        highlightReplyId: parentId,
+        highlightSubReplyId: sharedId,
+      };
     }
   }
 
-  return { displayPost: targetPost, highlightReplyId: null };
+  // it's a regular reply (p exists)
+  if (parentId) {
+    const parent = await getPostById(parentId);
+    if (parent) {
+      return {
+        displayPost: parent,
+        highlightReplyId: sharedId,
+        highlightSubReplyId: null,
+      };
+    }
+  }
+
+  // a top-level post
+  return {
+    displayPost: targetPost,
+    highlightReplyId: null,
+    highlightSubReplyId: null,
+  };
 };
 
 /**
