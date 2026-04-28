@@ -6,6 +6,7 @@ import {
   Outlet,
   Routes,
   Route,
+  useSearchParams,
 } from "react-router-dom";
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
@@ -31,6 +32,7 @@ import { ComposeModal } from "./components/feed/ComposeModal";
 function Layout() {
   const { user, loading } = useAuth();
   const { pathname } = useLocation();
+  const [searchParams] = useSearchParams();
   const navType = useNavigationType();
 
   const [isComposeOpen, setIsComposeOpen] = useState(false);
@@ -63,17 +65,26 @@ function Layout() {
     const isDev = import.meta.env.DEV;
 
     if (!loading) {
+      // check if this is a share link
+      const isShareLink = searchParams.has("s");
       const isCorrectPath = pathname === "/" || pathname === "/share";
+
+      // only show landing if we aren't following a specific share link
       const shouldShowInProd =
-        !user && !skipPermanent && !skipSession && isCorrectPath;
-      const shouldShowInDev = isDev && !skipSession && isCorrectPath;
+        !user &&
+        !skipPermanent &&
+        !skipSession &&
+        isCorrectPath &&
+        !isShareLink;
+      const shouldShowInDev =
+        isDev && !skipSession && isCorrectPath && !isShareLink;
 
       if (shouldShowInDev || shouldShowInProd) {
         setShowLanding(true);
       }
       setIsInitialCheck(false);
     }
-  }, [user, loading, pathname]);
+  }, [user, loading, pathname, searchParams]);
 
   useEffect(() => {
     if (navType !== "POP")
