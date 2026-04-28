@@ -194,19 +194,23 @@ export const ComposeModal = ({
                     <span className="text-xs font-semibold text-slate-500">
                       Replying to{" "}
                       {isSubReply
-                        ? (parentReply?.authorDisplay &&
+                        ? parentReply?.authorDisplay &&
                           parentReply.authorDisplay !== "Anonymous User"
-                            ? parentReply.authorDisplay
-                            : "Anonymous User")
-                        : (parentPost?.authorDisplay &&
-                          parentPost.authorDisplay !== "Anonymous User"
-                            ? parentPost.authorDisplay
-                            : "Anonymous User")
-                      }...
+                          ? parentReply.authorDisplay
+                          : "Anonymous User"
+                        : parentPost?.authorDisplay &&
+                            parentPost.authorDisplay !== "Anonymous User"
+                          ? parentPost.authorDisplay
+                          : "Anonymous User"}
+                      ...
                     </span>
                   </div>
                   <p className="text-sm text-slate-500 line-clamp-2 italic leading-relaxed">
-                    "{isSubReply ? parentReply?.postContent : parentPost?.postContent}"
+                    "
+                    {isSubReply
+                      ? parentReply?.postContent
+                      : parentPost?.postContent}
+                    "
                   </p>
                 </div>
               )}
