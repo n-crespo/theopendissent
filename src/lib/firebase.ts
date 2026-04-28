@@ -126,6 +126,13 @@ export const createPost = async ({
     updates[
       `users/${userId}/subreplies/${parentPostId}/${parentReplyId}/${newKey}`
     ] = true;
+    // authorLookup for subreply
+    updates[`authorLookup/${newKey}`] = {
+      uid: userId,
+      type: "subreply",
+      postId: parentPostId,
+      replyId: parentReplyId,
+    };
   } else if (parentPostId) {
     // reply
     updates[`replies/${parentPostId}/${newKey}`] = {
@@ -140,6 +147,12 @@ export const createPost = async ({
       isThreadAuthor,
     };
     updates[`users/${userId}/replies/${parentPostId}/${newKey}`] = true;
+    // authorLookup for reply
+    updates[`authorLookup/${newKey}`] = {
+      uid: userId,
+      type: "reply",
+      postId: parentPostId,
+    };
   } else {
     // top-level post
     updates[`posts/${newKey}`] = {
@@ -151,6 +164,11 @@ export const createPost = async ({
       replyCount: 0,
     };
     updates[`users/${userId}/posts/${newKey}`] = true;
+    // authorLookup for post
+    updates[`authorLookup/${newKey}`] = {
+      uid: userId,
+      type: "post",
+    };
   }
 
   await update(ref(db), updates);
@@ -190,6 +208,9 @@ export const deletePost = async (
   const { id, parentPostId, parentReplyId } = post;
   try {
     const dbUpdates: Record<string, any> = {};
+
+    // authorLookup is flat, so we can always target the id directly for deletion
+    dbUpdates[`authorLookup/${id}`] = null;
 
     if (parentReplyId && parentPostId) {
       // sub-reply: atomic delete of object + receipt

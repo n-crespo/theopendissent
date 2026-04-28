@@ -31,29 +31,35 @@ const escapeHtml = (unsafe: string) => {
     .replace(/'/g, "&#039;");
 };
 
+/** * Helper: Fetches the metadata from authorLookup to find the owner
+ * and the exact path of any content ID.
+ */
+const getLookupData = async (id: string) => {
+  const snap = await admin.database().ref(`authorLookup/${id}`).once("value");
+  return snap.exists() ? snap.val() : null;
+};
+
 /**
- * Resolves an ID to its correct database reference by checking both posts and replies.
- * @param {string} id - The postId or replyId to find.
- * @param {string|null} [providedParentId] - Optional parentId to skip the search and generate path directly.
- * @return {Promise<any>} The database reference for the given ID.
+ * Uses authorLookup routing data to return a direct reference.
+ * No more searching/fallback required.
  */
 const getContentRef = async (
   id: string,
-  providedParentId?: string | null,
 ): Promise<admin.database.Reference | null> => {
+  const meta = await getLookupData(id);
+  if (!meta) return null;
+
   const db = admin.database();
-
-  // 1. use provided parentId if available
-  if (providedParentId && providedParentId !== "top") {
-    return db.ref(`replies/${providedParentId}/${id}`);
+  switch (meta.type) {
+    case "post":
+      return db.ref(`posts/${id}`);
+    case "reply":
+      return db.ref(`replies/${meta.postId}/${id}`);
+    case "subreply":
+      return db.ref(`subreplies/${meta.postId}/${meta.replyId}/${id}`);
+    default:
+      return null;
   }
-
-  // 3. fallback to posts
-  const postRef = db.ref(`posts/${id}`);
-  const postSnap = await postRef.once("value");
-  if (postSnap.exists()) return postRef;
-
-  return null;
 };
 
 // delete replies in batches to avoid thundering herd
@@ -201,55 +207,67 @@ export const beforesignedin = beforeUserSignedIn((event) => {
 
 /**
  * Cleanup for top-level posts.
- * Only triggers when a post is removed.
  */
 export const onPostDeletedCleanup = onValueDeleted(
   "/posts/{postId}",
   async (event) => {
     const { postId } = event.params;
-    const postData = event.data.val();
     const db = admin.database();
 
+    // Clean up author lookup
+    await db.ref(`authorLookup/${postId}`).remove();
+
+    const postData = event.data.val();
     if (!postData) return;
 
-    const replyCount = postData.replyCount || 0;
-
-    if (replyCount < 100) {
-      // Small post: Safe to delete all at once
+    if ((postData.replyCount || 0) < 100) {
       await db.ref(`replies/${postId}`).remove();
     } else {
-      // Large post: delete in chunks to avoid overwhelming the system
       await deleteRepliesInBatches(postId);
     }
   },
 );
 
 /**
+ * Cleanup for sub-replies (Added this trigger for completeness)
+ */
+export const onSubReplyDeletedCleanup = onValueDeleted(
+  "/subreplies/{postId}/{replyId}/{subReplyId}",
+  async (event) => {
+    const { postId, replyId, subReplyId } = event.params;
+    const db = admin.database();
+
+    const meta = await getLookupData(subReplyId);
+    if (meta) {
+      const updates: Record<string, null> = {};
+      updates[`authorLookup/${subReplyId}`] = null;
+      updates[
+        `users/${meta.uid}/subreplies/${postId}/${replyId}/${subReplyId}`
+      ] = null;
+      await db.ref().update(updates);
+    }
+  },
+);
+
+/**
  * Cleanup for individual replies.
- * Only triggers when a reply is removed (manually or via cascade).
  */
 export const onReplyDeletedCleanup = onValueDeleted(
   "/replies/{parentId}/{replyId}",
   async (event) => {
     const { parentId, replyId } = event.params;
-    const replyData = event.data.val();
-    if (!replyData) return;
-
     const db = admin.database();
-    const updates: Record<string, null> = {};
 
-    // if the post was made non-anonymously, clean up the user receipt.
-    // otherwise, it'll be cleaned up later. dangling pointer is self-deleted on
-    // read to avoid performance overhead of doing it automatically.
-    if (replyData?.userId) {
-      updates[`users/${replyData.userId}/replies/${parentId}/${replyId}`] =
-        null;
+    const meta = await getLookupData(replyId);
+
+    const updates: Record<string, null> = {};
+    if (meta) {
+      updates[`authorLookup/${replyId}`] = null;
+      updates[`users/${meta.uid}/replies/${parentId}/${replyId}`] = null;
     }
 
-    // cascade: remove all sub-replies for this reply.
-    // each deletion fires onSubReplyWritten + onSubReplyDeletedCleanup
-    // to handle hasSubReply and user receipt cleanup automatically.
-    await db.ref(`subreplies/${parentId}/${replyId}`).remove();
+    // Instead of a separate .remove(), just add it to the atomic update
+    updates[`subreplies/${parentId}/${replyId}`] = null;
 
     return db.ref().update(updates);
   },
@@ -381,63 +399,44 @@ export const onReplyCreatedNotification = onValueCreated(
     const replyData = event.data.val();
     const db = admin.database();
 
-    if (!replyData || !replyData.userId) return null;
+    if (!replyData) return null;
 
     try {
-      // find the owner of the content being replied to
-      const parentRef = await getContentRef(parentId);
-      if (!parentRef) {
-        console.warn(
-          `Parent content ${parentId} not found. Skipping notification.`,
-        );
-        return null;
-      }
+      // Get the author of the NEW reply
+      const replyMeta = await getLookupData(replyId);
+      const replyAuthorId = replyMeta?.uid;
 
-      const parentSnap = await parentRef.once("value");
-      const parentData = parentSnap.val();
-      const ownerId = parentData?.userId;
+      // Get the author of the PARENT content (Post or Reply)
+      const parentMeta = await getLookupData(parentId);
+      const ownerId = parentMeta?.uid;
 
-      // don't notify if the user is replying to their own content
-      if (!ownerId || ownerId === replyData.userId) return null;
+      // Don't notify if parent doesn't exist or user is replying to self
+      if (!ownerId || ownerId === replyAuthorId) return null;
 
-      // define the path for the notification
-      // We use parentId (the post being replied to) as the notification ID for aggregation
       const notifRef = db.ref(`users/${ownerId}/notifications/${parentId}`);
-
       const now = Date.now();
 
       return notifRef.transaction((current) => {
-        if (current) {
-          // If notification exists, increment count and mark as unread
-          return {
-            ...current,
-            count: (current.count || 1) + 1,
-            latestReplyId: replyId,
-            isRead: false,
-            updatedAt: now,
-          };
-        } else {
-          // Create new notification
-          return {
-            type: "reply",
-            count: 1,
-            latestReplyId: replyId,
-            isRead: false,
-            createdAt: now,
-            updatedAt: now,
-          };
-        }
+        const base = current || {
+          type: "reply",
+          count: 0,
+          createdAt: now,
+          isRead: false,
+        };
+        return {
+          ...base,
+          count: base.count + 1,
+          latestReplyId: replyId,
+          isRead: false,
+          updatedAt: now,
+        };
       });
     } catch (error) {
-      console.error(`Notification trigger failed for reply ${replyId}:`, error);
+      console.error(`Notification failed for reply ${replyId}:`, error);
       return null;
     }
   },
 );
-
-// TODO:: currently notifications are only sent on non-anonymous posts/replies.
-// there would be high performance overhead for enabling it for anonymous posts
-// too (doesn't scale well). Is there a good compromise?
 
 /**
  * Automatically creates or updates a notification for the direct reply owner
@@ -446,56 +445,40 @@ export const onReplyCreatedNotification = onValueCreated(
 export const onSubReplyCreatedNotification = onValueCreated(
   "/subreplies/{rootPostId}/{parentReplyId}/{subReplyId}",
   async (event) => {
-    const { rootPostId, parentReplyId, subReplyId } = event.params;
-    const subReplyData = event.data.val();
+    const { parentReplyId, subReplyId } = event.params;
     const db = admin.database();
 
-    // only send notifications for non-anonymous sub-replies
-    if (!subReplyData || !subReplyData.userId) return null;
-
     try {
-      // find the owner of the direct reply being replied to
-      const parentReplySnap = await db
-        .ref(`replies/${rootPostId}/${parentReplyId}`)
-        .once("value");
-      const parentReplyData = parentReplySnap.val();
-      const ownerId = parentReplyData?.userId;
+      const subReplyMeta = await getLookupData(subReplyId);
+      const parentReplyMeta = await getLookupData(parentReplyId);
 
-      // don't notify if the user is replying to their own reply
-      if (!ownerId || ownerId === subReplyData.userId) return null;
+      const replyAuthorId = subReplyMeta?.uid;
+      const ownerId = parentReplyMeta?.uid;
 
-      // aggregate under the parentReplyId so notifications for the same reply
-      // are grouped together (same pattern as post reply notifications)
+      if (!ownerId || ownerId === replyAuthorId) return null;
+
       const notifRef = db.ref(
         `users/${ownerId}/notifications/${parentReplyId}`,
       );
       const now = Date.now();
 
       return notifRef.transaction((current) => {
-        if (current) {
-          return {
-            ...current,
-            count: (current.count || 1) + 1,
-            latestReplyId: subReplyId,
-            isRead: false,
-            updatedAt: now,
-          };
-        } else {
-          return {
-            type: "reply",
-            count: 1,
-            latestReplyId: subReplyId,
-            isRead: false,
-            createdAt: now,
-            updatedAt: now,
-          };
-        }
+        const base = current || {
+          type: "reply",
+          count: 0,
+          createdAt: now,
+          isRead: false,
+        };
+        return {
+          ...base,
+          count: base.count + 1,
+          latestReplyId: subReplyId,
+          isRead: false,
+          updatedAt: now,
+        };
       });
     } catch (error) {
-      console.error(
-        `Notification trigger failed for sub-reply ${subReplyId}:`,
-        error,
-      );
+      console.error(`Notification failed for sub-reply ${subReplyId}:`, error);
       return null;
     }
   },
