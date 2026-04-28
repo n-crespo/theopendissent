@@ -63,11 +63,13 @@ export const PostDetails = () => {
   useEffect(() => {
     if (!postId) return;
     setIsLoadingReplies(true);
+
     const unsubscribe = subscribeToReplies(postId, (list) => {
       setReplies(list);
       setIsLoadingReplies(false);
 
-      if (highlightReplyId) {
+      // Only scroll to the reply if it is the primary target (no sub-reply following it)
+      if (highlightReplyId && !highlightSubReplyId) {
         const replyExists = list.some((r) => r.id === highlightReplyId);
         if (replyExists) {
           setTimeout(() => {
@@ -75,9 +77,13 @@ export const PostDetails = () => {
               `reply-${highlightReplyId}`,
             );
             if (element) {
+              console.log("scrolling");
               element.scrollIntoView({ behavior: "smooth", block: "center" });
+
+              // Clean up URL after successful scroll
               setTimeout(() => {
                 const newUrl = window.location.pathname;
+                console.log("cleaning up");
                 window.history.replaceState(null, "", newUrl);
               }, 1000);
             }
@@ -85,8 +91,9 @@ export const PostDetails = () => {
         }
       }
     });
+
     return () => unsubscribe();
-  }, [postId, highlightReplyId]);
+  }, [postId, highlightReplyId, highlightSubReplyId]); // Added highlightSubReplyId to dependency array
 
   const handleBack = () => {
     if (window.history.length > 1) navigate(-1);
@@ -162,7 +169,9 @@ export const PostDetails = () => {
                   <FeedItem
                     item={reply}
                     isReply={true}
-                    highlighted={highlightReplyId === reply.id}
+                    highlighted={
+                      highlightReplyId === reply.id && !highlightSubReplyId
+                    }
                     threadAuthorUserId={livePost?.userId}
                     onReply={() => {
                       setActiveReplyTo(reply);

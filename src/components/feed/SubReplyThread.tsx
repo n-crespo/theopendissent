@@ -61,14 +61,23 @@ export const SubReplyThread = ({
   useEffect(() => {
     if (shouldScroll && subReplies.length > 0 && !loading) {
       setTimeout(() => {
-        // If we have a target sub-reply, scroll to it specifically. Otherwise, scroll to bottom.
+        // FIX: Ensure ID matches the one in the .map (subreply- vs post-)
         const targetEl = targetSubReplyId
-          ? document.getElementById(`post-${targetSubReplyId}`)
+          ? document.getElementById(`subreply-${targetSubReplyId}`)
           : null;
 
         if (targetEl) {
           targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
-        } else {
+
+          // clean up the URL only if we just satisfied a deep link
+          if (targetSubReplyId) {
+            setTimeout(() => {
+              const newUrl = window.location.pathname;
+              window.history.replaceState(null, "", newUrl);
+            }, 1000);
+          }
+        } else if (!targetSubReplyId) {
+          // Fallback for regular "new reply" scroll
           bottomRef.current?.scrollIntoView({
             behavior: "smooth",
             block: "center",
