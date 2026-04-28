@@ -1181,7 +1181,6 @@ describe("Realtime Database rules", () => {
     });
   });
 
-
   describe("Sub-Reply Lazy Cleanup (orphan receipt)", () => {
     it("allows lazy cleanup of a dangling subreply receipt when public object is gone", async () => {
       const orphanSubReplyId = "orphan_subreply_999";
