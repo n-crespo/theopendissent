@@ -31,14 +31,14 @@
         "posts": {
           "$post_id": {
             ".validate": "newData.val() === true",
-            ".write": "auth != null && auth.uid === $uid && ( (!data.exists() ? newData.parent().parent().parent().parent().child('posts/' + $post_id).exists() : true) && (!newData.exists() ? !newData.parent().parent().parent().parent().child('posts/' + $post_id).exists() : true) )"
+            ".write": "auth != null && auth.uid === $uid && ( (!data.exists() ? (newData.parent().parent().parent().parent().child('posts').child($post_id).exists() && newData.parent().parent().parent().parent().child('authorLookup').child($post_id).child('uid').val() === $uid) : true) && (!newData.exists() ? !newData.parent().parent().parent().parent().child('posts').child($post_id).exists() : true) )"
           }
         },
         "replies": {
           "$post_id": {
             "$reply_id": {
               ".validate": "newData.val() === true",
-              ".write": "auth != null && auth.uid === $uid && ( (!data.exists() ? newData.parent().parent().parent().parent().parent().child('replies/' + $post_id + '/' + $reply_id).exists() : true) && (!newData.exists() ? !newData.parent().parent().parent().parent().parent().child('replies/' + $post_id + '/' + $reply_id).exists() : true) )"
+              ".write": "auth != null && auth.uid === $uid && ( (!data.exists() ? (newData.parent().parent().parent().parent().parent().child('replies').child($post_id).child($reply_id).exists() && newData.parent().parent().parent().parent().parent().child('authorLookup').child($reply_id).child('uid').val() === $uid) : true) && (!newData.exists() ? !newData.parent().parent().parent().parent().parent().child('replies').child($post_id).child($reply_id).exists() : true) )"
             }
           }
         },
@@ -47,13 +47,28 @@
             "$reply_id": {
               "$subreply_id": {
                 ".validate": "newData.val() === true",
-                ".write": "auth != null && auth.uid === $uid && ( (!data.exists() ? newData.parent().parent().parent().parent().parent().parent().child('subreplies/' + $post_id + '/' + $reply_id + '/' + $subreply_id).exists() : true) && (!newData.exists() ? !newData.parent().parent().parent().parent().parent().parent().child('subreplies/' + $post_id + '/' + $reply_id + '/' + $subreply_id).exists() : true) )"
+                ".write": "auth != null && auth.uid === $uid && ( (!data.exists() ? (newData.parent().parent().parent().parent().parent().parent().child('subreplies').child($post_id).child($reply_id).child($subreply_id).exists() && newData.parent().parent().parent().parent().parent().parent().child('authorLookup').child($subreply_id).child('uid').val() === $uid) : true) && (!newData.exists() ? !newData.parent().parent().parent().parent().parent().parent().child('subreplies').child($post_id).child($reply_id).child($subreply_id).exists() : true) )"
               }
             }
           }
+        }
+      }
+    },
+    "authorLookup": {
+      "$id": {
+        ".read": false,
+        ".write": "auth != null && ( ( !data.exists() && newData.child('uid').val() === auth.uid && ( (newData.child('type').val() === 'post' && newData.parent().parent().child('posts').child($id).exists() && newData.parent().parent().child('users').child(auth.uid).child('posts').child($id).exists()) || (newData.child('type').val() === 'reply' && newData.hasChild('postId') && newData.parent().parent().child('replies').child(newData.child('postId').val() + '').child($id).exists() && newData.parent().parent().child('users').child(auth.uid).child('replies').child(newData.child('postId').val() + '').child($id).exists()) || (newData.child('type').val() === 'subreply' && newData.hasChild('postId') && newData.hasChild('replyId') && newData.parent().parent().child('subreplies').child(newData.child('postId').val() + '').child(newData.child('replyId').val() + '').child($id).exists() && newData.parent().parent().child('users').child(auth.uid).child('subreplies').child(newData.child('postId').val() + '').child(newData.child('replyId').val() + '').child($id).exists()) ) ) || ( data.exists() && data.child('uid').val() === auth.uid && !newData.exists() ) )",
+        "uid": {
+          ".validate": "newData.isString()"
         },
-        "postInteractions": {
-          ".write": "false"
+        "type": {
+          ".validate": "newData.isString() && (newData.val() === 'post' || newData.val() === 'reply' || newData.val() === 'subreply')"
+        },
+        "postId": {
+          ".validate": "!newData.exists() || newData.isString()"
+        },
+        "replyId": {
+          ".validate": "!newData.exists() || newData.isString()"
         }
       }
     },
@@ -63,17 +78,16 @@
       ],
       ".read": true,
       "$post_id": {
-        ".write": "auth != null && ( (data.exists() && (data.child('userId').val() === auth.uid || root.child('users/' + auth.uid + '/posts/' + $post_id).exists()) && (!newData.exists() ? !newData.parent().parent().child('users/' + auth.uid + '/posts/' + $post_id).exists() : true)) || (!data.exists() && newData.parent().parent().child('users/' + auth.uid + '/posts/' + $post_id).exists()) )",
+        ".write": "auth != null && ( (!data.exists() && newData.parent().parent().child('authorLookup').child($post_id).child('uid').val() === auth.uid && newData.parent().parent().child('users').child(auth.uid).child('posts').child($post_id).exists()) || (data.exists() && root.child('authorLookup').child($post_id).child('uid').val() === auth.uid && (!newData.exists() ? !newData.parent().parent().child('authorLookup').child($post_id).exists() && !newData.parent().parent().child('users').child(auth.uid).child('posts').child($post_id).exists() : true)) )",
         ".validate": "!newData.exists() || (data.exists() || newData.hasChildren(['postContent', 'timestamp', 'replyCount']))",
-        "replyCount": {
-          ".write": false,
-          ".validate": "newData.isNumber() && newData.val() == 0"
-        },
-        "userInteractions": {
-          ".write": false
+        "id": {
+          ".validate": "!newData.exists() || (newData.val() === $post_id && (!data.exists() || data.val() === newData.val()))"
         },
         "userId": {
-          ".validate": "!newData.exists() || (newData.val() === auth.uid && (!data.exists() || data.val() === newData.val()))"
+          ".validate": "!newData.exists()"
+        },
+        "replyCount": {
+          ".validate": "!data.exists() ? newData.val() == 0 : newData.val() == data.val()"
         },
         "postContent": {
           ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 600)"
@@ -92,28 +106,26 @@
           "timestamp"
         ],
         ".read": true,
-        ".write": false,
         "$reply_id": {
-          ".write": "auth != null && ( (data.exists() && (data.child('userId').val() === auth.uid || root.child('users/' + auth.uid + '/replies/' + $post_id + '/' + $reply_id).exists()) && (!newData.exists() ? !newData.parent().parent().parent().child('users/' + auth.uid + '/replies/' + $post_id + '/' + $reply_id).exists() : true)) || (!data.exists() && newData.parent().parent().parent().child('users/' + auth.uid + '/replies/' + $post_id + '/' + $reply_id).exists()) )",
+          ".write": "auth != null && ( (!data.exists() && newData.parent().parent().parent().child('authorLookup').child($reply_id).child('uid').val() === auth.uid && newData.parent().parent().parent().child('users').child(auth.uid).child('replies').child($post_id).child($reply_id).exists()) || (data.exists() && root.child('authorLookup').child($reply_id).child('uid').val() === auth.uid && (!newData.exists() ? !newData.parent().parent().parent().child('authorLookup').child($reply_id).exists() && !newData.parent().parent().parent().child('users').child(auth.uid).child('replies').child($post_id).child($reply_id).exists() : true)) )",
           ".validate": "!newData.exists() || (data.exists() || newData.hasChildren(['postContent', 'timestamp', 'parentPostId', 'interactionScore', 'replyCount']))",
-          "userInteractions": {
-            ".write": false
-          },
-          "replyCount": {
-            ".write": false,
-            ".validate": "newData.isNumber() && newData.val() == 0"
+          "id": {
+            ".validate": "!newData.exists() || (newData.val() === $reply_id && (!data.exists() || data.val() === newData.val()))"
           },
           "userId": {
-            ".validate": "!newData.exists() || newData.val() === auth.uid"
+            ".validate": "!newData.exists()"
           },
           "parentPostId": {
             ".validate": "!newData.exists() || newData.val() === $post_id"
           },
-          "postContent": {
-            ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 600)"
+          "replyCount": {
+            ".validate": "!data.exists() ? newData.val() == 0 : newData.val() == data.val()"
           },
           "interactionScore": {
             ".validate": "newData.isNumber() && newData.val() >= -3 && newData.val() <= 3"
+          },
+          "postContent": {
+            ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 600)"
           },
           "timestamp": {
             ".validate": "!data.exists() || data.val() === newData.val()"
@@ -131,21 +143,20 @@
             "timestamp"
           ],
           ".read": true,
-          ".write": false,
           "$subreply_id": {
-            ".write": "auth != null && ( (!data.exists() && newData.parent().parent().parent().parent().child('users/' + auth.uid + '/subreplies/' + $post_id + '/' + $reply_id + '/' + $subreply_id).exists()) || (data.exists() && (data.child('userId').val() === auth.uid || root.child('users/' + auth.uid + '/subreplies/' + $post_id + '/' + $reply_id + '/' + $subreply_id).exists()) && (!newData.exists() ? !newData.parent().parent().parent().parent().child('users/' + auth.uid + '/subreplies/' + $post_id + '/' + $reply_id + '/' + $subreply_id).exists() : true)) )",
+            ".write": "auth != null && ( (!data.exists() && newData.parent().parent().parent().parent().child('authorLookup').child($subreply_id).child('uid').val() === auth.uid && newData.parent().parent().parent().parent().child('users').child(auth.uid).child('subreplies').child($post_id).child($reply_id).child($subreply_id).exists()) || (data.exists() && root.child('authorLookup').child($subreply_id).child('uid').val() === auth.uid && (!newData.exists() ? !newData.parent().parent().parent().parent().child('authorLookup').child($subreply_id).exists() && !newData.parent().parent().parent().parent().child('users').child(auth.uid).child('subreplies').child($post_id).child($reply_id).child($subreply_id).exists() : true)) )",
             ".validate": "!newData.exists() || (data.exists() || newData.hasChildren(['id', 'postContent', 'timestamp', 'parentPostId', 'parentReplyId', 'authorDisplay']))",
             "id": {
-              ".validate": "!newData.exists() || (newData.isString() && newData.val() === $subreply_id)"
+              ".validate": "!newData.exists() || (newData.val() === $subreply_id && (!data.exists() || data.val() === newData.val()))"
+            },
+            "userId": {
+              ".validate": "!newData.exists()"
             },
             "parentReplyId": {
-              ".validate": "!newData.exists() || (newData.isString() && newData.val() === $reply_id)"
+              ".validate": "!newData.exists() || newData.val() === $reply_id"
             },
             "parentPostId": {
               ".validate": "!newData.exists() || newData.val() === $post_id"
-            },
-            "userId": {
-              ".validate": "!newData.exists() || newData.val() === auth.uid"
             },
             "authorDisplay": {
               ".validate": "newData.isString() && newData.val().length <= 100"
