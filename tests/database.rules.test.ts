@@ -180,30 +180,29 @@ describe("Realtime Database rules", () => {
   describe("Writes (create/delete)", () => {
     describe("To Protected Fields", () => {
       describe("Denied Writes", () => {
-        // 1. Check that replyCount is protected from everyone except the system (Cloud Functions)
-        // We test both Guests and Other Users. Even the Owner is denied (tested in the previous block).
         it.each([
           { role: "Guest", getDb: () => guestDb() },
           { role: "Other User", getDb: () => userDb(uidOther) },
+          { role: "Owner", getDb: () => userDb(uidCurrent) },
         ])(
-          "denies $role from writing to replyCount on posts and replies",
+          "denies $role from modifying replyCount on posts or replies",
           async ({ getDb }) => {
             const db = getDb();
 
-            // Attempting to overwrite the counter directly
+            // attempt overwrite
             await assertFails(dbSet(db, `posts/${postId}/replyCount`, 99));
             await assertFails(
               dbSet(db, `replies/${postId}/${replyId}/replyCount`, 99),
             );
 
-            // Attempting an update on just that field
+            // attempt partial update
             await assertFails(
               dbUpdate(db, `posts/${postId}`, { replyCount: 1 }),
             );
           },
         );
 
-        // 2. Ensure Guest users (public) cannot write to any content paths
+        // ensure guest users cannot write to any content paths
         it.each([
           { path: `posts/new_post`, label: "top-level posts" },
           { path: `replies/${postId}/new_reply`, label: "replies" },
@@ -222,14 +221,28 @@ describe("Realtime Database rules", () => {
           );
         });
 
-        // 3. Ensure no user can write to the 'id' field specifically
-        // (This protects the internal document integrity)
-        it("denies Other User from overwriting an existing post's internal ID", async () => {
-          const db = userDb(uidOther);
+        // verify id immutability and path-key matching
+        it("denies users from changing internal 'id' fields", async () => {
+          const subReplyPath = `subreplies/${postId}/${replyId}/sub_target`;
 
+          // seed the sub-reply
+          await testEnv.withSecurityRulesDisabled(async (context) => {
+            const db = dbFromContext(context);
+            await dbUpdate(db, "/", {
+              [subReplyPath]: {
+                id: "sub_target",
+                postContent: "original",
+                authorDisplay: "Anon",
+              },
+              [`authorLookup/sub_target`]: uidCurrent,
+              [`users/${uidCurrent}/${subReplyPath}`]: true,
+            });
+          });
+
+          // attempt to change the internal id
           await assertFails(
-            dbUpdate(db, `posts/${postId}`, {
-              id: "different_id",
+            dbUpdate(userDb(uidCurrent), subReplyPath, {
+              id: "malicious_id_swap",
             }),
           );
         });
@@ -253,87 +266,12 @@ describe("Realtime Database rules", () => {
           });
 
           // owner should be able to mark it as read
-          // this satisfies the .validate requirement for type, isRead, and updatedAt
           await assertSucceeds(
             dbUpdate(userDb(uidCurrent), notifPath, {
               isRead: true,
               updatedAt: Date.now(),
             }),
           );
-        });
-      });
-
-      describe("To Protected Fields", () => {
-        describe("Denied Writes", () => {
-          // Parameterized check for replyCount - even the owner is denied
-          // because this is managed by Cloud Functions.
-          it.each([
-            { role: "Guest", getDb: () => guestDb() },
-            { role: "Other User", getDb: () => userDb(uidOther) },
-            { role: "Owner", getDb: () => userDb(uidCurrent) },
-          ])(
-            "denies $role from modifying replyCount on posts or replies",
-            async ({ getDb }) => {
-              const db = getDb();
-              await assertFails(dbSet(db, `posts/${postId}/replyCount`, 10));
-              await assertFails(
-                dbSet(db, `replies/${postId}/${replyId}/replyCount`, 5),
-              );
-            },
-          );
-
-          // Verifying ID immutability and path-key matching
-          it("denies a user from changing internal 'id' fields to mismatch the path key", async () => {
-            const subReplyPath = `subreplies/${postId}/${replyId}/sub_target`;
-
-            // Seed the sub-reply
-            await testEnv.withSecurityRulesDisabled(async (context) => {
-              const db = dbFromContext(context);
-              await dbUpdate(db, "/", {
-                [subReplyPath]: {
-                  id: "sub_target",
-                  postContent: "original",
-                  authorDisplay: "Anon",
-                },
-                [`authorLookup/sub_target`]: uidCurrent,
-                [`users/${uidCurrent}/${subReplyPath}`]: true,
-              });
-            });
-
-            // Attempt to change the internal ID while keeping the path the same
-            await assertFails(
-              dbUpdate(userDb(uidCurrent), subReplyPath, {
-                id: "malicious_id_swap",
-              }),
-            );
-          });
-        });
-
-        describe("Allowed Writes", () => {
-          it("allows current user to update the isRead status of their own notification", async () => {
-            const notifId = "notif_test_123";
-            const notifPath = `users/${uidCurrent}/notifications/${notifId}`;
-
-            // Seed a notification
-            await testEnv.withSecurityRulesDisabled(async (context) => {
-              const db = dbFromContext(context);
-              await dbSet(db, notifPath, {
-                type: "reply",
-                isRead: false,
-                count: 1,
-                updatedAt: Date.now(),
-                createdAt: Date.now(),
-              });
-            });
-
-            // System Check: User should be able to toggle isRead without affecting other fields
-            await assertSucceeds(
-              dbUpdate(userDb(uidCurrent), notifPath, {
-                isRead: true,
-                updatedAt: Date.now(),
-              }),
-            );
-          });
         });
       });
     });
