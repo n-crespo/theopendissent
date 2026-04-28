@@ -94,8 +94,14 @@ export const PostDetails = () => {
   }, [postId, highlightReplyId, highlightSubReplyId]); // Added highlightSubReplyId to dependency array
 
   const handleBack = () => {
-    if (window.history.length > 1) navigate(-1);
-    else navigate("/", { replace: true });
+    // if there is internal history, go back
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      // mark the landing page as dismissed
+      sessionStorage.setItem("landingDismissed", "true");
+      navigate("/", { replace: true });
+    }
   };
 
   const postAuthor =
