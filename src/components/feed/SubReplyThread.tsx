@@ -9,6 +9,7 @@ const PAGE_SIZE = 3;
 interface SubReplyThreadProps {
   rootPostId: string;
   parentReply: Post;
+  targetSubReplyId?: string | null; // to highlight a subreply
   recentlyRepliedToId?: string | null;
   setRecentlyRepliedToId?: (id: string | null) => void;
   onReply: () => void;
@@ -21,6 +22,7 @@ interface SubReplyThreadProps {
 export const SubReplyThread = ({
   rootPostId,
   parentReply,
+  targetSubReplyId,
   recentlyRepliedToId,
   setRecentlyRepliedToId,
   onReply,
@@ -32,6 +34,14 @@ export const SubReplyThread = ({
   const [shouldScroll, setShouldScroll] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (targetSubReplyId) {
+      setExpanded(true);
+      setTopLimit(100); // Load all to ensure the target is visible
+      setShouldScroll(true);
+    }
+  }, [targetSubReplyId]);
 
   const collapse = () => {
     setExpanded(false);
@@ -51,15 +61,31 @@ export const SubReplyThread = ({
   useEffect(() => {
     if (shouldScroll && subReplies.length > 0 && !loading) {
       setTimeout(() => {
-        bottomRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
+        // If we have a target sub-reply, scroll to it specifically. Otherwise, scroll to bottom.
+        const targetEl = targetSubReplyId
+          ? document.getElementById(`post-${targetSubReplyId}`)
+          : null;
+
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        } else {
+          bottomRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+
         if (setRecentlyRepliedToId) setRecentlyRepliedToId(null);
       }, 400);
       setShouldScroll(false);
     }
-  }, [shouldScroll, subReplies.length, loading, setRecentlyRepliedToId]);
+  }, [
+    shouldScroll,
+    subReplies.length,
+    loading,
+    targetSubReplyId,
+    setRecentlyRepliedToId,
+  ]);
 
   useEffect(() => {
     if (!expanded) return;
@@ -141,7 +167,12 @@ export const SubReplyThread = ({
                     // Check if this is the end of the top block (index = topLimit - 1)
                     const isEndOfTop = hasGap && index === topLimit - 1;
                     return (
-                      <div key={sr.id} className="flex flex-col">
+                      // include ID here so document.getElementById can find it
+                      <div
+                        key={sr.id}
+                        id={`subreply-${sr.id}`}
+                        className="flex flex-col"
+                      >
                         <motion.div
                           layout
                           initial={{ opacity: 0 }}
@@ -152,6 +183,8 @@ export const SubReplyThread = ({
                           <FeedItem
                             item={sr}
                             isReply={true}
+                            // Pass the highlighted state
+                            highlighted={sr.id === targetSubReplyId}
                             threadAuthorUserId={parentReply.userId}
                             onReply={onReply}
                           />
