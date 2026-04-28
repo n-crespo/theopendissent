@@ -209,7 +209,7 @@ export const deletePost = async (
   try {
     const dbUpdates: Record<string, any> = {};
 
-    // authorLookup is flat, so we can always target the id directly for deletion
+    // authorLookup is flat, so we target the id directly
     dbUpdates[`authorLookup/${id}`] = null;
 
     if (parentReplyId && parentPostId) {
