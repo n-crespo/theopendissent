@@ -8,7 +8,7 @@ import { useOutletContext } from "react-router-dom";
 const PAGE_SIZE = 3;
 
 interface SubReplyThreadProps {
-  rootPostId: string;
+  parentPostId: string;
   parentReply: Post;
   targetSubReplyId?: string | null; // to highlight a subreply
   recentlyRepliedToId?: string | null;
@@ -21,7 +21,7 @@ interface SubReplyThreadProps {
  * Rendered immediately below the parent reply's FeedItem in PostDetails.
  */
 export const SubReplyThread = ({
-  rootPostId,
+  parentPostId,
   parentReply,
   targetSubReplyId,
   onReply,
@@ -101,7 +101,7 @@ export const SubReplyThread = ({
     if (!expanded) return;
     setLoading(true);
     const unsub = subscribeToSubRepliesWithGap(
-      rootPostId,
+      parentPostId,
       parentReply.id,
       topLimit,
       (replies) => {
@@ -112,7 +112,7 @@ export const SubReplyThread = ({
     );
 
     return unsub;
-  }, [expanded, topLimit, rootPostId, parentReply.id, effectiveSubTargetId]);
+  }, [expanded, topLimit, parentPostId, parentReply.id, effectiveSubTargetId]);
 
   const isInitialLoading = expanded && loading && subReplies.length === 0;
 

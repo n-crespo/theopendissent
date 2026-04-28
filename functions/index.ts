@@ -259,15 +259,15 @@ export const onReplyDeletedCleanup = onValueDeleted(
  * Manages the subReplyCount counter on parent reply when sub-replies are created or deleted.
  */
 export const updateSubReplyCount = onValueWritten(
-  "/subreplies/{rootPostId}/{parentReplyId}/{subReplyId}",
+  "/subreplies/{parentPostId}/{parentReplyId}/{subReplyId}",
   async (event) => {
-    const { rootPostId, parentReplyId } = event.params;
+    const { parentPostId, parentReplyId } = event.params;
     const db = admin.database();
 
     const created = event.data.after.exists() && !event.data.before.exists();
     const deleted = !event.data.after.exists() && event.data.before.exists();
 
-    const parentReplyRef = db.ref(`replies/${rootPostId}/${parentReplyId}`);
+    const parentReplyRef = db.ref(`replies/${parentPostId}/${parentReplyId}`);
     return syncReplyCount(parentReplyRef, created, deleted, parentReplyId);
   },
 );
@@ -444,9 +444,9 @@ export const onReplyCreatedNotification = onValueCreated(
  * when a new sub-reply is created.
  */
 export const onSubReplyCreatedNotification = onValueCreated(
-  "/subreplies/{rootPostId}/{parentReplyId}/{subReplyId}",
+  "/subreplies/{parentPostId}/{parentReplyId}/{subReplyId}",
   async (event) => {
-    const { rootPostId, parentReplyId, subReplyId } = event.params;
+    const { parentPostId, parentReplyId, subReplyId } = event.params;
     const subReplyData = event.data.val();
     const db = admin.database();
 
@@ -456,7 +456,7 @@ export const onSubReplyCreatedNotification = onValueCreated(
     try {
       // find the owner of the direct reply being replied to
       const parentReplySnap = await db
-        .ref(`replies/${rootPostId}/${parentReplyId}`)
+        .ref(`replies/${parentPostId}/${parentReplyId}`)
         .once("value");
       const parentReplyData = parentReplySnap.val();
       const ownerId = parentReplyData?.userId;

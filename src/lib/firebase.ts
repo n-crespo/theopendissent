@@ -317,13 +317,13 @@ export const subscribeToReplies = (
  * Subscribes to the oldest `topLimit` items, the newest 2 items, and an optional target item.
  */
 export const subscribeToSubRepliesWithGap = (
-  rootPostId: string,
+  parentPostId: string,
   parentReplyId: string,
   topLimit: number,
   callback: (subReplies: Post[]) => void,
   targetId?: string | null,
 ) => {
-  const subRepliesRef = ref(db, `subreplies/${rootPostId}/${parentReplyId}`);
+  const subRepliesRef = ref(db, `subreplies/${parentPostId}/${parentReplyId}`);
 
   const qTop = query(
     subRepliesRef,
@@ -349,7 +349,7 @@ export const subscribeToSubRepliesWithGap = (
       .map(([id, val]: [string, any]) => ({
         id,
         ...val,
-        parentPostId: rootPostId,
+        parentPostId,
         parentReplyId,
       }))
       .sort(

@@ -183,7 +183,7 @@ export const PostDetails = () => {
                     }}
                   />
                   <SubReplyThread
-                    rootPostId={postId!}
+                    parentPostId={postId!}
                     parentReply={reply}
                     targetSubReplyId={
                       highlightReplyId === reply.id ? highlightSubReplyId : null
