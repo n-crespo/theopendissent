@@ -77,13 +77,11 @@ export const PostDetails = () => {
               `reply-${highlightReplyId}`,
             );
             if (element) {
-              console.log("scrolling");
               element.scrollIntoView({ behavior: "smooth", block: "center" });
 
               // Clean up URL after successful scroll
               setTimeout(() => {
                 const newUrl = window.location.pathname;
-                console.log("cleaning up");
                 window.history.replaceState(null, "", newUrl);
               }, 1000);
             }
