@@ -460,7 +460,7 @@ export const getDeepLinkData = async (
   parentId?: string | null,
   rootId?: string | null,
 ) => {
-  // 1. Fetch the target item (could be post, reply, or sub-reply)
+  // fetch the target item (could be post, reply, or sub-reply)
   const targetPost = await getPostById(
     sharedId,
     parentId || undefined,
