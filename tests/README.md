@@ -1,0 +1,95 @@
+# Database Security Rules Tests
+
+- READS
+  - DENIES
+    - public user
+      - read to users/
+      - read to users/{uid}
+      - read to users/{uid}/posts
+      - read to users/{uid}/replies
+      - read to users/{uid}/notifications
+      - read to users/{uid}/subreplies
+      - read to users/{uid}/displayName
+      - read to users/{uid}/email
+      - read to users/{uid}/postInteractions
+    - some user B
+      - read to users/{uidA}
+      - read to users/{uidA}/posts
+      - read to users/{uidA}/replies
+      - read to users/{uidA}/notifications
+      - read to users/{uidA}/subreplies
+      - read to users/{uidA}/displayName
+      - read to users/{uidA}/email
+      - read to users/{uidA}/postInteractions
+  - ALLOWS
+    - public user read to posts/, replies/, subreplies/
+    - auth user read to posts/, replies/, subreplies/
+    - user A read from users/uidA/notifications/test
+
+- WRITES
+  - protected fields
+    - DENIES
+      - public/other user to posts/postId/replyCount
+      - public/other user to replies/replyId/replyCount
+      - public user to replies/reply or posts/post or subreplies/subreply
+    - ALLOWS
+      - user A write to users/uidA/notifications/test
+  - post creation
+    - DENIES
+      - without profile receipt
+      - without ownership receipt
+      - without main object (with profile XOR ownership) (2)
+      - not logged in
+      - user B write to users/uidA/posts/evil
+      - including userId
+      - timestamp missing
+      - over 600 chars
+    - ALLOWS
+      - with profile receipt + ownership receipt + required fields
+  - reply creation
+    - DENIES
+      - without profile receipt
+      - without ownership receipt
+      - without main object (with profile XOR ownership) (2)
+      - not logged in
+      - user B write to users/uidA/replies/evil
+      - including userId
+      - timestamp missing
+      - over 600 chars
+      - out of range interactionScore
+      - wrong parentPostId
+      - missing parentPostId
+      - missing interactionScore
+    - ALLOWS
+      - with profile receipt + ownership receipt + required fields (parentPostId, interactionScore)
+  - subreply creation
+    - DENIES
+      - without profile receipt
+      - without ownership receipt
+      - without main object (with profile XOR ownership) (2)
+      - not logged in
+      - user B write to users/uidA/subreplies/evil
+      - including userId
+      - timestamp missing
+      - over 600 chars
+      - wrong parentPostId
+      - wrong rootPostId
+      - missing parentPostId
+      - missing rootPostId
+    - ALLOWS
+      - with profile receipt + ownership receipt + required fields (parentPostId, rootPostId)
+
+- DELETES
+  - ALLOWS
+    - deleting post (that doesnt have userId field) with both receipts sent
+  - DENIES
+    - deleting post (that doesnt have userId field) with only profile receipt
+    - deleting post (that doesnt have userId field) with only ownership receipt
+      - without main object (with profile XOR ownership) (2)
+    - non-owner delete (post/reply/subreply) (3)
+
+- EDITS
+  - ALLOWS
+    - owner edit postContent
+  - DENIES
+    - non-owner edit postContent
