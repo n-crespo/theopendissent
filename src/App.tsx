@@ -38,9 +38,12 @@ function Layout() {
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [activeParent, setActiveParent] = useState<Post | null>(null);
   const [activeReplyTo, setActiveReplyTo] = useState<Post | null>(null);
-  const [recentlyRepliedToId, setRecentlyRepliedToId] = useState<string | null>(
-    null,
-  );
+
+  const [activeTarget, setActiveTarget] = useState<{
+    id: string;
+    parentId: string;
+  } | null>(null);
+
   const [isInitialCheck, setIsInitialCheck] = useState(true);
   const [showLanding, setShowLanding] = useState(false);
 
@@ -123,8 +126,8 @@ function Layout() {
                 setActiveParent,
                 setIsComposeOpen: handleOpenCompose,
                 setActiveReplyTo,
-                recentlyRepliedToId,
-                setRecentlyRepliedToId,
+                activeTarget,
+                setActiveTarget,
               }}
             />
           </main>
@@ -158,7 +161,9 @@ function Layout() {
           }}
           parentPost={activeParent}
           parentReply={activeReplyTo}
-          onReplyPosted={(replyId) => setRecentlyRepliedToId(replyId)}
+          onSuccess={(newId, parentId) =>
+            setActiveTarget({ id: newId, parentId })
+          }
         />
         <Footer />
       </div>

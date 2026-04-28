@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Post } from "../../types";
 import { subscribeToSubRepliesWithGap } from "../../lib/firebase";
 import { FeedItem } from "./FeedItem";
+import { useOutletContext } from "react-router-dom";
 
 const PAGE_SIZE = 3;
 
@@ -23,10 +24,11 @@ export const SubReplyThread = ({
   rootPostId,
   parentReply,
   targetSubReplyId,
-  recentlyRepliedToId,
-  setRecentlyRepliedToId,
   onReply,
 }: SubReplyThreadProps) => {
+  // Grab the global target from Layout context
+  const { activeTarget, setActiveTarget }: any = useOutletContext();
+
   const [expanded, setExpanded] = useState(false);
   const [topLimit, setTopLimit] = useState(2);
   const [subReplies, setSubReplies] = useState<Post[]>([]);
@@ -35,34 +37,29 @@ export const SubReplyThread = ({
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Determine the final ID we need to find/highlight
+  // It's either the URL target or the fresh reply target (if the parent matches)
+  const effectiveSubTargetId =
+    targetSubReplyId ||
+    (activeTarget?.parentId === parentReply.id ? activeTarget.id : null);
+
+  // Trigger expansion and loading if a target exists
   useEffect(() => {
-    if (targetSubReplyId) {
+    if (effectiveSubTargetId) {
       setExpanded(true);
       setTopLimit(2);
       setShouldScroll(true);
     }
-  }, [targetSubReplyId]);
+  }, [effectiveSubTargetId]);
 
-  const collapse = () => {
-    setExpanded(false);
-    // Keep cached data so re-opening is instant and avoids height-jumps
-  };
-
-  // Auto-expand and scroll on new reply
-  useEffect(() => {
-    if (recentlyRepliedToId === parentReply.id) {
-      setExpanded(true);
-      setTopLimit(2);
-      setShouldScroll(true);
-    }
-  }, [recentlyRepliedToId, parentReply.id]);
+  const collapse = () => setExpanded(false);
 
   // Execute scroll once data is loaded
   useEffect(() => {
     if (shouldScroll && subReplies.length > 0 && !loading) {
       setTimeout(() => {
-        const targetEl = targetSubReplyId
-          ? document.getElementById(`subreply-${targetSubReplyId}`)
+        const targetEl = effectiveSubTargetId
+          ? document.getElementById(`subreply-${effectiveSubTargetId}`)
           : null;
 
         if (targetEl) {
@@ -75,15 +72,18 @@ export const SubReplyThread = ({
               window.history.replaceState(null, "", newUrl);
             }, 1000);
           }
-        } else if (!targetSubReplyId) {
-          // Fallback for regular "new reply" scroll
+
+          // If this was a fresh reply, clear the global state
+          if (activeTarget && setActiveTarget) {
+            setActiveTarget(null);
+          }
+        } else if (!effectiveSubTargetId) {
+          // Default scroll to bottom if no target is specified
           bottomRef.current?.scrollIntoView({
             behavior: "smooth",
             block: "center",
           });
         }
-
-        if (setRecentlyRepliedToId) setRecentlyRepliedToId(null);
       }, 400);
       setShouldScroll(false);
     }
@@ -91,8 +91,10 @@ export const SubReplyThread = ({
     shouldScroll,
     subReplies.length,
     loading,
+    effectiveSubTargetId,
     targetSubReplyId,
-    setRecentlyRepliedToId,
+    activeTarget,
+    setActiveTarget,
   ]);
 
   useEffect(() => {
@@ -106,11 +108,11 @@ export const SubReplyThread = ({
         setSubReplies(replies);
         setLoading(false);
       },
-      targetSubReplyId,
+      effectiveSubTargetId,
     );
 
     return unsub;
-  }, [expanded, topLimit, rootPostId, parentReply.id, targetSubReplyId]);
+  }, [expanded, topLimit, rootPostId, parentReply.id, effectiveSubTargetId]);
 
   const isInitialLoading = expanded && loading && subReplies.length === 0;
 
