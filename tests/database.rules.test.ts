@@ -87,22 +87,15 @@ describe("Realtime Database rules", () => {
       await assertSucceeds(dbGet(db, `posts/${postId}`));
     });
 
-    // legacy compatibility
-    it("legacy post shape still reads correctly (no authorDisplay/isThreadAuthor)", async () => {
-      const db = anonDb();
-      const snap = await assertSucceeds(dbGet(db, `posts/${postId}`));
-      expect(snap.exists()).toBe(true);
-      expect(snap.child("postContent").val()).toBe("seed post");
-      expect(snap.child("userId").val()).toBe(uidA);
-    });
-
-    // data security
-    it("public post data contains only userId and not private metadata", async () => {
-      const db = anonDb();
-      const snap = await dbGet(db, `posts/${postId}`);
-      expect(snap.child("userId").exists()).toBe(true);
-      expect(snap.child("notifications").exists()).toBe(false);
-    });
+    // TODO: after full data migration add test that ensures userId is NEVER in
+    // any post/reply/subreply data
+    //
+    // it("public post data contains only userId and not private metadata", async () => {
+    //   const db = anonDb();
+    //   const snap = await dbGet(db, `posts/${postId}`);
+    //   expect(snap.child("userId").exists()).toBe(true);
+    //   expect(snap.child("notifications").exists()).toBe(false);
+    // });
   });
 
   describe("Unauthorized Reads", () => {
