@@ -84,6 +84,37 @@ const deleteRepliesInBatches = async (postId: string) => {
   }
 };
 
+/*
+ * Shared helper to synchronize a parent's replyCount.
+ * Safely guards against ghost-node creation during cascading deletes.
+ */
+const syncReplyCount = async (
+  parentRef: admin.database.Reference,
+  created: boolean,
+  deleted: boolean,
+  parentIdLog: string,
+) => {
+  if (!created && !deleted) return null;
+
+  const increment = created ? 1 : -1;
+
+  try {
+    // on delete: guard against ghost-node creation when the parent
+    // was already removed (e.g. cascade delete)
+    if (deleted) {
+      const parentSnap = await parentRef.once("value");
+      if (!parentSnap.exists()) return null;
+    }
+
+    return parentRef.child("replyCount").transaction((current) => {
+      return Math.max(0, (current || 0) + increment);
+    });
+  } catch (error) {
+    console.error(`counter sync failed for parent ${parentIdLog}:`, error);
+    return null;
+  }
+};
+
 /**
  * updates the replyCount on the parent (Post or Reply) when replies are created/deleted.
  */
@@ -96,25 +127,15 @@ export const updateReplyCount = onValueWritten(
     const created = event.data.after.exists() && !event.data.before.exists();
     const deleted = !event.data.after.exists() && event.data.before.exists();
 
-    // ignore edits to post content
     if (!created && !deleted) return null;
 
-    const increment = created ? 1 : -1;
-
-    try {
-      const parentRef = await getContentRef(parentId);
-      if (!parentRef) {
-        console.warn(`orphaned reply: parent ${parentId} not found.`);
-        return null;
-      }
-
-      return parentRef.child("replyCount").transaction((current) => {
-        return Math.max(0, (current || 0) + increment);
-      });
-    } catch (error) {
-      console.error(`counter sync failed for parent ${parentId}:`, error);
+    const parentRef = await getContentRef(parentId);
+    if (!parentRef) {
+      console.warn(`orphaned reply: parent ${parentId} not found.`);
       return null;
     }
+
+    return syncReplyCount(parentRef, created, deleted, parentId);
   },
 );
 
@@ -218,30 +239,58 @@ export const onReplyDeletedCleanup = onValueDeleted(
     const updates: Record<string, null> = {};
 
     // if the post was made non-anonymously, clean up the user receipt.
-    // otherwise, it'll be cleaned up later.
-    // TODO: ensure dangling pointer is self-deleted on read (to avoid
-    // performance overhead of doing it automatically)
+    // otherwise, it'll be cleaned up later. dangling pointer is self-deleted on
+    // read to avoid performance overhead of doing it automatically.
     if (replyData?.userId) {
       updates[`users/${replyData.userId}/replies/${parentId}/${replyId}`] =
         null;
     }
+
+    // cascade: remove all sub-replies for this reply.
+    // each deletion fires onSubReplyWritten + onSubReplyDeletedCleanup
+    // to handle hasSubReply and user receipt cleanup automatically.
+    await db.ref(`subreplies/${parentId}/${replyId}`).remove();
 
     return db.ref().update(updates);
   },
 );
 
 /**
+ * Manages the subReplyCount counter on parent reply when sub-replies are created or deleted.
+ */
+export const updateSubReplyCount = onValueWritten(
+  "/subreplies/{rootPostId}/{parentReplyId}/{subReplyId}",
+  async (event) => {
+    const { rootPostId, parentReplyId } = event.params;
+    const db = admin.database();
+
+    const created = event.data.after.exists() && !event.data.before.exists();
+    const deleted = !event.data.after.exists() && event.data.before.exists();
+
+    const parentReplyRef = db.ref(`replies/${rootPostId}/${parentReplyId}`);
+    return syncReplyCount(parentReplyRef, created, deleted, parentReplyId);
+  },
+);
+
+/**
  * Serves dynamic HTML with Open Graph tags for iMessage/Social previews.
- * Usage: https://site.com/share?s=<postId>&p=<parentId>
+ * Usage: https://site.com/share?s=<postId>&p=<parentId>&r=<rootId>
  */
 export const sharePost = onRequest(async (req, res) => {
   const postId = req.query.s as string;
   const parentId = req.query.p as string;
+  const rootId = req.query.r as string; // minimal change: added rootId
 
   if (!postId) return res.redirect(DOMAIN);
 
   try {
-    const contentRef = await getContentRef(postId, parentId);
+    // added rootId to support sub-reply lookups
+    const contentRef =
+      rootId && parentId
+        ? admin.database().ref(`subreplies/${rootId}/${parentId}/${postId}`)
+        : parentId
+          ? admin.database().ref(`replies/${parentId}/${postId}`)
+          : admin.database().ref(`posts/${postId}`);
     const snapshot = await contentRef?.once("value");
     const data = snapshot?.val();
 
@@ -254,25 +303,26 @@ export const sharePost = onRequest(async (req, res) => {
     // prepare author ID
     const authorDisplay = data.authorDisplay || "Anonymous User";
 
-    // increased limit to 200 chars for better iMessage utilization
     const maxLength = 300;
     const contentPreview =
       cleanContent.length > maxLength
         ? `${cleanContent.slice(0, maxLength)}...`
         : cleanContent;
 
-    // TODO: add reply count here
     const pageTitle = `@${authorDisplay} on TheOpenDissent.com`;
     const pageDescription = `“${contentPreview}”`;
 
-    // keep the shareUrl pointing to THIS function so meta tags work on re-shares
-    const shareUrl = `${DOMAIN}/share?s=${postId}${parentId ? `&p=${parentId}` : ""}`;
+    // added rootId to shareUrl to maintain metadata on re-shares
+    const shareUrl = `${DOMAIN}/share?s=${postId}${parentId ? `&p=${parentId}` : ""}${rootId ? `&r=${rootId}` : ""}`;
 
-    // redirect to new "/post" route
+    // logic to determine the correct app route
     let appUrl = `${DOMAIN}/post/${postId}`;
 
-    // If parentId exists, 'postId' is actually the Reply ID (s), and 'parentId' is the Post (p)
-    if (parentId) {
+    if (rootId && parentId) {
+      // sub-reply deep link
+      appUrl = `${DOMAIN}/post/${rootId}?reply=${parentId}&subreply=${postId}`;
+    } else if (parentId) {
+      // standard reply deep link
       appUrl = `${DOMAIN}/post/${parentId}?reply=${postId}`;
     }
 
@@ -380,6 +430,72 @@ export const onReplyCreatedNotification = onValueCreated(
       });
     } catch (error) {
       console.error(`Notification trigger failed for reply ${replyId}:`, error);
+      return null;
+    }
+  },
+);
+
+// TODO:: currently notifications are only sent on non-anonymous posts/replies.
+// there would be high performance overhead for enabling it for anonymous posts
+// too (doesn't scale well). Is there a good compromise?
+
+/**
+ * Automatically creates or updates a notification for the direct reply owner
+ * when a new sub-reply is created.
+ */
+export const onSubReplyCreatedNotification = onValueCreated(
+  "/subreplies/{rootPostId}/{parentReplyId}/{subReplyId}",
+  async (event) => {
+    const { rootPostId, parentReplyId, subReplyId } = event.params;
+    const subReplyData = event.data.val();
+    const db = admin.database();
+
+    // only send notifications for non-anonymous sub-replies
+    if (!subReplyData || !subReplyData.userId) return null;
+
+    try {
+      // find the owner of the direct reply being replied to
+      const parentReplySnap = await db
+        .ref(`replies/${rootPostId}/${parentReplyId}`)
+        .once("value");
+      const parentReplyData = parentReplySnap.val();
+      const ownerId = parentReplyData?.userId;
+
+      // don't notify if the user is replying to their own reply
+      if (!ownerId || ownerId === subReplyData.userId) return null;
+
+      // aggregate under the parentReplyId so notifications for the same reply
+      // are grouped together (same pattern as post reply notifications)
+      const notifRef = db.ref(
+        `users/${ownerId}/notifications/${parentReplyId}`,
+      );
+      const now = Date.now();
+
+      return notifRef.transaction((current) => {
+        if (current) {
+          return {
+            ...current,
+            count: (current.count || 1) + 1,
+            latestReplyId: subReplyId,
+            isRead: false,
+            updatedAt: now,
+          };
+        } else {
+          return {
+            type: "reply",
+            count: 1,
+            latestReplyId: subReplyId,
+            isRead: false,
+            createdAt: now,
+            updatedAt: now,
+          };
+        }
+      });
+    } catch (error) {
+      console.error(
+        `Notification trigger failed for sub-reply ${subReplyId}:`,
+        error,
+      );
       return null;
     }
   },

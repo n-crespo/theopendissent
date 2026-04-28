@@ -10,8 +10,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { subscribeToPost, subscribeToReplies } from "../lib/firebase";
 import { FeedItem } from "../components/feed/FeedItem";
+import { SubReplyThread } from "../components/feed/SubReplyThread";
 import { useAuth } from "../context/AuthContext";
-import { useOwnedPosts } from "../context/OwnedPostsContext";
 import { Post } from "../types";
 import { FeedItemSkeleton } from "../components/ui/FeedItemSkeleton";
 import { ComposeTrigger } from "../components/feed/ComposeTrigger";
@@ -20,19 +20,26 @@ export const PostDetails = () => {
   const { postId } = useParams<{ postId: string }>();
   const [searchParams] = useSearchParams();
   const highlightReplyId = searchParams.get("reply");
+  const highlightSubReplyId = searchParams.get("subreply");
   const navigate = useNavigate();
 
   // grab the setters from Layout
-  const { setActiveParent }: any = useOutletContext();
+  const {
+    setActiveParent,
+    setIsComposeOpen,
+    setActiveReplyTo,
+    recentlyRepliedToId,
+    setRecentlyRepliedToId,
+  }: any = useOutletContext();
 
   const [replies, setReplies] = useState<Post[]>([]);
   const [isLoadingReplies, setIsLoadingReplies] = useState(true);
   const [livePost, setLivePost] = useState<Post | null>(null);
   const [isLoadingPost, setIsLoadingPost] = useState(true);
 
-  const { user, loading: authLoading } = useAuth();
-  const uid = user?.uid;
-  const ownedPosts = useOwnedPosts();
+  const { loading: authLoading } = useAuth();
+  // const uid = user?.uid;
+  // const ownedPosts = useOwnedPosts();
 
   // set the active parent for the FAB when the post loads
   useEffect(() => {
@@ -56,11 +63,13 @@ export const PostDetails = () => {
   useEffect(() => {
     if (!postId) return;
     setIsLoadingReplies(true);
+
     const unsubscribe = subscribeToReplies(postId, (list) => {
       setReplies(list);
       setIsLoadingReplies(false);
 
-      if (highlightReplyId) {
+      // Only scroll to the reply if it is the primary target (no sub-reply following it)
+      if (highlightReplyId && !highlightSubReplyId) {
         const replyExists = list.some((r) => r.id === highlightReplyId);
         if (replyExists) {
           setTimeout(() => {
@@ -69,6 +78,8 @@ export const PostDetails = () => {
             );
             if (element) {
               element.scrollIntoView({ behavior: "smooth", block: "center" });
+
+              // Clean up URL after successful scroll
               setTimeout(() => {
                 const newUrl = window.location.pathname;
                 window.history.replaceState(null, "", newUrl);
@@ -78,19 +89,25 @@ export const PostDetails = () => {
         }
       }
     });
+
     return () => unsubscribe();
-  }, [postId, highlightReplyId]);
+  }, [postId, highlightReplyId, highlightSubReplyId]); // Added highlightSubReplyId to dependency array
 
   const handleBack = () => {
-    if (window.history.length > 1) navigate(-1);
-    else navigate("/", { replace: true });
+    // if there is internal history, go back
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      // mark the landing page as dismissed
+      sessionStorage.setItem("landingDismissed", "true");
+      navigate("/", { replace: true });
+    }
   };
 
-  const isOwner = (livePost?.userId && uid === livePost.userId) || (livePost && ownedPosts.has(livePost.id));
-  
-  const postAuthor = livePost?.authorDisplay && livePost.authorDisplay !== "Anonymous User"
-    ? livePost.authorDisplay
-    : "Anonymous User";
+  const postAuthor =
+    livePost?.authorDisplay && livePost.authorDisplay !== "Anonymous User"
+      ? livePost.authorDisplay
+      : "Anonymous User";
 
   return (
     <div className="flex flex-col gap-y-6">
@@ -123,9 +140,7 @@ export const PostDetails = () => {
         </section>
 
         <div className="flex items-center gap-x-4 px-2">
-          <h4 className="text-[0.65rem] font-extrabold tracking-wider uppercase text-slate-400 whitespace-nowrap">
-            Discussion
-          </h4>
+          <h4 className="text-sm font-semibold text-slate-400">Discussion</h4>
           <div className="h-px w-full bg-slate-100"></div>
         </div>
 
@@ -158,8 +173,27 @@ export const PostDetails = () => {
                   <FeedItem
                     item={reply}
                     isReply={true}
-                    highlighted={highlightReplyId === reply.id}
+                    highlighted={
+                      highlightReplyId === reply.id && !highlightSubReplyId
+                    }
                     threadAuthorUserId={livePost?.userId}
+                    onReply={() => {
+                      setActiveReplyTo(reply);
+                      setIsComposeOpen(true);
+                    }}
+                  />
+                  <SubReplyThread
+                    rootPostId={postId!}
+                    parentReply={reply}
+                    targetSubReplyId={
+                      highlightReplyId === reply.id ? highlightSubReplyId : null
+                    }
+                    recentlyRepliedToId={recentlyRepliedToId}
+                    setRecentlyRepliedToId={setRecentlyRepliedToId}
+                    onReply={() => {
+                      setActiveReplyTo(reply);
+                      setIsComposeOpen(true);
+                    }}
                   />
                 </motion.div>
               ))

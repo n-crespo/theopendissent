@@ -8,10 +8,18 @@ export const ProfileReplyItem = ({ reply }: { reply: ReplyWithParent }) => {
   const navigate = useNavigate();
 
   const handleOpenContext = (e: React.MouseEvent) => {
-    e.stopPropagation(); // prevent triggering parent clicks if any
-    if (reply.parentPost) {
-      // Navigate to the parent post and highlight this specific reply
-      navigate(`/post/${reply.parentPost.id}?reply=${reply.id}`);
+    e.stopPropagation();
+    if (!reply.parentPostId) return;
+
+    if (reply.parentReplyId) {
+      // It's a sub-reply. Navigate to root, but target the sub-reply
+      // We pass the direct parent (reply) to show the thread, and the id to scroll/highlight
+      navigate(
+        `/post/${reply.parentPostId}?reply=${reply.parentReplyId}&subreply=${reply.id}`,
+      );
+    } else {
+      // Standard reply.
+      navigate(`/post/${reply.parentPostId}?reply=${reply.id}`);
     }
   };
 

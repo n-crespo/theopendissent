@@ -1,56 +1,49 @@
 import { useCallback } from "react";
 import { Post } from "../types";
-// import { useToast } from "../context/ToastContext";
 
 /**
- * Custom hook to handle sharing logic.
- * Generates a link to the /share Cloud Function to ensure Social Previews work,
- * then invokes the native share sheet or clipboard fallback.
+ * handles sharing logic and generates links for Social Previews.
  */
 export const useShare = () => {
-  // const { showToast } = useToast();
-
   const sharePost = useCallback(async (post: Post) => {
-    // Construct the Deep Link
     const url = new URL(window.location.origin);
     url.pathname = "/share";
 
-    // Logic: 's' is the ID of the content being shared.
-    // If it's a reply, 's' is the reply ID and 'p' is the parent ID.
-    // If it's a main post, 's' is the post ID.
-    url.searchParams.set("s", post.id);
+    const { id, parentPostId, parentReplyId } = post;
 
-    if (post.parentPostId) {
-      url.searchParams.set("p", post.parentPostId);
+    // logic: s = target content ID, p = direct parent, r = root thread post
+    url.searchParams.set("s", id);
+
+    if (parentReplyId && parentPostId) {
+      // sub-reply case
+      url.searchParams.set("p", parentReplyId);
+      url.searchParams.set("r", parentPostId);
+    } else if (parentPostId) {
+      // standard reply case
+      url.searchParams.set("p", parentPostId);
     }
 
     const shareUrl = url.toString();
-    const shareText = `Check out this discussion on TheOpenDissent!`;
-
     const shareData = {
       title: "The Open Dissent",
-      text: shareText,
+      text: `Check out this discussion on TheOpenDissent!`,
       url: shareUrl,
     };
 
-    // Native Share API (Mobile)
     if (navigator.share && navigator.canShare?.(shareData)) {
       try {
         await navigator.share(shareData);
       } catch (err) {
-        // AbortError happens if user cancels the share sheet; we ignore it.
         if ((err as Error).name !== "AbortError") {
-          console.error("Share failed:", err);
+          console.error("share failed:", err);
         }
       }
     } else {
-      // Desktop / Fallback (Clipboard)
       try {
         await navigator.clipboard.writeText(shareUrl);
-        // showToast("Link copied to clipboard!");
-        alert("Link copied to clipboard!"); // Temporary fallback
+        alert("Link copied to clipboard!");
       } catch (err) {
-        console.error("Clipboard write failed:", err);
+        console.error("clipboard write failed:", err);
       }
     }
   }, []);

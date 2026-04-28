@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   useLocation,
   useNavigationType,
   Outlet,
   Routes,
   Route,
+  useSearchParams,
 } from "react-router-dom";
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
@@ -31,22 +32,33 @@ import { ComposeModal } from "./components/feed/ComposeModal";
 function Layout() {
   const { user, loading } = useAuth();
   const { pathname } = useLocation();
+  const [searchParams] = useSearchParams();
   const navType = useNavigationType();
 
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [activeParent, setActiveParent] = useState<Post | null>(null);
+  const [activeReplyTo, setActiveReplyTo] = useState<Post | null>(null);
+
+  const [activeTarget, setActiveTarget] = useState<{
+    id: string;
+    parentId: string;
+  } | null>(null);
+
   const [isInitialCheck, setIsInitialCheck] = useState(true);
   const [showLanding, setShowLanding] = useState(false);
 
   const { openModal } = useModal();
 
-  const handleOpenCompose = (val: boolean) => {
-    if (val && !user) {
-      openModal("signin");
-      return;
-    }
-    setIsComposeOpen(val);
-  };
+  const handleOpenCompose = useCallback(
+    (val: boolean) => {
+      if (val && !user) {
+        openModal("signin");
+        return;
+      }
+      setIsComposeOpen(val);
+    },
+    [user, openModal],
+  );
 
   useDeepLinkHandler();
 
@@ -56,17 +68,26 @@ function Layout() {
     const isDev = import.meta.env.DEV;
 
     if (!loading) {
+      // check if this is a share link
+      const isShareLink = searchParams.has("s");
       const isCorrectPath = pathname === "/" || pathname === "/share";
+
+      // only show landing if we aren't following a specific share link
       const shouldShowInProd =
-        !user && !skipPermanent && !skipSession && isCorrectPath;
-      const shouldShowInDev = isDev && !skipSession && isCorrectPath;
+        !user &&
+        !skipPermanent &&
+        !skipSession &&
+        isCorrectPath &&
+        !isShareLink;
+      const shouldShowInDev =
+        isDev && !skipSession && isCorrectPath && !isShareLink;
 
       if (shouldShowInDev || shouldShowInProd) {
         setShowLanding(true);
       }
       setIsInitialCheck(false);
     }
-  }, [user, loading, pathname]);
+  }, [user, loading, pathname, searchParams]);
 
   useEffect(() => {
     if (navType !== "POP")
@@ -101,7 +122,13 @@ function Layout() {
           {/* FEED (CENTER) */}
           <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2 relative">
             <Outlet
-              context={{ setActiveParent, setIsComposeOpen: handleOpenCompose }}
+              context={{
+                setActiveParent,
+                setIsComposeOpen: handleOpenCompose,
+                setActiveReplyTo,
+                activeTarget,
+                setActiveTarget,
+              }}
             />
           </main>
 
@@ -128,8 +155,15 @@ function Layout() {
         <GlobalModal />
         <ComposeModal
           isOpen={isComposeOpen}
-          onClose={() => handleOpenCompose(false)}
+          onClose={() => {
+            handleOpenCompose(false);
+            setActiveReplyTo(null);
+          }}
           parentPost={activeParent}
+          parentReply={activeReplyTo}
+          onSuccess={(newId, parentId) =>
+            setActiveTarget({ id: newId, parentId })
+          }
         />
         <Footer />
       </div>

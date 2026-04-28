@@ -13,12 +13,17 @@ interface ComposeModalProps {
   isOpen: boolean;
   onClose: () => void;
   parentPost?: Post | null;
+  /** set when composing a sub-reply — the direct reply being responded to */
+  parentReply?: Post | null;
+  onSuccess?: (newId: string, parentId: string) => void;
 }
 
 export const ComposeModal = ({
   isOpen,
   onClose,
   parentPost,
+  parentReply,
+  onSuccess,
 }: ComposeModalProps) => {
   const { user } = useAuth();
   const { openModal, closeModal } = useModal();
@@ -30,6 +35,8 @@ export const ComposeModal = ({
   const isThreadAuthor = Boolean(
     parentPost?.id && ownedPosts.has(parentPost.id),
   );
+  const isSubReply = !!parentReply;
+  const isReply = !!parentPost || isSubReply;
 
   // lock anonymity if user is thread author
   const [isAnonymousState, setIsAnonymous] = useState(true);
@@ -43,7 +50,6 @@ export const ComposeModal = ({
 
   const limit = 600;
   const charsLeft = limit - content.length;
-  const isReply = !!parentPost;
 
   useEffect(() => {
     if (isOpen) {
@@ -78,17 +84,25 @@ export const ComposeModal = ({
       onConfirm: async () => {
         setIsPosting(true);
         try {
-          const newKey = await createPost(
-            user.uid,
-            content.trim(),
+          const newKey = await createPost({
+            userId: user.uid,
+            content: content.trim(),
             authorDisplay,
-            parentPost?.id,
-            isReply ? score : undefined,
+            parentPostId: parentPost?.id,
+            parentReplyId: parentReply?.id,
+            score: isReply && !isSubReply ? score : undefined,
             isThreadAuthor,
-            !isAnonymous,
-          );
+            includePublicUserId: !isAnonymous,
+          });
 
-          if (newKey) pinPostToTop(newKey);
+          if (newKey) {
+            pinPostToTop(newKey);
+            // Pass BOTH the new ID and the Parent ID
+            if (parentReply && onSuccess) {
+              onSuccess(newKey, parentReply.id);
+            }
+          }
+
           onClose();
           closeModal();
         } catch (error) {
@@ -145,13 +159,13 @@ export const ComposeModal = ({
               {/* Post As Toggle */}
               <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-4">
                 <div className="flex flex-col gap-y-1">
-                  <span className="text-sm font-bold text-slate-900 leading-tight flex items-center gap-x-1.5">
+                  <span className="text-sm font-bold text-slate-900 flex items-center gap-x-1.5">
                     <span>Post Anonymously?</span>
                     {isThreadAuthor && (
                       <Badge label="Locked (Author)" variant="slate" />
                     )}
                   </span>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs  text-slate-500">
                     {isThreadAuthor
                       ? `Posting as ${authorDisplay}.`
                       : isAnonymous
@@ -178,29 +192,38 @@ export const ComposeModal = ({
                 </button>
               </div>
               {/* Context area for replies */}
-              {isReply && (
+              {(isReply || isSubReply) && (
                 <div className="border-l-2 border-slate-100 pl-4 py-1">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xs font-semibold text-slate-500">
                       Replying to{" "}
-                      {parentPost?.authorDisplay &&
-                      parentPost.authorDisplay !== "Anonymous User"
-                        ? parentPost.authorDisplay
-                        : "Anonymous User"}
+                      {isSubReply
+                        ? parentReply?.authorDisplay &&
+                          parentReply.authorDisplay !== "Anonymous User"
+                          ? parentReply.authorDisplay
+                          : "Anonymous User"
+                        : parentPost?.authorDisplay &&
+                            parentPost.authorDisplay !== "Anonymous User"
+                          ? parentPost.authorDisplay
+                          : "Anonymous User"}
                       ...
                     </span>
                   </div>
                   <p className="text-sm text-slate-500 line-clamp-2 italic leading-relaxed">
-                    "{parentPost?.postContent}"
+                    "
+                    {isSubReply
+                      ? parentReply?.postContent
+                      : parentPost?.postContent}
+                    "
                   </p>
                 </div>
               )}
 
-              {/* Stance Selector: Only for replies */}
-              {isReply && (
+              {/* Stance Selector: only for direct replies (not sub-replies) */}
+              {isReply && !isSubReply && (
                 <div className="space-y-4">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    Your Stance
+                  <label className="text-sm font-bold text-logo-blue opacity-30">
+                    Your Stance:
                   </label>
                   <div className="flex justify-between gap-2 my-2">
                     {[-3, -2, -1, 0, 1, 2, 3].map((val) => {

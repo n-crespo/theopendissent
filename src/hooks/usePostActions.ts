@@ -34,11 +34,7 @@ export const usePostActions = (post: Post) => {
 
     setIsSaving(true);
     try {
-      await updatePost(
-        post.id,
-        { postContent: trimmed, editedAt: Date.now() },
-        post.parentPostId,
-      );
+      await updatePost(post, { postContent: trimmed, editedAt: Date.now() });
       setIsEditing(false);
       return true;
     } catch (err) {
@@ -60,7 +56,7 @@ export const usePostActions = (post: Post) => {
       isThreadAuthor: post.isThreadAuthor,
       onConfirm: async () => {
         try {
-          await deletePost(post.id, uid, post.parentPostId);
+          await deletePost(post, uid);
         } catch (error) {
           console.error("failed to delete:", error);
         }
