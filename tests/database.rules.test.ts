@@ -36,8 +36,6 @@ const dbUpdate = (
   path: string,
   value: Record<string, unknown>,
 ) => db.ref(path).update(value);
-const dbRemove = (db: ReturnType<typeof userDb>, path: string) =>
-  db.ref(path).remove();
 
 describe("Realtime Database rules", () => {
   beforeAll(async () => {
