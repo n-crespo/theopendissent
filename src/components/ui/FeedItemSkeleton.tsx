@@ -1,6 +1,6 @@
 export const FeedItemSkeleton = () => {
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-slate-100 bg-white p-4 shadow-sm animate-pulse">
+    <div className="flex flex-col gap-4 rounded-xl border border-slate-100 bg-white p-4 shadow-md animate-pulse">
       {/* Header Row */}
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-3">
