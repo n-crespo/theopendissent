@@ -64,6 +64,7 @@ describe("Realtime Database rules", () => {
       await dbUpdate(db, "/", {
         [`posts/${postId}`]: {
           postContent: "seed post",
+          authorDisplay: "Anon",
           timestamp: Date.now(),
           replyCount: 0,
         },
@@ -307,6 +308,7 @@ describe("Realtime Database rules", () => {
           lookupData: { uid: uidCurrent, type: "reply", postId },
           validData: {
             id: newId,
+            authorDisplay: "Anon",
             postContent: "test reply",
             timestamp: { ".sv": "timestamp" },
             parentPostId: postId,
