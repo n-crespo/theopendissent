@@ -499,12 +499,6 @@ describe("Realtime Database rules", () => {
             [s.lookup]: s.lookupData,
           };
 
-          // print the payload to the console
-          console.log(
-            `Payload for ${s.label}:`,
-            JSON.stringify(payload, null, 2),
-          );
-
           // verify atomic creation
           await assertSucceeds(dbUpdate(db, "/", payload));
 
@@ -567,12 +561,6 @@ describe("Realtime Database rules", () => {
             [s.profile]: true,
             [s.lookup]: s.lookupData,
           };
-
-          // print the payload to the console
-          console.log(
-            `Payload for ${s.label}:`,
-            JSON.stringify(payload, null, 2),
-          );
 
           // verify atomic creation
           await assertSucceeds(dbUpdate(db, "/", payload));
