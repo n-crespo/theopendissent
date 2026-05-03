@@ -30,7 +30,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:rules:vitest": "vitest run tests/database.rules.test.ts",
+    "test:rules:vitest": "vitest run tests/",
     "test:rules": "firebase emulators:exec --only database,auth --project=the-open-dissent-prod \"pnpm test:rules:vitest\"",
     "test": "pnpm test:rules",
     "functions:watch": "npm run --prefix functions build:watch",
