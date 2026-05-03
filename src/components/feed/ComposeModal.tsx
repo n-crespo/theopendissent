@@ -92,7 +92,6 @@ export const ComposeModal = ({
             parentReplyId: parentReply?.id,
             score: isReply && !isSubReply ? score : undefined,
             isThreadAuthor,
-            includePublicUserId: !isAnonymous,
           });
 
           if (newKey) {

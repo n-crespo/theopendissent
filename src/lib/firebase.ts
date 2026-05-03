@@ -55,8 +55,6 @@ export interface CreatePostOptions {
   /** stance score — replies only */
   score?: number;
   isThreadAuthor?: boolean;
-  /** include userId in the public object (non-anonymous mode) */
-  includePublicUserId?: boolean;
 }
 
 const app = initializeApp(firebaseConfig);
@@ -97,7 +95,6 @@ export const createPost = async ({
   parentReplyId,
   score,
   isThreadAuthor,
-  includePublicUserId = false,
 }: CreatePostOptions) => {
   const mainTree =
     parentReplyId && parentPostId
@@ -115,7 +112,6 @@ export const createPost = async ({
     // sub-reply: no replyCount, no interactionScore
     updates[`subreplies/${parentPostId}/${parentReplyId}/${newKey}`] = {
       id: newKey,
-      ...(includePublicUserId ? { userId } : {}),
       authorDisplay,
       postContent: content,
       timestamp: serverTimestamp(),
@@ -137,7 +133,6 @@ export const createPost = async ({
     // reply
     updates[`replies/${parentPostId}/${newKey}`] = {
       id: newKey,
-      ...(includePublicUserId ? { userId } : {}),
       authorDisplay,
       postContent: content,
       timestamp: serverTimestamp(),
@@ -157,7 +152,6 @@ export const createPost = async ({
     // top-level post
     updates[`posts/${newKey}`] = {
       id: newKey,
-      ...(includePublicUserId ? { userId } : {}),
       authorDisplay,
       postContent: content,
       timestamp: serverTimestamp(),
