@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Post } from "../../types";
 import { useAuth } from "../../context/AuthContext";
@@ -28,6 +29,8 @@ export const ComposeModal = ({
   const { user } = useAuth();
   const { openModal, closeModal } = useModal();
   const ownedPosts = useOwnedPosts();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [content, setContent] = useState("");
   const [score, setScore] = useState(0);
@@ -99,6 +102,10 @@ export const ComposeModal = ({
             // Pass BOTH the new ID and the Parent ID
             if (parentReply && onSuccess) {
               onSuccess(newKey, parentReply.id);
+            }
+            // Navigate to root feed if a top-level post was created from elsewhere (e.g. profile page)
+            if (!isReply && location.pathname !== "/") {
+              navigate("/");
             }
           }
 
