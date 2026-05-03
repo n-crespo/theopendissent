@@ -9,6 +9,8 @@ import {
   initializeTestEnvironment,
 } from "@firebase/rules-unit-testing";
 
+// TODO: update rules to enforce thread author privacy lock
+
 const PROJECT_ID = "the-open-dissent-prod";
 const DB_NAME = "the-open-dissent-prod-default-rtdb";
 
