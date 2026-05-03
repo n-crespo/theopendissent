@@ -117,6 +117,7 @@ describe("Integration tests (updateBuilders + rules)", () => {
           const db = dbFromContext(context);
           await dbUpdate(db, "/", {
             [`posts/${parentPostId}`]: {
+              authorDisplay: "Anonymous User",
               postContent: "parent",
               timestamp: Date.now(),
               replyCount: 0,
@@ -151,14 +152,14 @@ describe("Integration tests (updateBuilders + rules)", () => {
       it("creates a non-anonymous reply", async () => {
         const updates = buildCreateUpdates({
           key: "reply_named",
-          userId: uid,
+          userId: uidOther,
           content: "Named reply",
           authorDisplay: "Jane Smith",
           parentPostId,
           score: 2,
         });
 
-        await assertSucceeds(dbUpdate(userDb(uid), "/", updates));
+        await assertSucceeds(dbUpdate(userDb(uidOther), "/", updates));
 
         const snap = await dbGet(
           guestDb(),
@@ -202,6 +203,7 @@ describe("Integration tests (updateBuilders + rules)", () => {
           const db = dbFromContext(context);
           await dbUpdate(db, "/", {
             [`posts/${parentPostId}`]: {
+              authorDisplay: "Anonymous User",
               postContent: "root",
               timestamp: Date.now(),
               replyCount: 1,
@@ -210,6 +212,7 @@ describe("Integration tests (updateBuilders + rules)", () => {
             [`users/${uid}/posts/${parentPostId}`]: true,
             [`replies/${parentPostId}/${parentReplyId}`]: {
               id: parentReplyId,
+              authorDisplay: "Anonymous User",
               postContent: "reply",
               timestamp: Date.now(),
               parentPostId,
@@ -811,9 +814,7 @@ describe("Integration tests (updateBuilders + rules)", () => {
         { id: "reply1", parentPostId: "post1", parentReplyId: undefined },
         origin,
       );
-      expect(url).toBe(
-        "https://theopendissent.com/share?s=reply1&p=post1",
-      );
+      expect(url).toBe("https://theopendissent.com/share?s=reply1&p=post1");
     });
 
     it("builds correct URL for a sub-reply", () => {

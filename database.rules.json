@@ -108,7 +108,7 @@
         ".read": true,
         "$reply_id": {
           ".write": "auth != null && ( (!data.exists() && newData.parent().parent().parent().child('authorLookup').child($reply_id).child('uid').val() === auth.uid && newData.parent().parent().parent().child('users').child(auth.uid).child('replies').child($post_id).child($reply_id).exists()) || (data.exists() && root.child('authorLookup').child($reply_id).child('uid').val() === auth.uid && (!newData.exists() ? !newData.parent().parent().parent().child('authorLookup').child($reply_id).exists() && !newData.parent().parent().parent().child('users').child(auth.uid).child('replies').child($post_id).child($reply_id).exists() : true)) )",
-          ".validate": "!newData.exists() || (data.exists() || newData.hasChildren(['postContent', 'timestamp', 'parentPostId', 'interactionScore', 'replyCount']))",
+          ".validate": "!newData.exists() || (data.exists() || newData.hasChildren(['postContent', 'timestamp', 'parentPostId', 'interactionScore', 'replyCount', 'authorDisplay']))",
           "id": {
             ".validate": "!newData.exists() || (newData.val() === $reply_id && (!data.exists() || data.val() === newData.val()))"
           },
@@ -120,6 +120,12 @@
           },
           "replyCount": {
             ".validate": "!data.exists() ? newData.val() == 0 : newData.val() == data.val()"
+          },
+          "authorDisplay": {
+            ".validate": "newData.isString() && newData.val().length <= 100 && (root.child('authorLookup').child($post_id).child('uid').val() !== auth.uid || newData.val() === root.child('posts').child($post_id).child('authorDisplay').val())"
+          },
+          "isThreadAuthor": {
+            ".validate": "!newData.exists() || (newData.isBoolean() && newData.val() === (root.child('authorLookup').child($post_id).child('uid').val() === auth.uid))"
           },
           "interactionScore": {
             ".validate": "newData.isNumber() && newData.val() >= -3 && newData.val() <= 3"
@@ -159,7 +165,10 @@
               ".validate": "!newData.exists() || newData.val() === $post_id"
             },
             "authorDisplay": {
-              ".validate": "newData.isString() && newData.val().length <= 100"
+              ".validate": "newData.isString() && newData.val().length <= 100 && (root.child('authorLookup').child($post_id).child('uid').val() !== auth.uid || newData.val() === root.child('posts').child($post_id).child('authorDisplay').val())"
+            },
+            "isThreadAuthor": {
+              ".validate": "!newData.exists() || (newData.isBoolean() && newData.val() === (root.child('authorLookup').child($post_id).child('uid').val() === auth.uid))"
             },
             "postContent": {
               ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 600)"
