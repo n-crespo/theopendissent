@@ -1,29 +1,14 @@
 import { useCallback } from "react";
 import { Post } from "../types";
+import { buildShareUrl } from "../lib/updateBuilders";
 
 /**
  * handles sharing logic and generates links for Social Previews.
  */
 export const useShare = () => {
   const sharePost = useCallback(async (post: Post) => {
-    const url = new URL(window.location.origin);
-    url.pathname = "/share";
+    const shareUrl = buildShareUrl(post, window.location.origin);
 
-    const { id, parentPostId, parentReplyId } = post;
-
-    // logic: s = target content ID, p = direct parent, r = root thread post
-    url.searchParams.set("s", id);
-
-    if (parentReplyId && parentPostId) {
-      // sub-reply case
-      url.searchParams.set("p", parentReplyId);
-      url.searchParams.set("r", parentPostId);
-    } else if (parentPostId) {
-      // standard reply case
-      url.searchParams.set("p", parentPostId);
-    }
-
-    const shareUrl = url.toString();
     const shareData = {
       title: "The Open Dissent",
       text: `Check out this discussion on TheOpenDissent!`,
