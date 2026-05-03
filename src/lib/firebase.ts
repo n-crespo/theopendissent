@@ -430,7 +430,6 @@ export const subscribeToFeed = (
     const postsArray: Post[] = Object.entries(postsObject)
       .map(([postId, postData]: [string, any]) => ({
         id: postId,
-        userId: postData.userId,
         authorDisplay: postData.authorDisplay,
         postContent: postData.postContent || postData.content,
         timestamp: postData.timestamp || 0,
