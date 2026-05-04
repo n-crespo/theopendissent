@@ -45,9 +45,12 @@ export const FeedList = ({
 
   // Skeleton delay logic
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: number;
     if (loading) {
-      timeoutId = setTimeout(() => setShowLoadingUI(true), 1000);
+      timeoutId = setTimeout(
+        () => setShowLoadingUI(true),
+        1000,
+      ) as unknown as number;
     } else {
       setShowLoadingUI(false);
     }
