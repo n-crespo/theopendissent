@@ -55,6 +55,12 @@ export const Profile = () => {
         <h1 className="my-2 col-start-1 row-start-1 justify-self-center text-xl font-bold text-slate-900 tracking-tight">
           Your Profile
         </h1>
+        <button
+          onClick={() => navigate("/settings")}
+          className="col-start-1 row-start-1 justify-self-end text-slate-400 hover:text-slate-700 transition-colors flex items-center justify-center h-10 w-10 rounded-full"
+        >
+          <i className="bi bi-gear text-xl"></i>
+        </button>
       </div>
 
       <TabSwitcher

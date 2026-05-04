@@ -9,6 +9,7 @@ import { ListenModal } from "./ListenModal";
 import { useEffect } from "react";
 import { JoinTeamModal } from "./JoinTeamModal";
 import { FollowUsModal } from "./FollowUsModal";
+import { DeleteAccountModal } from "./DeleteAccountModal";
 
 /**
  * Manages the visibility and content of the application's central modal system.
@@ -79,6 +80,7 @@ export const GlobalModal = () => {
                 {modal.type === "signin" && <SignInModal />}
                 {modal.type === "installPwa" && <InstallPwaModal />}
                 {modal.type === "signOut" && <SignOutModal />}
+                {modal.type === "deleteAccount" && <DeleteAccountModal onClose={closeModal} />}
                 {modal.type === "deleteConfirm" && (
                   <ConfirmDeleteModal
                     itemName={modal.payload?.name || "this item"}
