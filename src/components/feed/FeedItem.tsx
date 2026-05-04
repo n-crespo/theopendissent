@@ -77,7 +77,7 @@ export const FeedItem = memo(
 
     // Shared button styles for consistency
     const actionButtonClass =
-      "flex items-center justify-center py-4 text-slate-400 hover:bg-slate-100 active:bg-slate-200/60 transition-all";
+      "flex items-center justify-center py-4 text-slate-400 hover:bg-slate-50 active:bg-slate-200/60 transition-all";
 
     const [isExpanded, setIsExpanded] = useState(
       () => disableClick || expandedPostIds.has(item.id),
