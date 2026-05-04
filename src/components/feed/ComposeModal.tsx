@@ -16,7 +16,8 @@ interface ComposeModalProps {
   parentPost?: Post | null;
   /** set when composing a sub-reply — the direct reply being responded to */
   parentReply?: Post | null;
-  onSuccess?: (newId: string, parentId: string) => void;
+  /** called when the Post is successfully created */
+  onSuccess?: (newId: string, parentId?: string) => void;
 }
 
 export const ComposeModal = ({
@@ -99,9 +100,9 @@ export const ComposeModal = ({
 
           if (newKey) {
             pinPostToTop(newKey);
-            // Pass BOTH the new ID and the Parent ID
-            if (parentReply && onSuccess) {
-              onSuccess(newKey, parentReply.id);
+            // Pass the new ID and Parent ID (if any) to trigger auto-scrolling
+            if (onSuccess) {
+              onSuccess(newKey, parentReply?.id || parentPost?.id);
             }
             // Navigate to root feed if a top-level post was created from elsewhere (e.g. profile page)
             if (!isReply && location.pathname !== "/") {
