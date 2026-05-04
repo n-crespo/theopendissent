@@ -196,7 +196,7 @@ export const SubReplyThread = ({
                       >
                         <motion.div
                           layout
-                          initial={{ opacity: 0 }}
+                          initial={shouldAnimateInitial ? { opacity: 0 } : false}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.2, ease: "easeOut" }}

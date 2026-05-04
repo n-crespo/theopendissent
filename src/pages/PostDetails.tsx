@@ -175,7 +175,7 @@ export const PostDetails = () => {
                   layout
                   key={reply.id}
                   id={`reply-${reply.id}`}
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={shouldAnimateInitial ? { opacity: 0, y: 12 } : false}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
