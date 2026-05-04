@@ -5,6 +5,7 @@ import { FeedItem } from "./FeedItem";
 import { FeedItemSkeleton } from "../ui/FeedItemSkeleton";
 import { Post } from "../../types";
 import { useInfiniteScroll } from "../../hooks/useInfininteScroll";
+import { useNavigationType } from "react-router-dom";
 
 interface FeedListProps {
   posts: Post[];
@@ -14,6 +15,8 @@ interface FeedListProps {
   onLoadMore: () => void;
 }
 
+let isInitialMount = true;
+
 export const FeedList = ({
   posts,
   highlightedPost,
@@ -21,6 +24,17 @@ export const FeedList = ({
   hasMore,
   onLoadMore,
 }: FeedListProps) => {
+  const navType = useNavigationType();
+  const isPop = navType === "POP";
+
+  // If this is the first time the app is loading, we want the premium fade-in.
+  // If we are navigating back (POP), we skip it to prevent iOS jitter.
+  const shouldAnimateInitial = isInitialMount || !isPop;
+
+  useEffect(() => {
+    isInitialMount = false;
+  }, []);
+
   const bottomBoundaryRef = useInfiniteScroll({
     loading,
     hasMore,
@@ -31,9 +45,12 @@ export const FeedList = ({
 
   // Skeleton delay logic
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: number;
     if (loading) {
-      timeoutId = setTimeout(() => setShowLoadingUI(true), 1000);
+      timeoutId = setTimeout(
+        () => setShowLoadingUI(true),
+        1000,
+      ) as unknown as number;
     } else {
       setShowLoadingUI(false);
     }
@@ -62,10 +79,10 @@ export const FeedList = ({
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto gap-3 min-h-100">
       <div className="flex flex-col gap-3 w-full">
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence initial={shouldAnimateInitial}>
           {loading && showLoadingUI && posts.length === 0 && (
             <motion.div
-              key="loading-skeletons"
+              key="skeletons"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -82,7 +99,7 @@ export const FeedList = ({
               <motion.div
                 layout
                 key={`highlight-${highlightedPost.id}`}
-                initial={{ opacity: 0, y: 10 }}
+                initial={shouldAnimateInitial ? { opacity: 0, y: 12 } : false}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
@@ -102,7 +119,7 @@ export const FeedList = ({
                 layout
                 key={post.id}
                 id={`post-${post.id}`}
-                initial={{ opacity: 0, y: 12 }}
+                initial={shouldAnimateInitial ? { opacity: 0, y: 12 } : false}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}

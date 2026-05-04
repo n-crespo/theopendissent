@@ -6,6 +6,7 @@ import {
   useNavigate,
   useSearchParams,
   useOutletContext,
+  useNavigationType,
 } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { subscribeToPost, subscribeToReplies } from "../lib/firebase";
@@ -16,12 +17,21 @@ import { Post } from "../types";
 import { FeedItemSkeleton } from "../components/ui/FeedItemSkeleton";
 import { ComposeTrigger } from "../components/feed/ComposeTrigger";
 
+let isInitialMount = true;
+
 export const PostDetails = () => {
   const { postId } = useParams<{ postId: string }>();
   const [searchParams] = useSearchParams();
   const highlightReplyId = searchParams.get("reply");
   const highlightSubReplyId = searchParams.get("subreply");
   const navigate = useNavigate();
+  const navType = useNavigationType();
+
+  const shouldAnimateInitial = isInitialMount || navType !== "POP";
+
+  useEffect(() => {
+    isInitialMount = false;
+  }, []);
 
   // grab the setters from Layout
   const {
@@ -37,9 +47,37 @@ export const PostDetails = () => {
   const [livePost, setLivePost] = useState<Post | null>(null);
   const [isLoadingPost, setIsLoadingPost] = useState(true);
 
+  // Skeletons should only show if loading takes a while to prevent "flashing"
+  const [showPostSkeleton, setShowPostSkeleton] = useState(false);
+  const [showRepliesSkeleton, setShowRepliesSkeleton] = useState(false);
+
   const { loading: authLoading } = useAuth();
-  // const uid = user?.uid;
-  // const ownedPosts = useOwnedPosts();
+
+  useEffect(() => {
+    let timeoutId: number;
+    if (isLoadingPost || authLoading) {
+      timeoutId = setTimeout(
+        () => setShowPostSkeleton(true),
+        1000,
+      ) as unknown as number;
+    } else {
+      setShowPostSkeleton(false);
+    }
+    return () => clearTimeout(timeoutId);
+  }, [isLoadingPost, authLoading]);
+
+  useEffect(() => {
+    let t: number;
+    if (isLoadingReplies) {
+      t = setTimeout(
+        () => setShowRepliesSkeleton(true),
+        1000,
+      ) as unknown as number;
+    } else {
+      setShowRepliesSkeleton(false);
+    }
+    return () => clearTimeout(t);
+  }, [isLoadingReplies]);
 
   // set the active parent for the FAB when the post loads
   useEffect(() => {
@@ -132,7 +170,7 @@ export const PostDetails = () => {
 
       <main className="flex flex-col gap-y-8">
         <section>
-          {isLoadingPost || authLoading ? (
+          {showPostSkeleton ? (
             <FeedItemSkeleton />
           ) : livePost ? (
             <FeedItem item={livePost} disableClick={true} isReply={false} />
@@ -146,8 +184,8 @@ export const PostDetails = () => {
 
         <section className="flex flex-col gap-y-4">
           <ComposeTrigger placeholder="Your thoughts?" />
-          <AnimatePresence mode="popLayout">
-            {isLoadingReplies ? (
+          <AnimatePresence initial={shouldAnimateInitial}>
+            {showRepliesSkeleton && replies.length === 0 ? (
               <motion.div
                 key="skeletons"
                 initial={{ opacity: 0 }}
@@ -165,7 +203,7 @@ export const PostDetails = () => {
                   layout
                   key={reply.id}
                   id={`reply-${reply.id}`}
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={shouldAnimateInitial ? { opacity: 0, y: 12 } : false}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.3, ease: "easeOut" }}

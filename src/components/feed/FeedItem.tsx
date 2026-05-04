@@ -19,7 +19,8 @@ interface FeedItemProps {
   onReply?: () => void;
 }
 
-const CONTENT_CHAR_LIMIT = 300;
+const CONTENT_CHAR_LIMIT = 250;
+const expandedPostIds = new Set<string>(); // module level cache per session
 
 export const FeedItem = memo(
   ({
@@ -78,12 +79,25 @@ export const FeedItem = memo(
     const actionButtonClass =
       "flex items-center justify-center py-4 text-slate-400 hover:bg-slate-100 active:bg-slate-200/60 transition-all";
 
-    const [isExpanded, setIsExpanded] = useState(disableClick);
+    const [isExpanded, setIsExpanded] = useState(
+      () => disableClick || expandedPostIds.has(item.id),
+    );
     const isLong = item.postContent.length > CONTENT_CHAR_LIMIT;
     const displayContent =
       !isExpanded && isLong
-        ? item.postContent.slice(0, CONTENT_CHAR_LIMIT) + "..."
+        ? item.postContent.slice(0, CONTENT_CHAR_LIMIT).trimEnd() + "..."
         : item.postContent;
+
+    const toggleExpansion = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const next = !isExpanded;
+      setIsExpanded(next);
+      if (next) {
+        expandedPostIds.add(item.id);
+      } else {
+        expandedPostIds.delete(item.id);
+      }
+    };
 
     const handleContentClick = (e: React.MouseEvent) => {
       if (disableClick || isEditing || isReply) return;
@@ -205,11 +219,8 @@ export const FeedItem = memo(
               </p>
               {isLong && !disableClick && (
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsExpanded(!isExpanded);
-                  }}
-                  className="flex items-center gap-x-1.5 mx-auto py-1.5 text-sm font-semibold text-slate-400 cursor-pointer self-start hover:bg-slate-100 active:bg-slate-200/60 transition-all rounded-xl p-3"
+                  onClick={toggleExpansion}
+                  className="flex items-center gap-x-1.5 px-4 py-2 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors self-start -ml-4"
                 >
                   <i
                     className={`bi ${isExpanded ? "bi-arrow-up" : "bi-arrow-down"} text-base leading-none`}
