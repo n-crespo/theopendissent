@@ -9,11 +9,13 @@ import {
   initializeTestEnvironment,
 } from "@firebase/rules-unit-testing";
 
+// TODO: update rules to enforce thread author privacy lock
+
 const PROJECT_ID = "the-open-dissent-prod";
 const DB_NAME = "the-open-dissent-prod-default-rtdb";
 
-const uidA = "user_a";
-const uidB = "user_b";
+const uidCurrent = "user_current"; // currently logged in user, used as target
+const uidOther = "user_other"; // some other logged in userA
 const postId = "post_1";
 const replyId = "reply_1";
 
@@ -22,22 +24,20 @@ let testEnv: RulesTestEnvironment;
 const dbFromContext = (context: RulesTestContext) =>
   context.database(`http://127.0.0.1:9000?ns=${DB_NAME}`);
 
-const authedDb = (uid: string) =>
+const userDb = (uid: string) =>
   dbFromContext(testEnv.authenticatedContext(uid));
 
-const anonDb = () => dbFromContext(testEnv.unauthenticatedContext());
+const guestDb = () => dbFromContext(testEnv.unauthenticatedContext());
 
-const dbGet = (db: ReturnType<typeof authedDb>, path: string) =>
+const dbGet = (db: ReturnType<typeof userDb>, path: string) =>
   db.ref(path).once("value");
-const dbSet = (db: ReturnType<typeof authedDb>, path: string, value: unknown) =>
+const dbSet = (db: ReturnType<typeof userDb>, path: string, value: unknown) =>
   db.ref(path).set(value);
 const dbUpdate = (
-  db: ReturnType<typeof authedDb>,
+  db: ReturnType<typeof userDb>,
   path: string,
   value: Record<string, unknown>,
 ) => db.ref(path).update(value);
-const dbRemove = (db: ReturnType<typeof authedDb>, path: string) =>
-  db.ref(path).remove();
 
 describe("Realtime Database rules", () => {
   beforeAll(async () => {
@@ -64,11 +64,13 @@ describe("Realtime Database rules", () => {
       await dbUpdate(db, "/", {
         [`posts/${postId}`]: {
           postContent: "seed post",
+          authorDisplay: "Anon",
           timestamp: Date.now(),
           replyCount: 0,
-          userId: uidA,
         },
-        [`users/${uidA}/posts/${postId}`]: true,
+        // authorLookup must be an object now to map the relational tree
+        [`authorLookup/${postId}`]: { uid: uidCurrent, type: "post" },
+        [`users/${uidCurrent}/posts/${postId}`]: true,
       });
     });
   });
@@ -79,1128 +81,668 @@ describe("Realtime Database rules", () => {
     }
   });
 
-  describe("Public + Legacy Read Access", () => {
-    // public access
-    it("allow public reads to posts/replies", async () => {
-      const db = anonDb();
-      await assertSucceeds(dbGet(db, `posts/${postId}`));
-    });
+  describe("Reads", () => {
+    describe("Denied", () => {
+      const sensitivePaths = [
+        "users",
+        `users/${uidCurrent}`,
+        `users/${uidCurrent}/posts`,
+        `users/${uidCurrent}/replies`,
+        `users/${uidCurrent}/notifications`,
+        `users/${uidCurrent}/subreplies`,
+        `users/${uidCurrent}/displayName`,
+        `users/${uidCurrent}/email`,
+        `users/${uidCurrent}/postInteractions`,
+      ];
 
-    // legacy compatibility
-    it("legacy post shape still reads correctly (no authorDisplay/isThreadAuthor)", async () => {
-      const db = anonDb();
-      const snap = await assertSucceeds(dbGet(db, `posts/${postId}`));
-      expect(snap.exists()).toBe(true);
-      expect(snap.child("postContent").val()).toBe("seed post");
-      expect(snap.child("userId").val()).toBe(uidA);
-    });
-
-    // data security
-    it("public post data contains only userId and not private metadata", async () => {
-      const db = anonDb();
-      const snap = await dbGet(db, `posts/${postId}`);
-      expect(snap.child("userId").exists()).toBe(true);
-      expect(snap.child("notifications").exists()).toBe(false);
-    });
-  });
-
-  describe("Unauthorized Reads", () => {
-    // unauthorized access
-    it("denies unauthorized access to root users list (preventing ID scraping)", async () => {
-      const dbAnon = anonDb();
-      const dbB = authedDb(uidB);
-      await assertFails(dbGet(dbAnon, "users"));
-      await assertFails(dbGet(dbB, "users"));
-    });
-
-    // unauthorized access
-    it("denies anonymous access to a user's private profile data", async () => {
-      const dbAnon = anonDb();
-      await assertFails(dbGet(dbAnon, `users/${uidA}`));
-    });
-
-    it("denies anonymous access to a user's posts", async () => {
-      const dbAnon = anonDb();
-      await assertFails(dbGet(dbAnon, `users/${uidA}/posts`));
-    });
-
-    it("denies anonymous access to a user's replies", async () => {
-      const dbAnon = anonDb();
-      await assertFails(dbGet(dbAnon, `users/${uidA}/replies`));
-    });
-
-    it("denies anonymous access to a user's notifications", async () => {
-      const dbAnon = anonDb();
-      await assertFails(dbGet(dbAnon, `users/${uidA}/notifications`));
-    });
-
-    it("denies anonymous access to a user's displayName", async () => {
-      const dbAnon = anonDb();
-      await assertFails(dbGet(dbAnon, `users/${uidA}/displayName`));
-    });
-
-    it("denies anonymous access to a user's email", async () => {
-      const dbAnon = anonDb();
-      await assertFails(dbGet(dbAnon, `users/${uidA}/email`));
-    });
-
-    it("denies anonymous access to a user's postInteractions (legacy field)", async () => {
-      const dbAnon = anonDb();
-      await assertFails(dbGet(dbAnon, `users/${uidA}/postInteractions`));
-    });
-
-    it("denies other user access to a user's posts", async () => {
-      const dbB = authedDb(uidB);
-      await assertFails(dbGet(dbB, `users/${uidA}/posts`));
-    });
-
-    it("denies other user access to a user's replies", async () => {
-      const dbB = authedDb(uidB);
-      await assertFails(dbGet(dbB, `users/${uidA}/replies`));
-    });
-
-    it("denies other user access to a user's notifications", async () => {
-      const dbB = authedDb(uidB);
-      await assertFails(dbGet(dbB, `users/${uidA}/notifications`));
-    });
-
-    it("denies other user access to a user's displayName", async () => {
-      const dbB = authedDb(uidB);
-      await assertFails(dbGet(dbB, `users/${uidA}/displayName`));
-    });
-
-    it("denies other user access to a user's email", async () => {
-      const dbB = authedDb(uidB);
-      await assertFails(dbGet(dbB, `users/${uidA}/email`));
-    });
-
-    it("denies other user access to a user's postInteractions (legacy field)", async () => {
-      const dbB = authedDb(uidB);
-      await assertFails(dbGet(dbB, `users/${uidA}/postInteractions`));
-    });
-  });
-
-  describe("Unauthorized Writes", () => {
-    it("denies unauthenticated user post creation", async () => {
-      const db = anonDb();
-      await assertFails(
-        dbSet(db, "posts/post_x", {
-          postContent: "anon write",
-          timestamp: Date.now(),
-          replyCount: 0,
-        }),
-      );
-    });
-
-    it("denies users from writing to another user's profile/index", async () => {
-      const dbB = authedDb(uidB);
-      await assertFails(dbSet(dbB, `users/${uidA}/posts/evil`, true));
-    });
-
-    it("denies any user from writing to reply count", async () => {
-      const dbA = authedDb(uidA);
-      const dbB = authedDb(uidB);
-
-      // this is the author
-      await assertFails(dbSet(dbA, `posts/${postId}/replyCount`, 999));
-      // this is a random user
-      await assertFails(dbSet(dbB, `posts/${postId}/replyCount`, 123));
-    });
-  });
-
-  describe("Authorized Read + Write", () => {
-    it("allows users to read/write their own users tree", async () => {
-      const dbA = authedDb(uidA);
-      await assertSucceeds(
-        dbSet(dbA, `users/${uidA}/notifications/test`, {
-          type: "reply",
-          isRead: false,
-          updatedAt: Date.now(),
-        }),
-      );
-      await assertSucceeds(dbGet(dbA, `users/${uidA}`));
-    });
-  });
-
-  describe("Anonymous Post Creation + Deletion", () => {
-    it("denies creating a anonymous post without linking to users/", async () => {
-      const dbA = authedDb(uidA);
-      const anonPostId = "anon_post_123";
-
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`posts/${anonPostId}`]: {
-            id: anonPostId,
-            postContent: "this is anonymous",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            // userId is omitted here for anonymity
-          },
-          // no write to users/
-        }),
-      );
-    });
-
-    it("allows creating a post without a public userId (Anonymous Post)", async () => {
-      const dbA = authedDb(uidA);
-      const anonPostId = "anon_post_123";
-
-      await assertSucceeds(
-        dbUpdate(dbA, "/", {
-          [`posts/${anonPostId}`]: {
-            id: anonPostId,
-            postContent: "this is anonymous",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            // userId is omitted here for anonymity
-          },
-          [`users/${uidA}/posts/${anonPostId}`]: true,
-        }),
-      );
-    });
-
-    it("allows deleting a post created anonymously", async () => {
-      const dbA = authedDb(uidA);
-      const anonPostId = "anon_to_delete";
-
-      // seed an anonymous post with no userId field, but indexed for user_a
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`posts/${anonPostId}`]: {
-            postContent: "hidden author",
-            timestamp: Date.now(),
-            replyCount: 0,
-          },
-          [`users/${uidA}/posts/${anonPostId}`]: true,
+      describe("by Guest", () => {
+        it.each(sensitivePaths)("access to %s", async (path) => {
+          await assertFails(dbGet(guestDb(), path));
         });
       });
 
-      // note that both paths must be deleted together
-      await assertSucceeds(
-        dbUpdate(dbA, "/", {
-          [`posts/${anonPostId}`]: null,
-          [`users/${uidA}/posts/${anonPostId}`]: null,
-        }),
-      );
+      describe("by (other) Authenticated User", () => {
+        it.each(sensitivePaths)("access to %s", async (path) => {
+          await assertFails(dbGet(userDb(uidOther), path));
+        });
+      });
+
+      it("denies access to the authorLookup tree by anyone", async () => {
+        await assertFails(dbGet(guestDb(), "authorLookup"));
+        await assertFails(dbGet(guestDb(), `authorLookup/${postId}`));
+        await assertFails(dbGet(userDb(uidOther), `authorLookup/${postId}`));
+        await assertFails(dbGet(userDb(uidCurrent), `authorLookup/${postId}`)); // even author doesn't have access
+      });
+    });
+
+    describe("Allowed", () => {
+      const subReplyId = "sub_1";
+
+      beforeAll(async () => {
+        // seed the reply and sub-reply for testing read access
+        await testEnv.withSecurityRulesDisabled(async (context) => {
+          const db = dbFromContext(context);
+          await dbUpdate(db, "/", {
+            [`replies/${postId}/${replyId}`]: {
+              id: replyId,
+              postContent: "seed reply",
+              timestamp: Date.now(),
+              parentPostId: postId,
+              replyCount: 0,
+              interactionScore: 0,
+            },
+            [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
+              id: subReplyId,
+              postContent: "seed sub-reply",
+              timestamp: Date.now(),
+              parentPostId: postId,
+              parentReplyId: replyId,
+              authorDisplay: "Anonymous User",
+            },
+          });
+        });
+      });
+
+      // we use a getter function (getDb) to defer initialization until runtime
+      const roles = [
+        { name: "Guest", getDb: () => guestDb() },
+        { name: "Other User", getDb: () => userDb(uidOther) },
+        { name: "Current User (Owner)", getDb: () => userDb(uidCurrent) },
+      ];
+
+      const publicPaths = [
+        `posts/${postId}`,
+        `replies/${postId}/${replyId}`,
+        `subreplies/${postId}/${replyId}/${subReplyId}`,
+      ];
+
+      // check all roles against all public paths
+      roles.forEach(({ name, getDb }) => {
+        it.each(publicPaths)(`allows ${name} to read %s`, async (path) => {
+          // getDb() is called here, safely inside the execution phase
+          const db = getDb();
+          const snap = await assertSucceeds(dbGet(db, path));
+          expect(snap.exists()).toBe(true);
+          // system check: ensure userId is NOT leaked in the public read
+          expect(snap.child("userId").exists()).toBe(false);
+        });
+      });
+
+      it("allows Current User to read their own users/ tree (profile, receipts, and notifications)", async () => {
+        const dbCurrent = userDb(uidCurrent);
+        const snap = await assertSucceeds(
+          dbGet(dbCurrent, `users/${uidCurrent}`),
+        );
+        expect(snap.exists()).toBe(true);
+      });
     });
   });
 
-  describe("Non-Anonymous Post Creation + Deletion", () => {
-    it("allows creating a post with required fields (legacy format)", async () => {
-      const dbA = authedDb(uidA);
-      const newPost = "post_new";
-      await assertSucceeds(
-        dbUpdate(dbA, "/", {
-          [`posts/${newPost}`]: {
-            id: newPost,
-            userId: uidA,
-            postContent: "hello world",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-          },
-          [`users/${uidA}/posts/${newPost}`]: true, // this is REQUIRED
-        }),
-      );
-    });
+  describe("Writes (create/delete)", () => {
+    describe("To Protected Fields", () => {
+      describe("Denied Writes", () => {
+        it.each([
+          { role: "Guest", getDb: () => guestDb() },
+          { role: "Other User", getDb: () => userDb(uidOther) },
+          { role: "Owner", getDb: () => userDb(uidCurrent) },
+        ])(
+          "denies $role from modifying replyCount on posts or replies",
+          async ({ getDb }) => {
+            const db = getDb();
 
-    it("denies post creation with mismatched userId linkage", async () => {
-      const dbA = authedDb(uidA);
-      const newPost = "post_wrong_uid";
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`posts/${newPost}`]: {
-            id: newPost,
-            userId: uidB,
-            postContent: "wrong userId",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-          },
-          [`users/${uidA}/posts/${newPost}`]: true,
-        }),
-      );
-    });
+            // attempt overwrite
+            await assertFails(dbSet(db, `posts/${postId}/replyCount`, 99));
+            await assertFails(
+              dbSet(db, `replies/${postId}/${replyId}/replyCount`, 99),
+            );
 
-    it("denies post creation when required fields are missing", async () => {
-      const dbA = authedDb(uidA);
-      const newPost = "post_missing_fields";
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`posts/${newPost}`]: {
-            id: newPost,
-            userId: uidA,
-            postContent: "missing fields",
-            // missing timestamp, reply count
+            // attempt partial update
+            await assertFails(
+              dbUpdate(db, `posts/${postId}`, { replyCount: 1 }),
+            );
           },
-          [`users/${uidA}/posts/${newPost}`]: true,
-        }),
-      );
-    });
+        );
 
-    it("allows deleting a post created non-anonymously", async () => {
-      const dbA = authedDb(uidA);
-      const nonAnonPostId = "non-anonymous-user";
-
-      // seed an anonymous post with no userId field, but indexed for user_a
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`posts/${nonAnonPostId}`]: {
-            userId: nonAnonPostId,
-            postContent: "not anonymous!",
-            timestamp: Date.now(),
-            replyCount: 0,
+        // ensure guest users cannot write to any content paths
+        it.each([
+          { path: `posts/new_post`, label: "top-level posts" },
+          { path: `replies/${postId}/new_reply`, label: "replies" },
+          {
+            path: `subreplies/${postId}/${replyId}/new_sub`,
+            label: "sub-replies",
           },
-          [`users/${uidA}/posts/${nonAnonPostId}`]: true,
+        ])("denies Guest from writing to $label", async ({ path }) => {
+          const db = guestDb();
+
+          await assertFails(
+            dbSet(db, path, {
+              postContent: "I am a guest",
+              timestamp: Date.now(),
+            }),
+          );
+        });
+
+        // verify id immutability and path-key matching
+        it("denies users from changing internal 'id' fields", async () => {
+          const subReplyPath = `subreplies/${postId}/${replyId}/sub_target`;
+
+          // seed the sub-reply with the new object payload
+          await testEnv.withSecurityRulesDisabled(async (context) => {
+            const db = dbFromContext(context);
+            await dbUpdate(db, "/", {
+              [subReplyPath]: {
+                id: "sub_target",
+                postContent: "original",
+                authorDisplay: "Anon",
+              },
+              [`authorLookup/sub_target`]: {
+                uid: uidCurrent,
+                type: "subreply",
+                postId: postId,
+                replyId: replyId,
+              },
+              [`users/${uidCurrent}/${subReplyPath}`]: true,
+            });
+          });
+
+          // attempt to change the internal id
+          await assertFails(
+            dbUpdate(userDb(uidCurrent), subReplyPath, {
+              id: "malicious_id_swap",
+            }),
+          );
         });
       });
 
-      // note that both paths must be deleted together
-      await assertSucceeds(
-        dbUpdate(dbA, "/", {
-          [`posts/${nonAnonPostId}`]: null,
-          [`users/${uidA}/posts/${nonAnonPostId}`]: null,
-        }),
-      );
+      describe("Allowed Writes", () => {
+        it("allows current user to update isRead status of their notification", async () => {
+          const notifId = "notif_test_123";
+          const notifPath = `users/${uidCurrent}/notifications/${notifId}`;
+
+          // seed a notification first
+          await testEnv.withSecurityRulesDisabled(async (context) => {
+            const db = dbFromContext(context);
+            await dbSet(db, notifPath, {
+              type: "reply",
+              isRead: false,
+              count: 1,
+              updatedAt: Date.now(),
+              createdAt: Date.now(),
+            });
+          });
+
+          // owner should be able to mark it as read
+          await assertSucceeds(
+            dbUpdate(userDb(uidCurrent), notifPath, {
+              isRead: true,
+              updatedAt: Date.now(),
+            }),
+          );
+        });
+      });
     });
 
-    it("denies post creation if content exceeds 600 chars", async () => {
-      const dbA = authedDb(uidA);
-      const newPost = "post_too_long";
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`posts/${newPost}`]: {
-            id: newPost,
-            userId: uidA,
-            postContent: "x".repeat(601),
+    describe("To Object", () => {
+      const newId = "new_id_123";
+
+      // shared scenarios include the new lookupData required for authorLookup
+      const scenarios = [
+        {
+          label: "Post",
+          path: `posts/${newId}`,
+          profile: `users/${uidCurrent}/posts/${newId}`,
+          lookup: `authorLookup/${newId}`,
+          lookupData: { uid: uidCurrent, type: "post" },
+          validData: {
+            id: newId,
+            postContent: "test content",
             timestamp: { ".sv": "timestamp" },
             replyCount: 0,
           },
-          [`users/${uidA}/posts/${newPost}`]: true,
-        }),
-      );
+        },
+        {
+          label: "Reply",
+          path: `replies/${postId}/${newId}`,
+          profile: `users/${uidCurrent}/replies/${postId}/${newId}`,
+          lookup: `authorLookup/${newId}`,
+          lookupData: { uid: uidCurrent, type: "reply", postId },
+          validData: {
+            id: newId,
+            authorDisplay: "Anon",
+            postContent: "test reply",
+            timestamp: { ".sv": "timestamp" },
+            parentPostId: postId,
+            interactionScore: 0,
+            replyCount: 0,
+          },
+        },
+        {
+          label: "Sub-Reply",
+          path: `subreplies/${postId}/${replyId}/${newId}`,
+          profile: `users/${uidCurrent}/subreplies/${postId}/${replyId}/${newId}`,
+          lookup: `authorLookup/${newId}`,
+          lookupData: { uid: uidCurrent, type: "subreply", postId, replyId },
+          validData: {
+            id: newId,
+            postContent: "test sub",
+            timestamp: { ".sv": "timestamp" },
+            parentPostId: postId,
+            parentReplyId: replyId,
+            authorDisplay: "Anon",
+          },
+        },
+      ];
+
+      describe("Shared Atomic Denials", () => {
+        it.each(scenarios)(
+          "denies partial $label creation writes",
+          async ({ path, profile, lookup, lookupData, validData }) => {
+            const db = userDb(uidCurrent);
+
+            // only main object
+            await assertFails(dbSet(db, path, validData));
+            // only profile receipt
+            await assertFails(dbSet(db, profile, true));
+            // only ownership receipt
+            await assertFails(dbSet(db, lookup, lookupData));
+            // only profile + ownership receipt
+            await assertFails(
+              dbUpdate(db, "/", { [profile]: true, [lookup]: lookupData }),
+            );
+            // only main + profile receipt
+            await assertFails(
+              dbUpdate(db, "/", { [path]: validData, [profile]: true }),
+            );
+            // only main + ownership receipt
+            await assertFails(
+              dbUpdate(db, "/", { [path]: validData, [lookup]: lookupData }),
+            );
+          },
+        );
+
+        it.each(scenarios)(
+          "denies unauthenticated creation of $label",
+          async ({ path, profile, lookup, lookupData, validData }) => {
+            await assertFails(
+              dbUpdate(guestDb(), "/", {
+                [path]: validData,
+                [profile]: true,
+                [lookup]: lookupData,
+              }),
+            );
+          },
+        );
+
+        it.each(scenarios)(
+          "denies UID mismatch (User B on User A paths)",
+          async ({ path, profile, lookup, lookupData, validData }) => {
+            // user B tries to claim they are the owner in the lookup or profile while authed as B
+            await assertFails(
+              dbUpdate(userDb(uidOther), "/", {
+                [path]: validData,
+                [profile]: true,
+                [lookup]: lookupData,
+              }),
+            );
+          },
+        );
+      });
+
+      describe("All Creation Validation", () => {
+        it.each(scenarios)(
+          "denies $label creation with invalid fields",
+          async ({ path, profile, lookup, lookupData, validData }) => {
+            const db = userDb(uidCurrent);
+
+            // wrongly includes userId (shadow tree prohibits this)
+            await assertFails(
+              dbUpdate(db, "/", {
+                [path]: { ...validData, userId: uidCurrent },
+                [profile]: true,
+                [lookup]: lookupData,
+              }),
+            );
+
+            // timestamp missing
+            const { timestamp, ...noTime } = validData as any;
+            await assertFails(
+              dbUpdate(db, "/", {
+                [path]: noTime,
+                [profile]: true,
+                [lookup]: lookupData,
+              }),
+            );
+
+            // over 600 chars
+            await assertFails(
+              dbUpdate(db, "/", {
+                [path]: { ...validData, postContent: "A".repeat(601) },
+                [profile]: true,
+                [lookup]: lookupData,
+              }),
+            );
+          },
+        );
+      });
+
+      describe("Post Creation", () => {
+        it("allows: all required fields + both receipts (with cleanup)", async () => {
+          const s = scenarios[0];
+          const db = userDb(uidCurrent);
+
+          // perform the atomic creation
+          await assertSucceeds(
+            db.ref("/").update({
+              [s.path]: s.validData,
+              [s.profile]: true,
+              [s.lookup]: s.lookupData,
+            }),
+          );
+
+          // immediately perform an atomic deletion to clean up the state
+          await assertSucceeds(
+            db.ref("/").update({
+              [s.path]: null,
+              [s.profile]: null,
+              [s.lookup]: null,
+            }),
+          );
+        });
+      });
+
+      describe("Reply Creation", () => {
+        const s = scenarios[1];
+        it.each([
+          {
+            desc: "out of range interactionScore",
+            data: { ...s.validData, interactionScore: 5 },
+          },
+          {
+            desc: "wrong parentPostId",
+            data: { ...s.validData, parentPostId: "wrong_id" },
+          },
+          {
+            desc: "missing parentPostId",
+            data: {
+              id: newId,
+              postContent: "...",
+              timestamp: { ".sv": "timestamp" },
+              interactionScore: 0,
+              replyCount: 0,
+            },
+          },
+          {
+            desc: "missing interactionScore",
+            data: {
+              id: newId,
+              postContent: "...",
+              timestamp: { ".sv": "timestamp" },
+              parentPostId: postId,
+              replyCount: 0,
+            },
+          },
+        ])("denies reply creation: $desc", async ({ data }) => {
+          await assertFails(
+            dbUpdate(userDb(uidCurrent), "/", {
+              [s.path]: data,
+              [s.profile]: true,
+              [s.lookup]: s.lookupData,
+            }),
+          );
+        });
+
+        it("allows: all required fields + receipts (with cleanup)", async () => {
+          const db = userDb(uidCurrent);
+          const payload = {
+            [s.path]: s.validData,
+            [s.profile]: true,
+            [s.lookup]: s.lookupData,
+          };
+
+          // verify atomic creation
+          await assertSucceeds(dbUpdate(db, "/", payload));
+
+          // verify atomic deletion cleanup
+          await assertSucceeds(
+            dbUpdate(db, "/", {
+              [s.path]: null,
+              [s.profile]: null,
+              [s.lookup]: null,
+            }),
+          );
+        });
+      });
+
+      describe("Sub-Reply Creation", () => {
+        const s = scenarios[2];
+        it.each([
+          {
+            desc: "wrong parentReplyId",
+            data: { ...s.validData, parentReplyId: "wrong_reply" },
+          },
+          {
+            desc: "wrong parentPostId (root)",
+            data: { ...s.validData, parentPostId: "wrong_post" },
+          },
+          {
+            desc: "missing parentReplyId",
+            data: {
+              id: newId,
+              postContent: "...",
+              timestamp: { ".sv": "timestamp" },
+              parentPostId: postId,
+              authorDisplay: "Anon",
+            },
+          },
+          {
+            desc: "missing parentPostId",
+            data: {
+              id: newId,
+              postContent: "...",
+              timestamp: { ".sv": "timestamp" },
+              parentReplyId: replyId,
+              authorDisplay: "Anon",
+            },
+          },
+        ])("denies sub-reply creation: $desc", async ({ data }) => {
+          await assertFails(
+            dbUpdate(userDb(uidCurrent), "/", {
+              [s.path]: data,
+              [s.profile]: true,
+              [s.lookup]: s.lookupData,
+            }),
+          );
+        });
+
+        it("allows: all required fields + receipts (with cleanup)", async () => {
+          const db = userDb(uidCurrent);
+          const payload = {
+            [s.path]: s.validData,
+            [s.profile]: true,
+            [s.lookup]: s.lookupData,
+          };
+
+          // verify atomic creation
+          await assertSucceeds(dbUpdate(db, "/", payload));
+
+          // verify atomic deletion cleanup
+          await assertSucceeds(
+            dbUpdate(db, "/", {
+              [s.path]: null,
+              [s.profile]: null,
+              [s.lookup]: null,
+            }),
+          );
+        });
+      });
+
+      describe("All Deletion", () => {
+        it.each(scenarios)(
+          "allows $label deletion: main object + both receipts sent",
+          async ({ path, profile, lookup, lookupData, validData }) => {
+            const db = userDb(uidCurrent);
+            // seed first
+            await testEnv.withSecurityRulesDisabled((c) =>
+              dbUpdate(dbFromContext(c), "/", {
+                [path]: validData,
+                [profile]: true,
+                [lookup]: lookupData,
+              }),
+            );
+
+            // atomic delete
+            await assertSucceeds(
+              dbUpdate(db, "/", {
+                [path]: null,
+                [profile]: null,
+                [lookup]: null,
+              }),
+            );
+          },
+        );
+
+        it.each(scenarios)(
+          "denies deletion of $label by wrong user or guest",
+          async ({ path, profile, lookup, lookupData, validData }) => {
+            await testEnv.withSecurityRulesDisabled((c) =>
+              dbUpdate(dbFromContext(c), "/", {
+                [path]: validData,
+                [profile]: true,
+                [lookup]: lookupData,
+              }),
+            );
+
+            await assertFails(
+              dbUpdate(userDb(uidOther), "/", {
+                [path]: null,
+                [profile]: null,
+                [lookup]: null,
+              }),
+            );
+            await assertFails(
+              dbUpdate(guestDb(), "/", {
+                [path]: null,
+                [profile]: null,
+                [lookup]: null,
+              }),
+            );
+          },
+        );
+      });
     });
   });
 
-  describe("General Reply Validation", () => {
-    it("denies reply with out-of-range interactionScore", async () => {
-      const dbA = authedDb(uidA);
-      const outOfRangeReply = "reply_out_of_range";
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`replies/${postId}/${outOfRangeReply}`]: {
-            id: outOfRangeReply,
-            userId: uidA,
-            postContent: "bad score",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            interactionScore: 7,
-          },
-        }),
-      );
-    });
-
-    it("denies reply if userId doesn't match auth.uid", async () => {
-      const dbA = authedDb(uidA);
-      const wrongUidReply = "reply_wrong_uid";
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`replies/${postId}/${wrongUidReply}`]: {
-            id: wrongUidReply,
-            userId: uidB,
-            postContent: "wrong uid",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            interactionScore: 1,
-          },
-        }),
-      );
-    });
-
-    it("denies owner reply if content exceeds 600 chars", async () => {
-      const dbA = authedDb(uidA);
-      const longReply = "reply_too_long";
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`replies/${postId}/${longReply}`]: {
-            id: longReply,
-            userId: uidA,
-            postContent: "x".repeat(601),
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            interactionScore: 1,
-          },
-        }),
-      );
-    });
-  });
-
-  describe("Anonymous Reply Creation + Deletion", () => {
-    it("denies creating a anonymous reply without interaction score", async () => {
-      const dbA = authedDb(uidA);
-      const anonPostId = "anon_post_123";
-
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`replies/${postId}/${anonPostId}`]: {
-            id: anonPostId,
-            // userId is omitted here for anonymity
-            postContent: "this is anonymous",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            // interactionScore: 2,
-          },
-          [`users/${uidA}/replies/${postId}/${anonPostId}`]: true,
-        }),
-      );
-    });
-
-    it("denies creating a anonymous reply without linking to users/", async () => {
-      const dbA = authedDb(uidA);
-      const anonPostId = "anon_post_123";
-
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`replies/${postId}/${anonPostId}`]: {
-            id: anonPostId,
-            // userId is omitted here for anonymity
-            postContent: "this is anonymous",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            interactionScore: 2,
-          },
-          // [`users/${uidA}/replies/${postId}/${anonPostId}`]: true,
-        }),
-      );
-    });
-
-    it("allows creating a anonymous self-reply with required fields", async () => {
-      const dbA = authedDb(uidA);
-      const anonPostId = "anon_self_reply";
-
-      await assertSucceeds(
-        dbUpdate(dbA, "/", {
-          [`replies/${postId}/${anonPostId}`]: {
-            id: anonPostId,
-            // userId is omitted here for anonymity
-            postContent: "this is anonymous",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            interactionScore: 2,
-          },
-          [`users/${uidA}/replies/${postId}/${anonPostId}`]: true,
-        }),
-      );
-    });
-
-    it("allows creating a anonymous reply with required fields", async () => {
-      const dbB = authedDb(uidB);
-      const anonPostId = "anon_post_123";
-
-      await assertSucceeds(
-        dbUpdate(dbB, "/", {
-          [`replies/${postId}/${anonPostId}`]: {
-            id: anonPostId,
-            // userId is omitted here for anonymity
-            postContent: "this is anonymous",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            interactionScore: 2,
-          },
-          [`users/${uidB}/replies/${postId}/${anonPostId}`]: true,
-        }),
-      );
-    });
-
-    it("allows deleting an anonymous reply with required fields", async () => {
-      const dbA = authedDb(uidA);
-      const anonPostId = "anon_to_delete";
-
-      // seed an anonymous reply with no userId field, but indexed for user_a
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`replies/${postId}/${anonPostId}`]: {
-            id: anonPostId,
-            // userId is omitted here for anonymity
-            postContent: "this is anonymous",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            interactionScore: 2,
-          },
-          [`users/${uidA}/replies/${postId}/${anonPostId}`]: true,
-        });
-      });
-
-      await assertSucceeds(
-        dbUpdate(dbA, "/", {
-          [`replies/${postId}/${anonPostId}`]: null,
-          [`users/${uidA}/replies/${postId}/${anonPostId}`]: null,
-        }),
-      );
-    });
-  });
-
-  describe("Non-Anonymous Reply Creation + Deletion", () => {
-    it("denies creating a non-anonymous reply without interaction score", async () => {
-      const dbB = authedDb(uidB);
-
-      await assertFails(
-        dbUpdate(dbB, "/", {
-          [`replies/${postId}/${replyId}`]: {
-            id: replyId,
-            userId: uidB,
-            postContent: "no score here",
-            timestamp: Date.now(),
-            replyCount: 0,
-            parentPostId: postId,
-            // interactionScore is missing!
-          },
-          [`users/${uidB}/replies/${postId}/${replyId}`]: true,
-        }),
-      );
-    });
-
-    it("denies creating a non-anonymous reply without linking to users/", async () => {
-      const dbB = authedDb(uidB);
-      await assertFails(
-        // Trying to write only to the public tree without the private index
-        dbSet(dbB, `replies/${postId}/${replyId}`, {
-          id: replyId,
-          userId: uidB,
-          postContent: "trying to skip the index",
-          timestamp: Date.now(),
-          replyCount: 0,
-          parentPostId: postId,
-          interactionScore: 1,
-        }),
-      );
-    });
-
-    it("allows creating non-anonymous self-reply with required fields", async () => {
-      const dbA = authedDb(uidA);
-      const ownerReply = "reply_owner";
-      await assertSucceeds(
-        dbUpdate(dbA, "/", {
-          [`replies/${postId}/${ownerReply}`]: {
-            id: ownerReply,
-            userId: uidA,
-            postContent: "owner reply",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            interactionScore: 2,
-          },
-          [`users/${uidA}/replies/${postId}/${ownerReply}`]: true,
-        }),
-      );
-    });
-
-    it("allows creating non-anonymous reply with required fields", async () => {
-      const dbB = authedDb(uidB);
-
-      await assertSucceeds(
-        dbUpdate(dbB, "/", {
-          [`replies/${postId}/${replyId}`]: {
-            id: replyId,
-            userId: uidB,
-            postContent: "reply body",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            interactionScore: 2,
-          },
-          [`users/${uidB}/replies/${postId}/${replyId}`]: true,
-        }),
-      );
-    });
-
-    it("allows deleting non-anonymous reply with required fields", async () => {
-      const dbB = authedDb(uidB);
-
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`replies/${postId}/${replyId}`]: {
-            id: replyId,
-            userId: uidB,
-            postContent: "reply body",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            interactionScore: 2,
-          },
-          [`users/${uidB}/replies/${postId}/${replyId}`]: true,
-        });
-      });
-
-      await assertSucceeds(
-        dbUpdate(dbB, "/", {
-          [`replies/${postId}/${replyId}`]: null,
-          [`users/${uidB}/replies/${postId}/${replyId}`]: null,
-        }),
-      );
-    });
-  });
-
-  describe("Update & Deletion Security", () => {
-    it("allows owner to edit postContent and denies non-owner", async () => {
-      const dbA = authedDb(uidA);
-      const dbB = authedDb(uidB);
-      const newContent = "this is edited content";
-
-      // check that the owner (User A) can edit their own post
-      await assertSucceeds(
-        dbUpdate(dbA, `posts/${postId}`, {
-          postContent: newContent,
-        }),
-      );
-
-      // check that a non-owner (User B) cannot edit User A's post
-      await assertFails(
-        dbUpdate(dbB, `posts/${postId}`, {
-          postContent: "malicious edit",
-        }),
-      );
-    });
-
-    it("allows owner delete and denies non-owner delete", async () => {
-      const dbA = authedDb(uidA);
-      const dbB = authedDb(uidB);
-
-      await assertSucceeds(
-        dbUpdate(dbA, "/", {
-          [`posts/${postId}`]: null,
-          [`users/${uidA}/posts/${postId}`]: null,
-        }),
-      );
-
-      // Re-seed post
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`posts/${postId}`]: {
-            postContent: "seed post",
-            timestamp: Date.now(),
-            replyCount: 0,
-            userId: uidA,
-          },
-          [`users/${uidA}/posts/${postId}`]: true,
-        });
-      });
-
-      await assertFails(
-        dbUpdate(dbB, "/", {
-          [`posts/${postId}`]: null,
-          [`users/${uidA}/posts/${postId}`]: null,
-        }),
-      );
-    });
-
-    it("denies User B from deleting User A's anonymous post", async () => {
-      const dbB = authedDb(uidB);
-      const anonPostId = "uidA_secret_post";
-
-      // Setup: Post belongs to User A (via index), but is anonymous publicly
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`posts/${anonPostId}`]: {
-            postContent: "Anonymous but owned by A",
-            timestamp: Date.now(),
-            replyCount: 0,
-          },
-          [`users/${uidA}/posts/${anonPostId}`]: true,
-        });
-      });
-
-      // User B tries to delete the post and their own fake index
-      await assertFails(
-        dbUpdate(dbB, "/", {
-          [`posts/${anonPostId}`]: null,
-          [`users/${uidB}/posts/${anonPostId}`]: null,
-        }),
-      );
-    });
-
-    it("denies deleting reply without receipt or main object cleanup", async () => {
-      const dbB = authedDb(uidB);
-
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`replies/${postId}/${replyId}`]: {
-            id: replyId,
-            userId: uidB,
-            postContent: "reply body",
-            timestamp: { ".sv": "timestamp" },
-            replyCount: 0,
-            parentPostId: postId,
-            interactionScore: 2,
-          },
-          [`users/${uidB}/replies/${postId}/${replyId}`]: true,
-        });
-      });
-
-      // note that remove does the same thing as : null underneath
-      await assertFails(
-        dbRemove(dbB, `users/${uidB}/replies/${postId}/${replyId}`),
-      );
-      await assertFails(
-        dbUpdate(dbB, "/", {
-          [`users/${uidB}/replies/${postId}/${replyId}`]: null,
-        }),
-      );
-
-      // note that remove does the same thing as : null underneath
-      await assertFails(dbRemove(dbB, `replies/${postId}/${replyId}`));
-      await assertFails(
-        dbUpdate(dbB, "/", {
-          [`replies/${postId}/${replyId}`]: null,
-        }),
-      );
-    });
-
-    it("allows 'lazy cleanup' of a dangling receipt when the public post is already gone", async () => {
-      const dbA = authedDb(uidA);
-      const orphanPostId = "orphan_post_999";
-
-      // create an orphan (receipt exists, but public post is null/missing)
-      // mimics a thread author deleting a post, leaving our receipt dangling
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`users/${uidA}/posts/${orphanPostId}`]: true,
-          // note: we do NOT create posts/${orphanPostId} here
-        });
-      });
-
-      // this should succeed: the rules see the public post is already gone,
-      // so deleting the receipt restores consistency (the "self-healing" path)
-      await assertSucceeds(
-        dbRemove(dbA, `users/${uidA}/posts/${orphanPostId}`),
-      );
-    });
-
-    it("allows 'lazy cleanup' of a dangling reply receipt when the public thread is gone", async () => {
-      const dbB = authedDb(uidB);
-      const orphanReplyId = "orphan_reply_888";
-      const deadPostId = "dead_parent_post";
-
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`users/${uidB}/replies/${deadPostId}/${orphanReplyId}`]: true,
-          // public replies tree is empty/null
-        });
-      });
-
-      // client performs self-healing cleanup
-      await assertSucceeds(
-        dbRemove(dbB, `users/${uidB}/replies/${deadPostId}/${orphanReplyId}`),
-      );
-    });
-  });
-
-  describe("Sub-Reply Read Access", () => {
-    const subReplyId = "subreply_read_1";
+  describe("Edits", () => {
+    const scenarios = [
+      {
+        label: "Post",
+        path: `posts/${postId}`,
+        lookup: `authorLookup/${postId}`,
+        profile: `users/${uidCurrent}/posts/${postId}`,
+      },
+      {
+        label: "Reply",
+        path: `replies/${postId}/${replyId}`,
+        lookup: `authorLookup/${replyId}`,
+        profile: `users/${uidCurrent}/replies/${postId}/${replyId}`,
+      },
+      {
+        label: "Sub-Reply",
+        path: `subreplies/${postId}/${replyId}/sub_1`,
+        lookup: `authorLookup/sub_1`,
+        profile: `users/${uidCurrent}/subreplies/${postId}/${replyId}/sub_1`,
+      },
+    ];
 
     beforeEach(async () => {
+      // seed the database with the objects to be edited
       await testEnv.withSecurityRulesDisabled(async (context) => {
         const db = dbFromContext(context);
+        const now = Date.now();
         await dbUpdate(db, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            postContent: "a sub-reply",
-            timestamp: Date.now(),
+          [scenarios[0].path]: {
+            id: postId,
+            postContent: "orig",
+            timestamp: now,
+            replyCount: 0,
+          },
+          [scenarios[0].lookup]: { uid: uidCurrent, type: "post" },
+          [scenarios[0].profile]: true,
+
+          [scenarios[1].path]: {
+            id: replyId,
+            postContent: "orig",
+            timestamp: now,
+            parentPostId: postId,
+            interactionScore: 0,
+            replyCount: 0,
+          },
+          [scenarios[1].lookup]: { uid: uidCurrent, type: "reply", postId },
+          [scenarios[1].profile]: true,
+
+          [scenarios[2].path]: {
+            id: "sub_1",
+            postContent: "orig",
+            timestamp: now,
             parentPostId: postId,
             parentReplyId: replyId,
-            authorDisplay: "Anonymous User",
+            authorDisplay: "Anon",
           },
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
+          [scenarios[2].lookup]: {
+            uid: uidCurrent,
+            type: "subreply",
+            postId: postId,
+            replyId: replyId,
+          },
+          [scenarios[2].profile]: true,
         });
       });
     });
 
-    it("allows unauthenticated reads to subreplies/", async () => {
-      const db = anonDb();
-      await assertSucceeds(
-        dbGet(db, `subreplies/${postId}/${replyId}/${subReplyId}`),
+    describe("Allowed", () => {
+      it.each(scenarios)(
+        "allows owner to edit postContent and editedAt for $label",
+        async ({ path }) => {
+          const db = userDb(uidCurrent);
+          await assertSucceeds(
+            dbUpdate(db, path, {
+              postContent: "updated content",
+              editedAt: Date.now(),
+            }),
+          );
+        },
       );
     });
 
-    it("allows authenticated reads to subreplies/", async () => {
-      const db = authedDb(uidB);
-      await assertSucceeds(
-        dbGet(db, `subreplies/${postId}/${replyId}/${subReplyId}`),
+    describe("Denied", () => {
+      it.each(scenarios)(
+        "denies owner from editing protected fields in $label",
+        async ({ path }) => {
+          const db = userDb(uidCurrent);
+
+          // owner edits id
+          await assertFails(dbUpdate(db, path, { id: "new_id" }));
+          // owner edits timestamp
+          await assertFails(
+            dbUpdate(db, path, { timestamp: Date.now() + 1000 }),
+          );
+          // owner edits replyCount (if applicable)
+          if (!path.includes("subreplies")) {
+            await assertFails(dbUpdate(db, path, { replyCount: 99 }));
+          }
+        },
       );
-    });
-  });
 
-  describe("Anonymous Sub-Reply Creation + Deletion", () => {
-    const subReplyId = "subreply_anon_1";
+      it.each(scenarios)(
+        "denies guest or non-owner from any edit to $label",
+        async ({ path }) => {
+          const dbOther = userDb(uidOther);
+          const dbGuest = guestDb();
+          const edit = { postContent: "hacked" };
 
-    it("denies creating an anonymous sub-reply without a receipt", async () => {
-      const dbA = authedDb(uidA);
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            postContent: "missing receipt",
-            timestamp: { ".sv": "timestamp" },
-            parentPostId: postId,
-            parentReplyId: replyId,
-            authorDisplay: "Anonymous User",
-          },
-          // no users/ receipt
-        }),
-      );
-    });
-
-    it("denies creating a receipt without the main subreply object", async () => {
-      const dbA = authedDb(uidA);
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          // no subreplies/ object
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        }),
-      );
-    });
-
-    it("allows creating an anonymous sub-reply with required fields + receipt", async () => {
-      const dbA = authedDb(uidA);
-      await assertSucceeds(
-        dbUpdate(dbA, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            postContent: "anonymous sub-reply",
-            timestamp: { ".sv": "timestamp" },
-            parentPostId: postId,
-            parentReplyId: replyId,
-            authorDisplay: "Anonymous User",
-          },
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        }),
-      );
-    });
-
-    it("allows another user to create an anonymous sub-reply", async () => {
-      const dbB = authedDb(uidB);
-      const subReplyIdB = "subreply_anon_user_b"; // distinct ID — avoids state from prior test
-      await assertSucceeds(
-        dbUpdate(dbB, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyIdB}`]: {
-            id: subReplyIdB,
-            postContent: "user B anonymous sub",
-            timestamp: { ".sv": "timestamp" },
-            parentPostId: postId,
-            parentReplyId: replyId,
-            authorDisplay: "Anonymous User",
-          },
-          [`users/${uidB}/subreplies/${postId}/${replyId}/${subReplyIdB}`]: true,
-        }),
-      );
-    });
-
-    it("allows deleting an anonymous sub-reply with receipt", async () => {
-      const dbA = authedDb(uidA);
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            postContent: "to delete",
-            timestamp: Date.now(),
-            parentPostId: postId,
-            parentReplyId: replyId,
-            authorDisplay: "Anonymous User",
-          },
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        });
-      });
-
-      await assertSucceeds(
-        dbUpdate(dbA, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: null,
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: null,
-        }),
-      );
-    });
-
-    it("denies deleting only the sub-reply object (without receipt)", async () => {
-      const dbA = authedDb(uidA);
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            postContent: "to delete",
-            timestamp: Date.now(),
-            parentPostId: postId,
-            parentReplyId: replyId,
-            authorDisplay: "Anonymous User",
-          },
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        });
-      });
-
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: null,
-        }),
-      );
-    });
-
-    it("denies deleting only the receipt (without sub-reply object)", async () => {
-      const dbA = authedDb(uidA);
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            postContent: "to delete",
-            timestamp: Date.now(),
-            parentPostId: postId,
-            parentReplyId: replyId,
-            authorDisplay: "Anonymous User",
-          },
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        });
-      });
-
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: null,
-        }),
-      );
-    });
-  });
-
-  describe("Non-Anonymous Sub-Reply Creation + Deletion", () => {
-    const subReplyId = "subreply_named_1";
-
-    it("allows creating a non-anonymous sub-reply with userId", async () => {
-      const dbB = authedDb(uidB);
-      await assertSucceeds(
-        dbUpdate(dbB, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            userId: uidB,
-            postContent: "named sub-reply",
-            timestamp: { ".sv": "timestamp" },
-            parentPostId: postId,
-            parentReplyId: replyId,
-            authorDisplay: "User B",
-          },
-          [`users/${uidB}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        }),
-      );
-    });
-
-    it("denies creating a sub-reply with a mismatched userId", async () => {
-      const dbA = authedDb(uidA);
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            userId: uidB, // wrong — auth is user_a
-            postContent: "spoofed identity",
-            timestamp: { ".sv": "timestamp" },
-            parentPostId: postId,
-            parentReplyId: replyId,
-            authorDisplay: "User B",
-          },
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        }),
-      );
-    });
-
-    it("allows deleting a non-anonymous sub-reply (with receipt)", async () => {
-      const dbB = authedDb(uidB);
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            userId: uidB,
-            postContent: "named sub to delete",
-            timestamp: Date.now(),
-            parentPostId: postId,
-            parentReplyId: replyId,
-            authorDisplay: "User B",
-          },
-          [`users/${uidB}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        });
-      });
-
-      await assertSucceeds(
-        dbUpdate(dbB, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: null,
-          [`users/${uidB}/subreplies/${postId}/${replyId}/${subReplyId}`]: null,
-        }),
-      );
-    });
-
-    it("denies a non-owner from deleting another user's sub-reply", async () => {
-      const dbA = authedDb(uidA);
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            userId: uidB,
-            postContent: "belongs to B",
-            timestamp: Date.now(),
-            parentPostId: postId,
-            parentReplyId: replyId,
-            authorDisplay: "User B",
-          },
-          [`users/${uidB}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        });
-      });
-
-      // User A tries to delete user B's sub-reply using their own receipt slot
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: null,
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: null,
-        }),
-      );
-    });
-  });
-
-  describe("Sub-Reply Validation", () => {
-    const subReplyId = "subreply_validate_1";
-
-    it("denies sub-reply with missing required fields", async () => {
-      const dbA = authedDb(uidA);
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            postContent: "missing timestamp & parentReplyId",
-            parentPostId: postId,
-            authorDisplay: "Anonymous User",
-            // missing: timestamp, parentReplyId
-          },
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        }),
-      );
-    });
-
-    it("denies sub-reply with wrong parentReplyId", async () => {
-      const dbA = authedDb(uidA);
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            postContent: "wrong parentReplyId",
-            timestamp: { ".sv": "timestamp" },
-            parentPostId: postId,
-            parentReplyId: "wrong_reply_id",
-            authorDisplay: "Anonymous User",
-          },
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        }),
-      );
-    });
-
-    it("denies sub-reply with wrong parentPostId", async () => {
-      const dbA = authedDb(uidA);
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            postContent: "wrong parentPostId",
-            timestamp: { ".sv": "timestamp" },
-            parentPostId: "wrong_post_id",
-            parentReplyId: replyId,
-            authorDisplay: "Anonymous User",
-          },
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        }),
-      );
-    });
-
-    it("denies sub-reply with wrong id field", async () => {
-      const dbA = authedDb(uidA);
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: "some_other_id", // does not match $subreply_id
-            postContent: "bad id",
-            timestamp: { ".sv": "timestamp" },
-            parentPostId: postId,
-            parentReplyId: replyId,
-            authorDisplay: "Anonymous User",
-          },
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        }),
-      );
-    });
-
-    it("denies sub-reply with postContent exceeding 600 chars", async () => {
-      const dbA = authedDb(uidA);
-      await assertFails(
-        dbUpdate(dbA, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            postContent: "x".repeat(601),
-            timestamp: { ".sv": "timestamp" },
-            parentPostId: postId,
-            parentReplyId: replyId,
-            authorDisplay: "Anonymous User",
-          },
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${subReplyId}`]: true,
-        }),
-      );
-    });
-
-    it("denies unauthenticated sub-reply creation", async () => {
-      const db = anonDb();
-      await assertFails(
-        dbUpdate(db, "/", {
-          [`subreplies/${postId}/${replyId}/${subReplyId}`]: {
-            id: subReplyId,
-            postContent: "anon write attempt",
-            timestamp: { ".sv": "timestamp" },
-            parentPostId: postId,
-            parentReplyId: replyId,
-            authorDisplay: "Anonymous User",
-          },
-        }),
-      );
-    });
-  });
-
-
-  describe("Sub-Reply Lazy Cleanup (orphan receipt)", () => {
-    it("allows lazy cleanup of a dangling subreply receipt when public object is gone", async () => {
-      const orphanSubReplyId = "orphan_subreply_999";
-
-      // seed only the receipt, no public object (mimics cloud-fn cascade delete)
-      await testEnv.withSecurityRulesDisabled(async (context) => {
-        const db = dbFromContext(context);
-        await dbUpdate(db, "/", {
-          [`users/${uidA}/subreplies/${postId}/${replyId}/${orphanSubReplyId}`]: true,
-          // note: subreplies/ object is intentionally absent
-        });
-      });
-
-      // client self-heals the dangling receipt
-      await assertSucceeds(
-        dbRemove(
-          authedDb(uidA),
-          `users/${uidA}/subreplies/${postId}/${replyId}/${orphanSubReplyId}`,
-        ),
+          await assertFails(dbUpdate(dbOther, path, edit));
+          await assertFails(dbUpdate(dbGuest, path, edit));
+        },
       );
     });
   });

@@ -41,7 +41,7 @@ function Layout() {
 
   const [activeTarget, setActiveTarget] = useState<{
     id: string;
-    parentId: string;
+    parentId?: string;
   } | null>(null);
 
   const [isInitialCheck, setIsInitialCheck] = useState(true);

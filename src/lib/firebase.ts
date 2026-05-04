@@ -6,7 +6,6 @@ import {
   ref,
   update,
   push,
-  serverTimestamp,
   child,
   get,
   onValue,
@@ -55,8 +54,6 @@ export interface CreatePostOptions {
   /** stance score — replies only */
   score?: number;
   isThreadAuthor?: boolean;
-  /** include userId in the public object (non-anonymous mode) */
-  includePublicUserId?: boolean;
 }
 
 const app = initializeApp(firebaseConfig);
@@ -85,6 +82,12 @@ const getSortableTimestamp = (timestamp: number | object | undefined) => {
   return 0;
 };
 
+import {
+  buildCreateUpdates,
+  buildDeleteUpdates,
+  buildEditUpdates,
+} from "./updateBuilders.ts";
+
 /**
  * creates a new post, reply, or sub-reply.
  * pass parentReplyId to write to the subreplies/ tree instead of replies/.
@@ -97,7 +100,6 @@ export const createPost = async ({
   parentReplyId,
   score,
   isThreadAuthor,
-  includePublicUserId = false,
 }: CreatePostOptions) => {
   const mainTree =
     parentReplyId && parentPostId
@@ -109,49 +111,16 @@ export const createPost = async ({
   const newKey = push(child(ref(db), mainTree)).key;
   if (!newKey) return;
 
-  const updates: Record<string, any> = {};
-
-  if (parentReplyId && parentPostId) {
-    // sub-reply: no replyCount, no interactionScore
-    updates[`subreplies/${parentPostId}/${parentReplyId}/${newKey}`] = {
-      id: newKey,
-      ...(includePublicUserId ? { userId } : {}),
-      authorDisplay,
-      postContent: content,
-      timestamp: serverTimestamp(),
-      parentPostId,
-      parentReplyId,
-      ...(isThreadAuthor ? { isThreadAuthor } : {}),
-    };
-    updates[
-      `users/${userId}/subreplies/${parentPostId}/${parentReplyId}/${newKey}`
-    ] = true;
-  } else if (parentPostId) {
-    // reply
-    updates[`replies/${parentPostId}/${newKey}`] = {
-      id: newKey,
-      ...(includePublicUserId ? { userId } : {}),
-      authorDisplay,
-      postContent: content,
-      timestamp: serverTimestamp(),
-      replyCount: 0,
-      parentPostId,
-      interactionScore: score,
-      isThreadAuthor,
-    };
-    updates[`users/${userId}/replies/${parentPostId}/${newKey}`] = true;
-  } else {
-    // top-level post
-    updates[`posts/${newKey}`] = {
-      id: newKey,
-      ...(includePublicUserId ? { userId } : {}),
-      authorDisplay,
-      postContent: content,
-      timestamp: serverTimestamp(),
-      replyCount: 0,
-    };
-    updates[`users/${userId}/posts/${newKey}`] = true;
-  }
+  const updates = buildCreateUpdates({
+    key: newKey,
+    userId,
+    content,
+    authorDisplay,
+    parentPostId,
+    parentReplyId,
+    score,
+    isThreadAuthor,
+  });
 
   await update(ref(db), updates);
   return newKey;
@@ -159,56 +128,25 @@ export const createPost = async ({
 
 /**
  * updates content in the correct tree (posts/, replies/, or subreplies/).
- * accepts the post object directly so callers don’t thread multiple id params.
+ * accepts the post object directly so callers don't thread multiple id params.
  */
 export const updatePost = async (
   post: Pick<Post, "id" | "parentPostId" | "parentReplyId">,
-  updates: Partial<Pick<Post, "postContent" | "editedAt">>,
+  changes: Partial<Pick<Post, "postContent" | "editedAt">>,
 ) => {
-  const { id, parentPostId, parentReplyId } = post;
-  const path =
-    parentReplyId && parentPostId
-      ? `subreplies/${parentPostId}/${parentReplyId}/${id}`
-      : parentPostId
-        ? `replies/${parentPostId}/${id}`
-        : `posts/${id}`;
-
-  return update(ref(db), {
-    [`${path}/postContent`]: updates.postContent,
-    [`${path}/editedAt`]: updates.editedAt,
-  });
+  return update(ref(db), buildEditUpdates(post, changes));
 };
 
 /**
  * removes a post, reply, or sub-reply and cleans up all associated references atomically.
- * accepts the post object directly so callers don’t thread multiple id params.
+ * accepts the post object directly so callers don't thread multiple id params.
  */
 export const deletePost = async (
   post: Pick<Post, "id" | "parentPostId" | "parentReplyId">,
   userId: string,
 ) => {
-  const { id, parentPostId, parentReplyId } = post;
   try {
-    const dbUpdates: Record<string, any> = {};
-
-    if (parentReplyId && parentPostId) {
-      // sub-reply: atomic delete of object + receipt
-      dbUpdates[`subreplies/${parentPostId}/${parentReplyId}/${id}`] = null;
-      dbUpdates[
-        `users/${userId}/subreplies/${parentPostId}/${parentReplyId}/${id}`
-      ] = null;
-    } else if (parentPostId) {
-      // reply: atomic delete of object + receipt
-      dbUpdates[`replies/${parentPostId}/${id}`] = null;
-      dbUpdates[`users/${userId}/replies/${parentPostId}/${id}`] = null;
-    } else {
-      // post: delete object + receipt
-      dbUpdates[`posts/${id}`] = null;
-      dbUpdates[`users/${userId}/posts/${id}`] = null;
-      // cloud function handles cascade to replies/ to avoid permission errors
-    }
-
-    await update(ref(db), dbUpdates);
+    await update(ref(db), buildDeleteUpdates(post, userId));
   } catch (error) {
     console.error("error deleting content:", error);
     throw error;
@@ -409,7 +347,6 @@ export const subscribeToFeed = (
     const postsArray: Post[] = Object.entries(postsObject)
       .map(([postId, postData]: [string, any]) => ({
         id: postId,
-        userId: postData.userId,
         authorDisplay: postData.authorDisplay,
         postContent: postData.postContent || postData.content,
         timestamp: postData.timestamp || 0,

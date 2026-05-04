@@ -4,3 +4,4 @@ firebase-debug.log
 database-debug.log
 firebase-data/
 firebase-export-*/
+/scripts/service-account.json

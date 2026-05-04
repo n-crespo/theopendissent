@@ -176,7 +176,6 @@ export const PostDetails = () => {
                     highlighted={
                       highlightReplyId === reply.id && !highlightSubReplyId
                     }
-                    threadAuthorUserId={livePost?.userId}
                     onReply={() => {
                       setActiveReplyTo(reply);
                       setIsComposeOpen(true);

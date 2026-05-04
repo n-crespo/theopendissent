@@ -15,7 +15,6 @@ interface FeedItemProps {
   isReply?: boolean;
   highlighted?: boolean;
   disableClick?: boolean;
-  threadAuthorUserId?: string;
   /** called when the Replies button is tapped on a reply card (opens sub-reply compose) */
   onReply?: () => void;
 }
@@ -26,10 +25,9 @@ export const FeedItem = memo(
     isReply = false,
     highlighted = false,
     disableClick = false,
-    threadAuthorUserId,
     onReply,
   }: FeedItemProps) => {
-    if (!item || (!item.userId && !item.authorDisplay)) return null;
+    if (!item) return null;
 
     const navigate = useNavigate();
     const { sharePost } = useShare();
@@ -48,16 +46,8 @@ export const FeedItem = memo(
     } = usePostActions(item);
 
     const ownedPosts = useOwnedPosts();
-    const isOwner =
-      (item.userId && uid === item.userId) || ownedPosts.has(item.id);
-    const isThreadAuthor =
-      item.isThreadAuthor ??
-      Boolean(
-        isReply &&
-        item.userId &&
-        threadAuthorUserId &&
-        item.userId === threadAuthorUserId,
-      );
+    const isOwner = ownedPosts.has(item.id);
+    const isThreadAuthor = item.isThreadAuthor ?? false;
 
     const charsLeft = 600 - editContent.length;
     const isNearLimit = charsLeft < 50;

@@ -197,7 +197,6 @@ export const SubReplyThread = ({
                             isReply={true}
                             // Pass the highlighted state
                             highlighted={sr.id === targetSubReplyId}
-                            threadAuthorUserId={parentReply.userId}
                             onReply={onReply}
                           />
                         </motion.div>
