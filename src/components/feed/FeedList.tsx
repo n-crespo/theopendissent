@@ -79,7 +79,7 @@ export const FeedList = ({
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto gap-3 min-h-100">
       <div className="flex flex-col gap-3 w-full">
-        <AnimatePresence mode="popLayout" initial={shouldAnimateInitial}>
+        <AnimatePresence initial={shouldAnimateInitial}>
           {loading && showLoadingUI && posts.length === 0 && (
             <motion.div
               key="skeletons"

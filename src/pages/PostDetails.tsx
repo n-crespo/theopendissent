@@ -184,7 +184,7 @@ export const PostDetails = () => {
 
         <section className="flex flex-col gap-y-4">
           <ComposeTrigger placeholder="Your thoughts?" />
-          <AnimatePresence mode="popLayout" initial={shouldAnimateInitial}>
+          <AnimatePresence initial={shouldAnimateInitial}>
             {showRepliesSkeleton && replies.length === 0 ? (
               <motion.div
                 key="skeletons"
