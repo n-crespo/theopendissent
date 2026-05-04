@@ -1,5 +1,10 @@
 # The Open Dissent
 
+> [!IMPORTANT]
+> Anonymity is central to the values of TheOpenDissent. We encourage you to
+> browse the source code, submit the feedback form on our website or use GitHub
+> Issues to voice any concerns about anonymity (or anything else!).
+
 ## Development Setup
 
 Install dependencies and start the frontend:
@@ -43,128 +48,168 @@ production is handled via GitHub Actions.
 
 ## Database Layout
 
-<!-- TODO: update mermaid/database layout documentation -->
+We use a normalized Realtime Database structure to ensure high performance for threaded conversations, secure permissions and efficient data cleanup.
+
+### Entity Relationship Diagram
 
 ```mermaid
 erDiagram
-  USERS ||--o{ POSTS : "indexes"
-  USERS ||--o{ REPLIES : "indexes"
-  POSTS ||--o{ REPLIES : "parents"
+    USERS ||--o{ POSTS : "indexes ownership"
+    USERS ||--o{ REPLIES : "indexes ownership"
+    USERS ||--o{ SUBREPLIES : "indexes ownership"
+    USERS ||--o{ NOTIFICATIONS : "receives"
 
-  USERS {
-    String userId PK
-    Map posts "{postId}: true"
-    Map replies "{postId}: {replyId}: true"
-  }
+    AUTHOR_LOOKUP ||--|| POSTS : "secures/identifies"
+    AUTHOR_LOOKUP ||--|| REPLIES : "secures/identifies"
+    AUTHOR_LOOKUP ||--|| SUBREPLIES : "secures/identifies"
 
-  POSTS {
-    String postId PK
-    String userId FK
-    String timestamp
-    String editedAt
-    String postContent
-  }
+    POSTS ||--o{ REPLIES : "parent of"
+    REPLIES ||--o{ SUBREPLIES : "parent of"
 
-  REPLIES {
-    String parentPostId PK
-    String replyId PK
-    String userId FK
-    String timestamp
-    String editedAt
-    String postContent
-  }
+    USERS {
+        string uid PK
+        map notifications "Real-time updates"
+        map posts "{postId}: true"
+        map replies "{postId}: {replyId}: true"
+        map subreplies "{postId}: {replyId}: {subreplyId}: true"
+    }
 
+    POSTS {
+        string id PK
+        string postContent
+        number timestamp
+        number editedAt
+        number replyCount
+    }
+
+    REPLIES {
+        string id PK
+        string parentPostId FK
+        string postContent
+        number timestamp
+        number editedAt
+        number replyCount
+        number interactionScore
+        string authorDisplay
+        boolean isThreadAuthor
+    }
+
+    SUBREPLIES {
+        string id PK
+        string parentPostId FK
+        string parentReplyId FK
+        string postContent
+        number timestamp
+        number editedAt
+        string authorDisplay
+        boolean isThreadAuthor
+    }
+
+    AUTHOR_LOOKUP {
+        string id PK "postId | replyId | subreplyId"
+        string uid FK "Author's ID"
+        string type "post | reply | subreply"
+        string postId "Path reference"
+        string replyId "Path reference"
+    }
 ```
 
+### Path Schema
+
 ```
-- users
-  - {userId}
-    - posts
-      - {postId}: true
-    - replies
-      - {postId}
-        - {replyId}: true
-    - interactions
-      - agreed
-        - {postId}: true
-        - {postId}:
-          - {replyId}: true
-      - dissented
-        - {postId}: true
-        - {postId}
-          - {replyId}: true
-          - {replyId}: true
+- authorLookup
+  - {contentId}: Mapping for posts, replies, and subreplies
+    - uid: string
+    - type: "post" | "reply" | "subreply"
+    - postId: string (if type is reply/subreply)
+    - replyId: string (if type is subreply)
+
 - posts
   - {postId}
-    - timestamp: String
-    - editedAt: Date (String)
-    - userId: String
-    - postContent: String
+    - id: string
+    - postContent: string
+    - timestamp: number
+    - replyCount: number
+    - editedAt?: number
+
 - replies
-  - {parentPostId}
+  - {postId}
     - {replyId}
-      - timestamp: String
-      - editedAt: String
-      - userId: String
-      - parentPostId: String
-      - postContent: String
+      - id: string
+      - parentPostId: string
+      - postContent: string
+      - timestamp: number
+      - replyCount: number
+      - interactionScore: number (-3 to 3)
+      - authorDisplay: string
+      - isThreadAuthor: boolean
+      - editedAt?: number
+
+- subreplies
+  - {postId}
+    - {replyId}
+      - {subReplyId}
+        - id: string
+        - parentPostId: string
+        - parentReplyId: string
+        - postContent: string
+        - timestamp: number
+        - authorDisplay: string
+        - isThreadAuthor: boolean
+        - editedAt?: number
+
+- users
+  - {uid}
+    - notifications: { [id]: Notification }
+    - posts: { [postId]: true }
+    - replies: { [postId]: { [replyId]: true } }
+    - subreplies: { [postId]: { [replyId]: { [subReplyId]: true } } }
 ```
 
-Example JSON:
+### Why `authorLookup`?
+
+To maintain a degree of "per-thread" anonymity, we do not store the author's
+`uid` directly on the post or reply objects visible to other users. Security
+rules use the private `authorLookup` table to verify that only the original
+creator can edit or delete a piece of content, while keeping the `uid` hidden
+from public `read` operations.
+
+### Example JSON Structure
 
 ```JSON
 {
-  "users": {
-    "user_123": {
-      "posts": {
-        "post_999": true
-      },
-      "replies": {
-        "post_888": {
-          "reply_456": true
-        }
-      },
-      "interactions": {
-        "agreed": {
-          "post_777": true,
-          "post_888": {
-            "reply_111": true
-          }
-        },
-        "dissented": {
-          "post_666": true,
-          "post_555": {
-            "reply_222": true,
-            "reply_333": true
-          }
-        }
-      }
+  "authorLookup": {
+    "post_999": {
+      "uid": "user_123",
+      "type": "post"
+    },
+    "reply_abc": {
+      "uid": "user_456",
+      "type": "reply",
+      "postId": "post_999"
     }
   },
   "posts": {
     "post_999": {
-      "timestamp": "2025-12-28T20:21:00Z",
-      "editedAt": "2025-12-28T20:25:00Z",
-      "userId": "user_123",
-      "postContent": "this is the content of the first post",
-      "metrics": {
-        "agreedCount": 15,
-        "dissentedCount": 2,
-        "repliedCount": 5
-      },
+      "id": "post_999",
+      "postContent": "This is a top-level post.",
+      "timestamp": 1714780000000,
+      "replyCount": 1
     }
   },
   "replies": {
     "post_999": {
       "reply_abc": {
-        "timestamp": "2025-12-28T20:30:00Z",
-        "editedAt": "2025-12-28T20:30:00Z",
-        "userId": "user_456",
+        "id": "reply_abc",
         "parentPostId": "post_999",
-        "postContent": "i completely agree with this point"
+        "postContent": "I agree with this.",
+        "timestamp": 1714780005000,
+        "replyCount": 0,
+        "interactionScore": 1,
+        "authorDisplay": "Anonymous User",
+        "isThreadAuthor": false
       }
     }
   }
 }
-
 ```
