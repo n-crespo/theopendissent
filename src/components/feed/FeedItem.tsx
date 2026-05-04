@@ -220,11 +220,8 @@ export const FeedItem = memo(
               {isLong && !disableClick && (
                 <button
                   onClick={toggleExpansion}
-                  className="flex items-center gap-x-1.5 px-4 py-2 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors self-start -ml-4"
+                  className="flex justify-center w-full py-0.5 text-sm font-semibold text-slate-400 cursor-pointer transition-all hover:underline"
                 >
-                  <i
-                    className={`bi ${isExpanded ? "bi-arrow-up" : "bi-arrow-down"} text-base leading-none`}
-                  />
                   <span>{isExpanded ? "Show less" : "Read more"}</span>
                 </button>
               )}
