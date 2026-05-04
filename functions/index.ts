@@ -11,6 +11,7 @@ import {
   beforeUserSignedIn,
 } from "firebase-functions/v2/identity";
 import * as admin from "firebase-admin";
+import * as v1 from "firebase-functions/v1";
 import { defineString } from "firebase-functions/params";
 
 admin.initializeApp();
@@ -482,3 +483,69 @@ export const onSubReplyCreatedNotification = onValueCreated(
     }
   },
 );
+
+export const wipeUserData = async (uid: string, db: admin.database.Database) => {
+  const userSnap = await db.ref(`users/${uid}`).once("value");
+  const userData = userSnap.val();
+
+  if (!userData) {
+    console.log(`no user data found for deleted auth user: ${uid}`);
+    return;
+  }
+
+  const updates: Record<string, null> = {};
+
+  // Wipe the user's profile, indexes, and notifications
+  updates[`users/${uid}`] = null;
+
+  // Queue top-level posts for deletion
+  if (userData.posts) {
+    Object.keys(userData.posts).forEach((postId) => {
+      updates[`posts/${postId}`] = null;
+    });
+  }
+
+  // Queue replies for deletion
+  if (userData.replies) {
+    Object.entries(userData.replies).forEach(([postId, replies]) => {
+      Object.keys(replies as object).forEach((replyId) => {
+        updates[`replies/${postId}/${replyId}`] = null;
+      });
+    });
+  }
+
+  // Queue sub-replies for deletion
+  if (userData.subreplies) {
+    Object.entries(userData.subreplies).forEach(([postId, replyGroup]) => {
+      Object.entries(replyGroup as object).forEach(([replyId, subReplies]) => {
+        Object.keys(subReplies as object).forEach((subReplyId) => {
+          updates[`subreplies/${postId}/${replyId}/${subReplyId}`] = null;
+        });
+      });
+    });
+  }
+
+  const keysToDelete = Object.keys(updates);
+  if (keysToDelete.length > 0) {
+    console.log(`wiping ${keysToDelete.length} paths for user ${uid}`);
+    await db.ref().update(updates);
+    console.log(`successfully wiped data for user ${uid}`);
+  }
+};
+
+/**
+ * Triggers when a user is deleted from Firebase Auth.
+ * Reads the user's data indexes and orchestrates the deletion of all content
+ * they've authored across the platform.
+ * 
+ * Note: Wiping these nodes (posts/X, replies/Y) natively triggers the
+ * onPostDeletedCleanup and onReplyDeletedCleanup functions to handle
+ * the deep cascade (authorLookup, nested children, etc).
+ */
+export const onUserDeletedCleanup = v1.auth.user().onDelete(async (user) => {
+  try {
+    await wipeUserData(user.uid, admin.database());
+  } catch (error) {
+    console.error(`fatal error cleaning up user ${user.uid}:`, error);
+  }
+});
