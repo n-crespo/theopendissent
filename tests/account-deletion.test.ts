@@ -41,7 +41,7 @@ describe("Account Deletion Logic (wipeUserData)", () => {
     // 1. Seed the database with Admin privileges (rules disabled)
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const db = context.database(`http://127.0.0.1:9000?ns=${DB_NAME}`);
-      
+
       const seedData = {
         // User's root profile
         [`users/${uid}/posts/${postId}`]: true,
@@ -52,7 +52,9 @@ describe("Account Deletion Logic (wipeUserData)", () => {
         // The actual content
         [`posts/${postId}`]: { postContent: "Hello world" },
         [`replies/some_other_post/${replyId}`]: { postContent: "My reply" },
-        [`subreplies/some_other_post/some_other_reply/${subReplyId}`]: { postContent: "My subreply" },
+        [`subreplies/some_other_post/some_other_reply/${subReplyId}`]: {
+          postContent: "My subreply",
+        },
       };
 
       await db.ref("/").update(seedData);
@@ -61,24 +63,30 @@ describe("Account Deletion Logic (wipeUserData)", () => {
     // 2. Call the wipeUserData function (using an admin context mock)
     await testEnv.withSecurityRulesDisabled(async (context) => {
       // Cast the test context database to any to bypass strict admin types
-      const mockAdminDb = context.database(`http://127.0.0.1:9000?ns=${DB_NAME}`) as any;
+      const mockAdminDb = context.database(
+        `http://127.0.0.1:9000?ns=${DB_NAME}`,
+      ) as any;
       await wipeUserData(uid, mockAdminDb);
     });
 
     // 3. Verify the data is completely gone
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const db = context.database(`http://127.0.0.1:9000?ns=${DB_NAME}`);
-      
+
       const userSnap = await db.ref(`users/${uid}`).once("value");
       expect(userSnap.exists()).toBe(false);
 
       const postSnap = await db.ref(`posts/${postId}`).once("value");
       expect(postSnap.exists()).toBe(false);
 
-      const replySnap = await db.ref(`replies/some_other_post/${replyId}`).once("value");
+      const replySnap = await db
+        .ref(`replies/some_other_post/${replyId}`)
+        .once("value");
       expect(replySnap.exists()).toBe(false);
 
-      const subReplySnap = await db.ref(`subreplies/some_other_post/some_other_reply/${subReplyId}`).once("value");
+      const subReplySnap = await db
+        .ref(`subreplies/some_other_post/some_other_reply/${subReplyId}`)
+        .once("value");
       expect(subReplySnap.exists()).toBe(false);
     });
   });
@@ -86,7 +94,9 @@ describe("Account Deletion Logic (wipeUserData)", () => {
   it("does nothing if the user does not exist", async () => {
     // Should safely execute without errors
     await testEnv.withSecurityRulesDisabled(async (context) => {
-      const mockAdminDb = context.database(`http://127.0.0.1:9000?ns=${DB_NAME}`) as any;
+      const mockAdminDb = context.database(
+        `http://127.0.0.1:9000?ns=${DB_NAME}`,
+      ) as any;
       await wipeUserData("ghost_user", mockAdminDb);
     });
   });
@@ -97,26 +107,31 @@ describe("Account Deletion Logic (wipeUserData)", () => {
 
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const db = context.database(`http://127.0.0.1:9000?ns=${DB_NAME}`);
-      
+
       const seedData = {
         [`users/${uid}/email`]: "test@test.com",
         [`users/${uid}/displayName`]: "Real Name",
         [`users/${uid}/deletionSettings/deleteContent`]: false,
         [`users/${uid}/posts/${postId}`]: true,
-        [`posts/${postId}`]: { postContent: "Hello world", authorDisplay: "Real Name" },
+        [`posts/${postId}`]: {
+          postContent: "Hello world",
+          authorDisplay: "Real Name",
+        },
       };
 
       await db.ref("/").update(seedData);
     });
 
     await testEnv.withSecurityRulesDisabled(async (context) => {
-      const mockAdminDb = context.database(`http://127.0.0.1:9000?ns=${DB_NAME}`) as any;
+      const mockAdminDb = context.database(
+        `http://127.0.0.1:9000?ns=${DB_NAME}`,
+      ) as any;
       await wipeUserData(uid, mockAdminDb);
     });
 
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const db = context.database(`http://127.0.0.1:9000?ns=${DB_NAME}`);
-      
+
       const userSnap = await db.ref(`users/${uid}`).once("value");
       expect(userSnap.exists()).toBe(true);
       expect(userSnap.val().email).toBeUndefined(); // or null, but JS val() skips nulls
