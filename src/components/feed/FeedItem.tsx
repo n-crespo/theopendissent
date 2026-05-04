@@ -217,12 +217,12 @@ export const FeedItem = memo(
               >
                 {displayContent}
               </p>
-              {isLong && !disableClick && (
+              {isLong && !disableClick && !isExpanded && (
                 <button
                   onClick={toggleExpansion}
                   className="flex justify-center w-full py-0.5 text-sm font-semibold text-slate-400 cursor-pointer transition-all hover:underline"
                 >
-                  <span>{isExpanded ? "Show less" : "Read more"}</span>
+                  <span>{"Read more"}</span>
                 </button>
               )}
             </div>
