@@ -4,14 +4,13 @@ import {
   onValueDeleted,
   onValueWritten,
 } from "firebase-functions/v2/database";
-import { HttpsError, onRequest } from "firebase-functions/v2/https";
+import { onCall, HttpsError, onRequest } from "firebase-functions/v2/https";
 import {
   AuthBlockingEvent,
   beforeUserCreated,
   beforeUserSignedIn,
 } from "firebase-functions/v2/identity";
 import * as admin from "firebase-admin";
-import * as v1 from "firebase-functions/v1";
 import { defineString } from "firebase-functions/params";
 
 admin.initializeApp();
@@ -489,6 +488,7 @@ export const onSubReplyCreatedNotification = onValueCreated(
 export const wipeUserData = async (
   uid: string,
   db: admin.database.Database,
+  deleteContent: boolean = true,
 ) => {
   const userSnap = await db.ref(`users/${uid}`).once("value");
   const userData = userSnap.val();
@@ -497,9 +497,6 @@ export const wipeUserData = async (
     console.log(`no user data found for deleted auth user: ${uid}`);
     return;
   }
-
-  // Read the deletion preference. Default to true (wipe) for safety.
-  const deleteContent = userData.deletionSettings?.deleteContent ?? true;
 
   const updates: Record<string, any> = {};
 
@@ -589,18 +586,34 @@ export const wipeUserData = async (
 };
 
 /**
- * Triggers when a user is deleted from Firebase Auth.
- * Reads the user's data indexes and orchestrates the deletion of all content
- * they've authored across the platform.
- *
- * Note: Wiping these nodes (posts/X, replies/Y) natively triggers the
- * onPostDeletedCleanup and onReplyDeletedCleanup functions to handle
- * the deep cascade (authorLookup, nested children, etc).
+ * Callable function to permanently delete the current user's account and wipe their data.
+ * The client must re-authenticate before calling this to ensure security.
  */
-export const onUserDeletedCleanup = v1.auth.user().onDelete(async (user) => {
+export const deleteAccount = onCall(async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError(
+      "unauthenticated",
+      "User must be logged in to delete their account.",
+    );
+  }
+
+  const deleteContent = request.data.deleteContent ?? true;
+  const db = admin.database();
+
   try {
-    await wipeUserData(user.uid, admin.database());
+    // 1. Wipe or anonymize user's RTDB data
+    await wipeUserData(uid, db, deleteContent);
+
+    // 2. Delete the Firebase Auth User
+    await admin.auth().deleteUser(uid);
+
+    return { success: true };
   } catch (error) {
-    console.error(`fatal error cleaning up user ${user.uid}:`, error);
+    console.error(`Failed to delete account for ${uid}:`, error);
+    throw new HttpsError(
+      "internal",
+      "An error occurred while deleting the account.",
+    );
   }
 });

@@ -21,12 +21,14 @@ import {
   User,
   GoogleAuthProvider,
   getAuth,
-  deleteUser,
+  // deleteUser,
   reauthenticateWithPopup,
 } from "firebase/auth";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 import { connectAuthEmulator } from "firebase/auth";
 import { connectDatabaseEmulator } from "firebase/database";
+import { connectFunctionsEmulator } from "firebase/functions";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -65,6 +67,10 @@ export const db = getDatabase(app);
 if (import.meta.env.DEV) {
   connectAuthEmulator(auth, "http://127.0.0.1:9099");
   connectDatabaseEmulator(db, "127.0.0.1", 9000);
+  
+  const functions = getFunctions(app);
+  connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+  
   console.log("connected to firebase emulators");
 }
 
@@ -651,9 +657,8 @@ export const deleteNotifications = async (
 };
 
 /**
- * Deletes the current user's account from Firebase Auth.
- * If the session is too old, prompts for re-authentication before attempting deletion again.
- * This triggers the backend cleanup cascade via Cloud Functions.
+ * Deletes the current user's account by calling the v2 Cloud Function.
+ * The user is proactively re-authenticated first to ensure maximum security against hijacked sessions.
  * @param deleteContent If true, the backend will fully wipe the user's data. If false, it will anonymize it.
  */
 export const deleteUserAccount = async (deleteContent: boolean = true) => {
@@ -661,24 +666,21 @@ export const deleteUserAccount = async (deleteContent: boolean = true) => {
   if (!user) throw new Error("No user is currently signed in.");
 
   try {
-    // Write deletion settings to RTDB BEFORE deleting Auth so the cloud function can read it
-    await update(ref(db), {
-      [`users/${user.uid}/deletionSettings/deleteContent`]: deleteContent,
-    });
+    // 1. Proactively re-authenticate to prove identity
+    await reauthenticateWithPopup(user, googleProvider);
 
-    await deleteUser(user);
+    // 2. Call the secure backend wipe function
+    const functions = getFunctions(app);
+    const deleteAccountFn = httpsCallable(functions, "deleteAccount");
+    await deleteAccountFn({ deleteContent });
+
+    // 3. Clear local session
+    await signOutUser();
   } catch (error: any) {
-    if (error.code === "auth/requires-recent-login") {
-      // Re-authenticate to satisfy security requirements
-      await reauthenticateWithPopup(user, googleProvider);
-
-      // Attempt again
-      await update(ref(db), {
-        [`users/${user.uid}/deletionSettings/deleteContent`]: deleteContent,
-      });
-      await deleteUser(user);
-    } else {
-      throw error;
+    if (error.code === "auth/popup-closed-by-user") {
+      throw new Error("Authentication canceled. Account deletion aborted.");
     }
+    console.error("Account deletion failed:", error);
+    throw error;
   }
 };
