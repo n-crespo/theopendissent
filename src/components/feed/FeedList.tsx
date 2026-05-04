@@ -5,6 +5,7 @@ import { FeedItem } from "./FeedItem";
 import { FeedItemSkeleton } from "../ui/FeedItemSkeleton";
 import { Post } from "../../types";
 import { useInfiniteScroll } from "../../hooks/useInfininteScroll";
+import { useNavigationType } from "react-router-dom";
 
 interface FeedListProps {
   posts: Post[];
@@ -14,6 +15,8 @@ interface FeedListProps {
   onLoadMore: () => void;
 }
 
+let isInitialMount = true;
+
 export const FeedList = ({
   posts,
   highlightedPost,
@@ -21,6 +24,17 @@ export const FeedList = ({
   hasMore,
   onLoadMore,
 }: FeedListProps) => {
+  const navType = useNavigationType();
+  const isPop = navType === "POP";
+
+  // If this is the first time the app is loading, we want the premium fade-in.
+  // If we are navigating back (POP), we skip it to prevent iOS jitter.
+  const shouldAnimateInitial = isInitialMount || !isPop;
+
+  useEffect(() => {
+    isInitialMount = false;
+  }, []);
+
   const bottomBoundaryRef = useInfiniteScroll({
     loading,
     hasMore,
@@ -62,7 +76,7 @@ export const FeedList = ({
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto gap-3 min-h-100">
       <div className="flex flex-col gap-3 w-full">
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="popLayout" initial={shouldAnimateInitial}>
           {loading && showLoadingUI && posts.length === 0 && (
             <motion.div
               key="skeletons"

@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Post } from "../../types";
 import { subscribeToSubRepliesWithGap } from "../../lib/firebase";
 import { FeedItem } from "./FeedItem";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useNavigationType } from "react-router-dom";
 
 const PAGE_SIZE = 3;
+
+let isInitialMount = true;
 
 interface SubReplyThreadProps {
   parentPostId: string;
@@ -28,8 +30,15 @@ export const SubReplyThread = ({
 }: SubReplyThreadProps) => {
   // Grab the global target from Layout context
   const { activeTarget, setActiveTarget }: any = useOutletContext();
+  const navType = useNavigationType();
 
   const [expanded, setExpanded] = useState(false);
+
+  const shouldAnimateInitial = isInitialMount || navType !== "POP";
+
+  useEffect(() => {
+    isInitialMount = false;
+  }, []);
   const [topLimit, setTopLimit] = useState(2);
   const [subReplies, setSubReplies] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
@@ -151,7 +160,7 @@ export const SubReplyThread = ({
       </button>
 
       {/* Expanded thread */}
-      <AnimatePresence>
+      <AnimatePresence initial={shouldAnimateInitial}>
         {expanded && !isInitialLoading && (
           <motion.div
             layout
@@ -174,7 +183,7 @@ export const SubReplyThread = ({
 
               {/* Sub-reply list */}
               <div className="flex-1 flex flex-col gap-y-2 min-w-0">
-                <AnimatePresence>
+                <AnimatePresence initial={shouldAnimateInitial}>
                   {subReplies.map((sr, index) => {
                     // Check if this is the end of the top block (index = topLimit - 1)
                     const isEndOfTop = hasGap && index === topLimit - 1;

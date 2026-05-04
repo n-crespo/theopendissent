@@ -6,6 +6,7 @@ import {
   useNavigate,
   useSearchParams,
   useOutletContext,
+  useNavigationType,
 } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { subscribeToPost, subscribeToReplies } from "../lib/firebase";
@@ -16,12 +17,21 @@ import { Post } from "../types";
 import { FeedItemSkeleton } from "../components/ui/FeedItemSkeleton";
 import { ComposeTrigger } from "../components/feed/ComposeTrigger";
 
+let isInitialMount = true;
+
 export const PostDetails = () => {
   const { postId } = useParams<{ postId: string }>();
   const [searchParams] = useSearchParams();
   const highlightReplyId = searchParams.get("reply");
   const highlightSubReplyId = searchParams.get("subreply");
   const navigate = useNavigate();
+  const navType = useNavigationType();
+
+  const shouldAnimateInitial = isInitialMount || navType !== "POP";
+
+  useEffect(() => {
+    isInitialMount = false;
+  }, []);
 
   // grab the setters from Layout
   const {
@@ -146,7 +156,7 @@ export const PostDetails = () => {
 
         <section className="flex flex-col gap-y-4">
           <ComposeTrigger placeholder="Your thoughts?" />
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="popLayout" initial={shouldAnimateInitial}>
             {isLoadingReplies ? (
               <motion.div
                 key="skeletons"
