@@ -168,11 +168,11 @@ erDiagram
 
 ### Why `authorLookup`?
 
-To maintain a degree of "per-thread" anonymity, we do not store the author's
-`uid` directly on the post or reply objects visible to other users. Security
-rules use the private `authorLookup` table to verify that only the original
-creator can edit or delete a piece of content, while keeping the `uid` hidden
-from public `read` operations.
+To maintain true anonymity, we do not store the author's `uid` directly on the
+post or reply objects visible to other users. Security rules use the private
+`authorLookup` table to verify that only the original creator can edit or
+delete a piece of content, while keeping the `uid` hidden from public `read`
+operations.
 
 ### Example JSON Structure
 
