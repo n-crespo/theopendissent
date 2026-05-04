@@ -229,30 +229,6 @@ export const FeedItem = memo(
               : "grid grid-cols-2"
           }`}
         >
-          {/* Share */}
-          <button
-            onClick={(e) => handleAction(e, () => sharePost(item))}
-            className={`${actionButtonClass} border-r border-slate-100`}
-          >
-            <i className="bi bi-box-arrow-up text-lg"></i>
-          </button>
-
-          {/* Stance — middle column, reply cards only */}
-          {isReply && item.interactionScore !== undefined && (
-            <div className="flex gap-3 items-center justify-center py-3 border-r border-slate-100">
-              <div className="text-sm font-semibold text-slate-400">
-                Stance:
-              </div>
-              <div
-                title={`Stance: ${displayScore}`}
-                style={{ backgroundColor: stanceColor }}
-                className="px-4 py-2 rounded-xl shadow-lg text-sm font-bold text-white select-none cursor-default"
-              >
-                {displayScore}
-              </div>
-            </div>
-          )}
-
           {/* Replies */}
           {isReply ? (
             <button
@@ -292,6 +268,30 @@ export const FeedItem = memo(
               </div>
             </button>
           )}
+
+          {/* Stance — middle column, reply cards only */}
+          {isReply && item.interactionScore !== undefined && (
+            <div className="flex gap-3 items-center justify-center py-3 border-r border-slate-100">
+              <div className="text-sm font-semibold text-slate-400">
+                Stance:
+              </div>
+              <div
+                title={`Stance: ${displayScore}`}
+                style={{ backgroundColor: stanceColor }}
+                className="px-4 py-2 rounded-xl shadow-lg text-sm font-bold text-white select-none cursor-default"
+              >
+                {displayScore}
+              </div>
+            </div>
+          )}
+
+          {/* Share */}
+          <button
+            onClick={(e) => handleAction(e, () => sharePost(item))}
+            className={`${actionButtonClass} border-l border-slate-100`}
+          >
+            <i className="bi bi-send text-lg"></i>
+          </button>
         </div>
       </div>
     );
