@@ -1,0 +1,43 @@
+name: Security Rules
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "database.rules.json"
+      - "tests/database.rules.test.ts"
+      - ".github/workflows/test-rules.yaml"
+  push:
+    branches: [main]
+    paths:
+      - "database.rules.json"
+      - "tests/database.rules.test.ts"
+      - ".github/workflows/test-rules.yaml"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  test-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - run: pnpm install
+      - run: pnpm run test:rules
