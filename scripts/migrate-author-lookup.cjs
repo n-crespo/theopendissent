@@ -232,7 +232,9 @@ async function migrate() {
         if (contentPath) {
           const exists = await db.ref(contentPath).once("value");
           if (!exists.exists()) {
-            console.warn(`   WARNING: Orphaned authorLookup/${id} (content missing)`);
+            console.warn(
+              `   [WARNING] Orphaned authorLookup/${id} (content missing)`,
+            );
             allUpdates[`authorLookup/${id}`] = null;
             stats.orphaned++;
           }
