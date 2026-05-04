@@ -76,6 +76,12 @@ export const FeedItem = memo(
     const actionButtonClass =
       "flex items-center justify-center py-4 text-slate-400 hover:bg-slate-100 active:bg-slate-200/60 transition-all";
 
+    const handleContentClick = (e: React.MouseEvent) => {
+      if (disableClick || isEditing || isReply) return;
+      e.stopPropagation();
+      navigate(`/post/${item.id}`);
+    };
+
     return (
       <div
         className={`flex flex-col bg-white border transition-all duration-200 rounded-2xl overflow-hidden ${
@@ -177,7 +183,10 @@ export const FeedItem = memo(
               </div>
             </div>
           ) : (
-            <p className="text-slate-800 text-[1.0625rem] leading-relaxed whitespace-pre-wrap break-words">
+            <p
+              onClick={handleContentClick}
+              className={`text-slate-800 text-[1.0625rem] leading-relaxed whitespace-pre-wrap break-words transition-colors ${!disableClick && "cursor-pointer"}`}
+            >
               {item.postContent}
             </p>
           )}
