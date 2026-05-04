@@ -78,9 +78,8 @@ export const Settings = () => {
                 Delete Account
               </h3>
               <p className="text-sm text-slate-500 leading-relaxed">
-                Once you delete your account, there is no going back. Please be
-                certain. All your posts, replies, and profile data will be
-                permanently wiped.
+                Deleting your account is irreversible. Please be certain before
+                proceeding.
               </p>
             </div>
 
