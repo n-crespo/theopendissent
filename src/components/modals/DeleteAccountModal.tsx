@@ -13,6 +13,7 @@ const CONFIRMATION_PHRASE = "I want to delete my account";
 export const DeleteAccountModal = ({ onClose }: Props) => {
   const { user } = useAuth();
   const [inputValue, setInputValue] = useState("");
+  const [deleteContent, setDeleteContent] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,18 +21,19 @@ export const DeleteAccountModal = ({ onClose }: Props) => {
 
   const handleDelete = async () => {
     if (!isConfirmed || !user) return;
-    
+
     setIsDeleting(true);
     setError(null);
-    
+
     try {
-      await deleteUserAccount();
+      await deleteUserAccount(deleteContent);
       onClose();
       // App.tsx auth observer will handle redirecting the user as their session ends
     } catch (err: any) {
       console.error("Account deletion error:", err);
       setError(
-        err.message || "An unexpected error occurred while deleting your account."
+        err.message ||
+          "An unexpected error occurred while deleting your account.",
       );
       setIsDeleting(false);
     }
@@ -43,12 +45,36 @@ export const DeleteAccountModal = ({ onClose }: Props) => {
         Delete Account
       </h2>
       <p className="text-sm text-slate-500 text-center mb-6 leading-relaxed">
-        This action is permanent and cannot be undone. 
-        All your posts, replies, and profile data will be completely wiped from our servers immediately.
+        This action is permanent and cannot be undone. Your account will be
+        permanently closed.
       </p>
 
+      <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-[clamp(1rem,3vw,1.25rem)] mb-6 text-left">
+        <label className="flex items-start gap-3 cursor-pointer group">
+          <div className="relative flex items-center justify-center mt-0.5">
+            <input
+              type="checkbox"
+              checked={deleteContent}
+              onChange={(e) => setDeleteContent(e.target.checked)}
+              disabled={isDeleting}
+              className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded focus:ring-2 focus:ring-logo-red/20 focus:border-logo-red checked:bg-logo-red checked:border-logo-red transition-all cursor-pointer disabled:opacity-50"
+            />
+            <i className="bi bi-check text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity text-lg leading-none" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold text-logo-red group-hover:text-logo-red transition-colors">
+              Delete all my posts and replies
+            </span>
+            <span className="text-sm text-slate-500 mt-1 leading-relaxed">
+              If unchecked, your content will remain visible but your name will
+              be permanently changed to "[Deleted User]".
+            </span>
+          </div>
+        </label>
+      </div>
+
       <div className="w-full text-left mb-6">
-        <label className="block text-xs font-semibold text-slate-500 mb-2 tracking-tight uppercase">
+        <label className="block mb-2 text-sm text-slate-500 text-center leading-relaxed">
           To confirm, type "{CONFIRMATION_PHRASE}" below:
         </label>
         <input
@@ -74,7 +100,11 @@ export const DeleteAccountModal = ({ onClose }: Props) => {
           disabled={!isConfirmed || isDeleting}
           className="inline-flex w-full items-center justify-center rounded-xl bg-logo-red px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-(--disagree) disabled:opacity-50 disabled:hover:bg-logo-red disabled:cursor-not-allowed"
         >
-          {isDeleting ? <LoadingDots className="text-white" /> : "Delete permanently"}
+          {isDeleting ? (
+            <LoadingDots className="text-white" />
+          ) : (
+            "Delete permanently"
+          )}
         </button>
 
         <button
