@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Post } from "../../types";
 import { timeAgo } from "../../utils";
 import { usePostActions } from "../../hooks/usePostActions";
@@ -18,6 +18,8 @@ interface FeedItemProps {
   /** called when the Replies button is tapped on a reply card (opens sub-reply compose) */
   onReply?: () => void;
 }
+
+const CONTENT_CHAR_LIMIT = 300;
 
 export const FeedItem = memo(
   ({
@@ -75,6 +77,13 @@ export const FeedItem = memo(
     // Shared button styles for consistency
     const actionButtonClass =
       "flex items-center justify-center py-4 text-slate-400 hover:bg-slate-100 active:bg-slate-200/60 transition-all";
+
+    const [isExpanded, setIsExpanded] = useState(disableClick);
+    const isLong = item.postContent.length > CONTENT_CHAR_LIMIT;
+    const displayContent =
+      !isExpanded && isLong
+        ? item.postContent.slice(0, CONTENT_CHAR_LIMIT) + "..."
+        : item.postContent;
 
     const handleContentClick = (e: React.MouseEvent) => {
       if (disableClick || isEditing || isReply) return;
@@ -183,12 +192,32 @@ export const FeedItem = memo(
               </div>
             </div>
           ) : (
-            <p
-              onClick={handleContentClick}
-              className={`text-slate-800 text-[1.0625rem] leading-relaxed whitespace-pre-wrap break-words transition-colors ${!disableClick && "cursor-pointer"}`}
-            >
-              {item.postContent}
-            </p>
+            <div className="flex flex-col gap-y-2">
+              <p
+                onClick={handleContentClick}
+                className={`text-slate-800 text-[1.0625rem] leading-relaxed whitespace-pre-wrap break-words ${
+                  !disableClick && !isReply
+                    ? "cursor-pointer transition-colors"
+                    : ""
+                }`}
+              >
+                {displayContent}
+              </p>
+              {isLong && !disableClick && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsExpanded(!isExpanded);
+                  }}
+                  className="flex items-center gap-x-1.5 mx-auto py-1.5 text-sm font-semibold text-slate-400 cursor-pointer self-start hover:bg-slate-100 active:bg-slate-200/60 transition-all rounded-xl p-3"
+                >
+                  <i
+                    className={`bi ${isExpanded ? "bi-arrow-up" : "bi-arrow-down"} text-base leading-none`}
+                  />
+                  <span>{isExpanded ? "Read less" : "Read more"}</span>
+                </button>
+              )}
+            </div>
           )}
         </div>
 
