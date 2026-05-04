@@ -6,6 +6,8 @@ on:
     paths:
       - "database.rules.json"
       - "tests/database.rules.test.ts"
+      - "tests/account-deletion.test.ts"
+      - "tests/integration.test.ts"
       - ".github/workflows/ci.yml"
   push:
     branches: [main]
@@ -15,9 +17,17 @@ on:
       - ".github/workflows/ci.yml"
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
-  test-security-rules:
+  test:
+    name: Run ${{ matrix.test-suite }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        test-suite: [test:rules, test:integration, test:deletion]
     steps:
       - uses: actions/checkout@v4
 
@@ -38,4 +48,4 @@ jobs:
           # firebase emulators require java 21 or higher
 
       - run: pnpm install
-      - run: pnpm test
+      - run: pnpm run ${{ matrix.test-suite }}
