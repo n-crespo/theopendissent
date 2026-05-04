@@ -90,4 +90,42 @@ describe("Account Deletion Logic (wipeUserData)", () => {
       await wipeUserData("ghost_user", mockAdminDb);
     });
   });
+
+  it("anonymizes content if deletionSettings.deleteContent is false", async () => {
+    const uid = "anon_user";
+    const postId = "anon_post_1";
+
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.database(`http://127.0.0.1:9000?ns=${DB_NAME}`);
+      
+      const seedData = {
+        [`users/${uid}/email`]: "test@test.com",
+        [`users/${uid}/displayName`]: "Real Name",
+        [`users/${uid}/deletionSettings/deleteContent`]: false,
+        [`users/${uid}/posts/${postId}`]: true,
+        [`posts/${postId}`]: { postContent: "Hello world", authorDisplay: "Real Name" },
+      };
+
+      await db.ref("/").update(seedData);
+    });
+
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const mockAdminDb = context.database(`http://127.0.0.1:9000?ns=${DB_NAME}`) as any;
+      await wipeUserData(uid, mockAdminDb);
+    });
+
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.database(`http://127.0.0.1:9000?ns=${DB_NAME}`);
+      
+      const userSnap = await db.ref(`users/${uid}`).once("value");
+      expect(userSnap.exists()).toBe(true);
+      expect(userSnap.val().email).toBeUndefined(); // or null, but JS val() skips nulls
+      expect(userSnap.val().displayName).toBe("[Deleted User]");
+      expect(userSnap.val().deletionSettings).toBeUndefined();
+
+      const postSnap = await db.ref(`posts/${postId}`).once("value");
+      expect(postSnap.exists()).toBe(true);
+      expect(postSnap.val().authorDisplay).toBe("[Deleted User]");
+    });
+  });
 });
