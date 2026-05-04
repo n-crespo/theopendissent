@@ -38,4 +38,4 @@ jobs:
           # firebase emulators require java 21 or higher
 
       - run: pnpm install
-      - run: pnpm test:rules
+      - run: pnpm test
