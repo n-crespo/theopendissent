@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { usePosts } from "../../hooks/usePosts";
+import { usePosts, clearPinnedPosts } from "../../hooks/usePosts";
 import { useFeedSort } from "../../context/FeedSortContext";
 import { getPostById } from "../../lib/firebase";
 import { Post } from "../../types";
 import { FeedList } from "./FeedList";
+import { useOutletContext } from "react-router-dom";
 
 /**
  * Smart container: Orchestrates data fetching, deep-linking, and sorting logic.
@@ -12,6 +13,26 @@ export const FeedContainer = () => {
   const { sortType } = useFeedSort();
   const { posts, loading, loadMore, currentLimit } = usePosts(20, sortType);
   const [highlightedPost, setHighlightedPost] = useState<Post | null>(null);
+  const { activeTarget, setActiveTarget }: any = useOutletContext();
+
+  // handle auto-scrolling to newly created top-level posts
+  useEffect(() => {
+    if (activeTarget && !activeTarget.parentId) {
+      const timer = setTimeout(() => {
+        const el = document.getElementById(`post-${activeTarget.id}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          setActiveTarget(null);
+        }
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTarget, setActiveTarget]);
+
+  // clear pinned posts when unmounting
+  useEffect(() => {
+    return () => clearPinnedPosts();
+  }, []);
 
   // reset scroll position when the user changes the sort order
   useEffect(() => {
@@ -72,7 +93,6 @@ export const FeedContainer = () => {
       loading={loading}
       hasMore={hasMore}
       onLoadMore={handleLoadMore}
-      sortKey={sortType}
     />
   );
 };

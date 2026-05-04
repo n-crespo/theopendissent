@@ -12,7 +12,6 @@ interface FeedListProps {
   loading: boolean;
   hasMore: boolean;
   onLoadMore: () => void;
-  sortKey: string;
 }
 
 export const FeedList = ({
@@ -21,7 +20,6 @@ export const FeedList = ({
   loading,
   hasMore,
   onLoadMore,
-  sortKey,
 }: FeedListProps) => {
   const bottomBoundaryRef = useInfiniteScroll({
     loading,
@@ -63,45 +61,58 @@ export const FeedList = ({
 
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto gap-3 min-h-100">
-      <AnimatePresence mode="wait">
-        {loading && showLoadingUI && posts.length === 0 ? (
-          <motion.div
-            key="loading-skeletons"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col gap-3"
-          >
-            {[1, 2, 3, 4].map((i) => (
-              <FeedItemSkeleton key={i} />
-            ))}
-          </motion.div>
-        ) : (
-          <motion.div
-            key={sortKey}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="flex flex-col gap-3"
-          >
-            {highlightedPost && (
-              <FeedItem
-                item={highlightedPost}
-                highlighted={true}
-                isReply={!!highlightedPost.parentPostId}
-              />
+      <div className="flex flex-col gap-3 w-full">
+        <AnimatePresence mode="popLayout">
+          {loading && showLoadingUI && posts.length === 0 && (
+            <motion.div
+              key="loading-skeletons"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col gap-3"
+            >
+              {[1, 2, 3, 4].map((i) => (
+                <FeedItemSkeleton key={i} />
+              ))}
+            </motion.div>
+          )}
+
+          {!(loading && showLoadingUI && posts.length === 0) &&
+            highlightedPost && (
+              <motion.div
+                layout
+                key={`highlight-${highlightedPost.id}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="w-full"
+              >
+                <FeedItem
+                  item={highlightedPost}
+                  highlighted={true}
+                  isReply={!!highlightedPost.parentPostId}
+                />
+              </motion.div>
             )}
-            {posts.map((post) => (
-              <FeedItem
+
+          {!(loading && showLoadingUI && posts.length === 0) &&
+            posts.map((post) => (
+              <motion.div
+                layout
                 key={post.id}
-                item={post}
-                isReply={!!post.parentPostId}
-              />
+                id={`post-${post.id}`}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="w-full"
+              >
+                <FeedItem item={post} isReply={!!post.parentPostId} />
+              </motion.div>
             ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>
+      </div>
 
       {/* Bottom Boundary / Infinite Scroll Loader */}
       <div
