@@ -21,6 +21,8 @@ import {
   User,
   GoogleAuthProvider,
   getAuth,
+  deleteUser,
+  reauthenticateWithPopup,
 } from "firebase/auth";
 
 import { connectAuthEmulator } from "firebase/auth";
@@ -646,4 +648,37 @@ export const deleteNotifications = async (
     updates[`users/${userId}/notifications/${id}`] = null;
   });
   return update(ref(db), updates);
+};
+
+/**
+ * Deletes the current user's account from Firebase Auth.
+ * If the session is too old, prompts for re-authentication before attempting deletion again.
+ * This triggers the backend cleanup cascade via Cloud Functions.
+ * @param deleteContent If true, the backend will fully wipe the user's data. If false, it will anonymize it.
+ */
+export const deleteUserAccount = async (deleteContent: boolean = true) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("No user is currently signed in.");
+
+  try {
+    // Write deletion settings to RTDB BEFORE deleting Auth so the cloud function can read it
+    await update(ref(db), {
+      [`users/${user.uid}/deletionSettings/deleteContent`]: deleteContent,
+    });
+
+    await deleteUser(user);
+  } catch (error: any) {
+    if (error.code === "auth/requires-recent-login") {
+      // Re-authenticate to satisfy security requirements
+      await reauthenticateWithPopup(user, googleProvider);
+
+      // Attempt again
+      await update(ref(db), {
+        [`users/${user.uid}/deletionSettings/deleteContent`]: deleteContent,
+      });
+      await deleteUser(user);
+    } else {
+      throw error;
+    }
+  }
 };

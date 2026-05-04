@@ -22,6 +22,7 @@ import { Privacy } from "./pages/Privacy";
 import { Terms } from "./pages/Terms";
 import { PostDetails } from "./pages/PostDetails";
 import { Notifications } from "./pages/Notifications";
+import { Settings } from "./pages/Settings";
 import { OwnedPostsProvider } from "./context/OwnedPostsContext";
 import { FeedSortProvider } from "./context/FeedSortContext";
 import { SidebarContent } from "./components/layout/SidebarContent";
@@ -186,6 +187,7 @@ export default function App() {
               path="notifications"
               element={<Notifications showHeader={true} />}
             />
+            <Route path="settings" element={<Settings />} />
             <Route path="post/:postId" element={<PostDetails />} />
           </Route>
         </Routes>
