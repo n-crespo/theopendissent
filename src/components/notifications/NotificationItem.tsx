@@ -24,12 +24,13 @@ export const NotificationItem = memo(
     const renderMessage = () => {
       if (notification.type === "reply") {
         const count = notification.count || 1;
+        const targetType = notification.parentPostId ? "reply" : "post";
         return (
           <span
             className={`${isRead ? "text-slate-600" : "text-slate-800"} leading-snug`}
           >
             <strong>{count === 1 ? "Someone" : `${count} people`}</strong>{" "}
-            replied to your post.
+            replied to your {targetType}.
           </span>
         );
       }

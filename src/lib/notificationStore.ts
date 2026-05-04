@@ -11,6 +11,8 @@ export interface Notification {
   isRead: boolean;
   createdAt: number;
   updatedAt: number;
+  parentPostId?: string;
+  latestReplyId?: string;
 }
 
 class NotificationStore {

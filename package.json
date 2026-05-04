@@ -31,7 +31,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:all": "vitest run tests/",
-    "test": "firebase emulators:exec --only database,auth --project=the-open-dissent-prod \"pnpm test:vitest\"",
+    "test": "firebase emulators:exec --only database,auth --project=the-open-dissent-prod \"pnpm test:all\"",
     "test:rules": "firebase emulators:exec --only database,auth --project=the-open-dissent-prod \"vitest run tests/database.rules.test.ts\"",
     "test:integration": "firebase emulators:exec --only database,auth --project=the-open-dissent-prod \"vitest run tests/integration.test.ts\"",
     "functions:watch": "npm run --prefix functions build:watch",

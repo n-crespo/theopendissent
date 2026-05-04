@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "../hooks/useNotifications";
 import { NotificationItem } from "../components/notifications/NotificationItem";
+import { Notification } from "../lib/notificationStore";
 import { motion } from "framer-motion";
 import { SEO } from "../components/ui/Seo";
 
@@ -41,8 +42,8 @@ export const Notifications = ({ showHeader }: NotificationsProps) => {
     setIsSelecting(false);
   };
 
-  const handleNotifClick = (notification: any) => {
-    const { id, type, latestReplyId, isRead } = notification;
+  const handleNotifClick = (notification: Notification) => {
+    const { id, type, latestReplyId, isRead, parentPostId } = notification;
 
     if (isSelecting) {
       toggleSelect(id);
@@ -52,11 +53,17 @@ export const Notifications = ({ showHeader }: NotificationsProps) => {
     if (!isRead) markAsRead(id);
 
     if (type === "reply") {
-      // build path using the reply ID if it exists
-      const path = latestReplyId
-        ? `/post/${id}?reply=${latestReplyId}`
-        : `/post/${id}`;
-      navigate(path);
+      if (parentPostId) {
+        // its a subreply notification
+        // id = parentReplyId, latestReplyId = subReplyId
+        navigate(`/post/${parentPostId}?reply=${id}&subreply=${latestReplyId}`);
+      } else {
+        // its a top-level reply notification
+        const path = latestReplyId
+          ? `/post/${id}?reply=${latestReplyId}`
+          : `/post/${id}`;
+        navigate(path);
+      }
     }
   };
 

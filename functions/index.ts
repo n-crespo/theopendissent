@@ -445,7 +445,7 @@ export const onReplyCreatedNotification = onValueCreated(
 export const onSubReplyCreatedNotification = onValueCreated(
   "/subreplies/{parentPostId}/{parentReplyId}/{subReplyId}",
   async (event) => {
-    const { parentReplyId, subReplyId } = event.params;
+    const { parentPostId, parentReplyId, subReplyId } = event.params;
     const db = admin.database();
 
     try {
@@ -473,6 +473,7 @@ export const onSubReplyCreatedNotification = onValueCreated(
           ...base,
           count: base.count + 1,
           latestReplyId: subReplyId,
+          parentPostId,
           isRead: false,
           updatedAt: now,
         };
