@@ -85,7 +85,7 @@ export const FeedItem = memo(
     const isLong = item.postContent.length > CONTENT_CHAR_LIMIT;
     const displayContent =
       !isExpanded && isLong
-        ? item.postContent.slice(0, CONTENT_CHAR_LIMIT) + "..."
+        ? item.postContent.slice(0, CONTENT_CHAR_LIMIT).trimEnd() + "..."
         : item.postContent;
 
     const toggleExpansion = (e: React.MouseEvent) => {
