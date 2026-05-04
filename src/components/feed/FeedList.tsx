@@ -65,7 +65,7 @@ export const FeedList = ({
         <AnimatePresence mode="popLayout">
           {loading && showLoadingUI && posts.length === 0 && (
             <motion.div
-              key="loading-skeletons"
+              key="skeletons"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -82,7 +82,7 @@ export const FeedList = ({
               <motion.div
                 layout
                 key={`highlight-${highlightedPost.id}`}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
