@@ -123,10 +123,8 @@ describe("Account Deletion Logic (wipeUserData)", () => {
     });
 
     await testEnv.withSecurityRulesDisabled(async (context) => {
-      const mockAdminDb = context.database(
-        `http://127.0.0.1:9000?ns=${DB_NAME}`,
-      ) as any;
-      await wipeUserData(uid, mockAdminDb);
+      const mockAdminDb = context.database(`http://127.0.0.1:9000?ns=${DB_NAME}`) as any;
+      await wipeUserData(uid, mockAdminDb, false);
     });
 
     await testEnv.withSecurityRulesDisabled(async (context) => {
