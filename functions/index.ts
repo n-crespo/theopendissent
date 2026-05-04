@@ -93,7 +93,8 @@ const deleteRepliesInBatches = async (postId: string) => {
 
 /*
  * Shared helper to synchronize a parent's replyCount.
- * Safely guards against ghost-node creation during cascading deletes.
+ * Safely guards against ghost-node creation during cascading deletes
+ * by running the transaction on the parent node and aborting if it doesn't exist.
  */
 const syncReplyCount = async (
   parentRef: admin.database.Reference,
@@ -106,15 +107,16 @@ const syncReplyCount = async (
   const increment = created ? 1 : -1;
 
   try {
-    // on delete: guard against ghost-node creation when the parent
-    // was already removed (e.g. cascade delete)
-    if (deleted) {
-      const parentSnap = await parentRef.once("value");
-      if (!parentSnap.exists()) return null;
-    }
+    return parentRef.transaction((parent) => {
+      // Abort transaction if the parent node doesn't exist.
+      // This prevents creating ghost nodes (like { replyCount: 0 }) 
+      // when the parent is simultaneously being deleted in a cascade.
+      if (parent === null) {
+        return undefined;
+      }
 
-    return parentRef.child("replyCount").transaction((current) => {
-      return Math.max(0, (current || 0) + increment);
+      parent.replyCount = Math.max(0, (parent.replyCount || 0) + increment);
+      return parent;
     });
   } catch (error) {
     console.error(`counter sync failed for parent ${parentIdLog}:`, error);
