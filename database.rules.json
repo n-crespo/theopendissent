@@ -3,6 +3,13 @@
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
+        "deletionSettings": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.hasChildren(['deleteContent'])",
+          "deleteContent": {
+            ".validate": "newData.isBoolean()"
+          }
+        },
         "notifications": {
           ".indexOn": [
             "updatedAt"
