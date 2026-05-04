@@ -109,7 +109,7 @@ const syncReplyCount = async (
   try {
     return parentRef.transaction((parent) => {
       // Abort transaction if the parent node doesn't exist.
-      // This prevents creating ghost nodes (like { replyCount: 0 }) 
+      // This prevents creating ghost nodes (like { replyCount: 0 })
       // when the parent is simultaneously being deleted in a cascade.
       if (parent === null) {
         return undefined;
@@ -486,7 +486,10 @@ export const onSubReplyCreatedNotification = onValueCreated(
   },
 );
 
-export const wipeUserData = async (uid: string, db: admin.database.Database) => {
+export const wipeUserData = async (
+  uid: string,
+  db: admin.database.Database,
+) => {
   const userSnap = await db.ref(`users/${uid}`).once("value");
   const userData = userSnap.val();
 
@@ -495,43 +498,93 @@ export const wipeUserData = async (uid: string, db: admin.database.Database) => 
     return;
   }
 
-  const updates: Record<string, null> = {};
+  // Read the deletion preference. Default to true (wipe) for safety.
+  const deleteContent = userData.deletionSettings?.deleteContent ?? true;
 
-  // Wipe the user's profile, indexes, and notifications
-  updates[`users/${uid}`] = null;
+  const updates: Record<string, any> = {};
 
-  // Queue top-level posts for deletion
-  if (userData.posts) {
-    Object.keys(userData.posts).forEach((postId) => {
-      updates[`posts/${postId}`] = null;
-    });
-  }
+  if (deleteContent) {
+    // Wipe the user's profile, indexes, and notifications
+    updates[`users/${uid}`] = null;
 
-  // Queue replies for deletion
-  if (userData.replies) {
-    Object.entries(userData.replies).forEach(([postId, replies]) => {
-      Object.keys(replies as object).forEach((replyId) => {
-        updates[`replies/${postId}/${replyId}`] = null;
+    // Queue top-level posts for deletion
+    if (userData.posts) {
+      Object.keys(userData.posts).forEach((postId) => {
+        updates[`posts/${postId}`] = null;
       });
-    });
-  }
+    }
 
-  // Queue sub-replies for deletion
-  if (userData.subreplies) {
-    Object.entries(userData.subreplies).forEach(([postId, replyGroup]) => {
-      Object.entries(replyGroup as object).forEach(([replyId, subReplies]) => {
-        Object.keys(subReplies as object).forEach((subReplyId) => {
-          updates[`subreplies/${postId}/${replyId}/${subReplyId}`] = null;
+    // Queue replies for deletion
+    if (userData.replies) {
+      Object.entries(userData.replies).forEach(([postId, replies]) => {
+        Object.keys(replies as object).forEach((replyId) => {
+          updates[`replies/${postId}/${replyId}`] = null;
         });
       });
-    });
+    }
+
+    // Queue sub-replies for deletion
+    if (userData.subreplies) {
+      Object.entries(userData.subreplies).forEach(([postId, replyGroup]) => {
+        Object.entries(replyGroup as object).forEach(
+          ([replyId, subReplies]) => {
+            Object.keys(subReplies as object).forEach((subReplyId) => {
+              updates[`subreplies/${postId}/${replyId}/${subReplyId}`] = null;
+            });
+          },
+        );
+      });
+    }
+  } else {
+    console.log(`Anonymizing content for user ${uid}...`);
+
+    // Scub PII from the user profile but keep the node and indexes intact
+    updates[`users/${uid}/email`] = null;
+    updates[`users/${uid}/displayName`] = "[Deleted User]";
+    updates[`users/${uid}/deletionSettings`] = null;
+
+    // Anonymize all posts
+    if (userData.posts) {
+      Object.keys(userData.posts).forEach((postId) => {
+        updates[`posts/${postId}/authorDisplay`] = "[Deleted User]";
+      });
+    }
+
+    // Anonymize all replies
+    if (userData.replies) {
+      Object.entries(userData.replies).forEach(([postId, replies]) => {
+        Object.keys(replies as object).forEach((replyId) => {
+          updates[`replies/${postId}/${replyId}/authorDisplay`] =
+            "[Deleted User]";
+        });
+      });
+    }
+
+    // Anonymize all sub-replies
+    if (userData.subreplies) {
+      Object.entries(userData.subreplies).forEach(([postId, replyGroup]) => {
+        Object.entries(replyGroup as object).forEach(
+          ([replyId, subReplies]) => {
+            Object.keys(subReplies as object).forEach((subReplyId) => {
+              updates[
+                `subreplies/${postId}/${replyId}/${subReplyId}/authorDisplay`
+              ] = "[Deleted User]";
+            });
+          },
+        );
+      });
+    }
   }
 
-  const keysToDelete = Object.keys(updates);
-  if (keysToDelete.length > 0) {
-    console.log(`wiping ${keysToDelete.length} paths for user ${uid}`);
+  const keysToUpdate = Object.keys(updates);
+  if (keysToUpdate.length > 0) {
+    console.log(
+      `${deleteContent ? "wiping" : "anonymizing"} ${keysToUpdate.length} paths for user ${uid}`,
+    );
     await db.ref().update(updates);
-    console.log(`successfully wiped data for user ${uid}`);
+    console.log(
+      `successfully ${deleteContent ? "wiped" : "anonymized"} data for user ${uid}`,
+    );
   }
 };
 
@@ -539,7 +592,7 @@ export const wipeUserData = async (uid: string, db: admin.database.Database) => 
  * Triggers when a user is deleted from Firebase Auth.
  * Reads the user's data indexes and orchestrates the deletion of all content
  * they've authored across the platform.
- * 
+ *
  * Note: Wiping these nodes (posts/X, replies/Y) natively triggers the
  * onPostDeletedCleanup and onReplyDeletedCleanup functions to handle
  * the deep cascade (authorLookup, nested children, etc).
