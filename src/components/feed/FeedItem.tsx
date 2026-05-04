@@ -214,7 +214,7 @@ export const FeedItem = memo(
                   <i
                     className={`bi ${isExpanded ? "bi-arrow-up" : "bi-arrow-down"} text-base leading-none`}
                   />
-                  <span>{isExpanded ? "Read less" : "Read more"}</span>
+                  <span>{isExpanded ? "Show less" : "Read more"}</span>
                 </button>
               )}
             </div>
