@@ -1,5 +1,5 @@
 /**
- * One-time migration script for the authorLookup table.
+ * Single use migration script for the authorLookup table. (used 05/03/2026)
  *
  * What it does:
  *   1. Reads all posts/, replies/, and subreplies/ nodes.
@@ -19,7 +19,7 @@
  *   node scripts/migrate-author-lookup.cjs --commit      # write to DB
  *
  * Prerequisites:
- *   - Place your service-account.json in the project root (or scripts/ dir).
+ *   - Place service-account.json in the project root (or scripts/ dir).
  *   - npm install firebase-admin (or use the one from functions/).
  */
 
@@ -46,7 +46,6 @@ try {
   }
 }
 
-// UPDATE THIS to match your production database URL
 const DATABASE_URL =
   "https://the-open-dissent-prod-default-rtdb.firebaseio.com";
 
