@@ -27,8 +27,7 @@ export const DeleteAccountModal = ({ onClose }: Props) => {
 
     try {
       await deleteUserAccount(deleteContent);
-      onClose();
-      // App.tsx auth observer will handle redirecting the user as their session ends
+      window.location.href = "/"; // Force a full page refresh to clear all local state
     } catch (err: any) {
       console.error("Account deletion error:", err);
       setError(
