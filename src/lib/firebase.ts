@@ -13,6 +13,7 @@ import {
   orderByChild,
   limitToLast,
   limitToFirst,
+  endAt,
 } from "firebase/database";
 import {
   onAuthStateChanged,
@@ -336,12 +337,14 @@ export const subscribeToSubRepliesWithGap = (
  */
 export const subscribeToFeed = (
   limitCount: number,
+  endTime: number,
   callback: (posts: Post[]) => void,
 ) => {
   const postsRef = ref(db, "posts");
   const postsQuery = query(
     postsRef,
     orderByChild("timestamp"),
+    endAt(endTime),
     limitToLast(limitCount),
   );
 
