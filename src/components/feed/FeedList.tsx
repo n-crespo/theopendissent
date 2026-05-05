@@ -61,7 +61,7 @@ export const FeedList = ({
         <motion.div
           key={sortType}
           className="flex flex-col gap-3 w-full"
-          initial={{ opacity: 0, y: 10 }}
+          initial={skipAnimationRef.current ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
