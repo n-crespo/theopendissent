@@ -11,7 +11,7 @@ import { useOutletContext } from "react-router-dom";
  */
 export const FeedContainer = () => {
   const { sortType } = useFeedSort();
-  const { posts, loading, loadMore, currentLimit } = usePosts(20, sortType);
+  const { posts, loading, loadMore, hasMore } = usePosts(sortType);
   const [highlightedPost, setHighlightedPost] = useState<Post | null>(null);
   const { activeTarget, setActiveTarget }: any = useOutletContext();
 
@@ -84,7 +84,6 @@ export const FeedContainer = () => {
     return posts.filter((p) => p.id !== highlightedPost.id);
   }, [posts, highlightedPost]);
 
-  const hasMore = posts.length >= currentLimit;
 
   return (
     <FeedList
