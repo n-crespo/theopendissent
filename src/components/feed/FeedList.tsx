@@ -57,14 +57,14 @@ export const FeedList = ({
         When sort changes, the whole feed slides out then the new batch slides in —
         matching the Profile page's tab-switching transition exactly.
       */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         <motion.div
           key={sortType}
           className="flex flex-col gap-3 w-full"
-          initial={skipAnimationRef.current ? false : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
+          initial={skipAnimationRef.current ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0.9 }}
+          transition={{ duration: 0.05, ease: "easeInOut" }}
         >
           {showSkeletons && (
             <div className="flex flex-col gap-3">
@@ -101,7 +101,9 @@ export const FeedList = ({
                  * Re-renders never re-trigger it, so this is safe to always set.
                  * skipAnimationRef is only true on the first render after a POP navigation.
                  */
-                initial={skipAnimationRef.current ? false : { opacity: 0, y: 16 }}
+                initial={
+                  skipAnimationRef.current ? false : { opacity: 0, y: 16 }
+                }
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.28, ease: "easeOut" }}
