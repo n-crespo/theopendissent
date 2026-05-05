@@ -2,7 +2,6 @@ import { createContext, useContext, useState, ReactNode } from "react";
 
 type ModalType =
   | "signin"
-  | "about" // renamed from help
   | "installPwa"
   | "signOut"
   | "deleteAccount"
@@ -11,6 +10,7 @@ type ModalType =
   | "listen"
   | "joinTeam"
   | "followUs"
+  | "info"
   | null;
 
 interface ModalInstance {

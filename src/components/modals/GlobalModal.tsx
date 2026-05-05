@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { JoinTeamModal } from "./JoinTeamModal";
 import { FollowUsModal } from "./FollowUsModal";
 import { DeleteAccountModal } from "./DeleteAccountModal";
+import { InfoModal } from "./InfoModal";
 
 /**
  * Manages the visibility and content of the application's central modal system.
@@ -74,13 +75,13 @@ export const GlobalModal = () => {
 
               {/* Content Area */}
               {/* 'flex-1' and 'h-full' so the internal scrollbar area fills the fixed height */}
-              <div
-                className="custom-scrollbar overflow-y-auto p-[clamp(1rem,3vw,1.25rem)] pt-0 text-left"
-              >
+              <div className="custom-scrollbar overflow-y-auto p-[clamp(1rem,3vw,1.25rem)] pt-0 text-left">
                 {modal.type === "signin" && <SignInModal />}
                 {modal.type === "installPwa" && <InstallPwaModal />}
                 {modal.type === "signOut" && <SignOutModal />}
-                {modal.type === "deleteAccount" && <DeleteAccountModal onClose={closeModal} />}
+                {modal.type === "deleteAccount" && (
+                  <DeleteAccountModal onClose={closeModal} />
+                )}
                 {modal.type === "deleteConfirm" && (
                   <ConfirmDeleteModal
                     itemName={modal.payload?.name || "this item"}
@@ -102,6 +103,7 @@ export const GlobalModal = () => {
                 {modal.type === "listen" && <ListenModal />}
                 {modal.type === "joinTeam" && <JoinTeamModal />}
                 {modal.type === "followUs" && <FollowUsModal />}
+                {modal.type === "info" && <InfoModal />}
               </div>
             </motion.div>
           </motion.div>

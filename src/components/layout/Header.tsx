@@ -68,9 +68,9 @@ export const Header = () => {
           ) : (
             <button
               className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-slate-500 transition-all active:scale-95"
-              onClick={() => openModal("signin")}
+              onClick={() => openModal("info")}
             >
-              <i className="bi bi-box-arrow-in-left text-2xl"></i>
+              <i className="bi bi-info-circle text-2xl"></i>
             </button>
           )}
         </div>
