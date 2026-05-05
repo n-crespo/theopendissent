@@ -7,29 +7,16 @@ import { SortOption } from "../context/FeedSortContext";
 export const INITIAL_CHUNK = 3; // N: posts loaded on first page load
 export const MORE_CHUNK = 2;    // M: posts added per "Load more" click
 
-// ─── Module-level session state ───────────────────────────────────────────────
-// These survive component unmount/remount (e.g., navigating to PostDetails and back).
-// They are reset to defaults on a full page reload.
-
-/** Frozen at first module import — all Firebase queries use endAt(this). */
-const sessionStartTime = Date.now();
-
+// ─── Module-level singletons ─────────────────────────────────────────────────
 const weightMap = new Map<string, number>();
 let pinnedPosts: Post[] = [];
 const pinListeners = new Set<() => void>();
 
-// Feed persistence cache — keeps the feed state across navigations
-let cache: {
-  posts: Post[];
-  stableOrder: string[];
-  firebaseMap: Map<string, Post>;
-  limit: number;
-} = {
-  posts: [],
-  stableOrder: [],
-  firebaseMap: new Map(),
-  limit: INITIAL_CHUNK,
-};
+/**
+ * Frozen at module load time. All Firebase queries use endAt(sessionStartTime)
+ * so the feed window never shifts forward while the user is reading.
+ */
+const sessionStartTime = Date.now();
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -59,27 +46,34 @@ export const clearPinnedPosts = (): void => {
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
+/**
+ * This hook is called from Layout (App.tsx) which is ALWAYS mounted.
+ * It therefore never loses state during route navigation.
+ */
 export const usePosts = (sortType: SortOption) => {
-  // Initialize from cache — restores feed state when navigating back
-  const [currentLimit, setCurrentLimit] = useState(cache.limit);
-  const [posts, setPosts] = useState<Post[]>(cache.posts);
-  const [loading, setLoading] = useState(cache.posts.length === 0);
+  const [currentLimit, setCurrentLimit] = useState(INITIAL_CHUNK);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
   const [pinTrigger, setPinTrigger] = useState(0);
 
   /**
-   * resetKey is incremented when sortType changes.
-   * This forces the subscription effect to re-run even if currentLimit
-   * didn't change (e.g., toggling sort while still at the initial chunk size).
+   * resetKey increments on sort change, forcing the subscription effect to
+   * re-run even when currentLimit hasn't changed value.
    */
   const [resetKey, setResetKey] = useState(0);
 
-  // Restore refs from module-level cache on mount
-  const stableOrderRef = useRef<string[]>(cache.stableOrder);
-  const firebaseMapRef = useRef<Map<string, Post>>(cache.firebaseMap);
+  /**
+   * Ordered list of post IDs that have been positioned in the feed.
+   * Never reshuffled — this is the single source of truth for display order.
+   */
+  const stableOrderRef = useRef<string[]>([]);
+
+  /** Latest snapshot from Firebase, keyed by post ID. */
+  const firebaseMapRef = useRef<Map<string, Post>>(new Map());
 
   /**
-   * Guards the sortType effect from firing on initial mount.
-   * Without this, mounting after a navigation would immediately wipe the cache.
+   * Prevents the sortType effect from wiping state on initial mount.
+   * On initial mount we just mark as mounted; subsequent changes trigger reset.
    */
   const isMountedRef = useRef(false);
 
@@ -90,24 +84,20 @@ export const usePosts = (sortType: SortOption) => {
     return () => { pinListeners.delete(listener); };
   }, []);
 
-  // ── Sort change: wipe state and restart ───────────────────────────────────
+  // ── Sort change: wipe and restart ─────────────────────────────────────────
   useEffect(() => {
     if (!isMountedRef.current) {
-      // Skip on initial mount — we're restoring from cache, not changing sort
       isMountedRef.current = true;
       return;
     }
-    // User explicitly changed the sort — full reset
     stableOrderRef.current = [];
     firebaseMapRef.current = new Map();
-    cache = { posts: [], stableOrder: [], firebaseMap: new Map(), limit: INITIAL_CHUNK };
     setPosts([]);
     setCurrentLimit(INITIAL_CHUNK);
     setResetKey((k) => k + 1);
   }, [sortType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Main Firebase subscription ────────────────────────────────────────────
-  // Re-runs when limit increases (load more) OR resetKey changes (sort toggle).
   useEffect(() => {
     setLoading(true);
 
@@ -119,15 +109,15 @@ export const usePosts = (sortType: SortOption) => {
         postsArray.forEach((p: Post) => newMap.set(p.id, p));
         firebaseMapRef.current = newMap;
 
+        // Find posts not yet assigned a position
         const existingIds = new Set(stableOrderRef.current);
         const newPosts = postsArray.filter((p: Post) => !existingIds.has(p.id));
 
         if (newPosts.length > 0) {
-          // All unseen posts are strictly older (endAt freezes the top),
-          // so they are always appended to the bottom.
+          // endAt(sessionStartTime) guarantees all unseen posts are strictly
+          // older than everything already displayed → always append to bottom.
           const batch =
             sortType === "random" ? shuffleChunk(newPosts) : newPosts;
-
           stableOrderRef.current = [
             ...stableOrderRef.current,
             ...batch.map((p: Post) => p.id),
@@ -147,23 +137,13 @@ export const usePosts = (sortType: SortOption) => {
     rebuild();
   }, [pinTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ─── Helpers ────────────────────────────────────────────────────────────────
+  // ─── Helpers ─────────────────────────────────────────────────────────────
 
   const rebuild = () => {
     const orderedPosts = stableOrderRef.current
       .map((id) => firebaseMapRef.current.get(id))
       .filter((p): p is Post => p !== undefined);
-    const finalPosts = [...pinnedPosts, ...orderedPosts];
-
-    // Sync module-level cache so the next mount can restore from here
-    cache = {
-      posts: finalPosts,
-      stableOrder: stableOrderRef.current,
-      firebaseMap: firebaseMapRef.current,
-      limit: currentLimit,
-    };
-
-    setPosts(finalPosts);
+    setPosts([...pinnedPosts, ...orderedPosts]);
   };
 
   const loadMore = () => {

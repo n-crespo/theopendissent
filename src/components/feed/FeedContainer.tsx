@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { usePosts, clearPinnedPosts } from "../../hooks/usePosts";
+import { clearPinnedPosts } from "../../hooks/usePosts";
 import { useFeedSort } from "../../context/FeedSortContext";
 import { getPostById } from "../../lib/firebase";
 import { Post } from "../../types";
@@ -8,12 +8,16 @@ import { useOutletContext } from "react-router-dom";
 
 /**
  * Smart container: Orchestrates data fetching, deep-linking, and sorting logic.
+ *
+ * NOTE: usePosts is called in Layout (App.tsx), not here, so the feed state
+ * survives navigation between routes. feedState is passed down via outlet context.
  */
 export const FeedContainer = () => {
   const { sortType } = useFeedSort();
-  const { posts, loading, loadMore, hasMore } = usePosts(sortType);
+  const { activeTarget, setActiveTarget, feedState }: any = useOutletContext();
+  const { posts, loading, loadMore, hasMore } = feedState;
+
   const [highlightedPost, setHighlightedPost] = useState<Post | null>(null);
-  const { activeTarget, setActiveTarget }: any = useOutletContext();
 
   // handle auto-scrolling to newly created top-level posts
   useEffect(() => {
@@ -29,7 +33,7 @@ export const FeedContainer = () => {
     }
   }, [activeTarget, setActiveTarget]);
 
-  // clear pinned posts when unmounting
+  // clear pinned posts when the feed unmounts (navigating away from home)
   useEffect(() => {
     return () => clearPinnedPosts();
   }, []);
@@ -71,7 +75,7 @@ export const FeedContainer = () => {
     };
   }, []);
 
-  // memoize the load more callback to prevent unnecessary observer re-runs
+  // memoize the load more callback to prevent unnecessary re-renders
   const handleLoadMore = useCallback(() => {
     if (!loading) {
       loadMore();
@@ -81,9 +85,8 @@ export const FeedContainer = () => {
   // prevent the highlighted post from appearing twice in the list
   const filteredPosts = useMemo(() => {
     if (!highlightedPost) return posts;
-    return posts.filter((p) => p.id !== highlightedPost.id);
+    return posts.filter((p: Post) => p.id !== highlightedPost.id);
   }, [posts, highlightedPost]);
-
 
   return (
     <FeedList
