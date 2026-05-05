@@ -95,6 +95,7 @@ export const FeedContainer = () => {
       loading={loading}
       hasMore={hasMore}
       onLoadMore={handleLoadMore}
+      sortType={sortType}
     />
   );
 };

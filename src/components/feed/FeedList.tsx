@@ -5,6 +5,7 @@ import { FeedItem } from "./FeedItem";
 import { FeedItemSkeleton } from "../ui/FeedItemSkeleton";
 import { Post } from "../../types";
 import { useNavigationType } from "react-router-dom";
+import { SortOption } from "../../context/FeedSortContext";
 
 interface FeedListProps {
   posts: Post[];
@@ -12,6 +13,7 @@ interface FeedListProps {
   loading: boolean;
   hasMore: boolean;
   onLoadMore: () => void;
+  sortType: SortOption;
 }
 
 export const FeedList = ({
@@ -20,39 +22,33 @@ export const FeedList = ({
   loading,
   hasMore,
   onLoadMore,
+  sortType,
 }: FeedListProps) => {
   const navType = useNavigationType();
-
-  /**
-   * On back-navigation (POP), skip all enter animations to avoid the flicker
-   * caused by motion.div re-animating every post when the component remounts.
-   */
   const isPop = navType === "POP";
 
   /**
-   * Tracks which post IDs are already rendered on screen.
-   *
-   * Initialized with the IDs of the posts that come in on mount.
-   * Because usePosts initializes from a module-level cache, on a back-navigation
-   * these will already be the full set of previously loaded posts — so they
-   * correctly get initial={false} and don't re-animate.
-   *
-   * Any post ID NOT in this set is genuinely new (initial chunk load, load-more,
-   * or a pinned user post) and will animate in.
+   * Tracks which post IDs are already visible on screen.
+   * Initialised with current posts so that back-navigation never re-animates.
+   * Cleared when sortType changes so the new batch all slide in fresh.
    */
   const renderedIdsRef = useRef<Set<string>>(
     new Set(posts.map((p) => p.id)),
   );
 
-  // After every render, mark all current posts as "seen"
+  // Mark all currently rendered posts as "seen" after every render
   useEffect(() => {
     posts.forEach((p) => renderedIdsRef.current.add(p.id));
     if (highlightedPost) renderedIdsRef.current.add(highlightedPost.id);
   });
 
+  // When sort changes, clear the seen-set so all new posts animate in fresh
+  useEffect(() => {
+    renderedIdsRef.current = new Set();
+  }, [sortType]);
+
   const [showLoadingUI, setShowLoadingUI] = useState(false);
 
-  // Only show skeleton after 400ms to avoid a flash on fast loads
   useEffect(() => {
     let id: ReturnType<typeof setTimeout>;
     if (loading) {
@@ -67,25 +63,30 @@ export const FeedList = ({
 
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto gap-3 min-h-100">
-      <div className="flex flex-col gap-3 w-full">
-        <AnimatePresence>
+      {/*
+        Outer AnimatePresence with mode="wait" keys on sortType.
+        When the sort changes, the entire feed fades out cleanly before
+        the new shuffled batch fades in — no posts flying around.
+      */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={sortType}
+          className="flex flex-col gap-3 w-full"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+        >
           {showSkeletons && (
-            <motion.div
-              key="skeletons"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col gap-3"
-            >
+            <div className="flex flex-col gap-3">
               {[1, 2, 3, 4].map((i) => (
                 <FeedItemSkeleton key={i} />
               ))}
-            </motion.div>
+            </div>
           )}
 
           {!showSkeletons && highlightedPost && (
             <motion.div
-              layout
               key={`highlight-${highlightedPost.id}`}
               initial={
                 isPop || renderedIdsRef.current.has(highlightedPost.id)
@@ -107,29 +108,28 @@ export const FeedList = ({
 
           {!showSkeletons &&
             posts.map((post) => {
-              // Animate in only if: not a back-navigation AND genuinely new post
+              // Only animate if this is not a back-navigation AND the post is new
               const shouldAnimate =
                 !isPop && !renderedIdsRef.current.has(post.id);
               return (
                 <motion.div
-                  layout
                   key={post.id}
                   id={`post-${post.id}`}
                   initial={shouldAnimate ? { opacity: 0, y: 16 } : false}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  transition={{ duration: 0.28, ease: "easeOut" }}
                   className="w-full"
                 >
                   <FeedItem item={post} isReply={!!post.parentPostId} />
                 </motion.div>
               );
             })}
-        </AnimatePresence>
-      </div>
+        </motion.div>
+      </AnimatePresence>
 
       {/* Load More / End indicator */}
-      <div className="mt-6 flex flex-col items-center justify-center w-full min-h-24 pb-12">
+      <div className="mt-2 flex flex-col items-center justify-center w-full min-h-24 pb-12">
         {loading && hasMore && posts.length > 0 ? (
           <div className="flex items-center gap-3 text-slate-400 text-sm font-semibold animate-in fade-in duration-500">
             <LoadingDots />
@@ -146,9 +146,9 @@ export const FeedList = ({
         ) : (
           !hasMore &&
           posts.length > 0 && (
-            <div className="flex flex-col items-center gap-2 opacity-40 py-8">
-              <div className="h-px w-12 bg-slate-300 mb-2" />
-              <span className="text-sm font-semibold text-logo-blue opacity-30">
+            <div className="flex flex-col items-center gap-2 py-8">
+              <div className="h-px w-12 bg-slate-300 mb-2 opacity-40" />
+              <span className="text-sm font-semibold text-logo-blue opacity-20">
                 You've reached the end!
               </span>
             </div>
