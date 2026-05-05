@@ -4,7 +4,6 @@ import { LoadingDots } from "../ui/LoadingDots";
 import { FeedItem } from "./FeedItem";
 import { FeedItemSkeleton } from "../ui/FeedItemSkeleton";
 import { Post } from "../../types";
-import { useInfiniteScroll } from "../../hooks/useInfininteScroll";
 import { useNavigationType } from "react-router-dom";
 
 interface FeedListProps {
@@ -35,12 +34,6 @@ export const FeedList = ({
     isInitialMount = false;
   }, []);
 
-  const bottomBoundaryRef = useInfiniteScroll({
-    loading,
-    hasMore,
-    onLoadMore,
-  });
-
   const [showLoadingUI, setShowLoadingUI] = useState(false);
 
   // Skeleton delay logic
@@ -56,25 +49,6 @@ export const FeedList = ({
     }
     return () => clearTimeout(timeoutId);
   }, [loading]);
-
-  // --- Infinite Scroll Logic ---
-  useEffect(() => {
-    const currentRef = bottomBoundaryRef.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && hasMore && !loading) {
-          onLoadMore();
-        }
-      },
-      { threshold: 0.1, rootMargin: "400px" },
-    );
-
-    if (currentRef) observer.observe(currentRef);
-    return () => {
-      if (currentRef) observer.unobserve(currentRef);
-    };
-  }, [hasMore, loading, onLoadMore]);
 
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto gap-3 min-h-100">
@@ -131,16 +105,21 @@ export const FeedList = ({
         </AnimatePresence>
       </div>
 
-      {/* Bottom Boundary / Infinite Scroll Loader */}
-      <div
-        ref={bottomBoundaryRef}
-        className="mt-6 flex flex-col items-center justify-center w-full min-h-24 pb-12"
-      >
+      {/* Manual Load More Button */}
+      <div className="mt-6 flex flex-col items-center justify-center w-full min-h-24 pb-12">
         {loading && hasMore && posts.length > 0 ? (
           <div className="flex items-center gap-3 text-slate-400 text-sm font-semibold animate-in fade-in duration-500">
             <LoadingDots />
             <span className="tracking-tight">Finding more perspectives...</span>
           </div>
+        ) : hasMore && posts.length > 0 ? (
+          <button
+            onClick={onLoadMore}
+            disabled={loading}
+            className="px-6 py-2.5 rounded-full bg-white hover:bg-slate-50 font-semibold text-sm text-slate-400 cursor-pointer transition-all border-slate-200 shadow-sm"
+          >
+            Load more posts
+          </button>
         ) : (
           !hasMore &&
           posts.length > 0 && (
