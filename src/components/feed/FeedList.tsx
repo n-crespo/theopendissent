@@ -25,27 +25,16 @@ export const FeedList = ({
   sortType,
 }: FeedListProps) => {
   const navType = useNavigationType();
-  const isPop = navType === "POP";
 
   /**
-   * Tracks which post IDs are already visible on screen.
-   * Initialised with current posts so that back-navigation never re-animates.
-   * Cleared when sortType changes so the new batch all slide in fresh.
+   * True only on the very first render when we arrived via back-swipe (POP).
+   * We skip all enter animations in that case to avoid the iOS flicker.
+   * Cleared after mount so subsequent load-more posts animate normally.
    */
-  const renderedIdsRef = useRef<Set<string>>(
-    new Set(posts.map((p) => p.id)),
-  );
-
-  // Mark all currently rendered posts as "seen" after every render
+  const skipAnimationRef = useRef(navType === "POP");
   useEffect(() => {
-    posts.forEach((p) => renderedIdsRef.current.add(p.id));
-    if (highlightedPost) renderedIdsRef.current.add(highlightedPost.id);
-  });
-
-  // When sort changes, clear the seen-set so all new posts animate in fresh
-  useEffect(() => {
-    renderedIdsRef.current = new Set();
-  }, [sortType]);
+    skipAnimationRef.current = false;
+  }, []);
 
   const [showLoadingUI, setShowLoadingUI] = useState(false);
 
@@ -64,18 +53,18 @@ export const FeedList = ({
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto gap-3 min-h-100">
       {/*
-        Outer AnimatePresence with mode="wait" keys on sortType.
-        When the sort changes, the entire feed fades out cleanly before
-        the new shuffled batch fades in — no posts flying around.
+        Outer AnimatePresence keys on sortType.
+        When sort changes, the whole feed slides out then the new batch slides in —
+        matching the Profile page's tab-switching transition exactly.
       */}
       <AnimatePresence mode="wait">
         <motion.div
           key={sortType}
           className="flex flex-col gap-3 w-full"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.18, ease: "easeOut" }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
         >
           {showSkeletons && (
             <div className="flex flex-col gap-3">
@@ -88,14 +77,10 @@ export const FeedList = ({
           {!showSkeletons && highlightedPost && (
             <motion.div
               key={`highlight-${highlightedPost.id}`}
-              initial={
-                isPop || renderedIdsRef.current.has(highlightedPost.id)
-                  ? false
-                  : { opacity: 0, y: 12 }
-              }
+              initial={skipAnimationRef.current ? false : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              transition={{ duration: 0.28, ease: "easeOut" }}
               className="w-full"
             >
               <FeedItem
@@ -107,24 +92,24 @@ export const FeedList = ({
           )}
 
           {!showSkeletons &&
-            posts.map((post) => {
-              // Only animate if this is not a back-navigation AND the post is new
-              const shouldAnimate =
-                !isPop && !renderedIdsRef.current.has(post.id);
-              return (
-                <motion.div
-                  key={post.id}
-                  id={`post-${post.id}`}
-                  initial={shouldAnimate ? { opacity: 0, y: 16 } : false}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.28, ease: "easeOut" }}
-                  className="w-full"
-                >
-                  <FeedItem item={post} isReply={!!post.parentPostId} />
-                </motion.div>
-              );
-            })}
+            posts.map((post) => (
+              <motion.div
+                key={post.id}
+                id={`post-${post.id}`}
+                /**
+                 * initial is only evaluated when this element first mounts in the DOM.
+                 * Re-renders never re-trigger it, so this is safe to always set.
+                 * skipAnimationRef is only true on the first render after a POP navigation.
+                 */
+                initial={skipAnimationRef.current ? false : { opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.28, ease: "easeOut" }}
+                className="w-full"
+              >
+                <FeedItem item={post} isReply={!!post.parentPostId} />
+              </motion.div>
+            ))}
         </motion.div>
       </AnimatePresence>
 
