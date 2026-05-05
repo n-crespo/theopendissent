@@ -3,9 +3,8 @@ import { subscribeToFeed } from "../lib/firebase";
 import { Post } from "../types";
 import { SortOption } from "../context/FeedSortContext";
 
-// Chunk sizes — keep small for testing
-export const INITIAL_CHUNK = 3; // N: posts loaded on first page load
-export const MORE_CHUNK = 2;    // M: posts added per "Load more" click
+export const INITIAL_CHUNK = 15; // N: posts loaded on first page load
+export const MORE_CHUNK = 10; // M: posts added per "Load more" click
 
 // ─── Module-level singletons ─────────────────────────────────────────────────
 const weightMap = new Map<string, number>();
@@ -81,7 +80,9 @@ export const usePosts = (sortType: SortOption) => {
   useEffect(() => {
     const listener = () => setPinTrigger((t) => t + 1);
     pinListeners.add(listener);
-    return () => { pinListeners.delete(listener); };
+    return () => {
+      pinListeners.delete(listener);
+    };
   }, []);
 
   // ── Sort change: wipe and restart ─────────────────────────────────────────
