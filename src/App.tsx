@@ -25,6 +25,8 @@ import { Notifications } from "./pages/Notifications";
 import { Settings } from "./pages/Settings";
 import { OwnedPostsProvider } from "./context/OwnedPostsContext";
 import { FeedSortProvider } from "./context/FeedSortContext";
+import { useFeedSort } from "./context/FeedSortContext";
+import { usePosts } from "./hooks/usePosts";
 import { SidebarContent } from "./components/layout/SidebarContent";
 import { Post } from "./types/index";
 import { CreatePostFAB } from "./components/feed/CreatePostFAB";
@@ -35,6 +37,11 @@ function Layout() {
   const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
   const navType = useNavigationType();
+
+  // usePosts lives here so it NEVER unmounts during navigation.
+  // Feed state is passed to child routes through outlet context.
+  const { sortType } = useFeedSort();
+  const feedState = usePosts(sortType);
 
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [activeParent, setActiveParent] = useState<Post | null>(null);
@@ -129,6 +136,7 @@ function Layout() {
                 setActiveReplyTo,
                 activeTarget,
                 setActiveTarget,
+                feedState,
               }}
             />
           </main>

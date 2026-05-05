@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoadingDots } from "../ui/LoadingDots";
 import { FeedItem } from "./FeedItem";
 import { FeedItemSkeleton } from "../ui/FeedItemSkeleton";
 import { Post } from "../../types";
-import { useInfiniteScroll } from "../../hooks/useInfininteScroll";
 import { useNavigationType } from "react-router-dom";
+import { SortOption } from "../../context/FeedSortContext";
 
 interface FeedListProps {
   posts: Post[];
@@ -13,9 +13,8 @@ interface FeedListProps {
   loading: boolean;
   hasMore: boolean;
   onLoadMore: () => void;
+  sortType: SortOption;
 }
-
-let isInitialMount = true;
 
 export const FeedList = ({
   posts,
@@ -23,130 +22,120 @@ export const FeedList = ({
   loading,
   hasMore,
   onLoadMore,
+  sortType,
 }: FeedListProps) => {
   const navType = useNavigationType();
-  const isPop = navType === "POP";
 
-  // If this is the first time the app is loading, we want the premium fade-in.
-  // If we are navigating back (POP), we skip it to prevent iOS jitter.
-  const shouldAnimateInitial = isInitialMount || !isPop;
-
+  /**
+   * True only on the very first render when we arrived via back-swipe (POP).
+   * We skip all enter animations in that case to avoid the iOS flicker.
+   * Cleared after mount so subsequent load-more posts animate normally.
+   */
+  const skipAnimationRef = useRef(navType === "POP");
   useEffect(() => {
-    isInitialMount = false;
+    skipAnimationRef.current = false;
   }, []);
-
-  const bottomBoundaryRef = useInfiniteScroll({
-    loading,
-    hasMore,
-    onLoadMore,
-  });
 
   const [showLoadingUI, setShowLoadingUI] = useState(false);
 
-  // Skeleton delay logic
   useEffect(() => {
-    let timeoutId: number;
+    let id: ReturnType<typeof setTimeout>;
     if (loading) {
-      timeoutId = setTimeout(
-        () => setShowLoadingUI(true),
-        1000,
-      ) as unknown as number;
+      id = setTimeout(() => setShowLoadingUI(true), 400);
     } else {
       setShowLoadingUI(false);
     }
-    return () => clearTimeout(timeoutId);
+    return () => clearTimeout(id);
   }, [loading]);
 
-  // --- Infinite Scroll Logic ---
-  useEffect(() => {
-    const currentRef = bottomBoundaryRef.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && hasMore && !loading) {
-          onLoadMore();
-        }
-      },
-      { threshold: 0.1, rootMargin: "400px" },
-    );
-
-    if (currentRef) observer.observe(currentRef);
-    return () => {
-      if (currentRef) observer.unobserve(currentRef);
-    };
-  }, [hasMore, loading, onLoadMore]);
+  const showSkeletons = loading && showLoadingUI && posts.length === 0;
 
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto gap-3 min-h-100">
-      <div className="flex flex-col gap-3 w-full">
-        <AnimatePresence initial={shouldAnimateInitial}>
-          {loading && showLoadingUI && posts.length === 0 && (
-            <motion.div
-              key="skeletons"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col gap-3"
-            >
+      {/*
+        Outer AnimatePresence keys on sortType.
+        When sort changes, the whole feed slides out then the new batch slides in —
+        matching the Profile page's tab-switching transition exactly.
+      */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={sortType}
+          className="flex flex-col gap-3 w-full"
+          initial={skipAnimationRef.current ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0.9 }}
+          transition={{ duration: 0.05, ease: "easeInOut" }}
+        >
+          {showSkeletons && (
+            <div className="flex flex-col gap-3">
               {[1, 2, 3, 4].map((i) => (
                 <FeedItemSkeleton key={i} />
               ))}
+            </div>
+          )}
+
+          {!showSkeletons && highlightedPost && (
+            <motion.div
+              key={`highlight-${highlightedPost.id}`}
+              initial={skipAnimationRef.current ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.28, ease: "easeOut" }}
+              className="w-full"
+            >
+              <FeedItem
+                item={highlightedPost}
+                highlighted={true}
+                isReply={!!highlightedPost.parentPostId}
+              />
             </motion.div>
           )}
 
-          {!(loading && showLoadingUI && posts.length === 0) &&
-            highlightedPost && (
-              <motion.div
-                layout
-                key={`highlight-${highlightedPost.id}`}
-                initial={shouldAnimateInitial ? { opacity: 0, y: 12 } : false}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="w-full"
-              >
-                <FeedItem
-                  item={highlightedPost}
-                  highlighted={true}
-                  isReply={!!highlightedPost.parentPostId}
-                />
-              </motion.div>
-            )}
-
-          {!(loading && showLoadingUI && posts.length === 0) &&
+          {!showSkeletons &&
             posts.map((post) => (
               <motion.div
-                layout
                 key={post.id}
                 id={`post-${post.id}`}
-                initial={shouldAnimateInitial ? { opacity: 0, y: 12 } : false}
+                /**
+                 * initial is only evaluated when this element first mounts in the DOM.
+                 * Re-renders never re-trigger it, so this is safe to always set.
+                 * skipAnimationRef is only true on the first render after a POP navigation.
+                 */
+                initial={
+                  skipAnimationRef.current ? false : { opacity: 0, y: 16 }
+                }
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                transition={{ duration: 0.28, ease: "easeOut" }}
                 className="w-full"
               >
                 <FeedItem item={post} isReply={!!post.parentPostId} />
               </motion.div>
             ))}
-        </AnimatePresence>
-      </div>
+        </motion.div>
+      </AnimatePresence>
 
-      {/* Bottom Boundary / Infinite Scroll Loader */}
-      <div
-        ref={bottomBoundaryRef}
-        className="mt-6 flex flex-col items-center justify-center w-full min-h-24 pb-12"
-      >
+      {/* Load More / End indicator */}
+      <div className="mt-2 flex flex-col items-center justify-center w-full min-h-24 pb-12">
         {loading && hasMore && posts.length > 0 ? (
           <div className="flex items-center gap-3 text-slate-400 text-sm font-semibold animate-in fade-in duration-500">
             <LoadingDots />
             <span className="tracking-tight">Finding more perspectives...</span>
           </div>
+        ) : hasMore && posts.length > 0 ? (
+          <button
+            onClick={onLoadMore}
+            disabled={loading}
+            className="px-6 py-2.5 rounded-full bg-white hover:bg-slate-50 font-semibold text-sm text-slate-400 cursor-pointer transition-all border border-slate-200 shadow-sm"
+          >
+            Load more posts
+          </button>
         ) : (
           !hasMore &&
           posts.length > 0 && (
-            <div className="flex flex-col items-center gap-2 opacity-40 py-8">
-              <div className="h-px w-12 bg-slate-300 mb-2" />
-              <span className="text-sm font-semibold text-logo-blue opacity-30">
+            <div className="flex flex-col items-center gap-2 py-8">
+              <div className="h-px w-12 bg-slate-300 mb-2 opacity-40" />
+              <span className="text-sm font-semibold text-logo-blue opacity-20">
                 You've reached the end!
               </span>
             </div>

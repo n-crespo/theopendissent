@@ -5,7 +5,7 @@ import { Post } from "../../types";
 import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
 import { useOwnedPosts } from "../../context/OwnedPostsContext";
-import { createPost } from "../../lib/firebase";
+import { createPost, getPostById } from "../../lib/firebase";
 import { pinPostToTop } from "../../hooks/usePosts";
 import { getInterpolatedColor, DEFAULT_STOPS } from "../../color-utils";
 import { Badge } from "../ui/Badge";
@@ -99,7 +99,17 @@ export const ComposeModal = ({
           });
 
           if (newKey) {
-            pinPostToTop(newKey);
+            // Fetch the full post object so we can pin it
+            // We pass the parent IDs so we fetch from the correct path
+            const newPost = await getPostById(
+              newKey,
+              parentPost?.id,
+              parentReply?.id,
+            );
+            if (newPost) {
+              pinPostToTop(newPost);
+            }
+
             // Pass the new ID and Parent ID (if any) to trigger auto-scrolling
             if (onSuccess) {
               onSuccess(newKey, parentReply?.id || parentPost?.id);

@@ -1,59 +1,82 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { subscribeToFeed } from "../lib/firebase";
 import { Post } from "../types";
 import { SortOption } from "../context/FeedSortContext";
 
-// module level cache
-const weightMap = new Map<string, number>();
-const pinnedPostIds = new Set<string>();
-let cachedLimit = 20;
-let cachedPosts: Post[] = [];
-let firebasePostsRef: Post[] = [];
+export const INITIAL_CHUNK = 15; // N: posts loaded on first page load
+export const MORE_CHUNK = 10; // M: posts added per "Load more" click
 
-// listeners to force re-render when a post is manually pinned
+// ─── Module-level singletons ─────────────────────────────────────────────────
+const weightMap = new Map<string, number>();
+let pinnedPosts: Post[] = [];
 const pinListeners = new Set<() => void>();
 
-const getPostWeight = (postId: string) => {
-  if (!weightMap.has(postId)) {
-    weightMap.set(postId, Math.random());
-  }
+/**
+ * Frozen at module load time. All Firebase queries use endAt(sessionStartTime)
+ * so the feed window never shifts forward while the user is reading.
+ */
+const sessionStartTime = Date.now();
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const getPostWeight = (postId: string): number => {
+  if (!weightMap.has(postId)) weightMap.set(postId, Math.random());
   return weightMap.get(postId)!;
 };
 
-/**
- * forces a post to the top by giving it the lowest possible weight.
- * use this for new posts created by the user to provide immediate feedback.
- */
-export const pinPostToTop = (postId: string) => {
-  pinnedPostIds.add(postId);
-  pinListeners.forEach((listener) => listener());
-};
-
-export const clearPinnedPosts = () => {
-  pinnedPostIds.clear();
-};
+const shuffleChunk = (chunk: Post[]): Post[] =>
+  [...chunk].sort((a, b) => getPostWeight(a.id) - getPostWeight(b.id));
 
 /**
- * manages real-time feed subscriptions and integrates sorting logic.
+ * Pins a user-created post to the top of the feed.
+ * The frozen Firebase window excludes posts created after page load,
+ * so we inject the user's own new posts manually here.
  */
-export const usePosts = (initialLimit: number = 20, sortType: SortOption) => {
-  // initialize state with the cache.
-  // ensures the Feed renders full-height immediately on mount.
-  const [posts, setPosts] = useState<Post[]>(() => cachedPosts);
+export const pinPostToTop = (post: Post): void => {
+  if (!pinnedPosts.find((p) => p.id === post.id)) {
+    pinnedPosts = [post, ...pinnedPosts];
+    pinListeners.forEach((l) => l());
+  }
+};
 
-  const [currentLimit, setCurrentLimit] = useState(() =>
-    Math.max(initialLimit, cachedLimit),
-  );
+export const clearPinnedPosts = (): void => {
+  pinnedPosts = [];
+};
 
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
+/**
+ * This hook is called from Layout (App.tsx) which is ALWAYS mounted.
+ * It therefore never loses state during route navigation.
+ */
+export const usePosts = (sortType: SortOption) => {
+  const [currentLimit, setCurrentLimit] = useState(INITIAL_CHUNK);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [pinTrigger, setPinTrigger] = useState(0);
 
-  // Sync limit cache
-  useEffect(() => {
-    cachedLimit = currentLimit;
-  }, [currentLimit]);
+  /**
+   * resetKey increments on sort change, forcing the subscription effect to
+   * re-run even when currentLimit hasn't changed value.
+   */
+  const [resetKey, setResetKey] = useState(0);
 
-  // Listen for manual pins
+  /**
+   * Ordered list of post IDs that have been positioned in the feed.
+   * Never reshuffled — this is the single source of truth for display order.
+   */
+  const stableOrderRef = useRef<string[]>([]);
+
+  /** Latest snapshot from Firebase, keyed by post ID. */
+  const firebaseMapRef = useRef<Map<string, Post>>(new Map());
+
+  /**
+   * Prevents the sortType effect from wiping state on initial mount.
+   * On initial mount we just mark as mounted; subsequent changes trigger reset.
+   */
+  const isMountedRef = useRef(false);
+
+  // ── Pin listeners ─────────────────────────────────────────────────────────
   useEffect(() => {
     const listener = () => setPinTrigger((t) => t + 1);
     pinListeners.add(listener);
@@ -62,47 +85,73 @@ export const usePosts = (initialLimit: number = 20, sortType: SortOption) => {
     };
   }, []);
 
+  // ── Sort change: wipe and restart ─────────────────────────────────────────
   useEffect(() => {
-    // ensure loading state is set when changing sort modes or increasing limits
+    if (!isMountedRef.current) {
+      isMountedRef.current = true;
+      return;
+    }
+    stableOrderRef.current = [];
+    firebaseMapRef.current = new Map();
+    setPosts([]);
+    setCurrentLimit(INITIAL_CHUNK);
+    setResetKey((k) => k + 1);
+  }, [sortType]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Main Firebase subscription ────────────────────────────────────────────
+  useEffect(() => {
     setLoading(true);
 
-    const unsubscribe = subscribeToFeed(currentLimit, (postsArray) => {
-      firebasePostsRef = postsArray;
-      setPinTrigger((t) => t + 1); // trigger resort
-      setLoading(false);
-    });
+    const unsubscribe = subscribeToFeed(
+      currentLimit,
+      sessionStartTime,
+      (postsArray: Post[]) => {
+        const newMap = new Map<string, Post>();
+        postsArray.forEach((p: Post) => newMap.set(p.id, p));
+        firebaseMapRef.current = newMap;
 
-    return () => unsubscribe();
-  }, [currentLimit]);
+        // Find posts not yet assigned a position
+        const existingIds = new Set(stableOrderRef.current);
+        const newPosts = postsArray.filter((p: Post) => !existingIds.has(p.id));
 
-  // Compute sorted posts whenever Firebase updates, sortType changes, or a post is pinned
-  useEffect(() => {
-    if (firebasePostsRef.length === 0) return;
+        if (newPosts.length > 0) {
+          // endAt(sessionStartTime) guarantees all unseen posts are strictly
+          // older than everything already displayed → always append to bottom.
+          const batch =
+            sortType === "random" ? shuffleChunk(newPosts) : newPosts;
+          stableOrderRef.current = [
+            ...stableOrderRef.current,
+            ...batch.map((p: Post) => p.id),
+          ];
+        }
 
-    // split into pinned and regular
-    const pinnedPosts = firebasePostsRef.filter((p) => pinnedPostIds.has(p.id));
-    const regularPosts = firebasePostsRef.filter(
-      (p) => !pinnedPostIds.has(p.id),
+        rebuild();
+        setLoading(false);
+      },
     );
 
-    // apply random sort to regular posts if requested
-    if (sortType === "random") {
-      regularPosts.sort((a, b) => getPostWeight(a.id) - getPostWeight(b.id));
-    }
+    return () => unsubscribe();
+  }, [currentLimit, resetKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // pinned posts always stay exactly at the top
-    const finalPosts = [...pinnedPosts, ...regularPosts];
+  // ── Pin trigger ───────────────────────────────────────────────────────────
+  useEffect(() => {
+    rebuild();
+  }, [pinTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    setPosts(finalPosts);
-    cachedPosts = finalPosts;
-  }, [pinTrigger, sortType]);
+  // ─── Helpers ─────────────────────────────────────────────────────────────
 
-  const loadMore = () => {
-    // Only load more if we aren't currently loading
-    if (!loading) {
-      setCurrentLimit((prev) => prev + 20);
-    }
+  const rebuild = () => {
+    const orderedPosts = stableOrderRef.current
+      .map((id) => firebaseMapRef.current.get(id))
+      .filter((p): p is Post => p !== undefined);
+    setPosts([...pinnedPosts, ...orderedPosts]);
   };
 
-  return { posts, loading, loadMore, currentLimit };
+  const loadMore = () => {
+    if (!loading) setCurrentLimit((prev) => prev + MORE_CHUNK);
+  };
+
+  const hasMore = firebaseMapRef.current.size >= currentLimit;
+
+  return { posts, loading, loadMore, hasMore };
 };
