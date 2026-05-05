@@ -26,7 +26,7 @@ export const InfoModal = () => {
           not) — all are welcome!
         </p>
         <p className="mb-4">
-          Also, keep an eye out for{" "}
+          Keep an eye out for{" "}
           <button
             onClick={handleListenClick}
             className="font-bold text-logo-blue hover:underline underline cursor-pointer"
@@ -50,7 +50,7 @@ export const InfoModal = () => {
           onClick={closeModal}
         >
           Join the Conversation
-          <i className="bi bi-arrow-right group-hover:translate-x-1 transition-transform animate-[bounceHorizontal_1s_infinite]"></i>
+          <i className="bi bi-arrow-right transition-transform animate-[bounceHorizontal_1s_infinite]"></i>
         </button>
       </div>
     </div>
