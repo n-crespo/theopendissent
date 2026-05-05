@@ -72,6 +72,18 @@ function Layout() {
   useDeepLinkHandler();
 
   useEffect(() => {
+    if (user && !loading) {
+      const justLoggedIn = sessionStorage.getItem("justLoggedIn") === "true";
+      if (justLoggedIn) {
+        sessionStorage.removeItem("justLoggedIn");
+        setTimeout(() => {
+          openModal("info");
+        }, 500);
+      }
+    }
+  }, [user, loading, openModal]);
+
+  useEffect(() => {
     const skipPermanent = localStorage.getItem("skipLanding") === "true";
     const skipSession = sessionStorage.getItem("landingDismissed") === "true";
     const isDev = import.meta.env.DEV;
