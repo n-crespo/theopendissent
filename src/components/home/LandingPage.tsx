@@ -237,7 +237,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
 
           <button
             onClick={handleExit}
-            className="w-full sm:flex-1 py-4 text-white hover:brightness-110 transition-all active:scale-95 shadow-lg rounded-2xl bg-linear-to-r from-logo-red via-logo-green to-logo-blue font-bold tracking-wide animate-shimmer bg-[length:200%_auto] flex items-center justify-center gap-2"
+            className="w-full sm:flex-1 py-4 text-white hover:brightness-110 transition-all active:scale-95 shadow-lg rounded-2xl bg-linear-to-r from-logo-red via-logo-green to-logo-blue font-bold tracking-wide animate-shimmer bg-size-[200%_auto] flex items-center justify-center gap-2"
           >
             Join the conversation. <i className="bi bi-arrow-right"></i>
           </button>
