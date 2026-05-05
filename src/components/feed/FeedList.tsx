@@ -57,7 +57,7 @@ export const FeedList = ({
         When sort changes, the whole feed slides out then the new batch slides in —
         matching the Profile page's tab-switching transition exactly.
       */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         <motion.div
           key={sortType}
           className="flex flex-col gap-3 w-full"
