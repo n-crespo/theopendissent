@@ -57,9 +57,19 @@
     }
   }
 
+  @keyframes bounceHorizontal {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(4px);
+    }
+  }
+
   --animate-jiggle: jiggle 0.4s ease-in-out;
   --animate-shimmer: shimmer 4s infinite ease-in-out alternate;
   --animate-bounceJiggle: bounceJiggle 0.5s infinite alternate;
+  --animate-bounceHorizontal: bounceHorizontal 1s infinite ease-in-out;
 }
 
 /* Scrollbar styling for PostPopupModal */

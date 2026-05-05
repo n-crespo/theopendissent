@@ -17,6 +17,7 @@ export const SignInModal = () => {
 
     try {
       await signIn();
+      sessionStorage.setItem("justLoggedIn", "true");
       closeModal();
     } catch (err: any) {
       console.error("Sign in failed:", err);

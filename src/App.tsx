@@ -11,6 +11,7 @@ import {
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
 import { GlobalModal } from "./components/modals/GlobalModal";
+import { UnauthenticatedFooter } from "./components/layout/UnauthenticatedFooter";
 import { useDeepLinkHandler } from "./hooks/useDeepLinkHandler";
 import { useAuth } from "./context/AuthContext";
 import { useModal } from "./context/ModalContext";
@@ -69,6 +70,18 @@ function Layout() {
   );
 
   useDeepLinkHandler();
+
+  useEffect(() => {
+    if (user && !loading) {
+      const justLoggedIn = sessionStorage.getItem("justLoggedIn") === "true";
+      if (justLoggedIn) {
+        sessionStorage.removeItem("justLoggedIn");
+        setTimeout(() => {
+          openModal("info");
+        }, 500);
+      }
+    }
+  }, [user, loading, openModal]);
 
   useEffect(() => {
     const skipPermanent = localStorage.getItem("skipLanding") === "true";
@@ -152,13 +165,15 @@ function Layout() {
             )}
           </aside>
 
-          <div className="fixed inset-0 pointer-events-none z-40 lg:hidden">
-            <div className="mx-auto max-w-7xl h-full relative">
-              <div className="absolute bottom-10 right-8 md:bottom-12 md:right-10 pointer-events-auto">
-                <CreatePostFAB onClick={() => handleOpenCompose(true)} />
+          {user && (
+            <div className="fixed inset-0 pointer-events-none z-40 lg:hidden">
+              <div className="mx-auto max-w-7xl h-full relative">
+                <div className="absolute right-8 md:right-10 bottom-10 md:bottom-12 pointer-events-auto transition-all duration-300 ease-in-out">
+                  <CreatePostFAB onClick={() => handleOpenCompose(true)} />
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         <GlobalModal />
@@ -176,6 +191,7 @@ function Layout() {
         />
         <Footer />
       </div>
+      {!user && !loading && !showLanding && <UnauthenticatedFooter />}
     </div>
   );
 }

@@ -60,8 +60,19 @@ export const SidebarContent = ({
           <div className="my-2 border-t border-slate-200" />
 
           <DrawerItem
-            icon="bi-headphones"
-            label="Listen"
+            icon="bi-info-circle"
+            label="How it works"
+            onClick={() => {
+              if (closeDrawer) closeDrawer();
+              openModal("info");
+            }}
+          />
+
+          <div className="my-2 border-t border-slate-200" />
+
+          <DrawerItem
+            icon="bi-mic"
+            label="Listen In"
             onClick={() => {
               if (closeDrawer) closeDrawer();
               openModal("listen");
@@ -69,7 +80,7 @@ export const SidebarContent = ({
           />
           <DrawerItem
             icon="bi-rocket-takeoff"
-            label="Internships"
+            label="Join the Team"
             onClick={() => {
               if (closeDrawer) closeDrawer();
               openModal("joinTeam");
@@ -77,7 +88,7 @@ export const SidebarContent = ({
           />
           <DrawerItem
             icon="bi-chat-square-dots"
-            label="Feedback"
+            label="Send Feedback"
             onClick={() => {
               if (closeDrawer) closeDrawer();
               window.open("https://forms.gle/EA1DcFzigrmjRqZK8", "_blank");
@@ -89,7 +100,7 @@ export const SidebarContent = ({
           {onCompose && (
             <DrawerItem
               icon="bi-pencil-square"
-              label="Post"
+              label="Post!"
               onClick={onCompose}
             />
           )}
