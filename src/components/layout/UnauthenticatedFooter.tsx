@@ -27,7 +27,7 @@ export const UnauthenticatedFooter = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-logo-offwhite border-t border-slate-200 shadow-2xl transform-gpu">
-      <div className="mx-auto max-w-7xl px-4 py-5 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="mx-auto max-w-7xl px-4 py-7 pb-8 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex flex-col">
           <p className="text-slate-900 text-md font-semibold sm:text-base leading-tight">
             Sign in with your UCLA email to post or reply!
@@ -42,7 +42,7 @@ export const UnauthenticatedFooter = () => {
         <button
           onClick={handleSignIn}
           disabled={isSigningIn}
-          className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-logo-red via-logo-green to-logo-blue animate-shimmer bg-size-[200%_auto] px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#0073e6] disabled:opacity-70 active:scale-95 whitespace-nowrap"
+          className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-logo-red via-logo-green to-logo-blue animate-shimmer bg-size-[200%_auto] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0073e6] disabled:opacity-70 active:scale-95 whitespace-nowrap"
         >
           {isSigningIn ? (
             <LoadingDots className="text-white py-2" />
