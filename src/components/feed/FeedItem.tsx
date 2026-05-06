@@ -245,10 +245,9 @@ export const FeedItem = memo(
               className={`${actionButtonClass} group disabled:opacity-30`}
             >
               <div className="relative flex items-center justify-center">
-                <i className="bi bi-chat text-lg"></i>
-                {!isSubReply && (item.replyCount || 0) > 0 && (
-                  <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-100 transition-all"></span>
-                )}
+                <div className="text-sm font-semibold text-slate-400">
+                  Reply
+                </div>
               </div>
             </button>
           ) : (
@@ -279,7 +278,7 @@ export const FeedItem = memo(
 
           {/* Stance — middle column, reply cards only */}
           {isReply && item.interactionScore !== undefined && (
-            <div className="flex gap-3 items-center justify-center py-3 border-r border-slate-100">
+            <div className="flex gap-3 items-center justify-center py-3 border-x border-slate-100">
               <div className="text-sm font-semibold text-slate-400">
                 Stance:
               </div>
