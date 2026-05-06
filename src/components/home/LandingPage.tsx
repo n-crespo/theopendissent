@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import logoUrl from "../../assets/Flat-Logo.svg";
-import { InfoCard } from "../ui/InfoCard";
 import { useModal } from "../../context/ModalContext";
 
 interface LandingPageProps {
@@ -22,37 +21,8 @@ const fadeIn: Variants = {
   }),
 };
 
-const cardVariants: Variants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? "100%" : "-100%",
-    opacity: 0,
-    scale: 0.98,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    scale: 1,
-    transition: {
-      // bez-curve provides the nonlinear slide without spring overhead
-      x: { duration: 0.45, ease: [0.21, 0.47, 0.32, 0.98] },
-      opacity: { duration: 0.25 },
-      scale: { duration: 0.3, ease: "easeOut" },
-    },
-  },
-  exit: (direction: number) => ({
-    x: direction < 0 ? "100%" : "-100%",
-    opacity: 0,
-    scale: 0.98,
-    transition: {
-      x: { duration: 0.4, ease: [0.21, 0.47, 0.32, 0.98] },
-      opacity: { duration: 0.2 },
-    },
-  }),
-};
-
 export const LandingPage = ({ onContinue }: LandingPageProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [direction, setDirection] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
 
   // prevent background scrolling
@@ -78,47 +48,9 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
     }, 500);
   };
 
-  const paginate = (newDirection: number) => {
-    const newIndex = activeIndex + newDirection;
-    if (newIndex >= 0 && newIndex <= 1) {
-      setDirection(newDirection);
-      setActiveIndex(newIndex);
-    }
+  const toggleCard = () => {
+    setActiveIndex(activeIndex === 0 ? 1 : 0);
   };
-
-  const renderFooter = () => (
-    <>
-      <div className="flex justify-start">
-        <button
-          onClick={() => paginate(-1)}
-          className={`p-2 text-slate-400 hover:text-slate-900 transition-all active:scale-90
-            ${activeIndex === 0 ? "opacity-0 pointer-events-none" : "opacity-100"}`}
-        >
-          <i className="bi bi-arrow-left text-lg"></i>
-        </button>
-      </div>
-
-      <div className="flex justify-center gap-2">
-        {[0, 1].map((idx) => (
-          <div
-            key={idx}
-            className={`w-1.5 h-1.5 rounded-full transition-colors duration-300
-              ${activeIndex === idx ? "bg-slate-900" : "bg-slate-200"}`}
-          />
-        ))}
-      </div>
-
-      <div className="flex justify-end">
-        <button
-          onClick={() => paginate(1)}
-          className={`p-2 text-slate-400 hover:text-slate-900 transition-all active:scale-90
-            ${activeIndex === 1 ? "opacity-0 pointer-events-none" : "opacity-100"}`}
-        >
-          <i className="bi bi-arrow-right text-lg"></i>
-        </button>
-      </div>
-    </>
-  );
 
   return (
     <div
@@ -139,85 +71,133 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
           draggable="false"
         />
         <div className="mx-auto w-max bg-linear-to-r from-logo-red via-logo-green to-logo-blue bg-clip-text text-transparent">
-          <p className="font-bold tracking-widest uppercase text-md">
+          <p className="font-bold tracking-wide uppercase text-md">
             Disagree Better
           </p>
         </div>
       </motion.header>
 
-      <main className="w-full max-w-115 px-4 py-8 md:py-12 flex-1 flex flex-col justify-center">
-        <AnimatePresence initial={false} custom={direction} mode="popLayout">
-          <motion.div
-            key={activeIndex}
-            custom={direction}
-            variants={cardVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            className="w-full"
+      <main className="w-full max-w-115 px-4 py-8 md:py-12 flex-1 flex flex-col items-center justify-center">
+        <div className="w-full max-w-md flex flex-col items-center">
+          {/* Fading Title Area */}
+          <div className="mb-6 text-center h-8 relative w-full flex justify-center">
+            <AnimatePresence mode="wait">
+              <motion.h3
+                key={activeIndex}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="text-xl font-bold text-slate-900 tracking-tight absolute"
+              >
+                {activeIndex === 0
+                  ? "Modern social media is ruining politics."
+                  : "Here's how we're fixing it:"}
+              </motion.h3>
+            </AnimatePresence>
+          </div>
+
+          {/* 3D Flipping Card Container */}
+          <div
+            className="relative w-full min-h-88 cursor-pointer group"
+            style={{ perspective: "1000px" }}
+            onClick={toggleCard}
           >
-            {activeIndex === 0 ? (
-              <InfoCard
-                title="Modern social media is ruining politics."
-                footer={renderFooter()}
+            <motion.div
+              className="w-full h-full absolute inset-0"
+              initial={false}
+              animate={{ rotateY: activeIndex === 1 ? 180 : 0 }}
+              transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
+              style={{ transformStyle: "preserve-3d" }}
+            >
+              {/* Front Card */}
+              <div
+                className="absolute inset-0 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col"
+                style={{
+                  backfaceVisibility: "hidden",
+                  WebkitBackfaceVisibility: "hidden",
+                }}
               >
-                <div className="space-y-5 text-slate-700 leading-relaxed text-center px-4 w-full max-w-md">
-                  <p>
-                    Algorithms are designed to prioritize <b>outrage</b> and{" "}
-                    <b>polarization</b> over nuanced conversation.
-                  </p>
-                  <p>
-                    <b>Ragebait</b> and <b>corporate interests</b> litter our
-                    digital public square.
-                  </p>
-                  <p className="font-bold text-slate-700">
-                    Stop interacting with a system that profits from your anger.
-                  </p>
+                <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-base flex flex-col justify-center items-center">
+                  <div className="space-y-5 text-slate-700 leading-relaxed text-center px-4 w-full">
+                    <p>
+                      Your feed is <em>designed</em> to prioritize outrage, fuel
+                      polarization, and perpetuate echo chambers.
+                    </p>
+                    <p>
+                      Online discussions are littered with bots and corporate
+                      interests.
+                    </p>
+                    <p>
+                      Democracy thrives on open dissent, but these platforms
+                      continue to suppress it.
+                    </p>
+                    <p className="font-bold text-slate-900 pt-1">
+                      You deserve better.
+                    </p>
+                  </div>
                 </div>
-              </InfoCard>
-            ) : (
-              <InfoCard
-                title="Here's how we're fixing it:"
-                footer={renderFooter()}
+                <div className="p-4 border-t border-slate-100 bg-slate-50/20 text-center shrink-0">
+                  <span className="text-sm font-semibold text-logo-blue group-hover:underline">
+                    Tap to see how we're fixing it
+                  </span>
+                </div>
+              </div>
+
+              {/* Back Card */}
+              <div
+                className="absolute inset-0 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col"
+                style={{
+                  backfaceVisibility: "hidden",
+                  WebkitBackfaceVisibility: "hidden",
+                  transform: "rotateY(180deg)",
+                }}
               >
-                {/* <div className="w-full"> */}
-                <ol className="list-decimal list-inside space-y-5 text-left w-fit text-slate-700 max-w-xs sm:max-w-max mx-auto marker:font-bold marker:text-slate-500 px-2">
-                  <li className="leading-snug">
-                    <strong className="text-slate-900">
-                      Real, Human Discussions
-                    </strong>
-                    <p className="text-sm text-slate-500 mt-1 pl-5">
-                      Genuine dialogue &gt; viral soundbites.
-                    </p>
-                  </li>
-                  <li className="leading-snug">
-                    <strong className="text-slate-900">
-                      No Predatory Algorithms
-                    </strong>
-                    <p className="text-sm text-slate-500 mt-1 pl-5">
-                      Posts are randomly shuffled.
-                    </p>
-                  </li>
-                  <li className="leading-snug">
-                    <strong className="text-slate-900">
-                      Zero Engagement Metrics
-                    </strong>
-                    <p className="text-sm text-slate-500 mt-1 pl-5">
-                      Quality &gt; Click Count
-                    </p>
-                  </li>
-                  <li className="leading-snug">
-                    <strong className="text-slate-900">Poster Anonymity</strong>
-                    <p className="text-sm text-slate-500 mt-1 pl-5">
-                      Judge ideas, not individuals.
-                    </p>
-                  </li>
-                </ol>
-                {/* </div> */}
-              </InfoCard>
-            )}
-          </motion.div>
-        </AnimatePresence>
+                <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-[15px] flex flex-col justify-center items-center">
+                  <ol className="list-decimal list-inside space-y-5 text-left w-fit text-slate-700 max-w-xs sm:max-w-max mx-auto marker:font-bold marker:text-slate-500 px-2">
+                    <li className="leading-snug">
+                      <strong className="text-slate-900">
+                        Real, human discussions.
+                      </strong>
+                      <p className="text-sm text-slate-500 mt-1 pl-5">
+                        Genuine dialogue &gt; viral soundbites.
+                      </p>
+                    </li>
+                    <li className="leading-snug">
+                      <strong className="text-slate-900">
+                        No predatory algorithm.
+                      </strong>
+                      <p className="text-sm text-slate-500 mt-1 pl-5">
+                        All posts are valued the same.
+                      </p>
+                    </li>
+                    <li className="leading-snug">
+                      <strong className="text-slate-900">
+                        Zero engagement metrics.
+                      </strong>
+                      <p className="text-sm text-slate-500 mt-1 pl-5">
+                        This isn't a popularity contest.
+                      </p>
+                    </li>
+                    <li className="leading-snug">
+                      <strong className="text-slate-900">
+                        (Optional) Anonymity.
+                      </strong>
+                      <p className="text-sm text-slate-500 mt-1 pl-5">
+                        Judge ideas, not individuals.
+                      </p>
+                    </li>
+                  </ol>
+                </div>
+                <div className="p-4 border-t border-slate-100 bg-slate-50/20 text-center shrink-0">
+                  <span className="text-sm font-semibold text-logo-blue group-hover:underline">
+                    Tap to flip back
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
       </main>
 
       <footer className="w-full max-w-xl pb-12 px-6 shrink-0">
@@ -232,7 +212,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
             onClick={handleListen}
             className="w-full sm:w-auto px-8 py-4 bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-all active:scale-95 shadow-sm rounded-2xl flex items-center justify-center gap-2"
           >
-            <i className="bi bi-headphones"></i> Listen
+            <i className="bi bi-mic-fill"></i> Listen In
           </button>
 
           <button
