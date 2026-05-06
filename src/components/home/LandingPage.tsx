@@ -132,7 +132,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                       Democracy thrives on open dissent, but these platforms
                       continue to suppress it.
                     </p>
-                    <p className="font-bold text-slate-900 pt-1">
+                    <p className="font-bold text-slate-900">
                       You deserve better.
                     </p>
                   </div>
