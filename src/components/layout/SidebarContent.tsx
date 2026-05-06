@@ -3,7 +3,7 @@ import { useModal } from "../../context/ModalContext";
 import { usePwa } from "../../context/PwaContext";
 import { DrawerItem } from "../ui/NavigationDrawer";
 import { SocialLinksRow } from "../home/SocialLinksRow";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export const SidebarContent = ({
   closeDrawer,
@@ -125,12 +125,39 @@ export const SidebarContent = ({
               }}
             />
           )}
+          <div className="my-2 border-t border-slate-200" />
         </div>
       </div>
 
-      {/* sticky footer for social links */}
-      <div className="mt-auto py-6 backdrop-blur-sm">
+      {/* sticky footer for social links and legal */}
+      <div
+        className={`mt-2 backdrop-blur-sm flex flex-col items-center gap-4 ${!user && "mb-20"}`}
+      >
         <SocialLinksRow />
+
+        {/* legal row matching Footer.tsx */}
+        <div className="flex flex-col justify-center items-center gap-x-2 gap-y-1 text-[13px] text-slate-500 px-4">
+          <p>© 2026 The Open Dissent</p>
+          <div className="flex gap-x-2">
+            <Link
+              to="/privacy"
+              onClick={closeDrawer}
+              className="text-slate-500 no-underline hover:text-logo-blue hover:underline"
+            >
+              Privacy
+            </Link>
+
+            <span className="text-slate-200">•</span>
+
+            <Link
+              to="/terms"
+              onClick={closeDrawer}
+              className="text-slate-500 no-underline hover:text-logo-blue hover:underline"
+            >
+              Terms
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
