@@ -54,7 +54,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
 
   return (
     <div
-      className={`fixed inset-0 z-100 bg-logo-offwhite transition-opacity duration-700 overflow-y-auto overscroll-none flex flex-col items-center
+      className={`fixed inset-0 z-100 bg-logo-offwhite transition-opacity duration-700 overflow-hidden flex flex-col items-center justify-between h-[100dvh] w-full
         ${isExiting ? "opacity-0 pointer-events-none" : "opacity-100"}`}
     >
       <motion.header
@@ -62,7 +62,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
         initial="hidden"
         animate="visible"
         variants={fadeIn}
-        className="max-w-xl w-full text-center pt-12 px-6 shrink-0"
+        className="max-w-xl w-full text-center pt-8 px-6 shrink-0"
       >
         <img
           src={logoUrl}
@@ -77,10 +77,10 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
         </div>
       </motion.header>
 
-      <main className="w-full max-w-115 px-4 py-8 md:py-12 flex-1 flex flex-col items-center justify-center">
-        <div className="w-full max-w-md flex flex-col items-center">
+      <main className="w-full max-w-115 px-4 py-4 flex-1 flex flex-col items-center justify-center min-h-0">
+        <div className="w-full h-full max-h-[26rem] max-w-md flex flex-col items-center justify-center">
           {/* Fading Title Area */}
-          <div className="mb-6 text-center h-8 relative w-full flex justify-center">
+          <div className="mb-4 text-center h-8 relative w-full flex justify-center shrink-0">
             <AnimatePresence mode="wait">
               <motion.h3
                 key={activeIndex}
@@ -99,7 +99,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
 
           {/* 3D Flipping Card Container */}
           <div
-            className="relative w-full min-h-88 cursor-pointer group"
+            className="relative w-full h-full flex-1 cursor-pointer group min-h-[18rem]"
             style={{ perspective: "1000px" }}
             onClick={toggleCard}
           >
@@ -118,7 +118,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                   WebkitBackfaceVisibility: "hidden",
                 }}
               >
-                <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-base flex flex-col justify-center items-center">
+                <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-base flex flex-col justify-center items-center overflow-y-auto custom-scrollbar">
                   <div className="space-y-5 text-slate-700 leading-relaxed text-center px-4 w-full">
                     <p>
                       Your feed is <em>designed</em> to prioritize outrage, fuel
@@ -137,7 +137,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                     </p>
                   </div>
                 </div>
-                <div className="p-4 border-t border-slate-100 bg-slate-50/20 text-center shrink-0">
+                <div className="p-3 border-t border-slate-100 bg-slate-50/20 text-center shrink-0">
                   <span className="text-sm font-semibold text-logo-blue group-hover:underline">
                     Tap to see how we're fixing it
                   </span>
@@ -153,7 +153,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                   transform: "rotateY(180deg)",
                 }}
               >
-                <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-[15px] flex flex-col justify-center items-center">
+                <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-[15px] flex flex-col justify-center items-center overflow-y-auto custom-scrollbar">
                   <ol className="list-decimal list-inside space-y-5 text-left w-fit text-slate-700 max-w-xs sm:max-w-max mx-auto marker:font-bold marker:text-slate-500 px-2">
                     <li className="leading-snug">
                       <strong className="text-slate-900">
@@ -189,7 +189,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                     </li>
                   </ol>
                 </div>
-                <div className="p-4 border-t border-slate-100 bg-slate-50/20 text-center shrink-0">
+                <div className="p-3 border-t border-slate-100 bg-slate-50/20 text-center shrink-0">
                   <span className="text-sm font-semibold text-logo-blue group-hover:underline">
                     Tap to flip back
                   </span>
@@ -200,7 +200,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
         </div>
       </main>
 
-      <footer className="w-full max-w-xl pb-12 px-6 shrink-0">
+      <footer className="w-full max-w-xl pb-8 px-6 shrink-0">
         <motion.div
           custom={1}
           initial="hidden"
