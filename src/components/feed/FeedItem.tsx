@@ -245,9 +245,7 @@ export const FeedItem = memo(
               className={`${actionButtonClass} group disabled:opacity-30`}
             >
               <div className="relative flex items-center justify-center">
-                <div className="text-sm font-semibold text-slate-400">
-                  Reply
-                </div>
+                <div className="text-base text-slate-400">Reply</div>
               </div>
             </button>
           ) : (
@@ -279,9 +277,7 @@ export const FeedItem = memo(
           {/* Stance — middle column, reply cards only */}
           {isReply && item.interactionScore !== undefined && (
             <div className="flex gap-3 items-center justify-center py-3 border-x border-slate-100">
-              <div className="text-sm font-semibold text-slate-400">
-                Stance:
-              </div>
+              <div className="text-base text-slate-400">Stance:</div>
               <div
                 title={`Stance: ${displayScore}`}
                 style={{ backgroundColor: stanceColor }}

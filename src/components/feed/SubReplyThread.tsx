@@ -139,7 +139,7 @@ export const SubReplyThread = ({
           if (expanded) collapse();
           else setExpanded(true);
         }}
-        className="flex items-center gap-x-1.5 px-4 py-2 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors"
+        className="flex items-center gap-x-1.5 px-4 py-2 text-base font-semibold text-slate-400 hover:text-slate-600 transition-colors"
       >
         {isInitialLoading ? (
           <>
@@ -148,13 +148,13 @@ export const SubReplyThread = ({
           </>
         ) : expanded ? (
           <>
-            <i className="bi bi-arrow-down text-base leading-none" />
-            <span>Collapse</span>
+            <i className="bi bi-arrow-down text-lg leading-none" />
+            <span>Collapse Replies</span>
           </>
         ) : (
           <>
-            <i className="bi bi-arrow-return-right text-base leading-none" />
-            <span>Replies</span>
+            <i className="bi bi-arrow-return-right text-lg leading-none" />
+            <span>Expand replies ({totalReplies})</span>
           </>
         )}
       </button>
@@ -196,7 +196,9 @@ export const SubReplyThread = ({
                       >
                         <motion.div
                           layout
-                          initial={shouldAnimateInitial ? { opacity: 0 } : false}
+                          initial={
+                            shouldAnimateInitial ? { opacity: 0 } : false
+                          }
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.2, ease: "easeOut" }}
@@ -242,10 +244,10 @@ export const SubReplyThread = ({
                 <div className="flex items-center justify-end px-1 -mt-1">
                   <button
                     onClick={collapse}
-                    className="flex items-center gap-x-1 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors"
+                    className="flex items-center gap-x-1 text-base font-semibold text-slate-400 hover:text-slate-600 transition-colors"
                   >
-                    <i className="bi bi-arrow-up text-sm" />
-                    Collapse
+                    <i className="bi bi-arrow-up text-lg" />
+                    Collapse Replies
                   </button>
                 </div>
               </div>
