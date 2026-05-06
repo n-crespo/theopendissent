@@ -102,19 +102,24 @@ const syncReplyCount = async (
   parentIdLog: string,
 ) => {
   if (!created && !deleted) return null;
-
   const increment = created ? 1 : -1;
+
+  // Check if the parent actually exists before starting the transaction
+  const snapshot = await parentRef.once("value");
+  if (!snapshot.exists()) {
+    console.warn(`Skipping count sync: Parent ${parentIdLog} does not exist.`);
+    return null;
+  }
 
   try {
     return parentRef.transaction((parent) => {
-      // Abort transaction if the parent node doesn't exist.
-      // This prevents creating ghost nodes (like { replyCount: 0 })
-      // when the parent is simultaneously being deleted in a cascade.
-      if (parent === null) {
-        return undefined;
-      }
+      // If parent is null here, it's just the transaction initializing.
+      // We already verified existence above, so we can safely provide a fallback
+      // or wait for the second execution of the callback.
+      if (parent === null) return parent;
 
-      parent.replyCount = Math.max(0, (parent.replyCount || 0) + increment);
+      const currentCount = parent.replyCount || 0;
+      parent.replyCount = Math.max(0, currentCount + increment);
       return parent;
     });
   } catch (error) {
