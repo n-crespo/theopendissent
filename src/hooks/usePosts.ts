@@ -33,6 +33,9 @@ const shuffleChunk = (chunk: Post[]): Post[] =>
  * so we inject the user's own new posts manually here.
  */
 export const pinPostToTop = (post: Post): void => {
+  const isReply = !!(post.parentPostId || post.parentReplyId);
+  if (isReply) return;
+
   if (!pinnedPosts.find((p) => p.id === post.id)) {
     pinnedPosts = [post, ...pinnedPosts];
     pinListeners.forEach((l) => l());
