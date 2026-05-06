@@ -176,21 +176,23 @@ function Layout() {
           )}
         </div>
 
-        <GlobalModal />
-        <ComposeModal
-          isOpen={isComposeOpen}
-          onClose={() => {
-            handleOpenCompose(false);
-            setActiveReplyTo(null);
-          }}
-          parentPost={activeParent}
-          parentReply={activeReplyTo}
-          onSuccess={(newId, parentId) =>
-            setActiveTarget({ id: newId, parentId })
-          }
-        />
         <Footer />
       </div>
+
+      <GlobalModal />
+      <ComposeModal
+        isOpen={isComposeOpen}
+        onClose={() => {
+          handleOpenCompose(false);
+          setActiveReplyTo(null);
+        }}
+        parentPost={activeParent}
+        parentReply={activeReplyTo}
+        onSuccess={(newId, parentId) =>
+          setActiveTarget({ id: newId, parentId })
+        }
+      />
+
       {!user && !loading && !showLanding && <UnauthenticatedFooter />}
     </div>
   );
