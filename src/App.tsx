@@ -141,7 +141,7 @@ function Layout() {
           </aside>
 
           {/* FEED (CENTER) */}
-          <main className="w-full max-w-115 shrink-0 pb-4 lg:px-2 relative">
+          <main className="w-full max-w-115 shrink-0 pb-50 lg:px-2 relative">
             <Outlet
               context={{
                 setActiveParent,
