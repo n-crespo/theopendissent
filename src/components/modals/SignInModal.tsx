@@ -41,9 +41,8 @@ export const SignInModal = () => {
 
       <div className="mb-8 space-y-4 px-2">
         <p className="text-center text-slate-700 leading-relaxed">
-          Sign in with a{" "}
-          <strong className="font-bold text-logo-blue">UCLA</strong> email to
-          post or reply!
+          GREAT NEWS: you already have an account!
+          <p className="italic">(just sign in with your UCLA email)</p>
         </p>
 
         {/* Inline Error Message */}
@@ -56,7 +55,7 @@ export const SignInModal = () => {
 
       <div className="w-full flex flex-col gap-2">
         <button
-          className="inline-flex w-full items-center justify-center gap-3 rounded-xl bg-[#4285f4] px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#357ae8] cursor-pointer border-none shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+          className="inline-flex w-full items-center justify-center gap-3 rounded-xl bg-linear-to-r from-logo-red via-logo-green to-logo-blue animate-shimmer bg-size-[200%_auto] px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#357ae8] cursor-pointer border-none shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
           onClick={handleSignIn}
           disabled={isSigningIn} // Disable while loading
         >
@@ -67,8 +66,8 @@ export const SignInModal = () => {
             </div>
           ) : (
             <>
-              <i className="bi bi-google text-base"></i>
-              <span>UCLA Sign In</span>
+              {/* <i className="bi bi-google text-base"></i> */}
+              <span>Sign In</span>
             </>
           )}
         </button>
@@ -78,7 +77,7 @@ export const SignInModal = () => {
           onClick={closeModal}
           disabled={isSigningIn}
         >
-          I'm just lurking
+          I'm just lurking and too nonchalant for politics (no you're not)
         </button>
       </div>
     </div>
