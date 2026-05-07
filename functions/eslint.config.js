@@ -5,31 +5,48 @@ const importX = require("eslint-plugin-import-x");
 
 module.exports = tseslint.config(
   {
-    // replaces ignorePatterns
+    // global ignores
     ignores: ["lib/**/*", "generated/**/*"],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    // target only typescript files for type-aware rules
+    files: ["**/*.ts"],
     languageOptions: {
       globals: {
         ...globals.node,
       },
       parserOptions: {
         project: ["tsconfig.json", "tsconfig.dev.json"],
+        tsconfigRootDir: __dirname,
       },
     },
     plugins: {
       "import-x": importX,
     },
     rules: {
-      // your specific firebase project overrides
       quotes: ["error", "double"],
       "object-curly-spacing": ["error", "always"],
-      indent: ["error", 2],
       "no-tabs": "error",
       "max-len": "off",
       "import-x/no-unresolved": 0,
+      "@typescript-eslint/no-require-imports": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "no-useless-assignment": "warn",
+    },
+  },
+  {
+    // separate block for the config file itself (no TS project needed)
+    files: ["eslint.config.js"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      quotes: ["error", "double"],
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
 );
