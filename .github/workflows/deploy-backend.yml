@@ -9,6 +9,7 @@ on:
       - "database.rules.json"
       - "firebase.json"
       - ".firebaserc"
+      - .github/workflows/deploy-backend.yaml
   workflow_dispatch:
 
 jobs:
