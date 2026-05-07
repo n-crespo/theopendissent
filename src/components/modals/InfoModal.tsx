@@ -22,11 +22,11 @@ export const InfoModal = () => {
           <b> promoting open political discourse</b> at UCLA.
         </p>
         <p className="mb-4">
-          Feel free to join any discussion (or start your own!) anonymously (or
-          not) — all are welcome!
+          Join any discussion (or start your own!) anonymously (or not) — all
+          are welcome!
         </p>
         <p className="mb-4">
-          Keep an eye out for{" "}
+          And keep an eye out for{" "}
           <button
             onClick={handleListenClick}
             className="font-bold text-logo-blue hover:underline underline cursor-pointer"
