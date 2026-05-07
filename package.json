@@ -5,15 +5,15 @@
   "main": "index.ts",
   "devDependencies": {
     "@firebase/rules-unit-testing": "^4.0.1",
-    "@tailwindcss/postcss": "^4.2.3",
+    "@tailwindcss/postcss": "^4.2.4",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",
     "autoprefixer": "^10.5.0",
-    "firebase-tools": "^15.15.0",
-    "postcss": "^8.5.10",
-    "tailwindcss": "^4.2.3",
+    "firebase-tools": "^15.17.0",
+    "postcss": "^8.5.14",
+    "tailwindcss": "^4.2.4",
     "typescript": "^5.9.3",
     "vite": "^7.3.2",
     "vitest": "^3.2.4"
@@ -21,10 +21,17 @@
   "dependencies": {
     "firebase": "^12.12.1",
     "framer-motion": "^12.38.0",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
     "react-helmet-async": "^3.0.0",
-    "react-router-dom": "^7.14.1"
+    "react-router-dom": "^7.15.0"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowAny": [
+        "firebase"
+      ]
+    }
   },
   "scripts": {
     "dev": "vite",
