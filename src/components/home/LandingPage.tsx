@@ -121,8 +121,8 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                 <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-base flex flex-col justify-center items-center overflow-y-auto custom-scrollbar">
                   <div className="space-y-5 text-slate-700 leading-relaxed text-center px-4 w-full">
                     <p>
-                      Your feed is <em>designed</em> to prioritize outrage, fuel
-                      polarization, and perpetuate echo chambers.
+                      Today's social media fuels polarization and perpetuates
+                      echo chambers.
                     </p>
                     <p>
                       Online discussions are littered with bots and corporate
@@ -132,7 +132,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                       Democracy thrives on open dissent, but these platforms
                       continue to suppress it.
                     </p>
-                    <p className="font-bold text-slate-900">
+                    <p className="text-base font-bold text-slate-900 tracking-tight">
                       You deserve better.
                     </p>
                   </div>
@@ -160,7 +160,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                         Real, human discussions.
                       </strong>
                       <p className="text-sm text-slate-500 mt-1 pl-5">
-                        Genuine dialogue &gt; viral soundbites.
+                        UCLA email required!
                       </p>
                     </li>
                     <li className="leading-snug">
@@ -168,7 +168,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                         No predatory algorithm.
                       </strong>
                       <p className="text-sm text-slate-500 mt-1 pl-5">
-                        All posts are valued the same.
+                        Addiction not included.
                       </p>
                     </li>
                     <li className="leading-snug">
@@ -176,15 +176,15 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                         Zero engagement metrics.
                       </strong>
                       <p className="text-sm text-slate-500 mt-1 pl-5">
-                        This isn't a popularity contest.
+                        More controversial &ne; more valuable
                       </p>
                     </li>
                     <li className="leading-snug">
                       <strong className="text-slate-900">
-                        (Optional) Anonymity.
+                        (Optional) anonymity.
                       </strong>
                       <p className="text-sm text-slate-500 mt-1 pl-5">
-                        Judge ideas, not individuals.
+                        Post anonymously! (or don't)
                       </p>
                     </li>
                   </ol>
