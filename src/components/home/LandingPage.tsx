@@ -118,19 +118,19 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                   WebkitBackfaceVisibility: "hidden",
                 }}
               >
-                <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-base flex flex-col justify-center items-center overflow-y-auto custom-scrollbar">
+                <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-base flex flex-col justify-center items-center overflow-y-auto custom-scrollbar tracking-tight">
                   <div className="space-y-5 text-slate-700 leading-relaxed text-center px-4 w-full">
                     <p>
-                      Today's social media fuels polarization and perpetuates
-                      echo chambers.
+                      Online discussions are littered with bots and
+                      misinformation.
                     </p>
                     <p>
-                      Online discussions are littered with bots and corporate
-                      interests.
+                      The algorithm fuels polarization and perpetuates echo
+                      chambers.
                     </p>
                     <p>
-                      Democracy thrives on open dissent, but these platforms
-                      continue to suppress it.
+                      Democracy requires open dissent, but these platforms
+                      inherently suppress it.
                     </p>
                     <p className="text-base font-bold text-slate-900 tracking-tight">
                       You deserve better.
@@ -153,7 +153,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                   transform: "rotateY(180deg)",
                 }}
               >
-                <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-[15px] flex flex-col justify-center items-center overflow-y-auto custom-scrollbar">
+                <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-base flex flex-col justify-center items-center overflow-y-auto custom-scrollbar tracking-tight">
                   <ol className="list-decimal list-inside space-y-5 text-left w-fit text-slate-700 max-w-xs sm:max-w-max mx-auto marker:font-bold marker:text-slate-500 px-2">
                     <li className="leading-snug">
                       <strong className="text-slate-900">
@@ -176,7 +176,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                         Zero engagement metrics.
                       </strong>
                       <p className="text-sm text-slate-500 mt-1 pl-5">
-                        More controversial &ne; more valuable
+                        More controversial &ne; more valuable.
                       </p>
                     </li>
                     <li className="leading-snug">
