@@ -33,7 +33,7 @@ export const UnauthenticatedFooter = () => {
       transition={{ duration: 0.5, ease: "anticipate" }}
       className="fixed bottom-0 left-0 right-0 z-50 bg-logo-offwhite border-t border-slate-300 shadow-2xl rounded-t-4xl transform-gpu"
     >
-      <div className="mx-auto max-w-7xl px-4 py-7 pb-8 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="mx-auto max-w-7xl px-4 py-7 pb-6 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex flex-col">
           <p className="text-slate-900 text-md font-semibold sm:text-base leading-tight">
             Sign in with your UCLA email to post or reply!
