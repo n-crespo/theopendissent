@@ -19,7 +19,7 @@ export const InfoModal = () => {
         <p className="mb-4">
           The Open Dissent was made <em>by</em> students, <em>for</em> students,
           with the goal of
-          <b> promoting political discourse</b> at UCLA.
+          <b> promoting open political discourse</b> at UCLA.
         </p>
         <p className="mb-4">
           Feel free to join any discussion (or start your own!) anonymously (or
@@ -33,12 +33,13 @@ export const InfoModal = () => {
           >
             our podcast
           </button>{" "}
-          where we invite posters (like you!) to a live, in-person discussion!
+          where we invite dissenters (like you!) to a live, in-person
+          discussion!
         </p>
         <div className="mt-2 text-center">
           Looking forward to disagreeing (or agreeing) with you,
           <br />
-          <span className="font-bold text-logo-blue text-md tracking-tight mt-1 inline-block">
+          <span className="font-bold bg-linear-to-r from-logo-red via-logo-green to-logo-blue bg-clip-text text-transparent animate-shimmer text-md tracking-tight mt-1 inline-block">
             The Open Dissent Leadership
           </span>
         </div>
