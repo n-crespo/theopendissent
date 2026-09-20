@@ -1,4 +1,17 @@
-# Database Security Rules Tests
+# Tests
+
+## Usage
+
+```sh
+pnpm test # starts emulators/backend, runs tests and exits
+pnpm test:all # assumes backend is running locally (pnpm emulate/dev/functions:watch), runs tests and exists
+
+pnpm test:rules # tests database rules
+pnpm test:deletion # tests database deletions
+pnpm test:integration # integration testing
+```
+
+## Database Security Rules Tests
 
 - READS
   - DENIES
