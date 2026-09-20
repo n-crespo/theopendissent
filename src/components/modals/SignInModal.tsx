@@ -35,9 +35,7 @@ export const SignInModal = () => {
 
   return (
     <div className="flex flex-col">
-      <h2 className="text-xl font-semibold mb-6 text-slate-900 text-center">
-        Sign In
-      </h2>
+      <h2 className="text-xl font-semibold mb-6 text-slate-900 text-center">Sign In</h2>
 
       <div className="mb-8 space-y-4 px-2">
         <p className="text-center text-slate-700 leading-relaxed">
@@ -77,7 +75,7 @@ export const SignInModal = () => {
           onClick={closeModal}
           disabled={isSigningIn}
         >
-          I'm just lurking and too nonchalant for politics (no you're not)
+          I'm just lurking
         </button>
       </div>
     </div>
