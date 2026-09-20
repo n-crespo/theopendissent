@@ -2,44 +2,19 @@
   "name": "theopendissent",
   "version": "1.0.0",
   "description": "",
+  "keywords": [],
+  "homepage": "https://github.com/n-crespo/theopendissent#readme",
+  "bugs": {
+    "url": "https://github.com/n-crespo/theopendissent/issues"
+  },
+  "license": "ISC",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/n-crespo/theopendissent.git"
+  },
+  "type": "module",
   "main": "index.ts",
-  "devDependencies": {
-    "@firebase/rules-unit-testing": "^4.0.1",
-    "@tailwindcss/postcss": "^4.3.0",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.2.0",
-    "autoprefixer": "^10.5.0",
-    "firebase-tools": "^15.18.0",
-    "postcss": "^8.5.15",
-    "tailwindcss": "^4.3.0",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.3",
-    "vitest": "^3.2.4"
-  },
-  "dependencies": {
-    "firebase": "^12.13.0",
-    "framer-motion": "^12.40.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "react-helmet-async": "^3.0.0",
-    "react-router-dom": "^7.15.1"
-  },
-  "pnpm": {
-    "peerDependencyRules": {
-      "allowAny": [
-        "firebase"
-      ]
-    },
-    "overrides": {
-      "protobufjs@<=7.5.5": ">=7.5.6",
-      "@protobufjs/utf8@<=1.1.0": ">=1.1.1",
-      "@tootallnate/once@<3.0.1": ">=3.0.1",
-      "uuid@<11.1.1": ">=11.1.1",
-      "qs@>=6.11.1 <=6.15.1": ">=6.15.2"
-    }
-  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -53,16 +28,27 @@
     "emulate:new": "firebase emulators:start --project=the-open-dissent-prod --export-on-exit=./firebase-data",
     "emulate": "firebase emulators:start --project=the-open-dissent-prod --import=./firebase-data --export-on-exit=./firebase-data"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/n-crespo/theopendissent.git"
+  "dependencies": {
+    "firebase": "^12.19.0",
+    "framer-motion": "^13.4.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-helmet-async": "^3.0.0",
+    "react-router-dom": "^7.18.4"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
-  "bugs": {
-    "url": "https://github.com/n-crespo/theopendissent/issues"
-  },
-  "homepage": "https://github.com/n-crespo/theopendissent#readme"
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.6.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "autoprefixer": "^10.6.1",
+    "firebase-tools": "^15.30.2",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
+  }
 }
