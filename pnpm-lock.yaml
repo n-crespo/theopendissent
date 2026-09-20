@@ -7,7 +7,6 @@ settings:
 overrides:
   '@opentelemetry/core@<2.8.0': ^2.8.0
   csv-parse@<7.0.2: ^7.0.2
-  stream-json@<=3.4.0: ^3.5.0
   ts-deepmerge@<8.0.0: ^8.0.0
   uuid@<11.1.1: ^11.1.1
 
@@ -4454,15 +4453,11 @@ packages:
   stream-chain@2.2.5:
     resolution: {integrity: sha512-1TJmBx6aSWqZ4tx7aTpBDXK0/e2hhcNSTV8+CbFJtDjbb+I1mZ8lHit0Grw9GRT+6JbIrrDd8esncgBi8aBXGA==}
 
-  stream-chain@4.2.5:
-    resolution: {integrity: sha512-Wtyq3bNE3ggLR0v2vftqvuhltym3WbZAkZpfIrkr5F/6vpeUmWmwTgXa16zD87gpahwJ/Qulq3zVfUlgIc0J2A==}
-    engines: {node: '>=22'}
-
   stream-events@1.0.5:
     resolution: {integrity: sha512-E1GUzBSgvct8Jsb3v2X15pjzN1tYebtbLaMg+eBOUOAxgbLoSbT2NS91ckc5lJD1KfLjId+jXJRgo0qnV5Nerg==}
 
-  stream-json@3.6.0:
-    resolution: {integrity: sha512-NiJdqxKyau579z/E8vfqcjWfSDWxW/AT99javFXdPXF147Z5za85LRXSHEmSX9TKOakB7gaIccfD0fOIctb7KQ==}
+  stream-json@1.9.1:
+    resolution: {integrity: sha512-uWkjJ+2Nt/LO9Z/JyKZbMusL8Dkh97uUBTv3AJQ74y07lVahLY4eEFsPsE97pxYBwr8nnjMAIch5eqI0gPShyw==}
 
   stream-shift@1.0.3:
     resolution: {integrity: sha512-76ORR0DO1o1hlKwTbi/DM3EXWGf3ZJYO8cXX5RJwnul2DEg2oyoZyjLNoQM8WsvZiFKCRfC1O0J7iCvie3RZmQ==}
@@ -7884,7 +7879,7 @@ snapshots:
       semver: 7.8.5
       sql-formatter: 15.8.2
       stream-chain: 2.2.5
-      stream-json: 3.6.0
+      stream-json: 1.9.1
       superstatic: 10.0.0(supports-color@8.1.1)
       tar: 7.5.22
       tcp-port-used: 1.0.3(supports-color@8.1.1)
@@ -9968,15 +9963,13 @@ snapshots:
 
   stream-chain@2.2.5: {}
 
-  stream-chain@4.2.5: {}
-
   stream-events@1.0.5:
     dependencies:
       stubs: 3.0.0
 
-  stream-json@3.6.0:
+  stream-json@1.9.1:
     dependencies:
-      stream-chain: 4.2.5
+      stream-chain: 2.2.5
 
   stream-shift@1.0.3: {}
 
