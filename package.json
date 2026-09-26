@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "firebase": "^12.19.0",
-    "framer-motion": "^13.4.0",
+    "framer-motion": "^13.4.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-helmet-async": "^3.0.0",
