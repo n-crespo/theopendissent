@@ -1,9 +1,5 @@
 require("firebase-functions/logger/compat");
-import {
-  onValueCreated,
-  onValueDeleted,
-  onValueWritten,
-} from "firebase-functions/v2/database";
+import { onValueCreated, onValueDeleted, onValueWritten } from "firebase-functions/v2/database";
 import { onCall, HttpsError, onRequest } from "firebase-functions/v2/https";
 import {
   AuthBlockingEvent,
@@ -16,9 +12,7 @@ import { defineString } from "firebase-functions/params";
 admin.initializeApp();
 
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
-const DOMAIN = isEmulator
-  ? "http://127.0.0.1:5173"
-  : "https://theopendissent.com";
+const DOMAIN = isEmulator ? "http://127.0.0.1:5173" : "https://theopendissent.com";
 const DEFAULT_IMAGE = `${DOMAIN}/favicon.jpg`;
 // const LARGE_IMAGE = `${DOMAIN}/og-image.jpg`;
 
@@ -43,9 +37,7 @@ const getLookupData = async (id: string) => {
  * Uses authorLookup routing data to return a direct reference.
  * No more searching/fallback required.
  */
-const getContentRef = async (
-  id: string,
-): Promise<admin.database.Reference | null> => {
+const getContentRef = async (id: string): Promise<admin.database.Reference | null> => {
   const meta = await getLookupData(id);
   if (!meta) return null;
 
@@ -78,7 +70,7 @@ const deleteRepliesInBatches = async (postId: string) => {
     }
 
     const updates: Record<string, null> = {};
-    snapshot.forEach((child) => {
+    snapshot.forEach((child: admin.database.DataSnapshot) => {
       updates[child.key as string] = null;
     });
 
@@ -131,26 +123,23 @@ const syncReplyCount = async (
 /**
  * updates the replyCount on the parent (Post or Reply) when replies are created/deleted.
  */
-export const updateReplyCount = onValueWritten(
-  "/replies/{parentId}/{replyId}",
-  async (event) => {
-    const { parentId } = event.params;
+export const updateReplyCount = onValueWritten("/replies/{parentId}/{replyId}", async (event) => {
+  const { parentId } = event.params;
 
-    // determine exactly what changed
-    const created = event.data.after.exists() && !event.data.before.exists();
-    const deleted = !event.data.after.exists() && event.data.before.exists();
+  // determine exactly what changed
+  const created = event.data.after.exists() && !event.data.before.exists();
+  const deleted = !event.data.after.exists() && event.data.before.exists();
 
-    if (!created && !deleted) return null;
+  if (!created && !deleted) return null;
 
-    const parentRef = await getContentRef(parentId);
-    if (!parentRef) {
-      console.warn(`orphaned reply: parent ${parentId} not found.`);
-      return null;
-    }
+  const parentRef = await getContentRef(parentId);
+  if (!parentRef) {
+    console.warn(`orphaned reply: parent ${parentId} not found.`);
+    return null;
+  }
 
-    return syncReplyCount(parentRef, created, deleted, parentId);
-  },
-);
+  return syncReplyCount(parentRef, created, deleted, parentId);
+});
 
 const WHITELISTED_EMAILS_PARAM = defineString("WHITELISTED_EMAILS");
 const getWhitelistedEmails = (): string[] => {
@@ -184,10 +173,7 @@ const uclaOnlyAuth = (event: AuthBlockingEvent): void => {
 
   if (!isUcla) {
     console.error(`auth blocked for: ${email}`);
-    throw new HttpsError(
-      "permission-denied",
-      "Only UCLA-affiliated emails are allowed.",
-    );
+    throw new HttpsError("permission-denied", "Only UCLA-affiliated emails are allowed.");
   }
 
   // console.log(`auth permitted for: ${email}`);
@@ -215,25 +201,22 @@ export const beforesignedin = beforeUserSignedIn((event) => {
 /**
  * Cleanup for top-level posts.
  */
-export const onPostDeletedCleanup = onValueDeleted(
-  "/posts/{postId}",
-  async (event) => {
-    const { postId } = event.params;
-    const db = admin.database();
+export const onPostDeletedCleanup = onValueDeleted("/posts/{postId}", async (event) => {
+  const { postId } = event.params;
+  const db = admin.database();
 
-    // Clean up author lookup
-    await db.ref(`authorLookup/${postId}`).remove();
+  // Clean up author lookup
+  await db.ref(`authorLookup/${postId}`).remove();
 
-    const postData = event.data.val();
-    if (!postData) return;
+  const postData = event.data.val();
+  if (!postData) return;
 
-    if ((postData.replyCount || 0) < 100) {
-      await db.ref(`replies/${postId}`).remove();
-    } else {
-      await deleteRepliesInBatches(postId);
-    }
-  },
-);
+  if ((postData.replyCount || 0) < 100) {
+    await db.ref(`replies/${postId}`).remove();
+  } else {
+    await deleteRepliesInBatches(postId);
+  }
+});
 
 /**
  * Cleanup for sub-replies (Added this trigger for completeness)
@@ -248,9 +231,7 @@ export const onSubReplyDeletedCleanup = onValueDeleted(
     if (meta) {
       const updates: Record<string, null> = {};
       updates[`authorLookup/${subReplyId}`] = null;
-      updates[
-        `users/${meta.uid}/subreplies/${postId}/${replyId}/${subReplyId}`
-      ] = null;
+      updates[`users/${meta.uid}/subreplies/${postId}/${replyId}/${subReplyId}`] = null;
       await db.ref().update(updates);
     }
   },
@@ -321,8 +302,7 @@ export const sharePost = onRequest(async (req, res) => {
 
     if (!data) return res.redirect(DOMAIN);
 
-    const rawContent =
-      data.postContent || "View this discussion on The Open Dissent.";
+    const rawContent = data.postContent || "View this discussion on The Open Dissent.";
     const cleanContent = escapeHtml(rawContent);
 
     // prepare author ID
@@ -330,9 +310,7 @@ export const sharePost = onRequest(async (req, res) => {
 
     const maxLength = 300;
     const contentPreview =
-      cleanContent.length > maxLength
-        ? `${cleanContent.slice(0, maxLength)}...`
-        : cleanContent;
+      cleanContent.length > maxLength ? `${cleanContent.slice(0, maxLength)}...` : cleanContent;
 
     const pageTitle = `@${authorDisplay} on TheOpenDissent.com`;
     const pageDescription = `“${contentPreview}”`;
@@ -462,9 +440,7 @@ export const onSubReplyCreatedNotification = onValueCreated(
 
       if (!ownerId || ownerId === replyAuthorId) return null;
 
-      const notifRef = db.ref(
-        `users/${ownerId}/notifications/${parentReplyId}`,
-      );
+      const notifRef = db.ref(`users/${ownerId}/notifications/${parentReplyId}`);
       const now = Date.now();
 
       return notifRef.transaction((current) => {
@@ -528,13 +504,11 @@ export const wipeUserData = async (
     // Queue sub-replies for deletion
     if (userData.subreplies) {
       Object.entries(userData.subreplies).forEach(([postId, replyGroup]) => {
-        Object.entries(replyGroup as object).forEach(
-          ([replyId, subReplies]) => {
-            Object.keys(subReplies as object).forEach((subReplyId) => {
-              updates[`subreplies/${postId}/${replyId}/${subReplyId}`] = null;
-            });
-          },
-        );
+        Object.entries(replyGroup as object).forEach(([replyId, subReplies]) => {
+          Object.keys(subReplies as object).forEach((subReplyId) => {
+            updates[`subreplies/${postId}/${replyId}/${subReplyId}`] = null;
+          });
+        });
       });
     }
   } else {
@@ -556,8 +530,7 @@ export const wipeUserData = async (
     if (userData.replies) {
       Object.entries(userData.replies).forEach(([postId, replies]) => {
         Object.keys(replies as object).forEach((replyId) => {
-          updates[`replies/${postId}/${replyId}/authorDisplay`] =
-            "[Deleted User]";
+          updates[`replies/${postId}/${replyId}/authorDisplay`] = "[Deleted User]";
         });
       });
     }
@@ -565,15 +538,12 @@ export const wipeUserData = async (
     // Anonymize all sub-replies
     if (userData.subreplies) {
       Object.entries(userData.subreplies).forEach(([postId, replyGroup]) => {
-        Object.entries(replyGroup as object).forEach(
-          ([replyId, subReplies]) => {
-            Object.keys(subReplies as object).forEach((subReplyId) => {
-              updates[
-                `subreplies/${postId}/${replyId}/${subReplyId}/authorDisplay`
-              ] = "[Deleted User]";
-            });
-          },
-        );
+        Object.entries(replyGroup as object).forEach(([replyId, subReplies]) => {
+          Object.keys(subReplies as object).forEach((subReplyId) => {
+            updates[`subreplies/${postId}/${replyId}/${subReplyId}/authorDisplay`] =
+              "[Deleted User]";
+          });
+        });
       });
     }
   }
@@ -584,9 +554,7 @@ export const wipeUserData = async (
       `${deleteContent ? "wiping" : "anonymizing"} ${keysToUpdate.length} paths for user ${uid}`,
     );
     await db.ref().update(updates);
-    console.log(
-      `successfully ${deleteContent ? "wiped" : "anonymized"} data for user ${uid}`,
-    );
+    console.log(`successfully ${deleteContent ? "wiped" : "anonymized"} data for user ${uid}`);
   }
 };
 
@@ -597,10 +565,7 @@ export const wipeUserData = async (
 export const deleteAccount = onCall(async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
-    throw new HttpsError(
-      "unauthenticated",
-      "User must be logged in to delete their account.",
-    );
+    throw new HttpsError("unauthenticated", "User must be logged in to delete their account.");
   }
 
   const deleteContent = request.data.deleteContent ?? true;
@@ -616,9 +581,6 @@ export const deleteAccount = onCall(async (request) => {
     return { success: true };
   } catch (error) {
     console.error(`Failed to delete account for ${uid}:`, error);
-    throw new HttpsError(
-      "internal",
-      "An error occurred while deleting the account.",
-    );
+    throw new HttpsError("internal", "An error occurred while deleting the account.");
   }
 });
