@@ -6,10 +6,12 @@ import {
   beforeUserCreated,
   beforeUserSignedIn,
 } from "firebase-functions/v2/identity";
-import * as admin from "firebase-admin";
+import { initializeApp } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
+import { getDatabase, Reference, DataSnapshot, Database } from "firebase-admin/database";
 import { defineString } from "firebase-functions/params";
 
-admin.initializeApp();
+initializeApp();
 
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
 const DOMAIN = isEmulator ? "http://127.0.0.1:5173" : "https://theopendissent.com";
@@ -29,7 +31,7 @@ const escapeHtml = (unsafe: string) => {
  * and the exact path of any content ID.
  */
 const getLookupData = async (id: string) => {
-  const snap = await admin.database().ref(`authorLookup/${id}`).once("value");
+  const snap = await getDatabase().ref(`authorLookup/${id}`).once("value");
   return snap.exists() ? snap.val() : null;
 };
 
@@ -37,11 +39,11 @@ const getLookupData = async (id: string) => {
  * Uses authorLookup routing data to return a direct reference.
  * No more searching/fallback required.
  */
-const getContentRef = async (id: string): Promise<admin.database.Reference | null> => {
+const getContentRef = async (id: string): Promise<Reference | null> => {
   const meta = await getLookupData(id);
   if (!meta) return null;
 
-  const db = admin.database();
+  const db = getDatabase();
   switch (meta.type) {
     case "post":
       return db.ref(`posts/${id}`);
@@ -56,7 +58,7 @@ const getContentRef = async (id: string): Promise<admin.database.Reference | nul
 
 // delete replies in batches to avoid thundering herd
 const deleteRepliesInBatches = async (postId: string) => {
-  const db = admin.database();
+  const db = getDatabase();
   const repliesRef = db.ref(`replies/${postId}`);
 
   let finished = false;
@@ -70,7 +72,7 @@ const deleteRepliesInBatches = async (postId: string) => {
     }
 
     const updates: Record<string, null> = {};
-    snapshot.forEach((child: admin.database.DataSnapshot) => {
+    snapshot.forEach((child: DataSnapshot) => {
       updates[child.key as string] = null;
     });
 
@@ -88,7 +90,7 @@ const deleteRepliesInBatches = async (postId: string) => {
  * by running the transaction on the parent node and aborting if it doesn't exist.
  */
 const syncReplyCount = async (
-  parentRef: admin.database.Reference,
+  parentRef: Reference,
   created: boolean,
   deleted: boolean,
   parentIdLog: string,
@@ -188,7 +190,7 @@ export const beforecreated = beforeUserCreated(async (event) => {
     displayName: user?.displayName,
     createdAt: Date.now(),
   };
-  await admin.database().ref(`users/${user?.uid}`).set(newUserProfile);
+  await getDatabase().ref(`users/${user?.uid}`).set(newUserProfile);
 
   return {}; // success
 });
@@ -203,7 +205,7 @@ export const beforesignedin = beforeUserSignedIn((event) => {
  */
 export const onPostDeletedCleanup = onValueDeleted("/posts/{postId}", async (event) => {
   const { postId } = event.params;
-  const db = admin.database();
+  const db = getDatabase();
 
   // Clean up author lookup
   await db.ref(`authorLookup/${postId}`).remove();
@@ -225,7 +227,7 @@ export const onSubReplyDeletedCleanup = onValueDeleted(
   "/subreplies/{postId}/{replyId}/{subReplyId}",
   async (event) => {
     const { postId, replyId, subReplyId } = event.params;
-    const db = admin.database();
+    const db = getDatabase();
 
     const meta = await getLookupData(subReplyId);
     if (meta) {
@@ -244,7 +246,7 @@ export const onReplyDeletedCleanup = onValueDeleted(
   "/replies/{parentId}/{replyId}",
   async (event) => {
     const { parentId, replyId } = event.params;
-    const db = admin.database();
+    const db = getDatabase();
 
     const meta = await getLookupData(replyId);
 
@@ -268,7 +270,7 @@ export const updateSubReplyCount = onValueWritten(
   "/subreplies/{parentPostId}/{parentReplyId}/{subReplyId}",
   async (event) => {
     const { parentPostId, parentReplyId } = event.params;
-    const db = admin.database();
+    const db = getDatabase();
 
     const created = event.data.after.exists() && !event.data.before.exists();
     const deleted = !event.data.after.exists() && event.data.before.exists();
@@ -293,10 +295,10 @@ export const sharePost = onRequest(async (req, res) => {
     // added rootId to support sub-reply lookups
     const contentRef =
       rootId && parentId
-        ? admin.database().ref(`subreplies/${rootId}/${parentId}/${postId}`)
+        ? getDatabase().ref(`subreplies/${rootId}/${parentId}/${postId}`)
         : parentId
-          ? admin.database().ref(`replies/${parentId}/${postId}`)
-          : admin.database().ref(`posts/${postId}`);
+          ? getDatabase().ref(`replies/${parentId}/${postId}`)
+          : getDatabase().ref(`posts/${postId}`);
     const snapshot = await contentRef?.once("value");
     const data = snapshot?.val();
 
@@ -380,7 +382,7 @@ export const onReplyCreatedNotification = onValueCreated(
   async (event) => {
     const { parentId, replyId } = event.params;
     const replyData = event.data.val();
-    const db = admin.database();
+    const db = getDatabase();
 
     if (!replyData) return null;
 
@@ -429,7 +431,7 @@ export const onSubReplyCreatedNotification = onValueCreated(
   "/subreplies/{parentPostId}/{parentReplyId}/{subReplyId}",
   async (event) => {
     const { parentPostId, parentReplyId, subReplyId } = event.params;
-    const db = admin.database();
+    const db = getDatabase();
 
     try {
       const subReplyMeta = await getLookupData(subReplyId);
@@ -466,11 +468,7 @@ export const onSubReplyCreatedNotification = onValueCreated(
   },
 );
 
-export const wipeUserData = async (
-  uid: string,
-  db: admin.database.Database,
-  deleteContent: boolean = true,
-) => {
+export const wipeUserData = async (uid: string, db: Database, deleteContent: boolean = true) => {
   const userSnap = await db.ref(`users/${uid}`).once("value");
   const userData = userSnap.val();
 
@@ -569,14 +567,14 @@ export const deleteAccount = onCall(async (request) => {
   }
 
   const deleteContent = request.data.deleteContent ?? true;
-  const db = admin.database();
+  const db = getDatabase();
 
   try {
     // 1. Wipe or anonymize user's RTDB data
     await wipeUserData(uid, db, deleteContent);
 
     // 2. Delete the Firebase Auth User
-    await admin.auth().deleteUser(uid);
+    await getAuth().deleteUser(uid);
 
     return { success: true };
   } catch (error) {
