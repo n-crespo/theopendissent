@@ -61,19 +61,17 @@ const deleteRepliesInBatches = async (postId: string) => {
   const db = getDatabase();
   const repliesRef = db.ref(`replies/${postId}`);
 
-  let finished = false;
-  while (!finished) {
+  while (true) {
     // Get a small chunk of reply IDs
     const snapshot = await repliesRef.limitToFirst(100).once("value");
 
     if (!snapshot.exists()) {
-      finished = true;
       break;
     }
 
     const updates: Record<string, null> = {};
     snapshot.forEach((child: DataSnapshot) => {
-      updates[child.key as string] = null;
+      if (child.key) updates[child.key] = null;
     });
 
     // Delete this batch
