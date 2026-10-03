@@ -55,8 +55,8 @@ importers:
         specifier: ^10.6.1
         version: 10.6.1(postcss@8.5.28)
       firebase-tools:
-        specifier: ^15.30.2
-        version: 15.31.0(@types/node@26.6.3)(supports-color@8.1.1)
+        specifier: ^15.32.1
+        version: 15.32.1(@types/node@26.6.3)(supports-color@8.1.1)
       postcss:
         specifier: ^8.5.28
         version: 8.5.28
@@ -2658,8 +2658,8 @@ packages:
       graphql:
         optional: true
 
-  firebase-tools@15.31.0:
-    resolution: {integrity: sha512-n0bsjrKsKxMweyGtuOtrZPe34JNrVZaD7iZTa3YhOSXwFSsCPZ6tV/Inn4CGM62at7773iT5visGbVbPKtG9jQ==}
+  firebase-tools@15.32.1:
+    resolution: {integrity: sha512-Ppi8CWeACtJjx10LtaKQGf81+Zc5MYDQNqpE2ioY11KViaqa5OOPW9huqqwd5+Zmc/nayjyGiOrJ1YF7NGXHBQ==}
     engines: {node: '>=20.0.0 || >=22.0.0 || >=24.0.0'}
     hasBin: true
 
@@ -7816,7 +7816,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  firebase-tools@15.31.0(@types/node@26.6.3)(supports-color@8.1.1):
+  firebase-tools@15.32.1(@types/node@26.6.3)(supports-color@8.1.1):
     dependencies:
       '@apphosting/common': 0.0.8
       '@electric-sql/pglite': 0.3.16
