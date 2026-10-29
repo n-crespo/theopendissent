@@ -41,12 +41,21 @@ export const ComposeModal = ({
   );
   const isSubReply = !!parentReply;
   const isReply = !!parentPost || isSubReply;
+  const isParentReplyAuthor = Boolean(
+    parentReply?.id && ownedPosts.has(parentReply.id),
+  );
 
-  // lock anonymity if user is thread author
+  // lock anonymity to match the user's identity on the thread (post) or,
+  // failing that, on the reply they're responding to
+  const lockedTo = isThreadAuthor
+    ? parentPost
+    : isParentReplyAuthor
+      ? parentReply
+      : null;
+  const isIdentityLocked = !!lockedTo;
   const [isAnonymousState, setIsAnonymous] = useState(true);
-  const isAnonymous = isThreadAuthor
-    ? !parentPost?.authorDisplay ||
-      parentPost.authorDisplay === "Anonymous User"
+  const isAnonymous = lockedTo
+    ? !lockedTo.authorDisplay || lockedTo.authorDisplay === "Anonymous User"
     : isAnonymousState;
 
   const authorDisplay =
@@ -178,12 +187,12 @@ export const ComposeModal = ({
                 <div className="flex flex-col gap-y-1">
                   <span className="text-sm font-bold text-slate-900 flex items-center gap-x-1.5">
                     <span>Post Anonymously?</span>
-                    {isThreadAuthor && (
+                    {isIdentityLocked && (
                       <Badge label="Locked (Author)" variant="slate" />
                     )}
                   </span>
                   <span className="text-xs  text-slate-500">
-                    {isThreadAuthor
+                    {isIdentityLocked
                       ? `Posting as ${authorDisplay}.`
                       : isAnonymous
                         ? "Your identity will be hidden from everyone."
@@ -191,15 +200,15 @@ export const ComposeModal = ({
                   </span>
                 </div>
                 <button
-                  disabled={isThreadAuthor}
+                  disabled={isIdentityLocked}
                   onPointerDown={(e) => {
                     // Prevent focus/click firing afterwards to avoid double-toggling
                     e.preventDefault();
-                    if (!isThreadAuthor) setIsAnonymous(!isAnonymousState);
+                    if (!isIdentityLocked) setIsAnonymous(!isAnonymousState);
                   }}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     isAnonymous ? "bg-logo-blue" : "bg-slate-300"
-                  } ${isThreadAuthor ? "opacity-50 cursor-not-allowed" : ""}`}
+                  } ${isIdentityLocked ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${

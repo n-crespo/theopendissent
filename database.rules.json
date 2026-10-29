@@ -165,7 +165,7 @@
               ".validate": "!newData.exists() || newData.val() === $post_id"
             },
             "authorDisplay": {
-              ".validate": "newData.isString() && newData.val().length <= 100 && (root.child('authorLookup').child($post_id).child('uid').val() !== auth.uid || newData.val() === root.child('posts').child($post_id).child('authorDisplay').val())"
+              ".validate": "newData.isString() && newData.val().length <= 100 && (root.child('authorLookup').child($post_id).child('uid').val() !== auth.uid || newData.val() === root.child('posts').child($post_id).child('authorDisplay').val()) && (root.child('authorLookup').child($reply_id).child('uid').val() !== auth.uid || newData.val() === root.child('replies').child($post_id).child($reply_id).child('authorDisplay').val())"
             },
             "isThreadAuthor": {
               ".validate": "!newData.exists() || (newData.isBoolean() && newData.val() === (root.child('authorLookup').child($post_id).child('uid').val() === auth.uid))"

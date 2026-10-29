@@ -862,4 +862,82 @@ describe("Realtime Database rules", () => {
       });
     });
   });
+
+  describe("Identity lock", () => {
+    const uidThird = "user_third";
+    // clearDatabase doesn't reliably wipe user writes, so never reuse an id
+    let seq = 0;
+
+    beforeEach(async () => {
+      // reply_1 is owned by uidOther, posted publicly as "Bob"
+      await testEnv.withSecurityRulesDisabled((c) =>
+        dbUpdate(dbFromContext(c), "/", {
+          [`replies/${postId}/${replyId}`]: {
+            id: replyId,
+            postContent: "seed reply",
+            timestamp: Date.now(),
+            parentPostId: postId,
+            interactionScore: 0,
+            replyCount: 0,
+            authorDisplay: "Bob",
+          },
+          [`authorLookup/${replyId}`]: { uid: uidOther, type: "reply", postId },
+          [`users/${uidOther}/replies/${postId}/${replyId}`]: true,
+        }),
+      );
+    });
+
+    const writeReply = (uid: string, authorDisplay: string) => {
+      const id = `reply_new_${seq++}`;
+      return dbUpdate(userDb(uid), "/", {
+        [`replies/${postId}/${id}`]: {
+          id,
+          postContent: "new reply",
+          timestamp: { ".sv": "timestamp" },
+          parentPostId: postId,
+          interactionScore: 0,
+          replyCount: 0,
+          authorDisplay,
+        },
+        [`users/${uid}/replies/${postId}/${id}`]: true,
+        [`authorLookup/${id}`]: { uid, type: "reply", postId },
+      });
+    };
+
+    const writeSubReply = (uid: string, authorDisplay: string) => {
+      const id = `sub_new_${seq++}`;
+      return dbUpdate(userDb(uid), "/", {
+        [`subreplies/${postId}/${replyId}/${id}`]: {
+          id,
+          postContent: "new sub-reply",
+          timestamp: { ".sv": "timestamp" },
+          parentPostId: postId,
+          parentReplyId: replyId,
+          authorDisplay,
+        },
+        [`users/${uid}/subreplies/${postId}/${replyId}/${id}`]: true,
+        [`authorLookup/${id}`]: { uid, type: "subreply", postId, replyId },
+      });
+    };
+
+    it("locks the thread author's reply to the post's identity", async () => {
+      await assertFails(writeReply(uidCurrent, "Alice"));
+      await assertSucceeds(writeReply(uidCurrent, "Anon"));
+    });
+
+    it("locks the thread author's sub-reply to the post's identity", async () => {
+      await assertFails(writeSubReply(uidCurrent, "Alice"));
+      await assertSucceeds(writeSubReply(uidCurrent, "Anon"));
+    });
+
+    it("locks a reply author's sub-reply to the reply's identity", async () => {
+      await assertFails(writeSubReply(uidOther, "Anonymous User"));
+      await assertSucceeds(writeSubReply(uidOther, "Bob"));
+    });
+
+    it("leaves other users free to pick their identity", async () => {
+      await assertSucceeds(writeReply(uidThird, "Carol"));
+      await assertSucceeds(writeSubReply(uidThird, "Anonymous User"));
+    });
+  });
 });
