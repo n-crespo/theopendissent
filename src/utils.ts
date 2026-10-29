@@ -75,3 +75,34 @@ export const formatCompactNumber = (number: number) => {
     maximumFractionDigits: 1,
   }).format(number);
 };
+
+/**
+ * How long after creation a post, reply, or sub-reply can still be edited.
+ * Keep in sync with the `900000` literal in database.rules.json (rules can't
+ * import constants).
+ */
+export const EDIT_WINDOW_MS = 15 * 60 * 1000;
+
+/**
+ * Milliseconds left in the edit window for content created at `createdAt`.
+ * An object timestamp is a pending server-timestamp placeholder (the write
+ * hasn't round-tripped yet), so the content was created just now. A missing
+ * timestamp is treated as expired, matching the rules (which require a number).
+ */
+export const getEditWindowRemainingMs = (
+  createdAt: number | object | undefined,
+  now: number = Date.now(),
+): number => {
+  if (typeof createdAt === "number") return createdAt + EDIT_WINDOW_MS - now;
+  if (createdAt && typeof createdAt === "object") return EDIT_WINDOW_MS;
+  return -1;
+};
+
+/**
+ * Whether content created at `createdAt` can still be edited at `now`.
+ * Mirrors the server rule `now <= timestamp + 900000`.
+ */
+export const isWithinEditWindow = (
+  createdAt: number | object | undefined,
+  now: number = Date.now(),
+): boolean => getEditWindowRemainingMs(createdAt, now) >= 0;
