@@ -96,6 +96,7 @@ import {
   buildDeleteUpdates,
   buildEditUpdates,
 } from "./updateBuilders.ts";
+import { isWithinEditWindow } from "../utils.ts";
 
 /**
  * creates a new post, reply, or sub-reply.
@@ -135,14 +136,27 @@ export const createPost = async ({
   return newKey;
 };
 
+/** thrown by updatePost when the edit window for the content has passed. */
+export class EditWindowClosedError extends Error {
+  constructor() {
+    super("edit window has closed");
+    this.name = "EditWindowClosedError";
+  }
+}
+
 /**
  * updates content in the correct tree (posts/, replies/, or subreplies/).
  * accepts the post object directly so callers don't thread multiple id params.
+ * refuses to write once the edit window has passed (the rules enforce the
+ * same limit server-side).
  */
 export const updatePost = async (
-  post: Pick<Post, "id" | "parentPostId" | "parentReplyId">,
+  post: Pick<Post, "id" | "parentPostId" | "parentReplyId" | "timestamp">,
   changes: Partial<Pick<Post, "postContent" | "editedAt">>,
 ) => {
+  if (!isWithinEditWindow(post.timestamp)) {
+    throw new EditWindowClosedError();
+  }
   return update(ref(db), buildEditUpdates(post, changes));
 };
 
