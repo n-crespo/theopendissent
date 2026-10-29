@@ -38,11 +38,13 @@ export const FeedItem = memo(
 
     const {
       uid,
+      canEdit,
       isEditing,
       setIsEditing,
       editContent,
       setEditContent,
       isSaving,
+      editError,
       saveEdit,
       handleCancel,
       triggerDelete,
@@ -142,14 +144,25 @@ export const FeedItem = memo(
             </div>
 
             <div className="flex items-center gap-x-2">
-              {isOwner ? (
+              {isOwner && canEdit ? (
                 <button
                   onClick={(e) => handleAction(e, () => setIsEditing(true))}
                   className="p-2 rounded-lg text-slate-400 hover:text-logo-blue hover:bg-slate-50 transition-colors"
+                  aria-label="Edit"
                 >
                   <i className="bi bi-pencil-square text-base"></i>
                 </button>
-              ) : uid ? (
+              ) : isOwner && !isEditing ? (
+                // edit window has closed: the delete action (normally inside
+                // the edit view) takes the edit button's place
+                <button
+                  onClick={(e) => handleAction(e, triggerDelete)}
+                  className="p-2 rounded-lg text-slate-400 hover:text-logo-red hover:bg-red-50 transition-colors"
+                  aria-label="Delete"
+                >
+                  <i className="bi bi-trash3 text-base"></i>
+                </button>
+              ) : !isOwner && uid ? (
                 <button
                   onClick={(e) =>
                     handleAction(e, () => uid && reportPost(item.id, uid))
@@ -181,12 +194,17 @@ export const FeedItem = memo(
                   {charsLeft}
                 </span>
               </div>
+              {editError && (
+                <p className="text-xs font-medium text-logo-red">
+                  {editError}
+                </p>
+              )}
               <div className="flex items-center justify-between">
                 <div className="flex gap-x-2">
                   <button
                     className="px-5 py-2 bg-logo-blue text-white rounded-lg text-xs font-bold disabled:opacity-50"
                     onClick={(e) => handleAction(e, saveEdit)}
-                    disabled={isSaving || !editContent.trim()}
+                    disabled={isSaving || !editContent.trim() || !canEdit}
                   >
                     {isSaving ? "Saving..." : "Save"}
                   </button>
@@ -304,6 +322,9 @@ export const FeedItem = memo(
     p.item.postContent === n.item.postContent &&
     p.item.replyCount === n.item.replyCount &&
     p.item.editedAt === n.item.editedAt &&
+    // pending server timestamp -> real number must reach usePostActions so
+    // the edit-window timer is scheduled from the actual creation time
+    p.item.timestamp === n.item.timestamp &&
     p.item.interactionScore === n.item.interactionScore &&
     p.highlighted === n.highlighted &&
     p.onReply === n.onReply,
