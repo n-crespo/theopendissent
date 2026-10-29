@@ -104,5 +104,11 @@ pnpm test:integration # integration testing
 - EDITS
   - ALLOWS
     - owner edit postContent
+    - owner edit within the 15 min edit window (post/reply/subreply) (3)
+    - owner delete after the edit window (3)
+    - replying to a post/reply whose edit window has closed
   - DENIES
     - non-owner edit postContent
+    - owner edit of postContent and/or editedAt after the edit window (3)
+    - removing postContent from existing content (3)
+    - edit of content with no numeric timestamp (3)

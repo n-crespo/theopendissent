@@ -18,6 +18,7 @@ const uidCurrent = "user_current"; // currently logged in user, used as target
 const uidOther = "user_other"; // some other logged in userA
 const postId = "post_1";
 const replyId = "reply_1";
+const MINUTE = 60 * 1000;
 
 let testEnv: RulesTestEnvironment;
 
@@ -744,6 +745,121 @@ describe("Realtime Database rules", () => {
           await assertFails(dbUpdate(dbGuest, path, edit));
         },
       );
+    });
+
+    describe("Edit window", () => {
+      const ageContent = (path: string, ageMs: number) =>
+        testEnv.withSecurityRulesDisabled((c) =>
+          dbSet(dbFromContext(c), `${path}/timestamp`, Date.now() - ageMs),
+        );
+
+      it.each(scenarios)(
+        "allows owner to edit $label just inside the window (14 min old)",
+        async ({ path }) => {
+          await ageContent(path, 14 * MINUTE);
+          await assertSucceeds(
+            dbUpdate(userDb(uidCurrent), path, {
+              postContent: "late but ok",
+              editedAt: Date.now(),
+            }),
+          );
+        },
+      );
+
+      it.each(scenarios)(
+        "denies owner from editing $label after the window (16 min old)",
+        async ({ path }) => {
+          await ageContent(path, 16 * MINUTE);
+          const db = userDb(uidCurrent);
+
+          // the client's real edit payload
+          await assertFails(
+            dbUpdate(db, path, {
+              postContent: "too late",
+              editedAt: Date.now(),
+            }),
+          );
+          // each field on its own
+          await assertFails(dbUpdate(db, path, { postContent: "too late" }));
+          await assertFails(dbUpdate(db, path, { editedAt: Date.now() }));
+          // removing the content counts as an edit too
+          await assertFails(dbSet(db, `${path}/postContent`, null));
+        },
+      );
+
+      it.each(scenarios)(
+        "denies editing $label when it has no numeric timestamp",
+        async ({ path }) => {
+          await testEnv.withSecurityRulesDisabled((c) =>
+            dbSet(dbFromContext(c), `${path}/timestamp`, null),
+          );
+          await assertFails(
+            dbUpdate(userDb(uidCurrent), path, { postContent: "no ts" }),
+          );
+        },
+      );
+
+      it.each(scenarios)(
+        "allows owner to delete $label after the window",
+        async ({ path, lookup, profile }) => {
+          await ageContent(path, 60 * MINUTE);
+          await assertSucceeds(
+            dbUpdate(userDb(uidCurrent), "/", {
+              [path]: null,
+              [profile]: null,
+              [lookup]: null,
+            }),
+          );
+        },
+      );
+
+      it("allows replying to a post (and reply) whose window has closed", async () => {
+        await ageContent(scenarios[0].path, 60 * MINUTE);
+        await ageContent(scenarios[1].path, 60 * MINUTE);
+        const db = userDb(uidOther);
+
+        const newReply = "reply_late";
+        await assertSucceeds(
+          dbUpdate(db, "/", {
+            [`replies/${postId}/${newReply}`]: {
+              id: newReply,
+              postContent: "late reply",
+              timestamp: { ".sv": "timestamp" },
+              parentPostId: postId,
+              interactionScore: 1,
+              replyCount: 0,
+              authorDisplay: "Anon",
+            },
+            [`users/${uidOther}/replies/${postId}/${newReply}`]: true,
+            [`authorLookup/${newReply}`]: {
+              uid: uidOther,
+              type: "reply",
+              postId,
+            },
+          }),
+        );
+
+        const newSub = "sub_late";
+        await assertSucceeds(
+          dbUpdate(db, "/", {
+            [`subreplies/${postId}/${replyId}/${newSub}`]: {
+              id: newSub,
+              postContent: "late sub-reply",
+              timestamp: { ".sv": "timestamp" },
+              parentPostId: postId,
+              parentReplyId: replyId,
+              authorDisplay: "Anon",
+            },
+            [`users/${uidOther}/subreplies/${postId}/${replyId}/${newSub}`]: true,
+            [`authorLookup/${newSub}`]: {
+              uid: uidOther,
+              type: "subreply",
+              postId,
+              replyId,
+            },
+          }),
+        );
+      });
     });
   });
 });

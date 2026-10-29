@@ -14,6 +14,7 @@ import {
   buildEditUpdates,
   buildShareUrl,
 } from "../src/lib/updateBuilders.ts";
+import { EDIT_WINDOW_MS } from "../src/utils.ts";
 
 const PROJECT_ID = "the-open-dissent-prod";
 const DB_NAME = "the-open-dissent-prod-default-rtdb";
@@ -782,6 +783,33 @@ describe("Integration tests (updateBuilders + rules)", () => {
       );
 
       await assertFails(dbUpdate(userDb(uidOther), "/", updates));
+    });
+
+    it("denies owner from editing once the edit window has passed", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await dbFromContext(context)
+          .ref(`posts/${postId}/timestamp`)
+          .set(Date.now() - EDIT_WINDOW_MS - 60 * 1000);
+      });
+
+      const updates = buildEditUpdates(
+        { id: postId, parentPostId: undefined, parentReplyId: undefined },
+        { postContent: "too late", editedAt: Date.now() },
+      );
+
+      await assertFails(dbUpdate(userDb(uid), "/", updates));
+
+      // deleting is still allowed after the window
+      await assertSucceeds(
+        dbUpdate(
+          userDb(uid),
+          "/",
+          buildDeleteUpdates(
+            { id: postId, parentPostId: undefined, parentReplyId: undefined },
+            uid,
+          ),
+        ),
+      );
     });
 
     it("denies guest from editing", async () => {
