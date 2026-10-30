@@ -145,7 +145,7 @@ function Layout() {
         {/* discussions bring their own top bar and reply bar on phones */}
         {!isDiscussion && <Header />}
 
-        <div className="relative mx-auto w-full max-w-160 px-3 rail:grid rail:max-w-none rail:grid-cols-[84px_minmax(0,600px)] rail:justify-center rail:gap-5 rail:px-4 wide:grid-cols-[84px_minmax(0,600px)_300px] wide:gap-8">
+        <div className="relative mx-auto w-full max-w-160 px-3 rail:grid rail:max-w-none rail:grid-cols-[84px_minmax(0,560px)] rail:justify-center rail:gap-5 rail:px-4 wide:grid-cols-[84px_minmax(0,560px)_300px] wide:gap-8">
           <SideRail onCompose={() => handleOpenCompose(true)} />
 
           {/* FEED (CENTER) */}
