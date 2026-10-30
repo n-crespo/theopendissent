@@ -7,8 +7,8 @@ const SORT_TABS: { id: SortOption; label: string }[] = [
 ];
 
 const SORT_DESCRIPTIONS: Record<SortOption, string> = {
-  random: "No algorithm. Just a shuffle.",
-  newest: "Latest first.",
+  random: "No algorithm, just a shuffle.",
+  newest: "Newest first.",
 };
 
 export const FeedSortToggle = () => {
