@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { memo, useState } from "react";
 import { Post } from "../../types";
-import { timeAgo } from "../../utils";
+import { timeAgo, getStanceLabel } from "../../utils";
 import { usePostActions } from "../../hooks/usePostActions";
 import { useShare } from "../../hooks/useShare";
 import { useReport } from "../../hooks/useReport";
@@ -297,7 +297,8 @@ export const FeedItem = memo(
             <div className="flex gap-3 items-center justify-center py-3 border-x border-slate-100">
               <div className="text-base text-slate-400">Stance:</div>
               <div
-                title={`Stance: ${displayScore}`}
+                title={`Stance: ${displayScore} (${getStanceLabel(score)})`}
+                aria-label={`Stance: ${displayScore} (${getStanceLabel(score)})`}
                 style={{ backgroundColor: stanceColor }}
                 className="px-4 py-2 rounded-xl shadow-lg text-sm font-bold text-white select-none cursor-default"
               >
