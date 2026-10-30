@@ -343,7 +343,7 @@ export const FeedItem = memo(
                 aria-label={`Stance: ${displayScore} (${getStanceLabel(score)})`}
                 className="flex items-center gap-x-1.5 h-10 px-2 text-sm font-medium text-stone-500 select-none cursor-default"
               >
-                Stance
+                Stance:
                 <StanceMeter score={score} color={stanceColor} />
               </span>
             )}
