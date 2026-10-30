@@ -72,6 +72,23 @@
   --animate-bounceHorizontal: bounceHorizontal 1s infinite ease-in-out;
 }
 
+/* keyboard focus ring (base layer, so `outline-none` utilities still opt out) */
+@layer base {
+  :is(
+      button,
+      a,
+      [role="button"],
+      [role="switch"],
+      [tabindex]:not([tabindex="-1"]),
+      input,
+      textarea,
+      select
+    ):focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-logo-blue) 50%, transparent);
+    outline-offset: 2px;
+  }
+}
+
 /* Scrollbar styling for PostPopupModal */
 .custom-scrollbar {
   scrollbar-width: thin;
