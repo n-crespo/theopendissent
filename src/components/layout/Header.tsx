@@ -10,7 +10,7 @@ export const Header = () => {
           <img
             src={logoUrl}
             alt="The Open Dissent"
-            className="block h-4.5 w-auto"
+            className="block h-5.5 w-auto"
             draggable="false"
           />
         </Link>
