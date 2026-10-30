@@ -33,11 +33,6 @@
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 
-  /* reading text: post content and the welcome letter. ui stays sans */
-  --font-serif:
-    "Source Serif 4 Variable", Georgia, "Times New Roman", serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1rem;
 
