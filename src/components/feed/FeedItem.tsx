@@ -344,7 +344,7 @@ export const FeedItem = memo(
                 className="flex items-center gap-x-1.5 h-10 px-2 text-sm font-medium text-stone-500 select-none cursor-default"
               >
                 Stance:
-                <StanceMeter score={score} color={stanceColor} />
+                <StanceMeter score={score} />
               </span>
             )}
 

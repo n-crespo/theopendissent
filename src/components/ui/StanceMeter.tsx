@@ -1,30 +1,23 @@
+import { DEFAULT_STOPS, getInterpolatedColor } from "../../color-utils";
 import { STANCE_VALUES } from "../../utils";
 
 interface StanceMeterProps {
   score: number;
-  color: string;
 }
 
-/** A row of ticks from -3 to +3, filled outward from the taller neutral tick. */
-export const StanceMeter = ({ score, color }: StanceMeterProps) => (
-  <span aria-hidden="true" className="flex items-center gap-x-0.5">
-    {STANCE_VALUES.map((value) => {
-      const isFilled =
-        score === 0
-          ? value === 0
-          : score > 0
-            ? value > 0 && value <= score
-            : value < 0 && value >= score;
-
-      return (
-        <span
-          key={value}
-          style={isFilled ? { backgroundColor: color } : undefined}
-          className={`w-1 rounded-full ${value === 0 ? "h-4" : "h-3"} ${
-            isFilled ? "" : "bg-stone-200"
-          }`}
-        ></span>
-      );
-    })}
+/** A small band of the stance scale from -3 to +3, with the score lifted out. */
+export const StanceMeter = ({ score }: StanceMeterProps) => (
+  <span aria-hidden="true" className="flex items-center">
+    {STANCE_VALUES.map((value) => (
+      <span
+        key={value}
+        style={{ backgroundColor: getInterpolatedColor(value, DEFAULT_STOPS) }}
+        className={
+          value === score
+            ? "relative z-10 h-4.5 w-3.25 rounded-sm shadow-[0_0_0_2px_white]"
+            : "h-2.5 w-2.75 first:rounded-l-sm last:rounded-r-sm"
+        }
+      ></span>
+    ))}
   </span>
 );

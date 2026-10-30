@@ -318,11 +318,14 @@ export const ComposeModal = ({
                   <div
                     role="radiogroup"
                     aria-labelledby="stance-label"
-                    className="flex justify-between gap-2"
+                    className="flex"
                   >
                     {STANCE_VALUES.map((val) => {
                       const color = getInterpolatedColor(val, DEFAULT_STOPS);
                       const isSelected = score === val;
+                      // the middle of the scale is too light for white numbers
+                      const textColor =
+                        Math.abs(val) <= 1 ? "text-stone-900" : "text-white";
                       return (
                         <button
                           key={val}
@@ -331,16 +334,9 @@ export const ComposeModal = ({
                           aria-label={`${formatStance(val)} ${getStanceLabel(val)}`}
                           title={getStanceLabel(val)}
                           onClick={() => setScore(val)}
-                          style={
-                            isSelected
-                              ? { backgroundColor: color }
-                              : {
-                                  backgroundColor: `color-mix(in srgb, ${color} 18%, white)`,
-                                  borderColor: `color-mix(in srgb, ${color} 45%, white)`,
-                                }
-                          }
-                          className={`flex-1 py-3 rounded-control text-base font-bold border transition-all duration-200
-                            ${isSelected ? "text-white border-transparent shadow-xl scale-110 z-10" : "text-stone-700 hover:scale-105 scale-100"}`}
+                          style={{ backgroundColor: color }}
+                          className={`relative flex-1 py-3 text-base font-bold transition-all duration-200 first:rounded-l-control last:rounded-r-control focus-visible:z-20 ${textColor}
+                            ${isSelected ? "z-10 rounded-control scale-114 shadow-[0_0_0_2px_white]" : "hover:brightness-95"}`}
                         >
                           {formatStance(val)}
                         </button>
