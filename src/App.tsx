@@ -29,7 +29,7 @@ import { FeedSortProvider } from "./context/FeedSortContext";
 import { useFeedSort } from "./context/FeedSortContext";
 import { usePosts } from "./hooks/usePosts";
 import { SideRail } from "./components/layout/SideRail";
-import { Margin } from "./components/layout/Margin";
+import { OrgCards } from "./components/layout/OrgCards";
 import { BottomTabs } from "./components/layout/BottomTabs";
 import { Post } from "./types/index";
 import { ComposeModal } from "./components/feed/ComposeModal";
@@ -162,7 +162,12 @@ function Layout() {
             />
           </main>
 
-          <Margin />
+          <aside
+            aria-label="From The Open Dissent"
+            className="sticky top-0 -mx-1 hidden h-screen overflow-y-auto px-1 py-4 [scrollbar-width:none] wide:block"
+          >
+            <OrgCards />
+          </aside>
         </div>
 
         {!isDiscussion && (
