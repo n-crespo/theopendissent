@@ -11,11 +11,11 @@ export const InfoModal = () => {
 
   return (
     <div className="flex flex-col">
-      <h2 className="text-xl font-semibold mb-6 text-slate-900 text-center">
+      <h2 className="text-xl font-semibold mb-6 text-stone-900 text-center">
         Welcome to The Open Dissent! <br /> Here's how this works:
       </h2>
 
-      <div className="w-full bg-slate-50 rounded-2xl p-[clamp(1rem,3vw,1.25rem)] mb-8 flex flex-col border border-slate-200 text-sm text-slate-700 leading-relaxed">
+      <div className="w-full bg-stone-50 rounded-card p-[clamp(1rem,3vw,1.25rem)] mb-8 flex flex-col border border-stone-200 text-sm text-stone-700 leading-relaxed">
         <p className="mb-4">
           The Open Dissent was made <em>by</em> students, <em>for</em> students,
           with the goal of
@@ -39,7 +39,7 @@ export const InfoModal = () => {
         <div className="mt-2 text-center">
           Looking forward to disagreeing (or agreeing) with you,
           <br />
-          <span className="font-bold bg-linear-to-r from-logo-red via-logo-green to-logo-blue bg-clip-text text-transparent animate-shimmer text-md tracking-tight mt-1 inline-block">
+          <span className="font-bold bg-linear-to-r from-logo-red via-logo-green to-logo-blue bg-clip-text text-transparent animate-shimmer text-base tracking-tight mt-1 inline-block">
             The Open Dissent Leadership
           </span>
         </div>
@@ -51,7 +51,7 @@ export const InfoModal = () => {
           onClick={closeModal}
         >
           Join the Conversation
-          <i className="bi bi-arrow-right transition-transform animate-[bounceHorizontal_1s_infinite]"></i>
+          <i className="bi bi-arrow-right transition-transform animate-bounceHorizontal"></i>
         </button>
       </div>
     </div>

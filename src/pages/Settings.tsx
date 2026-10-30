@@ -24,12 +24,12 @@ export const Settings = () => {
 
       <header className="grid grid-cols-3 items-center w-full mt-2 mb-4">
         <button
-          className="justify-self-start p-2 -ml-2 rounded-xl text-slate-400 hover:text-slate-900 transition-all active:scale-95"
+          className="justify-self-start p-2 -ml-2 rounded-control text-stone-400 hover:text-stone-900 transition-all active:scale-95"
           onClick={() => navigate(-1)}
         >
           <i className="bi bi-arrow-left text-2xl"></i>
         </button>
-        <h1 className="justify-self-center text-lg font-bold text-slate-900 tracking-tight">
+        <h1 className="justify-self-center text-lg font-bold text-stone-900 tracking-tight">
           Settings
         </h1>
       </header>
@@ -41,24 +41,24 @@ export const Settings = () => {
       >
         {/* General Settings Section */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-bold text-slate-900 px-1 tracking-tight">
+          <h2 className="text-lg font-bold text-stone-900 px-1 tracking-tight">
             Account Info
           </h2>
-          <div className="flex flex-col bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden p-[clamp(1rem,3vw,1.25rem)] gap-y-4">
+          <div className="flex flex-col bg-white border border-stone-200 shadow-sm rounded-card overflow-hidden p-[clamp(1rem,3vw,1.25rem)] gap-y-4">
             <div className="flex flex-col">
-              <span className="flex items-center flex-wrap gap-1 text-[0.7rem] text-slate-400 font-medium tracking-tight">
+              <span className="flex items-center flex-wrap gap-1 text-2xs text-stone-400 font-medium tracking-tight">
                 Email
               </span>
-              <span className="text-[1.0625rem] text-slate-800 leading-relaxed font-medium">
+              <span className="text-base text-stone-800 leading-relaxed font-medium">
                 {user.email}
               </span>
             </div>
             {user.displayName && (
-              <div className="flex flex-col pt-4 border-t border-slate-100">
-                <span className="flex items-center flex-wrap gap-1 text-[0.7rem] text-slate-400 font-medium tracking-tight">
+              <div className="flex flex-col pt-4 border-t border-stone-100">
+                <span className="flex items-center flex-wrap gap-1 text-2xs text-stone-400 font-medium tracking-tight">
                   Display Name
                 </span>
-                <span className="text-[1.0625rem] text-slate-800 leading-relaxed font-medium">
+                <span className="text-base text-stone-800 leading-relaxed font-medium">
                   {user.displayName}
                 </span>
               </div>
@@ -69,24 +69,24 @@ export const Settings = () => {
         {/* Danger Zone */}
         <section className="flex flex-col gap-3 mt-4">
           <h2 className="text-lg font-bold text-logo-red px-1 tracking-tight flex items-center gap-2">
-            <i className="bi bi-exclamation-triangle-fill text-[18px]"></i>
+            <i className="bi bi-exclamation-triangle-fill text-xl"></i>
             Danger Zone
           </h2>
-          <div className="flex flex-col bg-white border border-logo-red/30 shadow-sm rounded-2xl overflow-hidden p-[clamp(1rem,3vw,1.25rem)] gap-y-4">
+          <div className="flex flex-col bg-white border border-logo-red/30 shadow-sm rounded-card overflow-hidden p-[clamp(1rem,3vw,1.25rem)] gap-y-4">
             <div className="flex flex-col gap-2">
-              <h3 className="font-semibold text-slate-900 leading-snug">
+              <h3 className="font-semibold text-stone-900 leading-snug">
                 Delete Account
               </h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
+              <p className="text-sm text-stone-500 leading-relaxed">
                 Deleting your account is irreversible. Please be certain before
                 proceeding.
               </p>
             </div>
 
-            <div className="pt-2 border-t border-slate-100 mt-2">
+            <div className="pt-2 border-t border-stone-100 mt-2">
               <button
                 onClick={() => openModal("deleteAccount")}
-                className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold text-white cursor-pointer transition-all active:scale-95 bg-logo-red hover:brightness-110 gap-x-2 mt-2"
+                className="w-full sm:w-auto inline-flex items-center justify-center rounded-control px-5 py-3 text-sm font-semibold text-white cursor-pointer transition-all active:scale-95 bg-logo-red hover:brightness-110 gap-x-2 mt-2"
               >
                 <i className="bi bi-trash3-fill"></i>
                 Delete my account

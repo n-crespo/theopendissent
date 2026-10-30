@@ -118,7 +118,7 @@ export const FeedList = ({
       {/* Load More / End indicator */}
       <div className="mt-2 flex flex-col items-center justify-center w-full min-h-24 pb-12">
         {loading && hasMore && posts.length > 0 ? (
-          <div className="flex items-center gap-3 text-slate-400 text-sm font-semibold animate-in fade-in duration-500">
+          <div className="flex items-center gap-3 text-stone-400 text-sm font-semibold animate-in fade-in duration-500">
             <LoadingDots />
             <span className="tracking-tight">Finding more perspectives...</span>
           </div>
@@ -126,7 +126,7 @@ export const FeedList = ({
           <button
             onClick={onLoadMore}
             disabled={loading}
-            className="px-6 py-2.5 rounded-full bg-white hover:bg-slate-50 font-semibold text-sm text-slate-400 cursor-pointer transition-all border border-slate-200 shadow-sm"
+            className="px-6 py-2.5 rounded-full bg-white hover:bg-stone-50 font-semibold text-sm text-stone-400 cursor-pointer transition-all border border-stone-200 shadow-sm"
           >
             Load more posts
           </button>
@@ -134,7 +134,7 @@ export const FeedList = ({
           !hasMore &&
           posts.length > 0 && (
             <div className="flex flex-col items-center gap-2 py-8">
-              <div className="h-px w-12 bg-slate-300 mb-2 opacity-40" />
+              <div className="h-px w-12 bg-stone-300 mb-2 opacity-40" />
               <span className="text-sm font-semibold text-logo-blue opacity-20">
                 You've reached the end!
               </span>

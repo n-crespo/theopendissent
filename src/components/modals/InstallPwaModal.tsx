@@ -4,15 +4,15 @@
  */
 export const InstallPwaModal = () => {
   return (
-    <div className="flex flex-col text-slate-700">
-      <h2 className="text-xl font-semibold mb-6 text-slate-900 text-center">
+    <div className="flex flex-col text-stone-700">
+      <h2 className="text-xl font-semibold mb-6 text-stone-900 text-center">
         Install on iOS
       </h2>
 
       <div className="pt-2">
-        <ul className="space-y-4 list-none pl-0 text-sm text-slate-600">
+        <ul className="space-y-4 list-none pl-0 text-sm text-stone-600">
           <li className="flex items-start gap-3">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-stone-100 text-xs font-bold text-stone-500">
               1
             </div>
             <span className="pt-0.5">
@@ -22,7 +22,7 @@ export const InstallPwaModal = () => {
             </span>
           </li>
           <li className="flex items-start gap-3">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-stone-100 text-xs font-bold text-stone-500">
               2
             </div>
             <span className="pt-0.5">
@@ -31,7 +31,7 @@ export const InstallPwaModal = () => {
             </span>
           </li>
           <li className="flex items-start gap-3">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-stone-100 text-xs font-bold text-stone-500">
               3
             </div>
             <span className="pt-0.5">

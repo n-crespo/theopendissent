@@ -158,12 +158,12 @@ export const PostDetails = () => {
 
       <header className="grid grid-cols-3 items-center w-full">
         <button
-          className="justify-self-start p-2 -ml-2 rounded-xl text-slate-400 hover:text-slate-900 transition-all active:scale-95"
+          className="justify-self-start p-2 -ml-2 rounded-control text-stone-400 hover:text-stone-900 transition-all active:scale-95"
           onClick={handleBack}
         >
           <i className="bi bi-arrow-left text-2xl"></i>
         </button>
-        <h1 className="justify-self-center text-lg font-bold text-slate-900 tracking-tight">
+        <h1 className="justify-self-center text-lg font-bold text-stone-900 tracking-tight">
           Post
         </h1>
       </header>
@@ -178,8 +178,8 @@ export const PostDetails = () => {
         </section>
 
         <div className="flex items-center gap-x-4 px-2">
-          <h4 className="text-sm font-semibold text-slate-400">Discussion</h4>
-          <div className="h-px w-full bg-slate-100"></div>
+          <h4 className="text-sm font-semibold text-stone-400">Discussion</h4>
+          <div className="h-px w-full bg-stone-100"></div>
         </div>
 
         <section className="flex flex-col gap-y-4">
