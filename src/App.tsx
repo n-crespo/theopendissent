@@ -41,6 +41,7 @@ function Layout() {
   const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
   const navType = useNavigationType();
+  const isDiscussion = pathname.startsWith("/post/");
 
   // usePosts lives here so it NEVER unmounts during navigation.
   // Feed state is passed to child routes through outlet context.
@@ -141,7 +142,8 @@ function Layout() {
           showLanding ? "opacity-0 invisible" : "opacity-100 visible"
         }`}
       >
-        <Header />
+        {/* discussions bring their own top bar and reply bar on phones */}
+        {!isDiscussion && <Header />}
 
         <div className="relative mx-auto w-full max-w-160 px-3 rail:grid rail:max-w-none rail:grid-cols-[84px_minmax(0,600px)] rail:justify-center rail:gap-5 rail:px-4 wide:grid-cols-[84px_minmax(0,600px)_300px] wide:gap-8">
           <SideRail onCompose={() => handleOpenCompose(true)} />
@@ -163,7 +165,9 @@ function Layout() {
           <Margin />
         </div>
 
-        <BottomTabs onCompose={() => handleOpenCompose(true)} />
+        {!isDiscussion && (
+          <BottomTabs onCompose={() => handleOpenCompose(true)} />
+        )}
       </div>
 
       <GlobalModal />

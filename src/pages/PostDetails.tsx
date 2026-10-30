@@ -51,7 +51,7 @@ export const PostDetails = () => {
   const [showPostSkeleton, setShowPostSkeleton] = useState(false);
   const [showRepliesSkeleton, setShowRepliesSkeleton] = useState(false);
 
-  const { loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
     let timeoutId: number;
@@ -156,15 +156,16 @@ export const PostDetails = () => {
         />
       )}
 
-      <header className="grid grid-cols-3 items-center w-full">
+      <header className="fixed inset-x-0 top-0 z-50 flex items-center gap-x-2 border-b border-stone-200 bg-logo-offwhite px-3 pt-[env(safe-area-inset-top)] h-[calc(3.5rem+env(safe-area-inset-top))] rail:static rail:h-auto rail:border-0 rail:bg-transparent rail:p-0">
         <button
-          className="justify-self-start p-2 -ml-2 rounded-control text-stone-400 hover:text-stone-900 transition-all active:scale-95"
+          className="p-2 -ml-2 rounded-control text-stone-400 hover:text-stone-900 transition-all active:scale-95"
           onClick={handleBack}
+          aria-label="Back"
         >
           <i className="bi bi-arrow-left text-2xl"></i>
         </button>
-        <h1 className="justify-self-center text-lg font-bold text-stone-900 tracking-tight">
-          Post
+        <h1 className="text-lg font-bold text-stone-900 tracking-tight">
+          Discussion
         </h1>
       </header>
 
@@ -188,7 +189,11 @@ export const PostDetails = () => {
         </div>
 
         <section className="flex flex-col gap-y-4">
-          <ComposeTrigger placeholder="Your thoughts?" />
+          <ComposeTrigger
+            placeholder="Your thoughts?"
+            signedOutPlaceholder="Sign in with your UCLA email to reply"
+            className="hidden rail:flex"
+          />
           <AnimatePresence initial={shouldAnimateInitial}>
             {showRepliesSkeleton && replies.length === 0 ? (
               <motion.div
@@ -243,6 +248,17 @@ export const PostDetails = () => {
           </AnimatePresence>
         </section>
       </main>
+
+      {/* takes over from the inline compose box on phones */}
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-stone-200 bg-logo-offwhite px-3 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] rail:hidden">
+        <button
+          onClick={() => setIsComposeOpen(true)}
+          disabled={!livePost}
+          className="w-full rounded-full border border-stone-200 bg-white px-4 py-2.5 text-left text-stone-500"
+        >
+          {user ? "Your thoughts?" : "Sign in to reply"}
+        </button>
+      </div>
     </div>
   );
 };
