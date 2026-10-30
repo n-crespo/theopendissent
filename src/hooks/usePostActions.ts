@@ -3,6 +3,7 @@ import { Post } from "../types";
 import { deletePost, updatePost, EditWindowClosedError } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
+import { unpinPost } from "./usePosts";
 import {
   EDIT_WINDOW_MS,
   getEditWindowRemainingMs,
@@ -97,6 +98,7 @@ export const usePostActions = (post: Post) => {
       onConfirm: async () => {
         try {
           await deletePost(post, uid);
+          unpinPost(post.id);
         } catch (error) {
           console.error("failed to delete:", error);
         }

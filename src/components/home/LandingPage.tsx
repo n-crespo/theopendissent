@@ -71,7 +71,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
           draggable="false"
         />
         <div className="mx-auto w-max bg-linear-to-r from-logo-red via-logo-green to-logo-blue bg-clip-text text-transparent">
-          <p className="font-bold tracking-wide uppercase text-md">
+          <p className="font-bold tracking-wide uppercase text-base">
             Disagree Better
           </p>
         </div>
@@ -88,7 +88,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-xl font-bold text-slate-900 tracking-tight absolute"
+                className="text-xl font-bold text-stone-900 tracking-tight absolute"
               >
                 {activeIndex === 0
                   ? "Modern social media is ruining politics."
@@ -112,14 +112,14 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
             >
               {/* Front Card */}
               <div
-                className="absolute inset-0 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col"
+                className="absolute inset-0 bg-white border border-stone-200 rounded-card shadow-sm overflow-hidden flex flex-col"
                 style={{
                   backfaceVisibility: "hidden",
                   WebkitBackfaceVisibility: "hidden",
                 }}
               >
                 <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-base flex flex-col justify-center items-center overflow-y-auto custom-scrollbar tracking-tight">
-                  <div className="space-y-5 text-slate-700 leading-relaxed text-center px-4 w-full">
+                  <div className="space-y-5 text-stone-700 leading-relaxed text-center px-4 w-full">
                     <p>
                       Online discussions are littered with bots and
                       misinformation.
@@ -132,12 +132,12 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                       Democracy requires open dissent, but these platforms
                       inherently suppress it.
                     </p>
-                    <p className="text-base font-bold text-slate-900 tracking-tight">
+                    <p className="text-base font-bold text-stone-900 tracking-tight">
                       You deserve better.
                     </p>
                   </div>
                 </div>
-                <div className="p-3 border-t border-slate-100 bg-slate-50/20 text-center shrink-0">
+                <div className="p-3 border-t border-stone-100 bg-stone-50/20 text-center shrink-0">
                   <span className="text-sm font-semibold text-logo-blue group-hover:underline">
                     Tap to see how we're fixing it
                   </span>
@@ -146,7 +146,7 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
 
               {/* Back Card */}
               <div
-                className="absolute inset-0 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col"
+                className="absolute inset-0 bg-white border border-stone-200 rounded-card shadow-sm overflow-hidden flex flex-col"
                 style={{
                   backfaceVisibility: "hidden",
                   WebkitBackfaceVisibility: "hidden",
@@ -154,42 +154,42 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
                 }}
               >
                 <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-base flex flex-col justify-center items-center overflow-y-auto custom-scrollbar tracking-tight">
-                  <ol className="list-decimal list-inside space-y-5 text-left w-fit text-slate-700 max-w-xs sm:max-w-max mx-auto marker:font-bold marker:text-slate-500 px-2">
+                  <ol className="list-decimal list-inside space-y-5 text-left w-fit text-stone-700 max-w-xs sm:max-w-max mx-auto marker:font-bold marker:text-stone-500 px-2">
                     <li className="leading-snug">
-                      <strong className="text-slate-900">
+                      <strong className="text-stone-900">
                         Real, human discussions.
                       </strong>
-                      <p className="text-sm text-slate-500 mt-1 pl-5">
+                      <p className="text-sm text-stone-500 mt-1 pl-5">
                         UCLA email required!
                       </p>
                     </li>
                     <li className="leading-snug">
-                      <strong className="text-slate-900">
+                      <strong className="text-stone-900">
                         No predatory algorithm.
                       </strong>
-                      <p className="text-sm text-slate-500 mt-1 pl-5">
+                      <p className="text-sm text-stone-500 mt-1 pl-5">
                         Addiction not included.
                       </p>
                     </li>
                     <li className="leading-snug">
-                      <strong className="text-slate-900">
+                      <strong className="text-stone-900">
                         Zero engagement metrics.
                       </strong>
-                      <p className="text-sm text-slate-500 mt-1 pl-5">
+                      <p className="text-sm text-stone-500 mt-1 pl-5">
                         More controversial &ne; more valuable.
                       </p>
                     </li>
                     <li className="leading-snug">
-                      <strong className="text-slate-900">
+                      <strong className="text-stone-900">
                         (Optional) anonymity.
                       </strong>
-                      <p className="text-sm text-slate-500 mt-1 pl-5">
+                      <p className="text-sm text-stone-500 mt-1 pl-5">
                         Post anonymously! (or don't)
                       </p>
                     </li>
                   </ol>
                 </div>
-                <div className="p-3 border-t border-slate-100 bg-slate-50/20 text-center shrink-0">
+                <div className="p-3 border-t border-stone-100 bg-stone-50/20 text-center shrink-0">
                   <span className="text-sm font-semibold text-logo-blue group-hover:underline">
                     Tap to flip back
                   </span>
@@ -210,14 +210,14 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
         >
           <button
             onClick={handleListen}
-            className="w-full sm:w-auto px-8 py-4 bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-all active:scale-95 shadow-sm rounded-2xl flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-8 py-4 bg-white border border-stone-200 text-stone-700 font-bold hover:bg-stone-50 transition-all active:scale-95 shadow-sm rounded-card flex items-center justify-center gap-2"
           >
             <i className="bi bi-mic-fill"></i> Listen In
           </button>
 
           <button
             onClick={handleExit}
-            className="w-full sm:flex-1 py-4 text-white hover:brightness-110 transition-all active:scale-95 shadow-lg rounded-2xl bg-linear-to-r from-logo-red via-logo-green to-logo-blue font-bold tracking-wide animate-shimmer bg-size-[200%_auto] flex items-center justify-center gap-2"
+            className="w-full sm:flex-1 py-4 text-white hover:brightness-110 transition-all active:scale-95 shadow-lg rounded-card bg-linear-to-r from-logo-red via-logo-green to-logo-blue font-bold tracking-wide animate-shimmer bg-size-[200%_auto] flex items-center justify-center gap-2"
           >
             Join the conversation. <i className="bi bi-arrow-right"></i>
           </button>

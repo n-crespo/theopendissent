@@ -52,12 +52,12 @@ export const Profile = () => {
     <div className="flex flex-col gap-3">
       <SEO title={title} description="Your Profile" />
       <div className="grid grid-cols-1 items-center w-full px-4">
-        <h1 className="my-2 col-start-1 row-start-1 justify-self-center text-xl font-bold text-slate-900 tracking-tight">
+        <h1 className="my-2 col-start-1 row-start-1 justify-self-center text-xl font-bold text-stone-900 tracking-tight">
           Your Profile
         </h1>
         <button
           onClick={() => navigate("/settings")}
-          className="col-start-1 row-start-1 justify-self-end text-slate-400 hover:text-slate-700 transition-colors flex items-center justify-center h-10 w-10 rounded-full"
+          className="col-start-1 row-start-1 justify-self-end text-stone-400 hover:text-stone-700 transition-colors flex items-center justify-center h-10 w-10 rounded-full"
         >
           <i className="bi bi-gear text-xl"></i>
         </button>
@@ -77,7 +77,7 @@ export const Profile = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="py-20 flex flex-col items-center justify-center gap-4 text-slate-300"
+              className="py-20 flex flex-col items-center justify-center gap-4 text-stone-300"
             >
               <LoadingDots className="scale-125" />
               <span className="text-xs font-bold tracking-wider">
@@ -94,9 +94,9 @@ export const Profile = () => {
               className="flex flex-col gap-4"
             >
               {posts.length === 0 ? (
-                <div className="py-20 text-center border-2 border-dashed border-slate-100 rounded-3xl">
-                  <i className="bi bi-cloud-slash text-4xl text-slate-100 mb-3 block"></i>
-                  <p className="text-slate-400 font-medium italic">
+                <div className="py-20 text-center border-2 border-dashed border-stone-100 rounded-card">
+                  <i className="bi bi-cloud-slash text-4xl text-stone-100 mb-3 block"></i>
+                  <p className="text-stone-400 font-medium italic">
                     No {filter} found.
                   </p>
                 </div>

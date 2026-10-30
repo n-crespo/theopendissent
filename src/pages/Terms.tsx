@@ -2,19 +2,19 @@ import { SEO } from "../components/ui/Seo";
 
 export const Terms = () => {
   return (
-    <div className="flex flex-col gap-6 text-slate-800">
+    <div className="flex flex-col gap-6 text-stone-800">
       <SEO title="Terms" description="Terms of Service" />
       {/* Header Area */}
       <div className="flex flex-col gap-3">
         <div>
           <h1 className="mt-2 text-3xl font-bold">Terms of Service</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-stone-500 mt-1">
             Last Updated: January 2026
           </p>
         </div>
       </div>
 
-      <div className="flex flex-col gap-8 leading-relaxed [&_section]:flex [&_section]:flex-col [&_section]:gap-3 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-slate-900">
+      <div className="flex flex-col gap-8 leading-relaxed [&_section]:flex [&_section]:flex-col [&_section]:gap-3 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-stone-900">
         <section>
           <h2>1. Acceptance of Terms</h2>
           <p>
