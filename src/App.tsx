@@ -11,7 +11,6 @@ import {
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
 import { GlobalModal } from "./components/modals/GlobalModal";
-import { UnauthenticatedFooter } from "./components/layout/UnauthenticatedFooter";
 import { useDeepLinkHandler } from "./hooks/useDeepLinkHandler";
 import { useAuth } from "./context/AuthContext";
 import { useModal } from "./context/ModalContext";
@@ -182,8 +181,6 @@ function Layout() {
           setActiveTarget({ id: newId, parentId })
         }
       />
-
-      {!user && !loading && !showLanding && <UnauthenticatedFooter />}
     </div>
   );
 }
