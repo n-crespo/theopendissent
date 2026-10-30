@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
 import { RoundActionButton } from "../ui/RoundActionButton";
 import { UnreadBadge } from "../ui/UnreadBadge";
-import { SIGN_IN_ICON, useNavItems } from "./useNavItems";
+import { useNavItems } from "./useNavItems";
 
 const tabClass =
   "relative flex flex-1 flex-col items-center justify-center gap-0.5 text-2xs font-semibold";
@@ -55,9 +55,9 @@ export const BottomTabs = ({ onCompose }: { onCompose: () => void }) => {
         {!user && (
           <button
             onClick={() => openModal("signin")}
-            className={`${tabClass} text-logo-blue`}
+            className={`${tabClass} text-stone-500`}
           >
-            <i className={`bi ${SIGN_IN_ICON} text-xl leading-none`}></i>
+            <i className="bi bi-person text-xl leading-none"></i>
             Sign in
           </button>
         )}

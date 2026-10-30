@@ -3,7 +3,10 @@ import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
 import { RoundActionButton } from "../ui/RoundActionButton";
 import { UnreadBadge } from "../ui/UnreadBadge";
-import { SIGN_IN_ICON, useNavItems } from "./useNavItems";
+import { useNavItems } from "./useNavItems";
+
+// the glyph's square sits right of its center, so shift it to center the square
+const SIGN_IN_ICON = "bi-box-arrow-in-right -translate-x-[0.156em]";
 
 /** Desktop navigation. Below the rail breakpoint BottomTabs takes over. */
 export const SideRail = ({ onCompose }: { onCompose: () => void }) => {
