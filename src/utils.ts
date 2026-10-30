@@ -106,3 +106,24 @@ export const isWithinEditWindow = (
   createdAt: number | object | undefined,
   now: number = Date.now(),
 ): boolean => getEditWindowRemainingMs(createdAt, now) >= 0;
+
+/** Valid stance scores for a reply, from strongest disagreement to agreement. */
+export const STANCE_VALUES = [-3, -2, -1, 0, 1, 2, 3] as const;
+
+const STANCE_LABELS: Record<number, string> = {
+  [-3]: "Strongly disagree",
+  [-2]: "Disagree",
+  [-1]: "Somewhat disagree",
+  0: "Neutral",
+  1: "Somewhat agree",
+  2: "Agree",
+  3: "Strongly agree",
+};
+
+/** Formats a stance score with an explicit sign, ex. "+2", "0", "-1". */
+export const formatStance = (score: number): string =>
+  score > 0 ? `+${score}` : `${score}`;
+
+/** Human-readable meaning of a stance score, ex. 2 → "Agree". */
+export const getStanceLabel = (score: number): string =>
+  STANCE_LABELS[score] ?? "Unknown";

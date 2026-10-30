@@ -7,7 +7,12 @@ import { useOwnedPosts } from "../../context/OwnedPostsContext";
 import { createPost, getPostById } from "../../lib/firebase";
 import { pinPostToTop } from "../../hooks/usePosts";
 import { getInterpolatedColor, DEFAULT_STOPS } from "../../color-utils";
-import { EDIT_WINDOW_MS } from "../../utils";
+import {
+  EDIT_WINDOW_MS,
+  STANCE_VALUES,
+  formatStance,
+  getStanceLabel,
+} from "../../utils";
 import { Badge } from "../ui/Badge";
 
 interface ComposeModalProps {
@@ -33,7 +38,8 @@ export const ComposeModal = ({
   const location = useLocation();
 
   const [content, setContent] = useState("");
-  const [score, setScore] = useState(0);
+  // no default stance — direct replies must pick one explicitly
+  const [score, setScore] = useState<number | null>(null);
   const [isPosting, setIsPosting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const isThreadAuthor = Boolean(
@@ -64,10 +70,14 @@ export const ComposeModal = ({
   const limit = 600;
   const charsLeft = limit - content.length;
 
+  // only direct replies carry a stance (not sub-replies or top-level posts)
+  const needsStance = isReply && !isSubReply;
+  const isMissingStance = needsStance && score === null;
+
   useEffect(() => {
     if (isOpen) {
       setContent("");
-      setScore(0);
+      setScore(null);
       setIsAnonymous(true);
       setSubmitError(null);
       document.body.style.overflow = "hidden";
@@ -89,7 +99,7 @@ export const ComposeModal = ({
   };
 
   const handleSubmit = async () => {
-    if (!content.trim() || !user || isPosting) return;
+    if (!content.trim() || !user || isMissingStance || isPosting) return;
 
     setIsPosting(true);
     setSubmitError(null);
@@ -100,7 +110,8 @@ export const ComposeModal = ({
         authorDisplay,
         parentPostId: parentPost?.id,
         parentReplyId: parentReply?.id,
-        score: isReply && !isSubReply ? score : undefined,
+        // handleSubmit bails when a direct reply has no stance, so this is a number
+        score: needsStance && score !== null ? score : undefined,
         isThreadAuthor,
       });
 
@@ -171,7 +182,8 @@ export const ComposeModal = ({
 
               <button
                 onClick={handleSubmit}
-                disabled={!content.trim() || isPosting}
+                disabled={!content.trim() || isMissingStance || isPosting}
+                title={isMissingStance ? "Pick your stance to reply" : undefined}
                 aria-busy={isPosting}
                 className={`inline-flex items-center gap-x-1.5 text-sm font-bold text-logo-blue transition-opacity ${isPosting ? "" : "disabled:opacity-30"}`}
               >
@@ -275,27 +287,60 @@ export const ComposeModal = ({
               )}
 
               {/* Stance Selector: only for direct replies (not sub-replies) */}
-              {isReply && !isSubReply && (
-                <div className="space-y-4">
-                  <label className="text-sm font-bold text-logo-blue opacity-30">
-                    Your Stance:
-                  </label>
-                  <div className="flex justify-between gap-2 my-2">
-                    {[-3, -2, -1, 0, 1, 2, 3].map((val) => {
-                      const bgColor = getInterpolatedColor(val, DEFAULT_STOPS);
+              {needsStance && (
+                <div className="space-y-3">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span
+                      id="stance-label"
+                      className="text-sm font-bold text-stone-600"
+                    >
+                      Your Stance:
+                    </span>
+                    <span
+                      aria-live="polite"
+                      className={`text-sm font-semibold ${score === null ? "text-stone-400" : "text-stone-700"}`}
+                    >
+                      {score === null
+                        ? "Pick your stance to reply"
+                        : `${formatStance(score)} ${getStanceLabel(score)}`}
+                    </span>
+                  </div>
+                  <div
+                    role="radiogroup"
+                    aria-labelledby="stance-label"
+                    className="flex justify-between gap-2"
+                  >
+                    {STANCE_VALUES.map((val) => {
+                      const color = getInterpolatedColor(val, DEFAULT_STOPS);
                       const isSelected = score === val;
                       return (
                         <button
                           key={val}
+                          role="radio"
+                          aria-checked={isSelected}
+                          aria-label={`${formatStance(val)} ${getStanceLabel(val)}`}
+                          title={getStanceLabel(val)}
                           onClick={() => setScore(val)}
-                          style={{ backgroundColor: bgColor }}
-                          className={`flex-1 py-3 rounded-control text-base font-bold text-white transition-all duration-200
-                            ${isSelected ? "shadow-xl scale-110 z-10" : "opacity-40 hover:opacity-100 scale-100"}`}
+                          style={
+                            isSelected
+                              ? { backgroundColor: color }
+                              : {
+                                  backgroundColor: `color-mix(in srgb, ${color} 18%, white)`,
+                                  borderColor: `color-mix(in srgb, ${color} 45%, white)`,
+                                }
+                          }
+                          className={`flex-1 py-3 rounded-control text-base font-bold border transition-all duration-200
+                            ${isSelected ? "text-white border-transparent shadow-xl scale-110 z-10" : "text-stone-700 hover:scale-105 scale-100"}`}
                         >
-                          {val > 0 ? `+${val}` : val}
+                          {formatStance(val)}
                         </button>
                       );
                     })}
+                  </div>
+                  <div className="flex justify-between text-2xs font-medium text-stone-500 leading-tight">
+                    <span className="w-1/3 text-left">Strongly disagree</span>
+                    <span className="w-1/3 text-center">Neutral</span>
+                    <span className="w-1/3 text-right">Strongly agree</span>
                   </div>
                 </div>
               )}
