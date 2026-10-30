@@ -256,21 +256,15 @@ export const FeedItem = memo(
                 onClick={(e) => handleAction(e, onReply)}
                 className={actionButtonClass}
               >
-                <i className="bi bi-reply text-base"></i>
+                <i className="bi bi-reply text-lg"></i>
                 <span>Reply</span>
               </button>
             ) : (
               <span />
             )
           ) : disableClick ? (
-            // detail page: the discussion is right below, so show it as current
-            <span
-              aria-current="page"
-              className="flex items-center gap-x-2 h-10 px-3 text-sm font-semibold text-logo-blue select-none"
-            >
-              <i className="bi bi-chat-fill text-base"></i>
-              <span>{hasReply ? "Viewing discussion" : "No replies yet"}</span>
-            </span>
+            // detail page: the discussion is right below, no action needed
+            <span />
           ) : (
             <button
               onClick={(e) =>
@@ -287,7 +281,7 @@ export const FeedItem = memo(
                   className={`bi bi-chat text-base ${hasReply ? "text-slate-500" : ""}`}
                 ></i>
                 {hasReply && (
-                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-200 transition-all"></span>
+                  <span className="absolute top-0 -right-1 h-2 w-2 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-200 transition-all"></span>
                 )}
               </span>
               <span>
