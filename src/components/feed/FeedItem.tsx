@@ -281,7 +281,7 @@ export const FeedItem = memo(
                 <i
                   className={`bi ${
                     disableClick
-                      ? "bi-chat-fill text-transparent bg-clip-text bg-linear-to-r from-logo-red via-logo-green to-logo-blue"
+                      ? "bi-chat-fill text-logo-blue"
                       : "bi-chat"
                   } text-lg`}
                 ></i>

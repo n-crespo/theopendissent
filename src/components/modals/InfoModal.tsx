@@ -47,7 +47,7 @@ export const InfoModal = () => {
 
       <div className="w-full flex flex-col gap-2">
         <button
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-linear-to-r from-logo-red via-logo-green to-logo-blue animate-shimmer bg-size-[200%_auto] px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-[#0f4d92] group"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-linear-to-r from-logo-red via-logo-green to-logo-blue animate-shimmer bg-size-[200%_auto] px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-all hover:brightness-110 group"
           onClick={closeModal}
         >
           Join the Conversation
