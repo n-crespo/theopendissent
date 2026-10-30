@@ -154,12 +154,12 @@ export const PopupIndicator = ({
       {/* the rectangular bubble that slides horizontally */}
       <div
         ref={bubbleRef}
-        className="relative bg-slate-900 text-white text-[11px] font-medium py-1.5 px-3 rounded-lg shadow-xl whitespace-nowrap animate-in fade-in zoom-in slide-in-from-bottom-1 duration-150 origin-bottom"
+        className="relative bg-stone-900 text-white text-xs font-medium py-1.5 px-3 rounded-control shadow-xl whitespace-nowrap animate-in fade-in zoom-in slide-in-from-bottom-1 duration-150 origin-bottom"
         style={{ willChange: "transform" }} // hint to browser for smooth shifting
       >
         {text}
       </div>
-      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45" />
+      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-stone-900 rotate-45" />
     </div>,
     document.body,
   );

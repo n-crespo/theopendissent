@@ -179,7 +179,7 @@ export const InteractionSlider = ({
 
   const renderActionButton = () => {
     const baseStyles =
-      "flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 text-slate-400";
+      "flex items-center justify-center w-8 h-8 rounded-control transition-all duration-200 active:scale-90 text-stone-400";
     const disabledStyles = "opacity-50 cursor-not-allowed";
 
     // user is not logged in
@@ -221,7 +221,7 @@ export const InteractionSlider = ({
       return (
         <button
           onClick={handleReset}
-          className={`${baseStyles} hover:text-(--disagree) hover:bg-red-50`}
+          className={`${baseStyles} hover:text-danger hover:bg-red-50`}
           title="Clear interaction"
         >
           <i className="bi bi-eraser text-lg"></i>
@@ -233,7 +233,7 @@ export const InteractionSlider = ({
     return (
       <button
         onClick={() => openModal("about")}
-        className={`${baseStyles} hover:bg-slate-50 hover:text-logo-blue`}
+        className={`${baseStyles} hover:bg-stone-50 hover:text-logo-blue`}
         title="What is this?"
       >
         <i className="bi bi-question-lg text-lg"></i>
@@ -259,7 +259,7 @@ export const InteractionSlider = ({
       >
         <div
           ref={sliderRef}
-          className={`absolute left-0 right-0 h-4 top-1/2 -translate-y-1/2 rounded-xl border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
+          className={`absolute left-0 right-0 h-4 top-1/2 -translate-y-1/2 rounded-control border border-black/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ${
             isDimmed ? "opacity-40" : ""
           } ${isBlurred ? "blur-xs opacity-80" : ""}`}
           style={{
@@ -293,7 +293,7 @@ export const InteractionSlider = ({
           >
             <span
               ref={textRef}
-              className="text-sm leading-none bold border border-white w-auto px-2 py-2 box-content rounded-xl overflow-hidden text-white font-bold"
+              className="text-sm leading-none bold border border-white w-auto px-2 py-2 box-content rounded-control overflow-hidden text-white font-bold"
             >
               0
             </span>
