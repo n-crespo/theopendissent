@@ -7,7 +7,7 @@ export const InfoModal = () => {
 
   return (
     <div className="flex flex-col gap-y-6">
-      <h2 className="text-xl font-bold tracking-tight text-stone-900">
+      <h2 className="text-center text-xl font-bold tracking-tight text-stone-900">
         Welcome to The Open Dissent!
       </h2>
 

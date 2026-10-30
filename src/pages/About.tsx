@@ -7,7 +7,7 @@ export const About = () => {
     <div className="flex flex-col gap-3">
       <SEO title="About" description="How The Open Dissent works" />
 
-      <h1 className="my-2 text-xl font-bold tracking-tight text-stone-900">
+      <h1 className="my-2 text-center text-xl font-bold tracking-tight text-stone-900">
         Welcome to The Open Dissent!
       </h1>
 
