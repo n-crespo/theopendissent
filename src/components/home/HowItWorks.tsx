@@ -14,8 +14,7 @@ export const HowItWorks = () => {
     <>
       <p className="mb-4">
         The Open Dissent was made <em>by</em> students, <em>for</em> students,
-        with the goal of
-        <b> promoting open political discourse</b> at UCLA.
+        with the goal of promoting open political discourse at UCLA.
       </p>
       <p className="mb-4">
         Join any discussion (or start your own!) anonymously (or not) — all are
