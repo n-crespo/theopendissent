@@ -54,7 +54,7 @@ export const SignOutModal = () => {
       <div className="w-full flex flex-col gap-2">
         {/* primary action: destructive sign out */}
         <button
-          className="inline-flex w-full items-center justify-center rounded-control bg-logo-red px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-danger"
+          className="inline-flex w-full items-center justify-center rounded-full bg-logo-red px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-danger"
           onClick={handleConfirm}
         >
           Sign out
@@ -62,7 +62,7 @@ export const SignOutModal = () => {
 
         {/* secondary action: ghost style cancel */}
         <button
-          className="w-full rounded-control px-4 py-2 text-sm font-semibold text-stone-600 transition-colors hover:bg-stone-100"
+          className="w-full rounded-full px-4 py-2 text-sm font-semibold text-stone-600 transition-colors hover:bg-stone-100"
           onClick={closeModal}
         >
           Stay signed in

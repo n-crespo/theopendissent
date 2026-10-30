@@ -7,13 +7,14 @@ export const About = () => {
     <div className="flex flex-col gap-3">
       <SEO title="About" description="How The Open Dissent works" />
 
-      <h1 className="my-2 text-xl font-bold tracking-tight text-stone-900">
-        Here's how this works
+      <h1 className="my-2 text-center text-xl font-bold tracking-tight text-stone-900">
+        Welcome to The Open Dissent!
       </h1>
 
-      <div className="rounded-card border border-stone-200 bg-white p-[clamp(1rem,3vw,1.25rem)] leading-relaxed text-stone-700 shadow-sm">
+      {/* same card chrome as the feed's info cards, minus the avatar */}
+      <article className="bg-white border border-stone-200 shadow-sm rounded-card p-[clamp(1rem,3vw,1.25rem)]">
         <HowItWorks />
-      </div>
+      </article>
 
       {/* the right column shows these from the wide breakpoint up */}
       <div className="wide:hidden">

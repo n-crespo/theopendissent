@@ -1,5 +1,6 @@
 import { useModal } from "../../context/ModalContext";
 import { LINKS } from "../../lib/links";
+import { GradientLink } from "../ui/GradientButton";
 
 export const FollowUsModal = () => {
   const { closeModal } = useModal();
@@ -21,53 +22,21 @@ export const FollowUsModal = () => {
       </p>
 
       <div className="flex w-full max-w-xs flex-col gap-3">
-        {/* Instagram */}
-        <a
+        <GradientLink
           href={LINKS.instagram}
-          target="_blank"
-          rel="noreferrer"
-          className="group flex items-center gap-4 rounded-control border border-stone-200 bg-white p-3 shadow-sm transition-all hover:border-[#ED317E]/50 hover:shadow-md active:scale-95"
+          img="/instagram_logo.png"
           onClick={closeModal}
         >
-          <img
-            src="/instagram_logo.png"
-            alt="Spotify"
-            className="h-10 w-10 shrink-0 rounded-control object-contain"
-          />
-          <div className="flex flex-col items-start text-left">
-            <span className="text-2xs font-bold text-stone-400 uppercase tracking-wider">
-              Follow us on
-            </span>
-            <span className="text-base font-bold text-stone-800 group-hover:text-[#ED317E] transition-colors">
-              Instagram
-            </span>
-          </div>
-          <i className="bi bi-box-arrow-up-right ml-auto text-stone-300 group-hover:text-[#ED317E]"></i>
-        </a>
+          Follow us on Instagram
+        </GradientLink>
 
-        {/* Linkedin */}
-        <a
+        <GradientLink
           href={LINKS.linkedin}
-          target="_blank"
-          rel="noreferrer"
-          className="group flex items-center gap-4 rounded-control border border-stone-200 bg-white p-3 shadow-sm transition-all hover:border-[#0A66C2]/50 hover:shadow-md active:scale-95"
+          img="/linkedin_logo.png"
           onClick={closeModal}
         >
-          <img
-            src="/linkedin_logo.png"
-            alt="Spotify"
-            className="h-10 w-10 shrink-0 rounded-control object-contain"
-          />
-          <div className="flex flex-col items-start text-left">
-            <span className="text-2xs font-bold text-stone-400 uppercase tracking-wider">
-              Check out our
-            </span>
-            <span className="text-base font-bold text-stone-800 group-hover:text-[#0A66C2] transition-colors">
-              LinkedIn
-            </span>
-          </div>
-          <i className="bi bi-box-arrow-up-right ml-auto text-stone-300 group-hover:text-[#0A66C2]"></i>
-        </a>
+          Check out our LinkedIn
+        </GradientLink>
       </div>
     </div>
   );

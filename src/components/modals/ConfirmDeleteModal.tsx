@@ -56,7 +56,7 @@ export const ConfirmDeleteModal = ({
 
       <div className="w-full flex flex-col gap-2">
         <button
-          className="inline-flex w-full items-center justify-center rounded-control px-4 py-3 text-sm font-semibold text-white cursor-pointer transition-all active:scale-95 bg-logo-red hover:brightness-110"
+          className="inline-flex w-full items-center justify-center rounded-full px-4 py-3 text-sm font-semibold text-white cursor-pointer transition-all active:scale-95 bg-logo-red hover:brightness-110"
           onClick={() => {
             onConfirm();
             onClose();
@@ -66,7 +66,7 @@ export const ConfirmDeleteModal = ({
         </button>
 
         <button
-          className="w-full rounded-control px-4 py-3 text-sm font-semibold text-stone-400 transition-colors hover:bg-stone-50 hover:text-stone-600"
+          className="w-full rounded-full px-4 py-3 text-sm font-semibold text-stone-400 transition-colors hover:bg-stone-50 hover:text-stone-600"
           onClick={onClose}
         >
           Nevermind, keep it

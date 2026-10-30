@@ -97,7 +97,7 @@ export const DeleteAccountModal = ({ onClose }: Props) => {
         <button
           onClick={handleDelete}
           disabled={!isConfirmed || isDeleting}
-          className="inline-flex w-full items-center justify-center rounded-control bg-logo-red px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-danger disabled:opacity-50 disabled:hover:bg-logo-red disabled:cursor-not-allowed"
+          className="inline-flex w-full items-center justify-center rounded-full bg-logo-red px-4 py-2.5 text-sm font-semibold text-white cursor-pointer transition-colors hover:bg-danger disabled:opacity-50 disabled:hover:bg-logo-red disabled:cursor-not-allowed"
         >
           {isDeleting ? (
             <LoadingDots className="text-white" />
@@ -109,7 +109,7 @@ export const DeleteAccountModal = ({ onClose }: Props) => {
         <button
           onClick={onClose}
           disabled={isDeleting}
-          className="w-full rounded-control px-4 py-2 text-sm font-semibold text-stone-600 transition-colors hover:bg-stone-100 disabled:opacity-50 disabled:hover:bg-transparent"
+          className="w-full rounded-full px-4 py-2 text-sm font-semibold text-stone-600 transition-colors hover:bg-stone-100 disabled:opacity-50 disabled:hover:bg-transparent"
         >
           Nevermind, keep it
         </button>
