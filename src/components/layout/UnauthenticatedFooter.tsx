@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { LoadingDots } from "../ui/LoadingDots";
 import { motion } from "framer-motion";
@@ -7,6 +7,22 @@ export const UnauthenticatedFooter = () => {
   const { signIn } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const bannerRef = useRef<HTMLDivElement>(null);
+
+  // publish the banner height so toasts can sit just above it
+  useEffect(() => {
+    const el = bannerRef.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const observer = new ResizeObserver(() =>
+      root.style.setProperty("--signin-banner-h", `${el.offsetHeight}px`),
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty("--signin-banner-h");
+    };
+  }, []);
 
   const handleSignIn = async () => {
     setIsSigningIn(true);
@@ -28,6 +44,7 @@ export const UnauthenticatedFooter = () => {
 
   return (
     <motion.div
+      ref={bannerRef}
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "anticipate" }}

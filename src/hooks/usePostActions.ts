@@ -3,6 +3,7 @@ import { Post } from "../types";
 import { deletePost, updatePost, EditWindowClosedError } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
+import { toast } from "../lib/toast";
 import { unpinPost } from "./usePosts";
 import {
   EDIT_WINDOW_MS,
@@ -86,6 +87,23 @@ export const usePostActions = (post: Post) => {
     }
   };
 
+  const runDelete = async () => {
+    if (!uid) return;
+    const noun = post.parentPostId ? "Reply" : "Post";
+    try {
+      await deletePost(post, uid);
+      unpinPost(post.id);
+      toast.success(`${noun} deleted`);
+    } catch (error) {
+      console.error("failed to delete:", error);
+      toast.error({
+        title: `Couldn't delete your ${noun.toLowerCase()}`,
+        description: "Check your connection and try again.",
+        action: { label: "Retry", onClick: runDelete },
+      });
+    }
+  };
+
   const triggerDelete = () => {
     if (!uid) {
       openModal("signin");
@@ -95,14 +113,7 @@ export const usePostActions = (post: Post) => {
       name: post.postContent || "this post",
       authorDisplay: post.authorDisplay,
       isThreadAuthor: post.isThreadAuthor,
-      onConfirm: async () => {
-        try {
-          await deletePost(post, uid);
-          unpinPost(post.id);
-        } catch (error) {
-          console.error("failed to delete:", error);
-        }
-      },
+      onConfirm: runDelete,
     });
     return true;
   };

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { clearPinnedPosts } from "../../hooks/usePosts";
 import { useFeedSort } from "../../context/FeedSortContext";
 import { getPostById } from "../../lib/firebase";
+import { toast } from "../../lib/toast";
 import { Post } from "../../types";
 import { FeedList } from "./FeedList";
 import { useOutletContext } from "react-router-dom";
@@ -55,7 +56,11 @@ export const FeedContainer = () => {
     const resolveSharedContent = async () => {
       try {
         const target = await getPostById(sharedId);
-        if (!target || !isMounted) return;
+        if (!isMounted) return;
+        if (!target) {
+          toast.info("That post is no longer available.");
+          return;
+        }
 
         // if the link is for a reply, highlight its parent post in the feed
         if (target.parentPostId) {
@@ -66,6 +71,7 @@ export const FeedContainer = () => {
         }
       } catch (error) {
         console.error("failed to resolve deep link:", error);
+        if (isMounted) toast.error("Couldn't open the shared post.");
       }
     };
 

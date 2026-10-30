@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
 import { useNavigate } from "react-router-dom";
@@ -10,14 +11,17 @@ export const SignOutModal = () => {
   const { user, signOut } = useAuth();
   const { closeModal } = useModal();
   const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
   const handleConfirm = async () => {
+    setError(null);
     try {
       await signOut();
       closeModal();
       navigate("/");
     } catch (error) {
       console.error("failed to sign out:", error);
+      setError("Couldn't sign out. Please try again.");
     }
   };
 
@@ -36,6 +40,15 @@ export const SignOutModal = () => {
           <div className="text-xs text-stone-500 mt-0.5">{user.email}</div>
           <div className="text-xs text-stone-500 mt-0.5">ID: {user.uid}</div>
         </div>
+      )}
+
+      {error && (
+        <p
+          role="alert"
+          className="-mt-4 mb-4 text-center text-sm text-danger leading-relaxed"
+        >
+          {error}
+        </p>
       )}
 
       <div className="w-full flex flex-col gap-2">
