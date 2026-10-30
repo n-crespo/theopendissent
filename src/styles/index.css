@@ -72,8 +72,24 @@
   --animate-bounceHorizontal: bounceHorizontal 1s infinite ease-in-out;
 }
 
-/* keyboard focus ring (base layer, so `outline-none` utilities still opt out) */
+/* keyboard focus ring (base layer, so `outline-none` utilities still opt out).
+   color/width/offset are set up front and only outline-style flips on focus,
+   so `transition`/`transition-all` utilities can't animate the ring in. */
 @layer base {
+  :is(
+    button,
+    a,
+    [role="button"],
+    [role="switch"],
+    [tabindex]:not([tabindex="-1"]),
+    input,
+    textarea,
+    select
+  ) {
+    outline-color: color-mix(in srgb, var(--color-logo-blue) 50%, transparent);
+    outline-width: 2px;
+    outline-offset: 2px;
+  }
   :is(
       button,
       a,
@@ -84,8 +100,7 @@
       textarea,
       select
     ):focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--color-logo-blue) 50%, transparent);
-    outline-offset: 2px;
+    outline-style: solid;
   }
 }
 
