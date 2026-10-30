@@ -48,7 +48,7 @@ export const UnauthenticatedFooter = () => {
         <button
           onClick={handleSignIn}
           disabled={isSigningIn}
-          className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-logo-red via-logo-green to-logo-blue animate-shimmer bg-size-[200%_auto] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0073e6] disabled:opacity-70 active:scale-95 whitespace-nowrap"
+          className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-logo-red via-logo-green to-logo-blue animate-shimmer bg-size-[200%_auto] px-6 py-3 text-sm font-bold text-white transition-all hover:brightness-110 disabled:opacity-70 active:scale-95 whitespace-nowrap"
         >
           {isSigningIn ? (
             <LoadingDots className="text-white py-2" />

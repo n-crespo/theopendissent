@@ -53,7 +53,7 @@ export const SignInModal = () => {
 
       <div className="w-full flex flex-col gap-2">
         <button
-          className="inline-flex w-full items-center justify-center gap-3 rounded-control bg-linear-to-r from-logo-red via-logo-green to-logo-blue animate-shimmer bg-size-[200%_auto] px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#357ae8] cursor-pointer border-none shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+          className="inline-flex w-full items-center justify-center gap-3 rounded-control bg-linear-to-r from-logo-red via-logo-green to-logo-blue animate-shimmer bg-size-[200%_auto] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:brightness-110 cursor-pointer border-none shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
           onClick={handleSignIn}
           disabled={isSigningIn} // Disable while loading
         >
