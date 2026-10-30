@@ -5,9 +5,6 @@ import { RoundActionButton } from "../ui/RoundActionButton";
 import { UnreadBadge } from "../ui/UnreadBadge";
 import { useNavItems } from "./useNavItems";
 
-// the glyph's square sits right of its center, so shift it to center the square
-const SIGN_IN_ICON = "bi-box-arrow-in-right -translate-x-[0.156em]";
-
 /** Desktop navigation. Below the rail breakpoint BottomTabs takes over. */
 export const SideRail = ({ onCompose }: { onCompose: () => void }) => {
   const { user } = useAuth();
@@ -59,7 +56,7 @@ export const SideRail = ({ onCompose }: { onCompose: () => void }) => {
           />
         ) : (
           <RoundActionButton
-            icon={SIGN_IN_ICON}
+            icon="bi-person"
             label="Sign in"
             onClick={() => openModal("signin")}
             className="h-14 w-14"
