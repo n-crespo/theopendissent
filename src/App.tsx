@@ -19,6 +19,7 @@ import { LandingPage } from "./components/home/LandingPage";
 
 import { Home } from "./pages/Home";
 import { Profile } from "./pages/Profile";
+import { About } from "./pages/About";
 import { Privacy } from "./pages/Privacy";
 import { Terms } from "./pages/Terms";
 import { PostDetails } from "./pages/PostDetails";
@@ -216,6 +217,7 @@ export default function App() {
             <Route index element={<Home />} />
             <Route path="share" element={<Home />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="about" element={<About />} />
             <Route path="privacy" element={<Privacy />} />
             <Route path="terms" element={<Terms />} />
             <Route
