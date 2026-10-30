@@ -39,6 +39,10 @@
   --radius-card: 16px;
   --radius-control: 12px;
 
+  /* layout: phone chrome below rail (900px), right column from wide (1160px) */
+  --breakpoint-rail: 56.25rem;
+  --breakpoint-wide: 72.5rem;
+
   /* animations */
   @keyframes shimmer {
     from {
@@ -111,6 +115,9 @@
 
 :root {
   font-size: 15px;
+
+  /* phone bottom bar, including the home indicator area */
+  --tabbar-h: calc(62px + env(safe-area-inset-bottom));
 }
 
 /* generic styles  */

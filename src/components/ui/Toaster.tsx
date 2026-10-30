@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast, ToastItem, ToastType } from "../../lib/toast";
-import { useAuth } from "../../context/AuthContext";
 
 const ICONS: Record<ToastType, string> = {
   success: "bi-check-circle-fill text-[#b8cc84]",
@@ -17,11 +16,10 @@ const SWIPE_DISMISS_PX = 80;
  * AnchoredBubble instead.
  *
  * Placement never depends on the toast's own height: the toast is anchored
- * at a fixed offset above the FAB (or the sign-in banner) and grows upward,
+ * at a fixed offset above the tab bar and grows upward,
  * so long messages can't shove other UI around.
  */
 export const Toaster = () => {
-  const { user } = useAuth();
   const [item, setItem] = useState<ToastItem | null>(null);
 
   // remaining-time bookkeeping so hover/drag can pause the auto-dismiss
@@ -64,17 +62,10 @@ export const Toaster = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item]);
 
-  // signed in: clear the FAB (bottom-10/md:bottom-12, h-14) on mobile; it is
-  // hidden from lg up. signed out: sit above the sign-in banner, whose height
-  // UnauthenticatedFooter publishes as --signin-banner-h.
-  const offset = user
-    ? "bottom-[6.75rem] md:bottom-[7.25rem] lg:bottom-6"
-    : "bottom-[calc(var(--signin-banner-h,0.75rem)+0.75rem)]";
-
   return (
     <div
       aria-live="polite"
-      className={`pointer-events-none fixed inset-x-0 z-90 flex justify-center px-3 ${offset}`}
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--tabbar-h)+0.75rem)] z-90 flex justify-center px-3 rail:bottom-6"
     >
       <AnimatePresence mode="wait">
         {item && (

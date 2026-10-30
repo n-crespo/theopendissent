@@ -8,4 +8,5 @@ export const LINKS = {
   linkedin: "https://www.linkedin.com/company/the-open-dissent",
   feedbackForm: "https://forms.gle/EA1DcFzigrmjRqZK8",
   joinTeamForm: "https://forms.gle/vmRCZ9qrTej2mcFH9",
+  source: "https://github.com/n-crespo/theopendissent",
 };

@@ -123,7 +123,8 @@ export const FeedList = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.28, ease: "easeOut" }}
-                className="w-full"
+                // the right column shows the info cards from the wide breakpoint up
+                className={entry.kind === "post" ? "w-full" : "w-full wide:hidden"}
               >
                 {entry.kind === "post" ? (
                   <FeedItem

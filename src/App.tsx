@@ -9,9 +9,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { Header } from "./components/layout/Header";
-import { Footer } from "./components/layout/Footer";
 import { GlobalModal } from "./components/modals/GlobalModal";
-import { UnauthenticatedFooter } from "./components/layout/UnauthenticatedFooter";
 import { useDeepLinkHandler } from "./hooks/useDeepLinkHandler";
 import { useAuth } from "./context/AuthContext";
 import { useModal } from "./context/ModalContext";
@@ -19,6 +17,8 @@ import { LandingPage } from "./components/home/LandingPage";
 
 import { Home } from "./pages/Home";
 import { Profile } from "./pages/Profile";
+import { About } from "./pages/About";
+import { You } from "./pages/You";
 import { Privacy } from "./pages/Privacy";
 import { Terms } from "./pages/Terms";
 import { PostDetails } from "./pages/PostDetails";
@@ -28,9 +28,10 @@ import { OwnedPostsProvider } from "./context/OwnedPostsContext";
 import { FeedSortProvider } from "./context/FeedSortContext";
 import { useFeedSort } from "./context/FeedSortContext";
 import { usePosts } from "./hooks/usePosts";
-import { SidebarContent } from "./components/layout/SidebarContent";
+import { SideRail } from "./components/layout/SideRail";
+import { OrgCards } from "./components/layout/OrgCards";
+import { BottomTabs } from "./components/layout/BottomTabs";
 import { Post } from "./types/index";
-import { CreatePostFAB } from "./components/feed/CreatePostFAB";
 import { ComposeModal } from "./components/feed/ComposeModal";
 import { Toaster } from "./components/ui/Toaster";
 import { IS_PREVIEW_AUTH } from "./lib/previewAuth";
@@ -40,6 +41,7 @@ function Layout() {
   const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
   const navType = useNavigationType();
+  const isDiscussion = pathname.startsWith("/post/");
 
   // usePosts lives here so it NEVER unmounts during navigation.
   // Feed state is passed to child routes through outlet context.
@@ -130,7 +132,7 @@ function Layout() {
       {showLanding && <LandingPage onContinue={handleContinue} />}
 
       {IS_PREVIEW_AUTH && (
-        <div className="pointer-events-none fixed bottom-2 left-2 z-[100] rounded-full bg-stone-900/80 px-3 py-1 text-xs font-semibold text-white">
+        <div className="pointer-events-none fixed bottom-[calc(var(--tabbar-h)+0.5rem)] left-2 z-[100] rail:bottom-2 rounded-full bg-stone-900/80 px-3 py-1 text-xs font-semibold text-white">
           preview mode: fake login, writes disabled
         </div>
       )}
@@ -140,16 +142,14 @@ function Layout() {
           showLanding ? "opacity-0 invisible" : "opacity-100 visible"
         }`}
       >
-        <Header />
+        {/* discussions bring their own top bar and reply bar on phones */}
+        {!isDiscussion && <Header />}
 
-        <div className="relative mx-auto flex w-full max-w-7xl justify-center gap-4 lg:gap-9 pt-16 px-4">
-          {/* SIDEBAR LEFT */}
-          <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4 lg:pl-10 xl:pl-20">
-            <SidebarContent onCompose={() => handleOpenCompose(true)} />
-          </aside>
+        <div className="relative mx-auto w-full max-w-160 px-3 rail:grid rail:max-w-none rail:grid-cols-[minmax(0,1fr)_minmax(0,520px)_minmax(0,1fr)] rail:gap-5 rail:px-4 wide:gap-8">
+          <SideRail onCompose={() => handleOpenCompose(true)} />
 
-          {/* FEED (CENTER) */}
-          <main className="w-full max-w-115 shrink-0 pb-50 lg:px-2 relative">
+          {/* FEED (CENTER): equal side tracks keep it on the page center */}
+          <main className="min-w-0 pt-[4.25rem] pb-[calc(var(--tabbar-h)+5.5rem)] rail:pt-4 rail:pb-12 relative">
             <Outlet
               context={{
                 setActiveParent,
@@ -162,29 +162,17 @@ function Layout() {
             />
           </main>
 
-          {/* SIDEBAR RIGHT */}
-          <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4">
-            {pathname !== "/notifications" && user ? (
-              <div className="hidden lg:block px-2">
-                <Notifications showHeader={false} />
-              </div>
-            ) : (
-              <div className="lg:hidden w-full" />
-            )}
+          <aside
+            aria-label="About The Open Dissent"
+            className="sticky top-0 -mx-1 hidden h-screen max-w-[calc(300px+0.5rem)] overflow-y-auto px-1 py-4 [scrollbar-width:none] wide:block"
+          >
+            <OrgCards />
           </aside>
-
-          {user && (
-            <div className="fixed inset-0 pointer-events-none z-40 lg:hidden">
-              <div className="mx-auto max-w-7xl h-full relative">
-                <div className="absolute right-8 md:right-10 bottom-10 md:bottom-12 pointer-events-auto transition-all duration-300 ease-in-out">
-                  <CreatePostFAB onClick={() => handleOpenCompose(true)} />
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
-        <Footer />
+        {!isDiscussion && (
+          <BottomTabs onCompose={() => handleOpenCompose(true)} />
+        )}
       </div>
 
       <GlobalModal />
@@ -201,8 +189,6 @@ function Layout() {
           setActiveTarget({ id: newId, parentId })
         }
       />
-
-      {!user && !loading && !showLanding && <UnauthenticatedFooter />}
     </div>
   );
 }
@@ -215,13 +201,12 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="share" element={<Home />} />
+            <Route path="you" element={<You />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="about" element={<About />} />
             <Route path="privacy" element={<Privacy />} />
             <Route path="terms" element={<Terms />} />
-            <Route
-              path="notifications"
-              element={<Notifications showHeader={true} />}
-            />
+            <Route path="notifications" element={<Notifications />} />
             <Route path="settings" element={<Settings />} />
             <Route path="post/:postId" element={<PostDetails />} />
           </Route>

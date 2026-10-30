@@ -6,11 +6,7 @@ import { Notification } from "../lib/notificationStore";
 import { motion } from "framer-motion";
 import { SEO } from "../components/ui/Seo";
 
-interface NotificationsProps {
-  showHeader: boolean;
-}
-
-export const Notifications = ({ showHeader }: NotificationsProps) => {
+export const Notifications = () => {
   const navigate = useNavigate();
   const { notifications, markAsRead, removeBatch } = useNotifications();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -70,14 +66,10 @@ export const Notifications = ({ showHeader }: NotificationsProps) => {
   return (
     <div className="flex flex-col gap-3 pb-10">
       <div className="grid grid-cols-1 items-center w-full">
-        {showHeader && (
-          <>
-            <SEO title="Notifications" description="Your Notifications" />
-            <h1 className="my-2 col-start-1 row-start-1 justify-self-center text-xl font-bold text-stone-900 tracking-tight text-nowrap">
-              Notifications
-            </h1>
-          </>
-        )}
+        <SEO title="Notifications" description="Your Notifications" />
+        <h1 className="my-2 col-start-1 row-start-1 justify-self-center text-xl font-bold text-stone-900 tracking-tight text-nowrap">
+          Notifications
+        </h1>
       </div>
 
       {notifications.length > 0 && (
@@ -118,7 +110,7 @@ export const Notifications = ({ showHeader }: NotificationsProps) => {
       )}
 
       <div className="flex flex-col gap-3">
-        {notifications.length === 0 && showHeader ? (
+        {notifications.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.4 }}

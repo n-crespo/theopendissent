@@ -1,15 +1,25 @@
-import { useFeedSort } from "../../context/FeedSortContext";
-import { TabSwitcher } from "../ui/TabSwicher";
+import { SortOption, useFeedSort } from "../../context/FeedSortContext";
+import { GlassToggle } from "../ui/GlassToggle";
+
+const SORT_TABS: { id: SortOption; label: string }[] = [
+  { id: "random", label: "Shuffled" },
+  { id: "newest", label: "Newest" },
+];
+
+const SORT_DESCRIPTIONS: Record<SortOption, string> = {
+  random: "No algorithm, just a shuffle.",
+  newest: "Newest first.",
+};
 
 export const FeedSortToggle = () => {
   const { sortType, setSortType } = useFeedSort();
 
-  const sortTabs = [
-    { id: "random", label: "Home" },
-    { id: "newest", label: "Newest" },
-  ];
-
   return (
-    <TabSwitcher tabs={sortTabs} activeId={sortType} onChange={setSortType} />
+    <GlassToggle
+      tabs={SORT_TABS}
+      activeId={sortType}
+      onChange={setSortType}
+      description={SORT_DESCRIPTIONS[sortType]}
+    />
   );
 };

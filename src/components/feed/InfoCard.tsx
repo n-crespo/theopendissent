@@ -12,7 +12,7 @@ export const InfoCard = memo(({ card }: { card: InfoCardData }) => (
     className="flex items-start gap-x-3 bg-white border border-stone-200 shadow-sm rounded-card p-[clamp(1rem,3vw,1.25rem)]"
   >
     <img
-      src="/favicons/favicon-96x96.png"
+      src="/favicons/favicon.svg"
       alt=""
       width={40}
       height={40}

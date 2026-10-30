@@ -1,13 +1,8 @@
 import { useModal } from "../../context/ModalContext";
+import { HowItWorks } from "../home/HowItWorks";
 
 export const InfoModal = () => {
-  const { closeModal, openModal } = useModal();
-
-  const handleListenClick = () => {
-    setTimeout(() => {
-      openModal("listen");
-    }, 150);
-  };
+  const { closeModal } = useModal();
 
   return (
     <div className="flex flex-col">
@@ -16,33 +11,7 @@ export const InfoModal = () => {
       </h2>
 
       <div className="w-full bg-stone-50 rounded-card p-[clamp(1rem,3vw,1.25rem)] mb-8 flex flex-col border border-stone-200 text-sm text-stone-700 leading-relaxed">
-        <p className="mb-4">
-          The Open Dissent was made <em>by</em> students, <em>for</em> students,
-          with the goal of
-          <b> promoting open political discourse</b> at UCLA.
-        </p>
-        <p className="mb-4">
-          Join any discussion (or start your own!) anonymously (or not) — all
-          are welcome!
-        </p>
-        <p className="mb-4">
-          And keep an eye out for{" "}
-          <button
-            onClick={handleListenClick}
-            className="font-bold text-logo-blue hover:underline underline cursor-pointer"
-          >
-            our podcast
-          </button>{" "}
-          where we invite dissenters (like you!) to a live, in-person
-          discussion!
-        </p>
-        <div className="mt-2 text-center">
-          Looking forward to disagreeing (or agreeing) with you,
-          <br />
-          <span className="font-bold bg-linear-to-r from-logo-red via-logo-green to-logo-blue bg-clip-text text-transparent animate-shimmer text-base tracking-tight mt-1 inline-block">
-            The Open Dissent Leadership
-          </span>
-        </div>
+        <HowItWorks />
       </div>
 
       <div className="w-full flex flex-col gap-2">

@@ -267,7 +267,8 @@ export const FeedItem = memo(
               {isLong && !disableClick && !isExpanded && (
                 <button
                   onClick={toggleExpansion}
-                  className="flex justify-center w-full py-0.5 text-sm font-semibold text-stone-400 cursor-pointer transition-all hover:underline"
+                  // alignment lives in justify-start (justify-end/-center to change it)
+                  className="flex justify-start w-full py-0.5 text-sm font-semibold text-stone-400 cursor-pointer transition-all hover:underline"
                 >
                   <span>{"Read more"}</span>
                 </button>
