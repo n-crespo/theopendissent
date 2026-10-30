@@ -45,7 +45,7 @@ export const ConfirmDeleteModal = ({
           </div>
         </div>
 
-        <div className="text-base text-stone-700 leading-relaxed whitespace-pre-wrap break-words">
+        <div className="font-serif text-base text-stone-700 leading-relaxed whitespace-pre-wrap break-words">
           {itemName || "this item"}
         </div>
       </div>

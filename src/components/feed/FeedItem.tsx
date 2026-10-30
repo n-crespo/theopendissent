@@ -256,7 +256,7 @@ export const FeedItem = memo(
             <div className="flex flex-col gap-y-2">
               <p
                 onClick={handleContentClick}
-                className={`text-stone-800 text-base leading-relaxed whitespace-pre-wrap break-words ${
+                className={`font-serif text-stone-800 text-base leading-relaxed whitespace-pre-wrap break-words ${
                   !disableClick && !isReply
                     ? "cursor-pointer transition-colors"
                     : ""
