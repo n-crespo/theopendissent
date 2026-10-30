@@ -6,7 +6,6 @@ type ModalType =
   | "signOut"
   | "deleteAccount"
   | "deleteConfirm"
-  | "confirmPost"
   | "listen"
   | "joinTeam"
   | "followUs"
