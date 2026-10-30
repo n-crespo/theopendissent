@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useModal } from "../../context/ModalContext";
 import { RoundActionButton } from "../ui/RoundActionButton";
 import { UnreadBadge } from "../ui/UnreadBadge";
-import { useNavItems } from "./useNavItems";
+import { SIGN_IN_ICON, useNavItems } from "./useNavItems";
 
 /** Desktop navigation. Below the rail breakpoint BottomTabs takes over. */
 export const SideRail = ({ onCompose }: { onCompose: () => void }) => {
@@ -54,7 +54,7 @@ export const SideRail = ({ onCompose }: { onCompose: () => void }) => {
           />
         ) : (
           <RoundActionButton
-            icon="bi-box-arrow-in-right"
+            icon={SIGN_IN_ICON}
             label="Sign in"
             onClick={() => openModal("signin")}
             className="h-14 w-14"

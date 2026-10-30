@@ -2,6 +2,9 @@ import { useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../hooks/useNotifications";
 
+// the glyph's square sits right of its center, so shift it to center the square
+export const SIGN_IN_ICON = "bi-box-arrow-in-right -translate-x-[0.156em]";
+
 export interface NavItem {
   to: string;
   label: string;
