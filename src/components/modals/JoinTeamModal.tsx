@@ -1,6 +1,5 @@
 import { useModal } from "../../context/ModalContext";
-
-const joinTheTeamFormLink = "https://forms.gle/vmRCZ9qrTej2mcFH9";
+import { LINKS } from "../../lib/links";
 
 export const JoinTeamModal = () => {
   const { closeModal } = useModal();
@@ -24,7 +23,7 @@ export const JoinTeamModal = () => {
       <div className="flex w-full max-w-xs flex-col gap-3">
         {/* Google Forms Button */}
         <a
-          href={joinTheTeamFormLink}
+          href={LINKS.joinTeamForm}
           target="_blank"
           rel="noreferrer"
           className="group flex items-center gap-4 rounded-control border border-stone-200 bg-white p-3 shadow-sm transition-all hover:border-logo-blue/50 hover:shadow-md active:scale-95"

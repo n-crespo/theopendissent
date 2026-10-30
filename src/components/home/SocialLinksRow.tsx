@@ -1,26 +1,28 @@
+import { LINKS } from "../../lib/links";
+
 export const SocialLinksRow = () => {
   const platforms = [
     {
       name: "Spotify",
-      url: "https://open.spotify.com/show/471WfoA8k9zORQPQbLynw2?si=81fb44fe7dd945bf",
+      url: LINKS.spotify,
       img: "/spotify_logo.png",
       brandColor: "[0_0_8px_rgba(29,185,84,0.4)]",
     },
     {
       name: "Apple Podcasts",
-      url: "https://podcasts.apple.com/hr/podcast/the-open-dissent/id1860727185",
+      url: LINKS.applePodcasts,
       img: "/apple_podcasts_logo.png",
       brandColor: "[0_0_8px_rgba(135,46,196,0.4)]",
     },
     {
       name: "Instagram",
-      url: "https://www.instagram.com/theopendissent/",
+      url: LINKS.instagram,
       img: "/instagram_logo.png",
       brandColor: "[0_0_8px_rgba(237,49,126,0.4)]",
     },
     {
       name: "LinkedIn",
-      url: "https://www.linkedin.com/company/the-open-dissent",
+      url: LINKS.linkedin,
       img: "/linkedin_logo.png",
       brandColor: "[0_0_8px_rgba(10,102,194,0.4)]",
     },

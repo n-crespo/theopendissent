@@ -3,6 +3,7 @@ import { useModal } from "../../context/ModalContext";
 import { usePwa } from "../../context/PwaContext";
 import { DrawerItem } from "../ui/NavigationDrawer";
 import { SocialLinksRow } from "../home/SocialLinksRow";
+import { LINKS } from "../../lib/links";
 import { useNavigate, Link } from "react-router-dom";
 
 export const SidebarContent = ({
@@ -91,7 +92,7 @@ export const SidebarContent = ({
             label="Send Feedback"
             onClick={() => {
               if (closeDrawer) closeDrawer();
-              window.open("https://forms.gle/EA1DcFzigrmjRqZK8", "_blank");
+              window.open(LINKS.feedbackForm, "_blank");
             }}
           />
 

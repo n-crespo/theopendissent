@@ -1,4 +1,5 @@
 import { useModal } from "../../context/ModalContext";
+import { LINKS } from "../../lib/links";
 
 export const ListenModal = () => {
   const { closeModal } = useModal();
@@ -21,7 +22,7 @@ export const ListenModal = () => {
       <div className="flex w-full max-w-xs flex-col gap-3">
         {/* Spotify Button */}
         <a
-          href="https://open.spotify.com/show/471WfoA8k9zORQPQbLynw2?si=81fb44fe7dd945bf"
+          href={LINKS.spotify}
           target="_blank"
           rel="noreferrer"
           className="group flex items-center gap-4 rounded-control border border-stone-200 bg-white p-3 shadow-sm transition-all hover:border-[#1DB954]/50 hover:shadow-md active:scale-95"
@@ -45,7 +46,7 @@ export const ListenModal = () => {
 
         {/* Apple Podcasts Button */}
         <a
-          href="https://podcasts.apple.com/hr/podcast/the-open-dissent/id1860727185"
+          href={LINKS.applePodcasts}
           target="_blank"
           rel="noreferrer"
           className="group flex items-center gap-4 rounded-control border border-stone-200 bg-white p-3 shadow-sm transition-all hover:border-[#872EC4]/50 hover:shadow-md active:scale-95"
