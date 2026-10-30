@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import logoUrl from "../../assets/Flat-Logo.svg";
 import { useModal } from "../../context/ModalContext";
-import { PROMISES } from "../../lib/promises";
 
 interface LandingPageProps {
   onContinue: (dontShowAgain: boolean) => void;
@@ -156,16 +155,38 @@ export const LandingPage = ({ onContinue }: LandingPageProps) => {
               >
                 <div className="flex-1 p-[clamp(1rem,3vw,1.25rem)] text-base flex flex-col justify-center items-center overflow-y-auto custom-scrollbar tracking-tight">
                   <ol className="list-decimal list-inside space-y-5 text-left w-fit text-stone-700 max-w-xs sm:max-w-max mx-auto marker:font-bold marker:text-stone-500 px-2">
-                    {PROMISES.map((promise) => (
-                      <li key={promise.title} className="leading-snug">
-                        <strong className="text-stone-900">
-                          {promise.title}
-                        </strong>
-                        <p className="text-sm text-stone-500 mt-1 pl-5">
-                          {promise.detail}
-                        </p>
-                      </li>
-                    ))}
+                    <li className="leading-snug">
+                      <strong className="text-stone-900">
+                        Real, human discussions.
+                      </strong>
+                      <p className="text-sm text-stone-500 mt-1 pl-5">
+                        UCLA email required!
+                      </p>
+                    </li>
+                    <li className="leading-snug">
+                      <strong className="text-stone-900">
+                        No predatory algorithm.
+                      </strong>
+                      <p className="text-sm text-stone-500 mt-1 pl-5">
+                        Addiction not included.
+                      </p>
+                    </li>
+                    <li className="leading-snug">
+                      <strong className="text-stone-900">
+                        Zero engagement metrics.
+                      </strong>
+                      <p className="text-sm text-stone-500 mt-1 pl-5">
+                        More controversial &ne; more valuable.
+                      </p>
+                    </li>
+                    <li className="leading-snug">
+                      <strong className="text-stone-900">
+                        (Optional) anonymity.
+                      </strong>
+                      <p className="text-sm text-stone-500 mt-1 pl-5">
+                        Post anonymously! (or don't)
+                      </p>
+                    </li>
                   </ol>
                 </div>
                 <div className="p-3 border-t border-stone-100 bg-stone-50/20 text-center shrink-0">
