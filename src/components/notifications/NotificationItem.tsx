@@ -46,7 +46,17 @@ export const NotificationItem = memo(
 
     return (
       <div
+        role="button"
+        tabIndex={0}
         onClick={() => onClick(notification)}
+        onKeyDown={(e) => {
+          // ignore keys bubbling up from the inner checkbox button
+          if (e.target !== e.currentTarget) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onClick(notification);
+          }
+        }}
         className={`group flex items-center gap-x-4 p-[clamp(1rem,3vw,1.25rem)] border transition-all duration-200 cursor-pointer overflow-hidden rounded-card
           ${
             isRead
@@ -55,7 +65,12 @@ export const NotificationItem = memo(
           }`}
       >
         {/* Left Icon / Checkbox Section */}
-        <div
+        <button
+          type="button"
+          aria-label={
+            selected ? "Deselect notification" : "Select notification"
+          }
+          aria-pressed={isSelecting ? selected : undefined}
           className="flex items-center justify-center shrink-0 w-6 h-6"
           onClick={(e) => {
             e.stopPropagation();
@@ -63,7 +78,7 @@ export const NotificationItem = memo(
           }}
         >
           {isSelecting ? (
-            <div
+            <span
               className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
                 selected ? "bg-logo-blue border-logo-blue" : "border-stone-400"
               }`}
@@ -71,13 +86,13 @@ export const NotificationItem = memo(
               {selected && (
                 <i className="bi bi-check-lg text-white text-xs"></i>
               )}
-            </div>
+            </span>
           ) : (
             <i
               className={`bi bi-bell text-lg ${isRead ? "text-stone-300" : "text-stone-400"}`}
             ></i>
           )}
-        </div>
+        </button>
 
         {/* Text Content Section */}
         <div className="flex flex-col flex-1 gap-0.5">
