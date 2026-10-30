@@ -21,7 +21,7 @@ export const HowItWorks = ({
   return (
     <div className="flex flex-col gap-y-3 text-sm text-stone-700 leading-relaxed">
       <Heading className="text-base font-semibold text-stone-900 leading-tight">
-        Welcome to The Open Dissent! Here's how this works:
+        Welcome to The Open Dissent!
       </Heading>
       <p>
         The Open Dissent was made <em>by</em> students, <em>for</em> students,
