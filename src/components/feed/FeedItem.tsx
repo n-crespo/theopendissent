@@ -286,7 +286,7 @@ export const FeedItem = memo(
                   className={`bi bi-chat text-base ${hasReply ? "text-slate-500" : ""}`}
                 ></i>
                 {hasReply && (
-                  <span className="absolute top-0 -right-1 h-2 w-2 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-200 transition-all"></span>
+                  <span className="absolute top-0.5 -right-1 h-2 w-2 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-200 transition-all"></span>
                 )}
               </span>
               <span>
