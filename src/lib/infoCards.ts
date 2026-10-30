@@ -10,7 +10,6 @@ export interface InfoCardData {
   id: string;
   body: string;
   actions: InfoCardAction[];
-  enabled: boolean;
   requiresAuth?: boolean;
 }
 
@@ -21,7 +20,7 @@ export type FeedEntry<T> =
 export const INFO_CARDS: InfoCardData[] = [
   {
     id: "listen",
-    body: "New episodes are out now. Give us a listen!",
+    body: "Listen to The Open Dissent wherever you get your podcasts!",
     actions: [
       { label: "Spotify", href: LINKS.spotify, img: "/spotify_logo.png" },
       {
@@ -30,7 +29,6 @@ export const INFO_CARDS: InfoCardData[] = [
         img: "/apple_podcasts_logo.png",
       },
     ],
-    enabled: false, // flip on once episode 1 is posted
   },
   {
     id: "follow",
@@ -39,14 +37,17 @@ export const INFO_CARDS: InfoCardData[] = [
       { label: "Instagram", href: LINKS.instagram, img: "/instagram_logo.png" },
       { label: "LinkedIn", href: LINKS.linkedin, img: "/linkedin_logo.png" },
     ],
-    enabled: true,
   },
   {
     id: "feedback",
     body: "We're still building this. What should we fix next?",
     actions: [{ label: "Send feedback", href: LINKS.feedbackForm }],
-    enabled: true,
     requiresAuth: true,
+  },
+  {
+    id: "joinTeam",
+    body: "We have open positions in research, software and marketing/design. Join the team!",
+    actions: [{ label: "Apply now", href: LINKS.joinTeamForm }],
   },
 ];
 
@@ -66,9 +67,7 @@ const shuffle = <T>(items: T[]): T[] => {
 const sessionOrder = shuffle(INFO_CARDS);
 
 export const getVisibleInfoCards = (isLoggedIn: boolean): InfoCardData[] =>
-  sessionOrder.filter(
-    (card) => card.enabled && (isLoggedIn || !card.requiresAuth),
-  );
+  sessionOrder.filter((card) => isLoggedIn || !card.requiresAuth);
 
 /**
  * Places a card after every `every` posts until the cards run out. Each card

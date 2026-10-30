@@ -28,7 +28,7 @@ const positionsFor = (postCount: number, availableCards = cards) =>
 describe("interleaveInfoCards", () => {
   it("places a card every 6 posts", () => {
     expect(positionsFor(15, INFO_CARDS)).toEqual([6, 12]);
-    expect(positionsFor(25, INFO_CARDS)).toEqual([6, 12, 18]);
+    expect(positionsFor(25, INFO_CARDS)).toEqual([6, 12, 18, 24]);
   });
 
   it("stops once every card has been used", () => {
@@ -67,15 +67,17 @@ describe("getVisibleInfoCards", () => {
     getVisibleInfoCards(isLoggedIn).map((card) => card.id);
 
   it("hides the feedback card from logged-out users", () => {
-    expect(ids(false)).toEqual(["follow"]);
+    expect(ids(false)).not.toContain("feedback");
   });
 
   it("shows the feedback card to logged-in users", () => {
     expect(ids(true)).toContain("feedback");
   });
 
-  it("hides disabled cards", () => {
-    expect(ids(true)).not.toContain("listen");
+  it("shows the other cards to everyone", () => {
+    const everyone = ["follow", "joinTeam", "listen"];
+    expect([...ids(false)].sort()).toEqual(everyone);
+    expect(ids(true)).toEqual(expect.arrayContaining(everyone));
   });
 
   it("keeps the same order across calls", () => {

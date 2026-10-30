@@ -7,4 +7,5 @@ export const LINKS = {
   instagram: "https://www.instagram.com/theopendissent/",
   linkedin: "https://www.linkedin.com/company/the-open-dissent",
   feedbackForm: "https://forms.gle/EA1DcFzigrmjRqZK8",
+  joinTeamForm: "https://forms.gle/vmRCZ9qrTej2mcFH9",
 };
