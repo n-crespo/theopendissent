@@ -12,7 +12,7 @@ export const Home = () => {
       <img
         src={logoUrl}
         alt="The Open Dissent"
-        className="hidden h-5.5 w-auto self-start rail:block"
+        className="hidden h-5.5 w-auto self-center rail:block"
         draggable="false"
       />
       <ComposeTrigger placeholder="What's on your mind?" />
