@@ -17,6 +17,8 @@ interface FeedItemProps {
   disableClick?: boolean;
   /** called when the Replies button is tapped on a reply card (opens sub-reply compose) */
   onReply?: () => void;
+  /** detail page only: called when the discuss button is tapped (opens reply compose) */
+  onDiscuss?: () => void;
 }
 
 const CONTENT_CHAR_LIMIT = 250;
@@ -29,6 +31,7 @@ export const FeedItem = memo(
     highlighted = false,
     disableClick = false,
     onReply,
+    onDiscuss,
   }: FeedItemProps) => {
     if (!item) return null;
 
@@ -78,8 +81,9 @@ export const FeedItem = memo(
     };
 
     // Shared button styles for consistency
-    const actionButtonClass =
-      "flex items-center justify-center py-4 text-stone-400 hover:bg-stone-50 active:bg-stone-200/60 transition-all";
+    const actionButtonBase =
+      "flex items-center gap-x-2 h-10 px-3 rounded-control text-sm font-medium hover:bg-stone-100 active:bg-stone-200/60 transition-colors";
+    const actionButtonClass = `${actionButtonBase} text-stone-500 hover:text-stone-700`;
 
     const [isExpanded, setIsExpanded] = useState(
       () => disableClick || expandedPostIds.has(item.id),
@@ -247,73 +251,76 @@ export const FeedItem = memo(
           )}
         </div>
 
-        {/* Action Footer — 3-col for replies (Share | Stance | Replies), 2-col for posts, full-width for sub-replies */}
-        <div
-          className={`border-t border-stone-100 bg-stone-50/20 ${
-            !isSubReply && isReply && item.interactionScore !== undefined
-              ? "grid grid-cols-3"
-              : "grid grid-cols-2"
-          }`}
-        >
-          {/* Replies */}
+        {/* Action Footer — primary action on the left, stance + share on the right */}
+        <div className="flex items-center justify-between gap-x-2 px-2 py-1 border-t border-stone-100 bg-stone-50/20">
           {isReply ? (
-            <button
-              onClick={(e) => handleAction(e, () => onReply?.())}
-              disabled={!onReply}
-              className={`${actionButtonClass} group disabled:opacity-30`}
-            >
-              <div className="relative flex items-center justify-center">
-                <div className="text-base text-stone-400">Reply</div>
-              </div>
-            </button>
+            onReply ? (
+              <button
+                onClick={(e) => handleAction(e, onReply)}
+                className={actionButtonClass}
+              >
+                <i className="bi bi-reply text-lg"></i>
+                <span>Reply</span>
+              </button>
+            ) : (
+              <span />
+            )
+          ) : disableClick && !onDiscuss ? (
+            <span />
           ) : (
             <button
               onClick={(e) =>
-                handleAction(
-                  e,
-                  () => !disableClick && navigate(`/post/${item.id}`),
+                handleAction(e, () =>
+                  // detail page: already in the thread, so compose a reply
+                  disableClick ? onDiscuss?.() : navigate(`/post/${item.id}`),
                 )
               }
-              disabled={disableClick}
-              className={`${actionButtonClass} disabled:opacity-50 group`}
+              className={
+                hasReply
+                  ? `${actionButtonBase} group font-semibold text-logo-blue`
+                  : actionButtonClass
+              }
             >
-              <div className="relative flex items-center justify-center">
+              <span className="relative flex items-center">
                 <i
-                  className={`bi ${
-                    disableClick
-                      ? "bi-chat-fill text-logo-blue"
-                      : "bi-chat"
-                  } text-lg`}
+                  className={`bi bi-chat text-base ${hasReply ? "text-stone-500" : ""}`}
                 ></i>
-                {hasReply && !disableClick && (
-                  <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-stone-100 group-active:ring-stone-100 transition-all"></span>
+                {hasReply && (
+                  <span className="absolute top-0.5 -right-1 h-2 w-2 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-stone-100 group-active:ring-stone-200 transition-all"></span>
                 )}
-              </div>
+              </span>
+              <span>
+                {hasReply ? "Join the discussion" : "Start the discussion"}
+              </span>
             </button>
           )}
 
-          {/* Stance — middle column, reply cards only */}
-          {isReply && item.interactionScore !== undefined && (
-            <div className="flex gap-3 items-center justify-center py-3 border-x border-stone-100">
-              <div className="text-base text-stone-400">Stance:</div>
-              <div
+          <div className="flex items-center gap-x-1">
+            {/* stance — top-level replies only */}
+            {isReply && !isSubReply && item.interactionScore !== undefined && (
+              <span
                 title={`Stance: ${displayScore} (${getStanceLabel(score)})`}
                 aria-label={`Stance: ${displayScore} (${getStanceLabel(score)})`}
-                style={{ backgroundColor: stanceColor }}
-                className="px-4 py-2 rounded-control shadow-lg text-sm font-bold text-white select-none cursor-default"
+                className="flex items-center gap-x-1.5 h-10 px-2 text-sm font-medium text-stone-500 select-none cursor-default"
               >
-                {displayScore}
-              </div>
-            </div>
-          )}
+                Stance
+                <span
+                  style={{ backgroundColor: stanceColor }}
+                  className="min-w-9 px-2.5 py-1 rounded-control text-center text-sm font-bold text-white shadow-sm"
+                >
+                  {displayScore}
+                </span>
+              </span>
+            )}
 
-          {/* Share */}
-          <button
-            onClick={(e) => handleAction(e, () => sharePost(item))}
-            className={`${actionButtonClass} border-l border-stone-100`}
-          >
-            <i className="bi bi-send text-lg"></i>
-          </button>
+            <button
+              onClick={(e) => handleAction(e, () => sharePost(item))}
+              className={actionButtonClass}
+            >
+              <i className="bi bi-send text-base"></i>
+              <span>Share</span>
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -328,5 +335,6 @@ export const FeedItem = memo(
     p.item.timestamp === n.item.timestamp &&
     p.item.interactionScore === n.item.interactionScore &&
     p.highlighted === n.highlighted &&
-    p.onReply === n.onReply,
+    p.onReply === n.onReply &&
+    p.onDiscuss === n.onDiscuss,
 );
