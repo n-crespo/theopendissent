@@ -1,17 +1,22 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FeedItem } from "../components/feed/FeedItem";
 import { ProfileReplyItem } from "../components/feed/ProfileReplyItem";
-import { LoadingDots } from "../components/ui/LoadingDots";
+import { FeedItemSkeleton } from "../components/ui/FeedItemSkeleton";
+import { GlassToggle } from "../components/ui/GlassToggle";
 import { useAuth } from "../context/AuthContext";
 import { useUserActivity } from "../hooks/useUserActivity";
 import { useUserCounts } from "../hooks/useUserCounts";
 import { formatCompactNumber } from "../utils";
-import { TabSwitcher } from "../components/ui/TabSwicher";
 import { SEO } from "../components/ui/Seo";
 
 type FilterType = "posts" | "replies";
+
+const TABS: { id: FilterType; label: string }[] = [
+  { id: "posts", label: "Posts" },
+  { id: "replies", label: "Replies" },
+];
 
 export const Profile = () => {
   const { user } = useAuth();
@@ -35,38 +40,34 @@ export const Profile = () => {
 
   if (!user) return null;
 
-  const tabs = [
-    { id: "posts", label: "Posts", count: formatCompactNumber(counts.posts) },
-    {
-      id: "replies",
-      label: "Replies",
-      count: formatCompactNumber(counts.replies),
-    },
-  ];
-
-  // Find the tab object that matches the current filter
-  const selectedTab = tabs.find((tab) => tab.id === filter);
-  const title = selectedTab ? `Your ${selectedTab.label}` : "Your";
+  const title = filter === "replies" ? "Your replies" : "Your posts";
+  const count = filter === "replies" ? counts.replies : counts.posts;
+  const noun = filter === "replies" ? "reply" : "post";
+  const countLabel = `${formatCompactNumber(count)} ${
+    count === 1 ? noun : filter
+  }`;
 
   return (
     <div className="flex flex-col gap-3">
       <SEO title={title} description="Your Profile" />
-      <div className="grid grid-cols-1 items-center w-full px-4">
-        <h1 className="my-2 col-start-1 row-start-1 justify-self-center text-xl font-bold text-stone-900 tracking-tight">
-          Your Profile
-        </h1>
-        <button
-          onClick={() => navigate("/settings")}
-          className="col-start-1 row-start-1 justify-self-end text-stone-400 hover:text-stone-700 transition-colors flex items-center justify-center h-10 w-10 rounded-full"
+      <header className="flex items-center gap-x-2">
+        <Link
+          to="/you"
+          aria-label="Back"
+          className="p-2 -ml-2 rounded-control text-stone-400 hover:text-stone-900 transition-all active:scale-95"
         >
-          <i className="bi bi-gear text-xl"></i>
-        </button>
-      </div>
+          <i className="bi bi-arrow-left text-2xl"></i>
+        </Link>
+        <h1 className="text-lg font-bold text-stone-900 tracking-tight">
+          {title}
+        </h1>
+      </header>
 
-      <TabSwitcher
-        tabs={tabs}
+      <GlassToggle
+        tabs={TABS}
         activeId={filter}
-        onChange={(id) => handleFilterChange(id as FilterType)}
+        onChange={handleFilterChange}
+        description={countLabel}
       />
 
       <div className="min-h-100">
@@ -77,29 +78,25 @@ export const Profile = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="py-20 flex flex-col items-center justify-center gap-4 text-stone-300"
+              className="flex flex-col gap-3"
             >
-              <LoadingDots className="scale-125" />
-              <span className="text-xs font-bold tracking-wider">
-                Loading {filter}...
-              </span>
+              {[1, 2, 3].map((i) => (
+                <FeedItemSkeleton key={i} />
+              ))}
             </motion.div>
           ) : (
             <motion.div
               key={filter}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="flex flex-col gap-4"
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.28, ease: "easeOut" }}
+              className="flex flex-col gap-3"
             >
               {posts.length === 0 ? (
-                <div className="py-20 text-center border-2 border-dashed border-stone-100 rounded-card">
-                  <i className="bi bi-cloud-slash text-4xl text-stone-100 mb-3 block"></i>
-                  <p className="text-stone-400 font-medium italic">
-                    No {filter} found.
-                  </p>
-                </div>
+                <p className="py-16 text-center text-sm font-semibold text-stone-400">
+                  No {filter} found.
+                </p>
               ) : (
                 posts.map((item) => (
                   <div key={item.id}>
