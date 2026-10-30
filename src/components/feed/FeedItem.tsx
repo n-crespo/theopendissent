@@ -168,6 +168,16 @@ export const FeedItem = memo(
                 </span>
                 <div className="flex items-center flex-wrap gap-x-1 text-2xs text-stone-400 font-medium tracking-tight">
                   <span>{formattedTime}</span>
+                  {hasStance && (
+                    <span className="flex items-center text-stone-500">
+                      <span className="mx-1 text-stone-400">·</span>
+                      <span
+                        style={{ backgroundColor: stanceColor }}
+                        className="h-1.5 w-1.5 mr-1 rounded-full"
+                      ></span>
+                      {getStanceLabel(score)}
+                    </span>
+                  )}
                   {formattedEditTime && (
                     <span className="flex items-center italic text-stone-300">
                       <span className="mx-1">·</span> edited {formattedEditTime}
