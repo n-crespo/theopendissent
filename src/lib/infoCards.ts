@@ -46,7 +46,7 @@ export const INFO_CARDS: InfoCardData[] = [
   },
   {
     id: "joinTeam",
-    body: "We have open positions in research, software and marketing/design. Join the team!",
+    body: "We have open positions in research, software and marketing/design!",
     actions: [{ label: "Apply now", href: LINKS.joinTeamForm }],
   },
 ];
