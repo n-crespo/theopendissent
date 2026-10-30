@@ -5,6 +5,9 @@ import { RoundActionButton } from "../ui/RoundActionButton";
 import { UnreadBadge } from "../ui/UnreadBadge";
 import { useNavItems } from "./useNavItems";
 
+// the glyph's square sits right of its center, so shift it to center the square
+const SIGN_IN_ICON = "bi-box-arrow-in-right -translate-x-[0.156em]";
+
 const tabClass =
   "relative flex flex-1 flex-col items-center justify-center gap-0.5 text-2xs font-semibold";
 
@@ -55,9 +58,9 @@ export const BottomTabs = ({ onCompose }: { onCompose: () => void }) => {
         {!user && (
           <button
             onClick={() => openModal("signin")}
-            className={`${tabClass} text-stone-500`}
+            className={`${tabClass} text-logo-blue`}
           >
-            <i className="bi bi-person text-xl leading-none"></i>
+            <i className={`bi ${SIGN_IN_ICON} text-xl leading-none`}></i>
             Sign in
           </button>
         )}
