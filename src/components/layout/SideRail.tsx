@@ -32,8 +32,10 @@ export const SideRail = ({ onCompose }: { onCompose: () => void }) => {
           key={item.to}
           to={item.to}
           aria-current={item.isActive ? "page" : undefined}
-          className={`relative flex w-17 flex-col items-center gap-0.5 rounded-control py-2 text-2xs font-semibold transition-colors hover:bg-stone-100 ${
-            item.isActive ? "bg-stone-100 text-logo-blue" : "text-stone-500"
+          className={`relative flex w-17 flex-col items-center gap-0.5 rounded-control py-2 text-2xs font-semibold transition-colors ${
+            item.isActive
+              ? "text-logo-blue"
+              : "text-stone-500 hover:text-stone-800"
           }`}
         >
           <i
