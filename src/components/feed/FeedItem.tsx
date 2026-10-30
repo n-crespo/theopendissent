@@ -269,7 +269,7 @@ export const FeedItem = memo(
               className="flex items-center gap-x-2 h-10 px-3 text-sm font-semibold text-logo-blue select-none"
             >
               <i className="bi bi-chat-fill text-base"></i>
-              <span>{hasReply ? "Discussion below" : "No replies yet"}</span>
+              <span>{hasReply ? "Viewing discussion" : "No replies yet"}</span>
             </span>
           ) : (
             <button
@@ -278,13 +278,18 @@ export const FeedItem = memo(
               }
               className={
                 hasReply
-                  ? `${actionButtonBase} font-semibold text-logo-blue`
+                  ? `${actionButtonBase} group font-semibold text-logo-blue`
                   : actionButtonClass
               }
             >
-              <i
-                className={`bi ${hasReply ? "bi-chat-dots-fill" : "bi-chat"} text-base`}
-              ></i>
+              <span className="relative flex items-center">
+                <i
+                  className={`bi bi-chat text-base ${hasReply ? "text-slate-500" : ""}`}
+                ></i>
+                {hasReply && (
+                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-200 transition-all"></span>
+                )}
+              </span>
               <span>
                 {hasReply ? "Join the discussion" : "Start the discussion"}
               </span>
@@ -296,12 +301,12 @@ export const FeedItem = memo(
             {isReply && !isSubReply && item.interactionScore !== undefined && (
               <span
                 title={`Stance: ${displayScore}`}
-                className="flex items-center gap-x-1.5 h-10 px-2 text-xs font-medium text-slate-400 select-none cursor-default"
+                className="flex items-center gap-x-1.5 h-10 px-2 text-sm font-medium text-slate-500 select-none cursor-default"
               >
                 Stance
                 <span
                   style={{ backgroundColor: stanceColor }}
-                  className="min-w-7 px-1.5 py-0.5 rounded-md text-center text-xs font-bold text-white"
+                  className="min-w-9 px-2.5 py-1 rounded-lg text-center text-sm font-bold text-white shadow-sm"
                 >
                   {displayScore}
                 </span>
