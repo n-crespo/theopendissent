@@ -6,7 +6,6 @@ import { SignOutModal } from "./SignOutModal";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { ListenModal } from "./ListenModal";
 import { useEffect } from "react";
-import { JoinTeamModal } from "./JoinTeamModal";
 import { FollowUsModal } from "./FollowUsModal";
 import { DeleteAccountModal } from "./DeleteAccountModal";
 import { InfoModal } from "./InfoModal";
@@ -91,7 +90,6 @@ export const GlobalModal = () => {
                   />
                 )}
                 {modal.type === "listen" && <ListenModal />}
-                {modal.type === "joinTeam" && <JoinTeamModal />}
                 {modal.type === "followUs" && <FollowUsModal />}
                 {modal.type === "info" && <InfoModal />}
               </div>

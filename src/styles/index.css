@@ -115,6 +115,9 @@
 
 :root {
   font-size: 15px;
+
+  /* phone bottom bar, including the home indicator area */
+  --tabbar-h: calc(62px + env(safe-area-inset-bottom));
 }
 
 /* generic styles  */

@@ -7,7 +7,6 @@ type ModalType =
   | "deleteAccount"
   | "deleteConfirm"
   | "listen"
-  | "joinTeam"
   | "followUs"
   | "info"
   | null;

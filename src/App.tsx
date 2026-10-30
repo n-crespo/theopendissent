@@ -31,8 +31,8 @@ import { FeedSortProvider } from "./context/FeedSortContext";
 import { useFeedSort } from "./context/FeedSortContext";
 import { usePosts } from "./hooks/usePosts";
 import { SideRail } from "./components/layout/SideRail";
+import { BottomTabs } from "./components/layout/BottomTabs";
 import { Post } from "./types/index";
-import { RoundActionButton } from "./components/ui/RoundActionButton";
 import { ComposeModal } from "./components/feed/ComposeModal";
 import { Toaster } from "./components/ui/Toaster";
 import { IS_PREVIEW_AUTH } from "./lib/previewAuth";
@@ -132,7 +132,7 @@ function Layout() {
       {showLanding && <LandingPage onContinue={handleContinue} />}
 
       {IS_PREVIEW_AUTH && (
-        <div className="pointer-events-none fixed bottom-2 left-2 z-[100] rounded-full bg-stone-900/80 px-3 py-1 text-xs font-semibold text-white">
+        <div className="pointer-events-none fixed bottom-[calc(var(--tabbar-h)+0.5rem)] left-2 z-[100] rail:bottom-2 rounded-full bg-stone-900/80 px-3 py-1 text-xs font-semibold text-white">
           preview mode: fake login, writes disabled
         </div>
       )}
@@ -148,7 +148,7 @@ function Layout() {
           <SideRail onCompose={() => handleOpenCompose(true)} />
 
           {/* FEED (CENTER) */}
-          <main className="min-w-0 pt-16 pb-50 rail:pt-4 rail:pb-12 relative">
+          <main className="min-w-0 pt-[4.25rem] pb-[calc(var(--tabbar-h)+1.5rem)] rail:pt-4 rail:pb-12 relative">
             <Outlet
               context={{
                 setActiveParent,
@@ -161,21 +161,9 @@ function Layout() {
             />
           </main>
 
-          {user && (
-            <div className="fixed inset-0 pointer-events-none z-40 rail:hidden">
-              <div className="mx-auto max-w-7xl h-full relative">
-                <div className="absolute right-8 md:right-10 bottom-10 md:bottom-12 pointer-events-auto transition-all duration-300 ease-in-out">
-                  <RoundActionButton
-                    icon="bi-plus-lg"
-                    label="New post"
-                    onClick={() => handleOpenCompose(true)}
-                    className="h-14 w-14 shadow-2xl"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
         </div>
+
+        <BottomTabs onCompose={() => handleOpenCompose(true)} />
 
         <Footer />
       </div>
