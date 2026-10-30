@@ -18,7 +18,7 @@ export const SideRail = ({ onCompose }: { onCompose: () => void }) => {
     >
       <Link to="/" aria-label="Home" className="mb-2.5 rounded-control">
         <img
-          src="/favicons/favicon-96x96.png"
+          src="/favicons/favicon.svg"
           alt=""
           width={36}
           height={36}
