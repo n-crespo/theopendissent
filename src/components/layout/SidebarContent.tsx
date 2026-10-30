@@ -57,7 +57,7 @@ export const SidebarContent = ({
             />
           )}
 
-          <div className="my-2 border-t border-slate-200" />
+          <div className="my-2 border-t border-stone-200" />
 
           <DrawerItem
             icon="bi-info-circle"
@@ -68,7 +68,7 @@ export const SidebarContent = ({
             }}
           />
 
-          <div className="my-2 border-t border-slate-200" />
+          <div className="my-2 border-t border-stone-200" />
 
           <DrawerItem
             icon="bi-mic"
@@ -95,7 +95,7 @@ export const SidebarContent = ({
             }}
           />
 
-          <div className="my-2 border-t border-slate-200" />
+          <div className="my-2 border-t border-stone-200" />
 
           {onCompose && (
             <DrawerItem
@@ -125,7 +125,7 @@ export const SidebarContent = ({
               }}
             />
           )}
-          <div className="my-2 border-t border-slate-200" />
+          <div className="my-2 border-t border-stone-200" />
         </div>
       </div>
 
@@ -136,23 +136,23 @@ export const SidebarContent = ({
         <SocialLinksRow />
 
         {/* legal row matching Footer.tsx */}
-        <div className="flex flex-col justify-center items-center gap-x-2 gap-y-1 text-[13px] text-slate-500 px-4">
+        <div className="flex flex-col justify-center items-center gap-x-2 gap-y-1 text-sm text-stone-500 px-4">
           <p>© 2026 The Open Dissent</p>
           <div className="flex gap-x-2">
             <Link
               to="/privacy"
               onClick={closeDrawer}
-              className="text-slate-500 no-underline hover:text-logo-blue hover:underline"
+              className="text-stone-500 no-underline hover:text-logo-blue hover:underline"
             >
               Privacy
             </Link>
 
-            <span className="text-slate-200">•</span>
+            <span className="text-stone-200">•</span>
 
             <Link
               to="/terms"
               onClick={closeDrawer}
-              className="text-slate-500 no-underline hover:text-logo-blue hover:underline"
+              className="text-stone-500 no-underline hover:text-logo-blue hover:underline"
             >
               Terms
             </Link>

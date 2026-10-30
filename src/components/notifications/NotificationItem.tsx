@@ -27,7 +27,7 @@ export const NotificationItem = memo(
         const targetType = notification.parentPostId ? "reply" : "post";
         return (
           <span
-            className={`${isRead ? "text-slate-600" : "text-slate-800"} leading-snug`}
+            className={`${isRead ? "text-stone-600" : "text-stone-800"} leading-snug`}
           >
             <strong>{count === 1 ? "Someone" : `${count} people`}</strong>{" "}
             replied to your {targetType}.
@@ -36,22 +36,22 @@ export const NotificationItem = memo(
       }
       if (notification.type === "invitation") {
         return (
-          <strong className={isRead ? "text-slate-700" : "text-slate-900"}>
+          <strong className={isRead ? "text-stone-700" : "text-stone-900"}>
             Invitation to the show
           </strong>
         );
       }
-      return <span className="text-slate-600">New notification</span>;
+      return <span className="text-stone-600">New notification</span>;
     };
 
     return (
       <div
         onClick={() => onClick(notification)}
-        className={`group flex items-center gap-x-4 p-[clamp(1rem,3vw,1.25rem)] border transition-all duration-200 cursor-pointer overflow-hidden rounded-2xl
+        className={`group flex items-center gap-x-4 p-[clamp(1rem,3vw,1.25rem)] border transition-all duration-200 cursor-pointer overflow-hidden rounded-card
           ${
             isRead
-              ? "bg-slate-50 border-slate-100 opacity-80"
-              : "bg-white border-slate-200 shadow-sm hover:shadow-md"
+              ? "bg-stone-50 border-stone-100 opacity-80"
+              : "bg-white border-stone-200 shadow-sm hover:shadow-md"
           }`}
       >
         {/* Left Icon / Checkbox Section */}
@@ -65,7 +65,7 @@ export const NotificationItem = memo(
           {isSelecting ? (
             <div
               className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
-                selected ? "bg-logo-blue border-logo-blue" : "border-slate-400"
+                selected ? "bg-logo-blue border-logo-blue" : "border-stone-400"
               }`}
             >
               {selected && (
@@ -74,14 +74,14 @@ export const NotificationItem = memo(
             </div>
           ) : (
             <i
-              className={`bi bi-bell text-lg ${isRead ? "text-slate-300" : "text-slate-400"}`}
+              className={`bi bi-bell text-lg ${isRead ? "text-stone-300" : "text-stone-400"}`}
             ></i>
           )}
         </div>
 
         {/* Text Content Section */}
         <div className="flex flex-col flex-1 gap-0.5">
-          <p className="text-slate-800 leading-[1.6] whitespace-pre-wrap wrap-break-word text-sm">
+          <p className="text-stone-800 leading-[1.6] whitespace-pre-wrap wrap-break-word text-sm">
             {renderMessage()}
           </p>
           <div className="flex items-center gap-2">
@@ -89,7 +89,7 @@ export const NotificationItem = memo(
             {!isRead && (
               <span className="aspect-square h-2.5 w-auto flex-none rounded-full bg-logo-red animate-pulse" />
             )}
-            <span className="flex items-center flex-wrap gap-1 text-[0.7rem] text-slate-400 font-medium tracking-tight">
+            <span className="flex items-center flex-wrap gap-1 text-2xs text-stone-400 font-medium tracking-tight">
               {formattedTime}
             </span>
           </div>
@@ -97,7 +97,7 @@ export const NotificationItem = memo(
 
         {/* Right Arrow Visual */}
         <div
-          className={`transition-colors pr-1 ${isRead ? "text-slate-200" : "text-slate-300 group-hover:text-logo-blue"}`}
+          className={`transition-colors pr-1 ${isRead ? "text-stone-200" : "text-stone-300 group-hover:text-logo-blue"}`}
         >
           <i className="bi bi-chevron-right"></i>
         </div>
