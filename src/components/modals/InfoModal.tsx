@@ -7,6 +7,10 @@ export const InfoModal = () => {
 
   return (
     <div className="flex flex-col gap-y-6">
+      <h2 className="text-xl font-bold tracking-tight text-stone-900">
+        Welcome to The Open Dissent!
+      </h2>
+
       {/* the modal shell is already the card, so the letter sits directly in it */}
       <HowItWorks />
 
