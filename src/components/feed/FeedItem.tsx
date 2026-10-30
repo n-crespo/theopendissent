@@ -78,8 +78,9 @@ export const FeedItem = memo(
     };
 
     // Shared button styles for consistency
-    const actionButtonClass =
-      "flex items-center justify-center py-4 text-slate-400 hover:bg-slate-50 active:bg-slate-200/60 transition-all";
+    const actionButtonBase =
+      "flex items-center gap-x-2 h-10 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 active:bg-slate-200/60 transition-colors";
+    const actionButtonClass = `${actionButtonBase} text-slate-500 hover:text-slate-700`;
 
     const [isExpanded, setIsExpanded] = useState(
       () => disableClick || expandedPostIds.has(item.id),
@@ -247,72 +248,74 @@ export const FeedItem = memo(
           )}
         </div>
 
-        {/* Action Footer — 3-col for replies (Share | Stance | Replies), 2-col for posts, full-width for sub-replies */}
-        <div
-          className={`border-t border-slate-100 bg-slate-50/20 ${
-            !isSubReply && isReply && item.interactionScore !== undefined
-              ? "grid grid-cols-3"
-              : "grid grid-cols-2"
-          }`}
-        >
-          {/* Replies */}
+        {/* Action Footer — primary action on the left, stance + share on the right */}
+        <div className="flex items-center justify-between gap-x-2 px-2 py-1 border-t border-slate-100 bg-slate-50/20">
           {isReply ? (
-            <button
-              onClick={(e) => handleAction(e, () => onReply?.())}
-              disabled={!onReply}
-              className={`${actionButtonClass} group disabled:opacity-30`}
+            onReply ? (
+              <button
+                onClick={(e) => handleAction(e, onReply)}
+                className={actionButtonClass}
+              >
+                <i className="bi bi-reply text-base"></i>
+                <span>Reply</span>
+              </button>
+            ) : (
+              <span />
+            )
+          ) : disableClick ? (
+            // detail page: the discussion is right below, so show it as current
+            <span
+              aria-current="page"
+              className="flex items-center gap-x-2 h-10 px-3 text-sm font-semibold text-logo-blue select-none"
             >
-              <div className="relative flex items-center justify-center">
-                <div className="text-base text-slate-400">Reply</div>
-              </div>
-            </button>
+              <i className="bi bi-chat-fill text-base"></i>
+              <span>{hasReply ? "Discussion below" : "No replies yet"}</span>
+            </span>
           ) : (
             <button
               onClick={(e) =>
-                handleAction(
-                  e,
-                  () => !disableClick && navigate(`/post/${item.id}`),
-                )
+                handleAction(e, () => navigate(`/post/${item.id}`))
               }
-              disabled={disableClick}
-              className={`${actionButtonClass} disabled:opacity-50 group`}
+              className={
+                hasReply
+                  ? `${actionButtonBase} font-semibold text-logo-blue`
+                  : actionButtonClass
+              }
             >
-              <div className="relative flex items-center justify-center">
-                <i
-                  className={`bi ${
-                    disableClick
-                      ? "bi-chat-fill text-transparent bg-clip-text bg-linear-to-r from-logo-red via-logo-green to-logo-blue"
-                      : "bi-chat"
-                  } text-lg`}
-                ></i>
-                {hasReply && !disableClick && (
-                  <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-100 transition-all"></span>
-                )}
-              </div>
+              <i
+                className={`bi ${hasReply ? "bi-chat-dots-fill" : "bi-chat"} text-base`}
+              ></i>
+              <span>
+                {hasReply ? "Join the discussion" : "Start the discussion"}
+              </span>
             </button>
           )}
 
-          {/* Stance — middle column, reply cards only */}
-          {isReply && item.interactionScore !== undefined && (
-            <div className="flex gap-3 items-center justify-center py-3 border-x border-slate-100">
-              <div className="text-base text-slate-400">Stance:</div>
-              <div
+          <div className="flex items-center gap-x-1">
+            {/* stance — top-level replies only */}
+            {isReply && !isSubReply && item.interactionScore !== undefined && (
+              <span
                 title={`Stance: ${displayScore}`}
-                style={{ backgroundColor: stanceColor }}
-                className="px-4 py-2 rounded-xl shadow-lg text-sm font-bold text-white select-none cursor-default"
+                className="flex items-center gap-x-1.5 h-10 px-2 text-xs font-medium text-slate-400 select-none cursor-default"
               >
-                {displayScore}
-              </div>
-            </div>
-          )}
+                Stance
+                <span
+                  style={{ backgroundColor: stanceColor }}
+                  className="min-w-7 px-1.5 py-0.5 rounded-md text-center text-xs font-bold text-white"
+                >
+                  {displayScore}
+                </span>
+              </span>
+            )}
 
-          {/* Share */}
-          <button
-            onClick={(e) => handleAction(e, () => sharePost(item))}
-            className={`${actionButtonClass} border-l border-slate-100`}
-          >
-            <i className="bi bi-send text-lg"></i>
-          </button>
+            <button
+              onClick={(e) => handleAction(e, () => sharePost(item))}
+              className={actionButtonClass}
+            >
+              <i className="bi bi-send text-base"></i>
+              <span>Share</span>
+            </button>
+          </div>
         </div>
       </div>
     );
