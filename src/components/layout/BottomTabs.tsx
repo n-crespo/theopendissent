@@ -1,13 +1,20 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { useModal } from "../../context/ModalContext";
 import { RoundActionButton } from "../ui/RoundActionButton";
 import { UnreadBadge } from "../ui/UnreadBadge";
-import { useNavItems } from "./useNavItems";
+import { SIGN_IN_ICON, useNavItems } from "./useNavItems";
+
+const tabClass =
+  "relative flex flex-1 flex-col items-center justify-center gap-0.5 text-2xs font-semibold";
 
 /**
  * Phone navigation, plus the floating post button. onCompose takes signed out
  * users to the sign in modal.
  */
 export const BottomTabs = ({ onCompose }: { onCompose: () => void }) => {
+  const { user } = useAuth();
+  const { openModal } = useModal();
   const items = useNavItems();
 
   return (
@@ -30,9 +37,7 @@ export const BottomTabs = ({ onCompose }: { onCompose: () => void }) => {
             key={item.to}
             to={item.to}
             aria-current={item.isActive ? "page" : undefined}
-            className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 text-2xs font-semibold ${
-              item.isActive ? "text-logo-blue" : "text-stone-500"
-            }`}
+            className={`${tabClass} ${item.isActive ? "text-logo-blue" : "text-stone-500"}`}
           >
             <span className="relative">
               <i
@@ -46,6 +51,16 @@ export const BottomTabs = ({ onCompose }: { onCompose: () => void }) => {
             {item.label}
           </Link>
         ))}
+
+        {!user && (
+          <button
+            onClick={() => openModal("signin")}
+            className={`${tabClass} text-logo-blue`}
+          >
+            <i className={`bi ${SIGN_IN_ICON} text-xl leading-none`}></i>
+            Sign in
+          </button>
+        )}
       </nav>
     </>
   );
