@@ -9,7 +9,6 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { Header } from "./components/layout/Header";
-import { Footer } from "./components/layout/Footer";
 import { GlobalModal } from "./components/modals/GlobalModal";
 import { useDeepLinkHandler } from "./hooks/useDeepLinkHandler";
 import { useAuth } from "./context/AuthContext";
@@ -30,6 +29,7 @@ import { FeedSortProvider } from "./context/FeedSortContext";
 import { useFeedSort } from "./context/FeedSortContext";
 import { usePosts } from "./hooks/usePosts";
 import { SideRail } from "./components/layout/SideRail";
+import { Margin } from "./components/layout/Margin";
 import { BottomTabs } from "./components/layout/BottomTabs";
 import { Post } from "./types/index";
 import { ComposeModal } from "./components/feed/ComposeModal";
@@ -160,11 +160,10 @@ function Layout() {
             />
           </main>
 
+          <Margin />
         </div>
 
         <BottomTabs onCompose={() => handleOpenCompose(true)} />
-
-        <Footer />
       </div>
 
       <GlobalModal />
