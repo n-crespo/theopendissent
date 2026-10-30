@@ -14,7 +14,7 @@ export const SideRail = ({ onCompose }: { onCompose: () => void }) => {
   return (
     <nav
       aria-label="Main"
-      className="sticky top-0 hidden h-screen flex-col items-center gap-1.5 py-4 rail:flex"
+      className="sticky top-0 hidden h-screen w-[84px] flex-col items-center gap-1.5 justify-self-end py-4 rail:flex"
     >
       <Link to="/" aria-label="Home" className="mb-2.5 rounded-control">
         <img

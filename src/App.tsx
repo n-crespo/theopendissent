@@ -145,10 +145,10 @@ function Layout() {
         {/* discussions bring their own top bar and reply bar on phones */}
         {!isDiscussion && <Header />}
 
-        <div className="relative mx-auto w-full max-w-160 px-3 rail:grid rail:max-w-none rail:grid-cols-[84px_minmax(0,520px)] rail:justify-center rail:gap-5 rail:px-4 wide:grid-cols-[84px_minmax(0,520px)_300px] wide:gap-8">
+        <div className="relative mx-auto w-full max-w-160 px-3 rail:grid rail:max-w-none rail:grid-cols-[minmax(0,1fr)_minmax(0,520px)_minmax(0,1fr)] rail:gap-5 rail:px-4 wide:gap-8">
           <SideRail onCompose={() => handleOpenCompose(true)} />
 
-          {/* FEED (CENTER) */}
+          {/* FEED (CENTER): equal side tracks keep it on the page center */}
           <main className="min-w-0 pt-[4.25rem] pb-[calc(var(--tabbar-h)+1.5rem)] rail:pt-4 rail:pb-12 relative">
             <Outlet
               context={{
@@ -164,7 +164,7 @@ function Layout() {
 
           <aside
             aria-label="About The Open Dissent"
-            className="sticky top-0 -mx-1 hidden h-screen overflow-y-auto px-1 py-4 [scrollbar-width:none] wide:block"
+            className="sticky top-0 -mx-1 hidden h-screen max-w-[calc(300px+0.5rem)] overflow-y-auto px-1 py-4 [scrollbar-width:none] wide:block"
           >
             <OrgCards />
           </aside>
