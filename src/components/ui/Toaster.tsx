@@ -65,10 +65,10 @@ export const Toaster = () => {
   }, [item]);
 
   // signed in: clear the FAB (bottom-10/md:bottom-12, h-14) on mobile; it is
-  // hidden from lg up. signed out: sit above the sign-in banner, whose height
+  // hidden from the rail breakpoint up. signed out: sit above the sign-in banner, whose height
   // UnauthenticatedFooter publishes as --signin-banner-h.
   const offset = user
-    ? "bottom-[6.75rem] md:bottom-[7.25rem] lg:bottom-6"
+    ? "bottom-[6.75rem] md:bottom-[7.25rem] rail:bottom-6"
     : "bottom-[calc(var(--signin-banner-h,0.75rem)+0.75rem)]";
 
   return (

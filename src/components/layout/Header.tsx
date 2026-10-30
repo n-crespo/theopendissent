@@ -14,11 +14,11 @@ export const Header = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-stone-200 bg-logo-offwhite transform-gpu">
-      <div className="mx-auto grid h-14 grid-cols-[17%_66%_17%] items-center max-w-115 lg:max-w-7xl px-2">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-stone-200 bg-logo-offwhite transform-gpu rail:hidden">
+      <div className="mx-auto grid h-14 grid-cols-[17%_66%_17%] items-center max-w-115 px-2">
         {/* Left Column */}
         <div className="flex justify-start">
-          <div className="lg:hidden">
+          <div>
             {!loading && (
               <button
                 className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-control text-stone-500 transition-all active:scale-95"
@@ -50,7 +50,7 @@ export const Header = () => {
         </div>
 
         {/* Right Column */}
-        <div className="flex items-center justify-end lg:hidden">
+        <div className="flex items-center justify-end">
           {loading ? (
             <div className="h-10 w-10 rounded-control bg-stone-100 animate-pulse" />
           ) : user ? (

@@ -39,6 +39,10 @@
   --radius-card: 16px;
   --radius-control: 12px;
 
+  /* layout: phone chrome below rail (900px), right column from wide (1160px) */
+  --breakpoint-rail: 56.25rem;
+  --breakpoint-wide: 72.5rem;
+
   /* animations */
   @keyframes shimmer {
     from {

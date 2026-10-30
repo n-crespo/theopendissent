@@ -30,9 +30,9 @@ import { OwnedPostsProvider } from "./context/OwnedPostsContext";
 import { FeedSortProvider } from "./context/FeedSortContext";
 import { useFeedSort } from "./context/FeedSortContext";
 import { usePosts } from "./hooks/usePosts";
-import { SidebarContent } from "./components/layout/SidebarContent";
+import { SideRail } from "./components/layout/SideRail";
 import { Post } from "./types/index";
-import { CreatePostFAB } from "./components/feed/CreatePostFAB";
+import { RoundActionButton } from "./components/ui/RoundActionButton";
 import { ComposeModal } from "./components/feed/ComposeModal";
 import { Toaster } from "./components/ui/Toaster";
 import { IS_PREVIEW_AUTH } from "./lib/previewAuth";
@@ -144,14 +144,11 @@ function Layout() {
       >
         <Header />
 
-        <div className="relative mx-auto flex w-full max-w-7xl justify-center gap-4 lg:gap-9 pt-16 px-4">
-          {/* SIDEBAR LEFT */}
-          <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4 lg:pl-10 xl:pl-20">
-            <SidebarContent onCompose={() => handleOpenCompose(true)} />
-          </aside>
+        <div className="relative mx-auto w-full max-w-160 px-3 rail:grid rail:max-w-none rail:grid-cols-[84px_minmax(0,600px)] rail:justify-center rail:gap-5 rail:px-4 wide:grid-cols-[84px_minmax(0,600px)_300px] wide:gap-8">
+          <SideRail onCompose={() => handleOpenCompose(true)} />
 
           {/* FEED (CENTER) */}
-          <main className="w-full max-w-115 shrink-0 pb-50 lg:px-2 relative">
+          <main className="min-w-0 pt-16 pb-50 rail:pt-4 rail:pb-12 relative">
             <Outlet
               context={{
                 setActiveParent,
@@ -164,22 +161,16 @@ function Layout() {
             />
           </main>
 
-          {/* SIDEBAR RIGHT */}
-          <aside className="hidden lg:block w-64 xl:w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar pb-4">
-            {pathname !== "/notifications" && user ? (
-              <div className="hidden lg:block px-2">
-                <Notifications showHeader={false} />
-              </div>
-            ) : (
-              <div className="lg:hidden w-full" />
-            )}
-          </aside>
-
           {user && (
-            <div className="fixed inset-0 pointer-events-none z-40 lg:hidden">
+            <div className="fixed inset-0 pointer-events-none z-40 rail:hidden">
               <div className="mx-auto max-w-7xl h-full relative">
                 <div className="absolute right-8 md:right-10 bottom-10 md:bottom-12 pointer-events-auto transition-all duration-300 ease-in-out">
-                  <CreatePostFAB onClick={() => handleOpenCompose(true)} />
+                  <RoundActionButton
+                    icon="bi-plus-lg"
+                    label="New post"
+                    onClick={() => handleOpenCompose(true)}
+                    className="h-14 w-14 shadow-2xl"
+                  />
                 </div>
               </div>
             </div>
@@ -222,10 +213,7 @@ export default function App() {
             <Route path="about" element={<About />} />
             <Route path="privacy" element={<Privacy />} />
             <Route path="terms" element={<Terms />} />
-            <Route
-              path="notifications"
-              element={<Notifications showHeader={true} />}
-            />
+            <Route path="notifications" element={<Notifications />} />
             <Route path="settings" element={<Settings />} />
             <Route path="post/:postId" element={<PostDetails />} />
           </Route>
