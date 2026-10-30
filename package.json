@@ -29,6 +29,7 @@
     "emulate": "firebase emulators:start --project=the-open-dissent-prod --import=./firebase-data --export-on-exit=./firebase-data"
   },
   "dependencies": {
+    "@fontsource-variable/source-serif-4": "^5.3.1",
     "firebase": "^12.19.0",
     "framer-motion": "^13.4.6",
     "react": "^19.3.0",
