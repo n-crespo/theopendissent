@@ -163,7 +163,7 @@ function Layout() {
           </main>
 
           <aside
-            aria-label="From The Open Dissent"
+            aria-label="About The Open Dissent"
             className="sticky top-0 -mx-1 hidden h-screen overflow-y-auto px-1 py-4 [scrollbar-width:none] wide:block"
           >
             <OrgCards />
