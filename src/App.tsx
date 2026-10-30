@@ -32,6 +32,7 @@ import { SidebarContent } from "./components/layout/SidebarContent";
 import { Post } from "./types/index";
 import { CreatePostFAB } from "./components/feed/CreatePostFAB";
 import { ComposeModal } from "./components/feed/ComposeModal";
+import { Toaster } from "./components/ui/Toaster";
 import { IS_PREVIEW_AUTH } from "./lib/previewAuth";
 
 function Layout() {
@@ -187,6 +188,7 @@ function Layout() {
       </div>
 
       <GlobalModal />
+      <Toaster />
       <ComposeModal
         isOpen={isComposeOpen}
         onClose={() => {

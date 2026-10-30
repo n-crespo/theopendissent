@@ -5,6 +5,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
+import { toast } from "../lib/toast";
 
 interface PwaContextType {
   deferredPrompt: any;
@@ -42,10 +43,11 @@ export const PwaProvider = ({ children }: { children: ReactNode }) => {
       setDeferredPrompt(null);
 
       if (outcome === "accepted") {
-        console.log("PWA installation successful");
+        toast.success("App installed");
       }
     } catch (err) {
       console.error("pwa installation failed:", err);
+      toast.error("Couldn't install the app. Please try again.");
       setDeferredPrompt(null);
     }
   };

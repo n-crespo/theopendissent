@@ -7,6 +7,13 @@ import "./styles/index.css";
 import { AuthProvider } from "./context/AuthContext";
 import { ModalProvider } from "./context/ModalContext";
 import { PwaProvider } from "./context/PwaContext";
+import { toast } from "./lib/toast";
+
+// expose toasts in dev so they can be triggered from the console,
+// e.g. toast.info({ title: "Hello", description: "..." })
+if (import.meta.env.DEV) {
+  (window as unknown as { toast: typeof toast }).toast = toast;
+}
 
 // Service Worker Registration
 if ("serviceWorker" in navigator) {

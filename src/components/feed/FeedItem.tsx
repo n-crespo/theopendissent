@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { memo, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { Post } from "../../types";
 import { timeAgo, getStanceLabel } from "../../utils";
 import { usePostActions } from "../../hooks/usePostActions";
@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { getInterpolatedColor, DEFAULT_STOPS } from "../../color-utils";
 import { useOwnedPosts } from "../../context/OwnedPostsContext";
 import { Badge } from "../ui/Badge";
+import { useAnchoredFlash } from "../ui/AnchoredBubble";
 
 interface FeedItemProps {
   item: Post;
@@ -38,6 +39,8 @@ export const FeedItem = memo(
     const navigate = useNavigate();
     const { sharePost } = useShare();
     const { reportPost } = useReport();
+    const { flash, bubble } = useAnchoredFlash();
+    const editButtonRef = useRef<HTMLButtonElement>(null);
 
     const {
       uid,
@@ -78,6 +81,29 @@ export const FeedItem = memo(
     const handleAction = (e: React.MouseEvent, action: () => void) => {
       e.stopPropagation();
       action();
+    };
+
+    const handleShare = async (e: React.MouseEvent<HTMLElement>) => {
+      e.stopPropagation();
+      // currentTarget is cleared once the handler returns, so grab it now
+      const button = e.currentTarget;
+      if ((await sharePost(item)) === "copied") {
+        flash(() => button, "Link copied");
+      }
+    };
+
+    const handleReport = (e: React.MouseEvent<HTMLElement>) => {
+      e.stopPropagation();
+      if (!uid) return;
+      const button = e.currentTarget;
+      reportPost(item.id, uid);
+      flash(() => button, "Report form opened", "info");
+    };
+
+    const handleSave = async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      // the edit button remounts once the editor closes; anchor to it lazily
+      if (await saveEdit()) flash(() => editButtonRef.current, "Saved");
     };
 
     // Shared button styles for consistency
@@ -150,6 +176,7 @@ export const FeedItem = memo(
             <div className="flex items-center gap-x-2">
               {isOwner && canEdit ? (
                 <button
+                  ref={editButtonRef}
                   onClick={(e) => handleAction(e, () => setIsEditing(true))}
                   className="p-2 rounded-control text-stone-400 hover:text-logo-blue hover:bg-stone-50 transition-colors"
                   aria-label="Edit"
@@ -168,9 +195,7 @@ export const FeedItem = memo(
                 </button>
               ) : !isOwner && uid ? (
                 <button
-                  onClick={(e) =>
-                    handleAction(e, () => uid && reportPost(item.id, uid))
-                  }
+                  onClick={handleReport}
                   className="p-2 rounded-control text-stone-400 hover:text-logo-red hover:bg-stone-50 transition-colors"
                 >
                   <i className="bi bi-flag text-base"></i>
@@ -207,7 +232,7 @@ export const FeedItem = memo(
                 <div className="flex gap-x-2">
                   <button
                     className="px-5 py-2 bg-logo-blue text-white rounded-control text-xs font-bold disabled:opacity-50"
-                    onClick={(e) => handleAction(e, saveEdit)}
+                    onClick={handleSave}
                     disabled={isSaving || !editContent.trim() || !canEdit}
                   >
                     {isSaving ? "Saving..." : "Save"}
@@ -314,7 +339,7 @@ export const FeedItem = memo(
             )}
 
             <button
-              onClick={(e) => handleAction(e, () => sharePost(item))}
+              onClick={handleShare}
               className={actionButtonClass}
             >
               <i className="bi bi-send text-base"></i>
@@ -322,6 +347,7 @@ export const FeedItem = memo(
             </button>
           </div>
         </div>
+        {bubble}
       </div>
     );
   },

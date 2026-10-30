@@ -95,6 +95,7 @@ export const ComposeModal = ({
     // prevent state update if limit is exceeded
     if (val.length <= limit) {
       setContent(val);
+      setSubmitError(null);
     }
   };
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { notificationStore, Notification } from "../lib/notificationStore";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "../lib/toast";
 
 export const useNotifications = () => {
   const { user } = useAuth();
@@ -24,7 +25,11 @@ export const useNotifications = () => {
   };
 
   const removeBatch = (ids: string[]) => {
-    if (user) notificationStore.remove(user.uid, ids);
+    if (!user) return;
+    notificationStore.remove(user.uid, ids).catch((err) => {
+      console.error("failed to delete notifications:", err);
+      toast.error("Couldn't delete notifications. Please try again.");
+    });
   };
 
   return {
