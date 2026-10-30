@@ -20,6 +20,7 @@ import { LandingPage } from "./components/home/LandingPage";
 import { Home } from "./pages/Home";
 import { Profile } from "./pages/Profile";
 import { About } from "./pages/About";
+import { You } from "./pages/You";
 import { Privacy } from "./pages/Privacy";
 import { Terms } from "./pages/Terms";
 import { PostDetails } from "./pages/PostDetails";
@@ -216,6 +217,7 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="share" element={<Home />} />
+            <Route path="you" element={<You />} />
             <Route path="profile" element={<Profile />} />
             <Route path="about" element={<About />} />
             <Route path="privacy" element={<Privacy />} />
