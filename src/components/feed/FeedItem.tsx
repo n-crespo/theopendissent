@@ -79,7 +79,7 @@ export const FeedItem = memo(
 
     // Shared button styles for consistency
     const actionButtonClass =
-      "flex items-center justify-center py-4 text-slate-400 hover:bg-slate-50 active:bg-slate-200/60 transition-all";
+      "flex items-center justify-center py-4 text-stone-400 hover:bg-stone-50 active:bg-stone-200/60 transition-all";
 
     const [isExpanded, setIsExpanded] = useState(
       () => disableClick || expandedPostIds.has(item.id),
@@ -109,20 +109,20 @@ export const FeedItem = memo(
 
     return (
       <div
-        className={`flex flex-col bg-white border transition-all duration-200 rounded-2xl overflow-hidden ${
+        className={`flex flex-col bg-white border transition-all duration-200 rounded-card overflow-hidden ${
           highlighted
             ? "border-logo-blue ring-2 ring-logo-blue/10 shadow-md"
-            : "border-slate-200 shadow-sm"
+            : "border-stone-200 shadow-sm"
         }`}
       >
         <div className="p-[clamp(1rem,3vw,1.25rem)] flex flex-col gap-y-4">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-x-3">
-              <div className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 shrink-0 border border-slate-200/50">
+              <div className="h-10 w-10 bg-stone-100 rounded-control flex items-center justify-center text-stone-500 shrink-0 border border-stone-200/50">
                 <i className="bi bi-person-fill text-lg"></i>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-semibold text-slate-900 leading-tight flex items-center gap-x-1.5">
+                <span className="text-sm font-semibold text-stone-900 leading-tight flex items-center gap-x-1.5">
                   {isOwner && <Badge label="You" variant="blue" />}
                   {isThreadAuthor && <Badge label="Author" variant="green" />}
                   <span>
@@ -132,10 +132,10 @@ export const FeedItem = memo(
                       : "Anonymous User"}
                   </span>
                 </span>
-                <div className="flex items-center flex-wrap gap-x-1 text-[0.625rem] text-slate-400 font-medium tracking-tight">
+                <div className="flex items-center flex-wrap gap-x-1 text-2xs text-stone-400 font-medium tracking-tight">
                   <span>{formattedTime}</span>
                   {formattedEditTime && (
-                    <span className="flex items-center italic text-slate-300">
+                    <span className="flex items-center italic text-stone-300">
                       <span className="mx-1">·</span> edited {formattedEditTime}
                     </span>
                   )}
@@ -147,7 +147,7 @@ export const FeedItem = memo(
               {isOwner && canEdit ? (
                 <button
                   onClick={(e) => handleAction(e, () => setIsEditing(true))}
-                  className="p-2 rounded-lg text-slate-400 hover:text-logo-blue hover:bg-slate-50 transition-colors"
+                  className="p-2 rounded-control text-stone-400 hover:text-logo-blue hover:bg-stone-50 transition-colors"
                   aria-label="Edit"
                 >
                   <i className="bi bi-pencil-square text-base"></i>
@@ -157,7 +157,7 @@ export const FeedItem = memo(
                 // the edit view) takes the edit button's place
                 <button
                   onClick={(e) => handleAction(e, triggerDelete)}
-                  className="p-2 rounded-lg text-slate-400 hover:text-logo-red hover:bg-red-50 transition-colors"
+                  className="p-2 rounded-control text-stone-400 hover:text-logo-red hover:bg-red-50 transition-colors"
                   aria-label="Delete"
                 >
                   <i className="bi bi-trash3 text-base"></i>
@@ -167,7 +167,7 @@ export const FeedItem = memo(
                   onClick={(e) =>
                     handleAction(e, () => uid && reportPost(item.id, uid))
                   }
-                  className="p-2 rounded-lg text-slate-400 hover:text-logo-red hover:bg-slate-50 transition-colors"
+                  className="p-2 rounded-control text-stone-400 hover:text-logo-red hover:bg-stone-50 transition-colors"
                 >
                   <i className="bi bi-flag text-base"></i>
                 </button>
@@ -183,13 +183,13 @@ export const FeedItem = memo(
               <div className="relative">
                 <textarea
                   autoFocus
-                  className="resize-none w-full p-3 border border-slate-200 rounded-xl outline-none min-h-[6rem] text-sm focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10 transition-all"
+                  className="resize-none w-full p-3 border border-stone-200 rounded-control outline-none min-h-[6rem] text-sm focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10 transition-all"
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
                   disabled={isSaving}
                 />
                 <span
-                  className={`absolute right-3 bottom-3 text-[0.6rem] font-bold uppercase ${isNearLimit ? "text-logo-red" : "text-slate-300"}`}
+                  className={`absolute right-3 bottom-3 text-2xs font-bold uppercase ${isNearLimit ? "text-logo-red" : "text-stone-300"}`}
                 >
                   {charsLeft}
                 </span>
@@ -202,21 +202,21 @@ export const FeedItem = memo(
               <div className="flex items-center justify-between">
                 <div className="flex gap-x-2">
                   <button
-                    className="px-5 py-2 bg-logo-blue text-white rounded-lg text-xs font-bold disabled:opacity-50"
+                    className="px-5 py-2 bg-logo-blue text-white rounded-control text-xs font-bold disabled:opacity-50"
                     onClick={(e) => handleAction(e, saveEdit)}
                     disabled={isSaving || !editContent.trim() || !canEdit}
                   >
                     {isSaving ? "Saving..." : "Save"}
                   </button>
                   <button
-                    className="px-5 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold"
+                    className="px-5 py-2 bg-stone-100 text-stone-600 rounded-control text-xs font-bold"
                     onClick={handleCancel}
                   >
                     Cancel
                   </button>
                 </div>
                 <button
-                  className="h-9 w-9 flex items-center justify-center text-slate-400 rounded-lg hover:text-logo-red hover:bg-red-50 transition-colors"
+                  className="h-9 w-9 flex items-center justify-center text-stone-400 rounded-control hover:text-logo-red hover:bg-red-50 transition-colors"
                   onClick={(e) => handleAction(e, triggerDelete)}
                 >
                   <i className="bi bi-trash3 text-base"></i>
@@ -227,7 +227,7 @@ export const FeedItem = memo(
             <div className="flex flex-col gap-y-2">
               <p
                 onClick={handleContentClick}
-                className={`text-slate-800 text-[1.0625rem] leading-relaxed whitespace-pre-wrap break-words ${
+                className={`text-stone-800 text-base leading-relaxed whitespace-pre-wrap break-words ${
                   !disableClick && !isReply
                     ? "cursor-pointer transition-colors"
                     : ""
@@ -238,7 +238,7 @@ export const FeedItem = memo(
               {isLong && !disableClick && !isExpanded && (
                 <button
                   onClick={toggleExpansion}
-                  className="flex justify-center w-full py-0.5 text-sm font-semibold text-slate-400 cursor-pointer transition-all hover:underline"
+                  className="flex justify-center w-full py-0.5 text-sm font-semibold text-stone-400 cursor-pointer transition-all hover:underline"
                 >
                   <span>{"Read more"}</span>
                 </button>
@@ -249,7 +249,7 @@ export const FeedItem = memo(
 
         {/* Action Footer — 3-col for replies (Share | Stance | Replies), 2-col for posts, full-width for sub-replies */}
         <div
-          className={`border-t border-slate-100 bg-slate-50/20 ${
+          className={`border-t border-stone-100 bg-stone-50/20 ${
             !isSubReply && isReply && item.interactionScore !== undefined
               ? "grid grid-cols-3"
               : "grid grid-cols-2"
@@ -263,7 +263,7 @@ export const FeedItem = memo(
               className={`${actionButtonClass} group disabled:opacity-30`}
             >
               <div className="relative flex items-center justify-center">
-                <div className="text-base text-slate-400">Reply</div>
+                <div className="text-base text-stone-400">Reply</div>
               </div>
             </button>
           ) : (
@@ -286,7 +286,7 @@ export const FeedItem = memo(
                   } text-lg`}
                 ></i>
                 {hasReply && !disableClick && (
-                  <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-100 transition-all"></span>
+                  <span className="absolute top-1 -right-1 h-2.5 w-2.5 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-stone-100 group-active:ring-stone-100 transition-all"></span>
                 )}
               </div>
             </button>
@@ -294,13 +294,13 @@ export const FeedItem = memo(
 
           {/* Stance — middle column, reply cards only */}
           {isReply && item.interactionScore !== undefined && (
-            <div className="flex gap-3 items-center justify-center py-3 border-x border-slate-100">
-              <div className="text-base text-slate-400">Stance:</div>
+            <div className="flex gap-3 items-center justify-center py-3 border-x border-stone-100">
+              <div className="text-base text-stone-400">Stance:</div>
               <div
                 title={`Stance: ${displayScore} (${getStanceLabel(score)})`}
                 aria-label={`Stance: ${displayScore} (${getStanceLabel(score)})`}
                 style={{ backgroundColor: stanceColor }}
-                className="px-4 py-2 rounded-xl shadow-lg text-sm font-bold text-white select-none cursor-default"
+                className="px-4 py-2 rounded-control shadow-lg text-sm font-bold text-white select-none cursor-default"
               >
                 {displayScore}
               </div>
@@ -310,7 +310,7 @@ export const FeedItem = memo(
           {/* Share */}
           <button
             onClick={(e) => handleAction(e, () => sharePost(item))}
-            className={`${actionButtonClass} border-l border-slate-100`}
+            className={`${actionButtonClass} border-l border-stone-100`}
           >
             <i className="bi bi-send text-lg"></i>
           </button>

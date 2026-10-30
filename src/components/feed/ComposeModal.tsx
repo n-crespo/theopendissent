@@ -156,7 +156,7 @@ export const ComposeModal = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-slate-900/20 backdrop-blur-md hidden sm:block"
+            className="absolute inset-0 bg-stone-900/20 backdrop-blur-md hidden sm:block"
           />
 
           <motion.div
@@ -164,13 +164,13 @@ export const ComposeModal = ({
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 220 }}
-            className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[85vh] sm:max-w-xl bg-white sm:rounded-3xl sm:shadow-2xl flex flex-col overflow-hidden sm:border sm:border-slate-200"
+            className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[85vh] sm:max-w-xl bg-white sm:rounded-card sm:shadow-2xl flex flex-col overflow-hidden sm:border sm:border-stone-200"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5">
               <button
                 onClick={onClose}
-                className="p-2 -ml-2 text-slate-400 hover:text-slate-900 transition-colors"
+                className="p-2 -ml-2 text-stone-400 hover:text-stone-900 transition-colors"
               >
                 <i className="bi bi-x-lg text-xl"></i>
               </button>
@@ -191,15 +191,15 @@ export const ComposeModal = ({
 
             <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8">
               {/* Post As Toggle */}
-              <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <div className="flex items-center justify-between bg-stone-50 border border-stone-200 rounded-control p-4">
                 <div className="flex flex-col gap-y-1">
-                  <span className="text-sm font-bold text-slate-900 flex items-center gap-x-1.5">
+                  <span className="text-sm font-bold text-stone-900 flex items-center gap-x-1.5">
                     <span>Post Anonymously?</span>
                     {isIdentityLocked && (
                       <Badge label="Locked (Author)" variant="slate" />
                     )}
                   </span>
-                  <span className="text-xs  text-slate-500">
+                  <span className="text-xs  text-stone-500">
                     {isIdentityLocked
                       ? `Posting as ${authorDisplay}.`
                       : isAnonymous
@@ -215,7 +215,7 @@ export const ComposeModal = ({
                     if (!isIdentityLocked) setIsAnonymous(!isAnonymousState);
                   }}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    isAnonymous ? "bg-logo-blue" : "bg-slate-300"
+                    isAnonymous ? "bg-logo-blue" : "bg-stone-300"
                   } ${isIdentityLocked ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <span
@@ -227,9 +227,9 @@ export const ComposeModal = ({
               </div>
               {/* Context area for replies */}
               {(isReply || isSubReply) && (
-                <div className="border-l-2 border-slate-100 pl-4 py-1">
+                <div className="border-l-2 border-stone-100 pl-4 py-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-semibold text-slate-500">
+                    <span className="text-xs font-semibold text-stone-500">
                       Replying to{" "}
                       {isSubReply
                         ? parentReply?.authorDisplay &&
@@ -243,7 +243,7 @@ export const ComposeModal = ({
                       ...
                     </span>
                   </div>
-                  <p className="text-sm text-slate-500 line-clamp-2 italic leading-relaxed">
+                  <p className="text-sm text-stone-500 line-clamp-2 italic leading-relaxed">
                     "
                     {isSubReply
                       ? parentReply?.postContent
@@ -259,13 +259,13 @@ export const ComposeModal = ({
                   <div className="flex items-baseline justify-between gap-2">
                     <span
                       id="stance-label"
-                      className="text-sm font-bold text-slate-600"
+                      className="text-sm font-bold text-stone-600"
                     >
                       Your Stance:
                     </span>
                     <span
                       aria-live="polite"
-                      className={`text-sm font-semibold ${score === null ? "text-slate-400" : "text-slate-700"}`}
+                      className={`text-sm font-semibold ${score === null ? "text-stone-400" : "text-stone-700"}`}
                     >
                       {score === null
                         ? "Pick your stance to reply"
@@ -296,15 +296,15 @@ export const ComposeModal = ({
                                   borderColor: `color-mix(in srgb, ${color} 45%, white)`,
                                 }
                           }
-                          className={`flex-1 py-3 rounded-xl text-md font-bold border transition-all duration-200
-                            ${isSelected ? "text-white border-transparent shadow-xl scale-110 z-10" : "text-slate-700 hover:scale-105 scale-100"}`}
+                          className={`flex-1 py-3 rounded-control text-base font-bold border transition-all duration-200
+                            ${isSelected ? "text-white border-transparent shadow-xl scale-110 z-10" : "text-stone-700 hover:scale-105 scale-100"}`}
                         >
                           {formatStance(val)}
                         </button>
                       );
                     })}
                   </div>
-                  <div className="flex justify-between text-[11px] font-medium text-slate-500 leading-tight">
+                  <div className="flex justify-between text-2xs font-medium text-stone-500 leading-tight">
                     <span className="w-1/3 text-left">Strongly disagree</span>
                     <span className="w-1/3 text-center">Neutral</span>
                     <span className="w-1/3 text-right">Strongly agree</span>
@@ -321,10 +321,10 @@ export const ComposeModal = ({
                   }
                   value={content}
                   onChange={handleTextChange}
-                  className="w-full min-h-50 text-lg text-slate-800 placeholder:text-slate-200 outline-none resize-none leading-relaxed"
+                  className="w-full min-h-50 text-lg text-stone-800 placeholder:text-stone-200 outline-none resize-none leading-relaxed"
                 />
                 <div
-                  className={`text-[10px] font-bold text-right pt-4 border-t border-slate-50 ${charsLeft < 50 ? "text-logo-red" : "text-slate-200"}`}
+                  className={`text-2xs font-bold text-right pt-4 border-t border-stone-50 ${charsLeft < 50 ? "text-logo-red" : "text-stone-200"}`}
                 >
                   {charsLeft} / {limit}
                 </div>

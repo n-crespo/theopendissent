@@ -51,7 +51,7 @@ export const NavigationDrawer = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-100 bg-slate-900/10 cursor-pointer"
+            className="fixed inset-0 z-100 bg-stone-900/10 cursor-pointer"
           />
 
           {/* Drawer: Width constrained to ensure it never covers the full screen */}
@@ -61,7 +61,7 @@ export const NavigationDrawer = ({
             exit={sideVariants[side]}
             transition={{ type: "spring", damping: 25, stiffness: 240 }}
             className={`fixed top-0 bottom-0 z-101 w-72 bg-white/95 backdrop-blur-md shadow-2xl flex flex-col
-              ${side === "right" ? "right-0 border-l border-slate-200" : "left-0 border-r border-slate-200"}
+              ${side === "right" ? "right-0 border-l border-stone-200" : "left-0 border-r border-stone-200"}
             `}
           >
             {/* Scrollable Content: pt-8 replaces the header for top spacing */}
@@ -91,13 +91,13 @@ export const DrawerItem = ({
 }) => (
   <button
     onClick={onClick}
-    className={`flex w-full items-center gap-4 px-4 py-3 rounded-2xl text-left text-lg font-medium transition-all active:scale-[0.98] hover:scale-[0.98] whitespace-nowrap
-      ${variant === "danger" ? "text-logo-red" : "text-slate-800"}`}
+    className={`flex w-full items-center gap-4 px-4 py-3 rounded-card text-left text-lg font-medium transition-all active:scale-[0.98] hover:scale-[0.98] whitespace-nowrap
+      ${variant === "danger" ? "text-logo-red" : "text-stone-800"}`}
   >
     {icon && (
       <div
-        className={`h-8 rounded-xl flex items-center justify-center
-        ${variant === "danger" ? "text-logo-red" : "text-slate-800"}`}
+        className={`h-8 rounded-control flex items-center justify-center
+        ${variant === "danger" ? "text-logo-red" : "text-stone-800"}`}
       >
         <i className={`bi ${icon} text-xl`}></i>
       </div>

@@ -57,7 +57,7 @@ export const GlobalModal = () => {
                 layout: { duration: 0.35 },
               }}
               className={`
-                relative flex w-full max-w-120 flex-col overflow-hidden bg-white shadow-xl rounded-2xl border border-slate-200
+                relative flex w-full max-w-120 flex-col overflow-hidden bg-white shadow-xl rounded-card border border-stone-200
                 min-h-[23vh] max-h-[83vh]
               `}
               onClick={(e) => e.stopPropagation()}
@@ -65,7 +65,7 @@ export const GlobalModal = () => {
               {/* Header */}
               <div className="sticky top-0 z-50 flex h-10 w-full shrink-0 items-center justify-end bg-white/80 backdrop-blur-sm px-1">
                 <button
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100"
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-control text-stone-500 transition-colors hover:bg-stone-100"
                   onClick={closeModal}
                   aria-label="Close"
                 >
