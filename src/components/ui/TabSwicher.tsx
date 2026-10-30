@@ -20,7 +20,7 @@ export const TabSwitcher = ({
   underlineWidth = "w-full",
 }: TabSwitcherProps) => {
   return (
-    <div className="flex w-full border-b border-slate-100">
+    <div className="flex w-full border-b border-stone-100">
       {tabs.map((tab) => {
         const isActive = activeId === tab.id;
 
@@ -28,10 +28,10 @@ export const TabSwitcher = ({
           <button
             key={tab.id}
             onClick={() => onChange(tab.id)}
-            className={`relative flex-1 flex items-center justify-center py-3 text-md font-bold transition-colors ${
+            className={`relative flex-1 flex items-center justify-center py-3 text-base font-bold transition-colors ${
               isActive
-                ? "text-slate-900"
-                : "text-slate-400 hover:text-slate-600"
+                ? "text-stone-900"
+                : "text-stone-400 hover:text-stone-600"
             }`}
           >
             <span className="relative z-10 flex items-center gap-1.5">
