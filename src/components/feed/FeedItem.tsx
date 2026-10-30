@@ -147,8 +147,7 @@ export const FeedItem = memo(
           highlighted
             ? "border-logo-blue ring-2 ring-logo-blue/10 shadow-md"
             : "border-stone-200 shadow-sm"
-        } ${hasStance ? "border-l-3" : ""}`}
-        style={hasStance ? { borderLeftColor: stanceColor } : undefined}
+        }`}
       >
         <div className="p-[clamp(1rem,3vw,1.25rem)] flex flex-col gap-y-4">
           <div className="flex justify-between items-start">

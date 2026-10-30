@@ -59,7 +59,7 @@ const fmt=(s)=>s>0?`+${s}`:`${s}`;
 const meter=(s)=>`<span class="meter" aria-hidden="true">${[-3,-2,-1,0,1,2,3].map((v)=>`<i class="${v===0?"mid ":""}${(s<0?v>=s&&v<0:v<=s&&v>0)?"on":""}"></i>`).join("")}</span>`;
 const card=(r,o)=>`<div class="card ${o.cls||""}" style="--s:${r.color}"><div class="body"><div class="head"><div class="who"><div class="avatar">${I("person")}${o.avatar?o.avatar(r):""}</div><div><div class="name">${r.name}</div><div class="time"><span>${r.time}</span>${o.meta?o.meta(r):""}</div></div></div><div class="tools">${o.tools?o.tools(r):""}<div class="flag">${I("flag")}</div></div></div><p class="post-text">${r.text}</p></div><div class="foot"><div class="btn">${I("reply","lg")}<span>Reply</span></div><div class="right"><span class="stance">Stance <span class="pill">${fmt(r.score)}</span></span><div class="btn">${I("send")}<span>Share</span></div></div></div></div>`;
 const OPTIONS=[
-  {id:"R1",name:"Left border",note:"already in this PR",cls:"left"},
+  {id:"R1",name:"Left border",note:"tried, then removed",cls:"left"},
   {id:"R2",name:"Top bar",note:"same stripe across the top edge",cls:"top"},
   {id:"R3",name:"Label under the name",note:"says the stance in words",meta:(r)=>`<span>·</span><span class="meta-label"><span class="dot"></span>${r.label}</span>`},
   {id:"R4",name:"Coloured avatar",note:"avatar tile takes the stance colour",cls:"fill"},
