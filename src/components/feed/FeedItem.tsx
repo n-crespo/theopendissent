@@ -70,6 +70,9 @@ export const FeedItem = memo(
     const score = item.interactionScore ?? 0;
     const displayScore = score > 0 ? `+${score}` : `${score}`;
     const stanceColor = getInterpolatedColor(score, DEFAULT_STOPS);
+    // sub-replies carry no stance; an undefined score must not read as neutral
+    const hasStance =
+      isReply && !isSubReply && item.interactionScore !== undefined;
 
     const formattedTime = timeAgo(
       new Date(typeof item.timestamp === "number" ? item.timestamp : 0),
@@ -143,7 +146,8 @@ export const FeedItem = memo(
           highlighted
             ? "border-logo-blue ring-2 ring-logo-blue/10 shadow-md"
             : "border-stone-200 shadow-sm"
-        }`}
+        } ${hasStance ? "border-l-3" : ""}`}
+        style={hasStance ? { borderLeftColor: stanceColor } : undefined}
       >
         <div className="p-[clamp(1rem,3vw,1.25rem)] flex flex-col gap-y-4">
           <div className="flex justify-between items-start">
@@ -323,7 +327,7 @@ export const FeedItem = memo(
 
           <div className="flex items-center gap-x-1">
             {/* stance — top-level replies only */}
-            {isReply && !isSubReply && item.interactionScore !== undefined && (
+            {hasStance && (
               <span
                 title={`Stance: ${displayScore} (${getStanceLabel(score)})`}
                 aria-label={`Stance: ${displayScore} (${getStanceLabel(score)})`}
