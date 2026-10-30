@@ -71,28 +71,27 @@ export const getVisibleInfoCards = (isLoggedIn: boolean): InfoCardData[] =>
   );
 
 /**
- * Places cards after post firstAt, firstAt + every, ... up to max cards. Each
- * card is used at most once, and a card is never the last item in the feed.
+ * Places a card after every `every` posts until the cards run out. Each card
+ * is used at most once, and a card is never the last item in the feed.
  *
- * Position stands in for "the user has scrolled a bit": firstAt is below the
- * fold on any screen, so no scroll listeners are needed.
+ * Position stands in for "the user has scrolled a bit": the first card is
+ * below the fold on any screen, so no scroll listeners are needed.
  */
 export const interleaveInfoCards = <T>(
   posts: T[],
   cards: InfoCardData[],
-  { firstAt = 8, every = 8, max = 2 } = {},
+  every = 6,
 ): FeedEntry<T>[] => {
   const entries: FeedEntry<T>[] = [];
-  const cardCount = Math.min(max, cards.length);
   let slot = 0;
 
   posts.forEach((post, i) => {
     entries.push({ kind: "post", post });
 
     const position = i + 1;
-    const isCardPosition = position === firstAt + slot * every;
+    const isCardPosition = position === every * (slot + 1);
 
-    if (isCardPosition && slot < cardCount && position < posts.length) {
+    if (isCardPosition && slot < cards.length && position < posts.length) {
       entries.push({ kind: "info", card: cards[slot], slot });
       slot++;
     }

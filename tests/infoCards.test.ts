@@ -26,25 +26,27 @@ const positionsFor = (postCount: number, availableCards = cards) =>
   cardPositions(interleaveInfoCards(makePosts(postCount), availableCards));
 
 describe("interleaveInfoCards", () => {
-  it("shows one card in the first chunk of posts", () => {
-    expect(positionsFor(15)).toEqual([8]);
+  it("places a card every 6 posts", () => {
+    expect(positionsFor(15, INFO_CARDS)).toEqual([6, 12]);
+    expect(positionsFor(25, INFO_CARDS)).toEqual([6, 12, 18]);
   });
 
-  it("shows the second card after one load more", () => {
-    expect(positionsFor(25)).toEqual([8, 16]);
+  it("stops once every card has been used", () => {
+    expect(positionsFor(100, cards)).toEqual([6, 12]);
+    expect(positionsFor(100, cards.slice(0, 1))).toEqual([6]);
   });
 
-  it("never shows more than max cards", () => {
-    expect(positionsFor(100, INFO_CARDS)).toEqual([8, 16]);
-  });
-
-  it("never repeats a card when fewer cards than slots exist", () => {
-    expect(positionsFor(100, cards.slice(0, 1))).toEqual([8]);
+  it("never repeats a card", () => {
+    const ids = interleaveInfoCards(makePosts(100), INFO_CARDS).flatMap(
+      (entry) => (entry.kind === "info" ? [entry.card.id] : []),
+    );
+    expect(ids).toHaveLength(INFO_CARDS.length);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
   it("never ends the feed on a card", () => {
-    expect(positionsFor(8)).toEqual([]);
-    expect(positionsFor(9)).toEqual([8]);
+    expect(positionsFor(6)).toEqual([]);
+    expect(positionsFor(7)).toEqual([6]);
   });
 
   it("keeps every post in order", () => {
