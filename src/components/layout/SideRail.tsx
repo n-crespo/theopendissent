@@ -56,10 +56,9 @@ export const SideRail = ({ onCompose }: { onCompose: () => void }) => {
           />
         ) : (
           <RoundActionButton
-            icon="bi-person"
             label="Sign in"
             onClick={() => openModal("signin")}
-            className="h-14 w-14"
+            className="h-9 w-17 text-sm font-semibold"
           />
         )}
       </div>

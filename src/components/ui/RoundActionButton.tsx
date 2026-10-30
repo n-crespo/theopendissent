@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 
 interface RoundActionButtonProps {
-  icon: string;
+  /** without one, the label shows as text */
+  icon?: string;
   label: string;
   onClick: () => void;
   /** sets the size, e.g. "h-14 w-14" */
@@ -23,7 +24,7 @@ export const RoundActionButton = ({
       title={label}
       className={`${className} rounded-full flex items-center justify-center text-white bg-linear-to-r from-logo-red via-logo-green to-logo-blue animate-shimmer bg-[length:200%_auto] border border-white/20`}
     >
-      <i className={`bi ${icon} text-2xl`}></i>
+      {icon ? <i className={`bi ${icon} text-2xl`}></i> : label}
     </motion.button>
   );
 };
