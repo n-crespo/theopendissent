@@ -58,7 +58,7 @@ export const PostDetails = () => {
     if (isLoadingPost || authLoading) {
       timeoutId = setTimeout(
         () => setShowPostSkeleton(true),
-        1000,
+        400,
       ) as unknown as number;
     } else {
       setShowPostSkeleton(false);
@@ -71,7 +71,7 @@ export const PostDetails = () => {
     if (isLoadingReplies) {
       t = setTimeout(
         () => setShowRepliesSkeleton(true),
-        1000,
+        400,
       ) as unknown as number;
     } else {
       setShowRepliesSkeleton(false);

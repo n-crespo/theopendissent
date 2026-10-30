@@ -3,13 +3,17 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Post } from "../../types";
 import { useAuth } from "../../context/AuthContext";
-import { useModal } from "../../context/ModalContext";
 import { useOwnedPosts } from "../../context/OwnedPostsContext";
 import { createPost, getPostById } from "../../lib/firebase";
 import { pinPostToTop } from "../../hooks/usePosts";
 import { getInterpolatedColor, DEFAULT_STOPS } from "../../color-utils";
+import {
+  EDIT_WINDOW_MS,
+  STANCE_VALUES,
+  formatStance,
+  getStanceLabel,
+} from "../../utils";
 import { Badge } from "../ui/Badge";
-import { STANCE_VALUES, formatStance, getStanceLabel } from "../../utils";
 
 interface ComposeModalProps {
   isOpen: boolean;
@@ -29,7 +33,6 @@ export const ComposeModal = ({
   onSuccess,
 }: ComposeModalProps) => {
   const { user } = useAuth();
-  const { openModal, closeModal } = useModal();
   const ownedPosts = useOwnedPosts();
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,6 +41,7 @@ export const ComposeModal = ({
   // no default stance — direct replies must pick one explicitly
   const [score, setScore] = useState<number | null>(null);
   const [isPosting, setIsPosting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const isThreadAuthor = Boolean(
     parentPost?.id && ownedPosts.has(parentPost.id),
   );
@@ -75,6 +79,7 @@ export const ComposeModal = ({
       setContent("");
       setScore(null);
       setIsAnonymous(true);
+      setSubmitError(null);
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -93,58 +98,54 @@ export const ComposeModal = ({
     }
   };
 
-  const handleSubmit = () => {
-    if (!content.trim() || !user || isMissingStance) return;
+  const handleSubmit = async () => {
+    if (!content.trim() || !user || isMissingStance || isPosting) return;
 
-    openModal("confirmPost", {
-      content: content.trim(),
-      authorDisplay,
-      isThreadAuthor,
-      onConfirm: async () => {
-        setIsPosting(true);
-        try {
-          const newKey = await createPost({
-            userId: user.uid,
-            content: content.trim(),
-            authorDisplay,
-            parentPostId: parentPost?.id,
-            parentReplyId: parentReply?.id,
-            // handleSubmit bails when a direct reply has no stance, so this is a number
-            score: needsStance && score !== null ? score : undefined,
-            isThreadAuthor,
-          });
+    setIsPosting(true);
+    setSubmitError(null);
+    try {
+      const newKey = await createPost({
+        userId: user.uid,
+        content: content.trim(),
+        authorDisplay,
+        parentPostId: parentPost?.id,
+        parentReplyId: parentReply?.id,
+        // handleSubmit bails when a direct reply has no stance, so this is a number
+        score: needsStance && score !== null ? score : undefined,
+        isThreadAuthor,
+      });
 
-          if (newKey) {
-            // Fetch the full post object so we can pin it
-            // We pass the parent IDs so we fetch from the correct path
-            const newPost = await getPostById(
-              newKey,
-              parentPost?.id,
-              parentReply?.id,
-            );
-            if (newPost) {
-              pinPostToTop(newPost);
-            }
-
-            // Pass the new ID and Parent ID (if any) to trigger auto-scrolling
-            if (onSuccess) {
-              onSuccess(newKey, parentReply?.id || parentPost?.id);
-            }
-            // Navigate to root feed if a top-level post was created from elsewhere (e.g. profile page)
-            if (!isReply && location.pathname !== "/") {
-              navigate("/");
-            }
-          }
-
-          onClose();
-          closeModal();
-        } catch (error) {
-          console.error("failed to submit:", error);
-        } finally {
-          setIsPosting(false);
+      if (newKey) {
+        // Fetch the full post object so we can pin it
+        // We pass the parent IDs so we fetch from the correct path
+        const newPost = await getPostById(
+          newKey,
+          parentPost?.id,
+          parentReply?.id,
+        );
+        if (newPost) {
+          pinPostToTop(newPost);
         }
-      },
-    });
+
+        // Pass the new ID and Parent ID (if any) to trigger auto-scrolling
+        if (onSuccess) {
+          onSuccess(newKey, parentReply?.id || parentPost?.id);
+        }
+        // Navigate to root feed if a top-level post was created from elsewhere (e.g. profile page)
+        if (!isReply && location.pathname !== "/") {
+          navigate("/");
+        }
+      }
+
+      onClose();
+    } catch (error) {
+      console.error("failed to submit:", error);
+      setSubmitError(
+        `Couldn't ${isReply ? "send your reply" : "publish your post"}. Please try again.`,
+      );
+    } finally {
+      setIsPosting(false);
+    }
   };
 
   return (
@@ -183,10 +184,42 @@ export const ComposeModal = ({
                 onClick={handleSubmit}
                 disabled={!content.trim() || isMissingStance || isPosting}
                 title={isMissingStance ? "Pick your stance to reply" : undefined}
-                className="text-sm font-bold text-logo-blue disabled:opacity-30 transition-opacity"
+                aria-busy={isPosting}
+                className={`inline-flex items-center gap-x-1.5 text-sm font-bold text-logo-blue transition-opacity ${isPosting ? "" : "disabled:opacity-30"}`}
               >
-                {isReply ? "Reply" : "Post"}
+                {isPosting && (
+                  <i className="bi bi-arrow-repeat animate-spin"></i>
+                )}
+                {isPosting
+                  ? isReply
+                    ? "Replying..."
+                    : "Posting..."
+                  : isReply
+                    ? "Reply"
+                    : "Post"}
               </button>
+            </div>
+
+            {/* Submit context: who this posts as + edit window / errors */}
+            <div className="px-6 pb-3 -mt-2 flex flex-col items-end gap-y-0.5 text-right">
+              <span className="text-xs font-semibold text-stone-600 flex items-center gap-x-1">
+                <i
+                  className={`bi ${isAnonymous ? "bi-incognito" : "bi-person-fill"}`}
+                ></i>
+                Posting as {authorDisplay}
+              </span>
+              <span className="text-2xs text-stone-400">
+                You can edit for {EDIT_WINDOW_MS / 60000} minutes after posting,
+                and delete any time.
+              </span>
+              {submitError && (
+                <span
+                  role="alert"
+                  className="text-xs font-semibold text-logo-red"
+                >
+                  {submitError}
+                </span>
+              )}
             </div>
 
             <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8">
