@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { memo, useState } from "react";
 import { Post } from "../../types";
-import { timeAgo } from "../../utils";
+import { timeAgo, getStanceLabel } from "../../utils";
 import { usePostActions } from "../../hooks/usePostActions";
 import { useShare } from "../../hooks/useShare";
 import { useReport } from "../../hooks/useReport";
@@ -82,8 +82,8 @@ export const FeedItem = memo(
 
     // Shared button styles for consistency
     const actionButtonBase =
-      "flex items-center gap-x-2 h-10 px-3 rounded-lg text-sm font-medium hover:bg-slate-100 active:bg-slate-200/60 transition-colors";
-    const actionButtonClass = `${actionButtonBase} text-slate-500 hover:text-slate-700`;
+      "flex items-center gap-x-2 h-10 px-3 rounded-control text-sm font-medium hover:bg-stone-100 active:bg-stone-200/60 transition-colors";
+    const actionButtonClass = `${actionButtonBase} text-stone-500 hover:text-stone-700`;
 
     const [isExpanded, setIsExpanded] = useState(
       () => disableClick || expandedPostIds.has(item.id),
@@ -113,20 +113,20 @@ export const FeedItem = memo(
 
     return (
       <div
-        className={`flex flex-col bg-white border transition-all duration-200 rounded-2xl overflow-hidden ${
+        className={`flex flex-col bg-white border transition-all duration-200 rounded-card overflow-hidden ${
           highlighted
             ? "border-logo-blue ring-2 ring-logo-blue/10 shadow-md"
-            : "border-slate-200 shadow-sm"
+            : "border-stone-200 shadow-sm"
         }`}
       >
         <div className="p-[clamp(1rem,3vw,1.25rem)] flex flex-col gap-y-4">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-x-3">
-              <div className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 shrink-0 border border-slate-200/50">
+              <div className="h-10 w-10 bg-stone-100 rounded-control flex items-center justify-center text-stone-500 shrink-0 border border-stone-200/50">
                 <i className="bi bi-person-fill text-lg"></i>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-semibold text-slate-900 leading-tight flex items-center gap-x-1.5">
+                <span className="text-sm font-semibold text-stone-900 leading-tight flex items-center gap-x-1.5">
                   {isOwner && <Badge label="You" variant="blue" />}
                   {isThreadAuthor && <Badge label="Author" variant="green" />}
                   <span>
@@ -136,10 +136,10 @@ export const FeedItem = memo(
                       : "Anonymous User"}
                   </span>
                 </span>
-                <div className="flex items-center flex-wrap gap-x-1 text-[0.625rem] text-slate-400 font-medium tracking-tight">
+                <div className="flex items-center flex-wrap gap-x-1 text-2xs text-stone-400 font-medium tracking-tight">
                   <span>{formattedTime}</span>
                   {formattedEditTime && (
-                    <span className="flex items-center italic text-slate-300">
+                    <span className="flex items-center italic text-stone-300">
                       <span className="mx-1">·</span> edited {formattedEditTime}
                     </span>
                   )}
@@ -151,7 +151,7 @@ export const FeedItem = memo(
               {isOwner && canEdit ? (
                 <button
                   onClick={(e) => handleAction(e, () => setIsEditing(true))}
-                  className="p-2 rounded-lg text-slate-400 hover:text-logo-blue hover:bg-slate-50 transition-colors"
+                  className="p-2 rounded-control text-stone-400 hover:text-logo-blue hover:bg-stone-50 transition-colors"
                   aria-label="Edit"
                 >
                   <i className="bi bi-pencil-square text-base"></i>
@@ -161,7 +161,7 @@ export const FeedItem = memo(
                 // the edit view) takes the edit button's place
                 <button
                   onClick={(e) => handleAction(e, triggerDelete)}
-                  className="p-2 rounded-lg text-slate-400 hover:text-logo-red hover:bg-red-50 transition-colors"
+                  className="p-2 rounded-control text-stone-400 hover:text-logo-red hover:bg-red-50 transition-colors"
                   aria-label="Delete"
                 >
                   <i className="bi bi-trash3 text-base"></i>
@@ -171,7 +171,7 @@ export const FeedItem = memo(
                   onClick={(e) =>
                     handleAction(e, () => uid && reportPost(item.id, uid))
                   }
-                  className="p-2 rounded-lg text-slate-400 hover:text-logo-red hover:bg-slate-50 transition-colors"
+                  className="p-2 rounded-control text-stone-400 hover:text-logo-red hover:bg-stone-50 transition-colors"
                 >
                   <i className="bi bi-flag text-base"></i>
                 </button>
@@ -187,13 +187,13 @@ export const FeedItem = memo(
               <div className="relative">
                 <textarea
                   autoFocus
-                  className="resize-none w-full p-3 border border-slate-200 rounded-xl outline-none min-h-[6rem] text-sm focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10 transition-all"
+                  className="resize-none w-full p-3 border border-stone-200 rounded-control outline-none min-h-[6rem] text-sm focus:border-logo-blue focus:ring-1 focus:ring-logo-blue/10 transition-all"
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
                   disabled={isSaving}
                 />
                 <span
-                  className={`absolute right-3 bottom-3 text-[0.6rem] font-bold uppercase ${isNearLimit ? "text-logo-red" : "text-slate-300"}`}
+                  className={`absolute right-3 bottom-3 text-2xs font-bold uppercase ${isNearLimit ? "text-logo-red" : "text-stone-300"}`}
                 >
                   {charsLeft}
                 </span>
@@ -206,21 +206,21 @@ export const FeedItem = memo(
               <div className="flex items-center justify-between">
                 <div className="flex gap-x-2">
                   <button
-                    className="px-5 py-2 bg-logo-blue text-white rounded-lg text-xs font-bold disabled:opacity-50"
+                    className="px-5 py-2 bg-logo-blue text-white rounded-control text-xs font-bold disabled:opacity-50"
                     onClick={(e) => handleAction(e, saveEdit)}
                     disabled={isSaving || !editContent.trim() || !canEdit}
                   >
                     {isSaving ? "Saving..." : "Save"}
                   </button>
                   <button
-                    className="px-5 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold"
+                    className="px-5 py-2 bg-stone-100 text-stone-600 rounded-control text-xs font-bold"
                     onClick={handleCancel}
                   >
                     Cancel
                   </button>
                 </div>
                 <button
-                  className="h-9 w-9 flex items-center justify-center text-slate-400 rounded-lg hover:text-logo-red hover:bg-red-50 transition-colors"
+                  className="h-9 w-9 flex items-center justify-center text-stone-400 rounded-control hover:text-logo-red hover:bg-red-50 transition-colors"
                   onClick={(e) => handleAction(e, triggerDelete)}
                 >
                   <i className="bi bi-trash3 text-base"></i>
@@ -231,7 +231,7 @@ export const FeedItem = memo(
             <div className="flex flex-col gap-y-2">
               <p
                 onClick={handleContentClick}
-                className={`text-slate-800 text-[1.0625rem] leading-relaxed whitespace-pre-wrap break-words ${
+                className={`text-stone-800 text-base leading-relaxed whitespace-pre-wrap break-words ${
                   !disableClick && !isReply
                     ? "cursor-pointer transition-colors"
                     : ""
@@ -242,7 +242,7 @@ export const FeedItem = memo(
               {isLong && !disableClick && !isExpanded && (
                 <button
                   onClick={toggleExpansion}
-                  className="flex justify-center w-full py-0.5 text-sm font-semibold text-slate-400 cursor-pointer transition-all hover:underline"
+                  className="flex justify-center w-full py-0.5 text-sm font-semibold text-stone-400 cursor-pointer transition-all hover:underline"
                 >
                   <span>{"Read more"}</span>
                 </button>
@@ -252,7 +252,7 @@ export const FeedItem = memo(
         </div>
 
         {/* Action Footer — primary action on the left, stance + share on the right */}
-        <div className="flex items-center justify-between gap-x-2 px-2 py-1 border-t border-slate-100 bg-slate-50/20">
+        <div className="flex items-center justify-between gap-x-2 px-2 py-1 border-t border-stone-100 bg-stone-50/20">
           {isReply ? (
             onReply ? (
               <button
@@ -283,10 +283,10 @@ export const FeedItem = memo(
             >
               <span className="relative flex items-center">
                 <i
-                  className={`bi bi-chat text-base ${hasReply ? "text-slate-500" : ""}`}
+                  className={`bi bi-chat text-base ${hasReply ? "text-stone-500" : ""}`}
                 ></i>
                 {hasReply && (
-                  <span className="absolute top-0.5 -right-1 h-2 w-2 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-slate-100 group-active:ring-slate-200 transition-all"></span>
+                  <span className="absolute top-0.5 -right-1 h-2 w-2 bg-logo-blue rounded-full ring-2 ring-white group-hover:ring-stone-100 group-active:ring-stone-200 transition-all"></span>
                 )}
               </span>
               <span>
@@ -299,13 +299,14 @@ export const FeedItem = memo(
             {/* stance — top-level replies only */}
             {isReply && !isSubReply && item.interactionScore !== undefined && (
               <span
-                title={`Stance: ${displayScore}`}
-                className="flex items-center gap-x-1.5 h-10 px-2 text-sm font-medium text-slate-500 select-none cursor-default"
+                title={`Stance: ${displayScore} (${getStanceLabel(score)})`}
+                aria-label={`Stance: ${displayScore} (${getStanceLabel(score)})`}
+                className="flex items-center gap-x-1.5 h-10 px-2 text-sm font-medium text-stone-500 select-none cursor-default"
               >
                 Stance
                 <span
                   style={{ backgroundColor: stanceColor }}
-                  className="min-w-9 px-2.5 py-1 rounded-lg text-center text-sm font-bold text-white shadow-sm"
+                  className="min-w-9 px-2.5 py-1 rounded-control text-center text-sm font-bold text-white shadow-sm"
                 >
                   {displayScore}
                 </span>

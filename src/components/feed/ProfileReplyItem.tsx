@@ -27,19 +27,19 @@ export const ProfileReplyItem = ({ reply }: { reply: ReplyWithParent }) => {
     <div className="flex flex-col gap-1.5 group/reply">
       {/* Context Header */}
       <div className="flex items-center gap-2 pl-4 mb-0.5">
-        <i className="bi bi-arrow-return-right text-slate-300 text-[10px]"></i>
+        <i className="bi bi-arrow-return-right text-stone-300 text-2xs"></i>
         {reply.parentPost ? (
           <button
             onClick={handleOpenContext}
-            className="flex items-center gap-1.5 text-[11px] font-semibold tracking-tight text-slate-400 hover:text-logo-blue transition-colors text-left"
+            className="flex items-center gap-1.5 text-2xs font-semibold tracking-tight text-stone-400 hover:text-logo-blue transition-colors text-left"
           >
             <span>Replying to:</span>
-            <span className="truncate max-w-50 normal-case font-medium text-slate-500 group-hover/reply:text-logo-blue transition-colors">
+            <span className="truncate max-w-50 normal-case font-medium text-stone-500 group-hover/reply:text-logo-blue transition-colors">
               "{reply.parentPost.postContent}"
             </span>
           </button>
         ) : (
-          <span className="text-[11px] font-semibold tracking-tight text-slate-300 italic">
+          <span className="text-2xs font-semibold tracking-tight text-stone-300 italic">
             Parent post deleted
           </span>
         )}

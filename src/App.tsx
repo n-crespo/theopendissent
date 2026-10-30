@@ -32,6 +32,7 @@ import { SidebarContent } from "./components/layout/SidebarContent";
 import { Post } from "./types/index";
 import { CreatePostFAB } from "./components/feed/CreatePostFAB";
 import { ComposeModal } from "./components/feed/ComposeModal";
+import { IS_PREVIEW_AUTH } from "./lib/previewAuth";
 
 function Layout() {
   const { user, loading } = useAuth();
@@ -126,6 +127,12 @@ function Layout() {
   return (
     <div className="min-h-screen bg-logo-offwhite">
       {showLanding && <LandingPage onContinue={handleContinue} />}
+
+      {IS_PREVIEW_AUTH && (
+        <div className="pointer-events-none fixed bottom-2 left-2 z-[100] rounded-full bg-stone-900/80 px-3 py-1 text-xs font-semibold text-white">
+          preview mode: fake login, writes disabled
+        </div>
+      )}
 
       <div
         className={`transition-opacity duration-700 ${

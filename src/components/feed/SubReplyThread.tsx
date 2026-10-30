@@ -139,7 +139,7 @@ export const SubReplyThread = ({
           if (expanded) collapse();
           else setExpanded(true);
         }}
-        className="flex items-center gap-x-1.5 px-4 py-2 text-base font-semibold text-slate-400 hover:text-slate-600 transition-colors"
+        className="flex items-center gap-x-1.5 px-4 py-2 text-base font-semibold text-stone-400 hover:text-stone-600 transition-colors"
       >
         {isInitialLoading ? (
           <>
@@ -178,7 +178,7 @@ export const SubReplyThread = ({
                 className="w-6 shrink-0 relative group"
                 style={{ minHeight: "2rem" }}
               >
-                <div className="absolute left-1/2 -translate-x-1/2 top-1 bottom-4 w-0.5 bg-slate-200 group-hover:bg-slate-400 transition-colors rounded-full mb-7" />
+                <div className="absolute left-1/2 -translate-x-1/2 top-1 bottom-4 w-0.5 bg-stone-200 group-hover:bg-stone-400 transition-colors rounded-full mb-7" />
               </button>
 
               {/* Sub-reply list */}
@@ -216,7 +216,7 @@ export const SubReplyThread = ({
                           <div className="flex justify-center pt-2">
                             <button
                               onClick={() => setTopLimit((l) => l + PAGE_SIZE)}
-                              className="text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-x-1.5 px-4 py-2 rounded-full"
+                              className="text-sm font-semibold text-stone-400 hover:text-stone-600 transition-colors flex items-center gap-x-1.5 px-4 py-2 rounded-full"
                             >
                               <i className="bi bi-three-dots"></i>
                               Show {totalReplies - subReplies.length}{" "}
@@ -233,7 +233,7 @@ export const SubReplyThread = ({
 
                 {/* Empty state */}
                 {!loading && subReplies.length === 0 && (
-                  <p className="text-sm text-slate-300 px-2 py-1 italic">
+                  <p className="text-sm text-stone-300 px-2 py-1 italic">
                     No replies yet.
                   </p>
                 )}
@@ -244,7 +244,7 @@ export const SubReplyThread = ({
                 <div className="flex items-center justify-end px-1 -mt-1">
                   <button
                     onClick={collapse}
-                    className="flex items-center gap-x-1 text-base font-semibold text-slate-400 hover:text-slate-600 transition-colors"
+                    className="flex items-center gap-x-1 text-base font-semibold text-stone-400 hover:text-stone-600 transition-colors"
                   >
                     <i className="bi bi-arrow-up text-lg" />
                     Collapse Replies

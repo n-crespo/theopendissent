@@ -27,6 +27,13 @@ import {
 } from "firebase/auth";
 import { getFunctions, httpsCallable } from "firebase/functions";
 
+import {
+  IS_PREVIEW_AUTH,
+  setPreviewSignedIn,
+  skipPreviewWrite,
+  subscribeToPreviewAuth,
+} from "./previewAuth.ts";
+
 import { connectAuthEmulator } from "firebase/auth";
 import { connectDatabaseEmulator } from "firebase/database";
 import { connectFunctionsEmulator } from "firebase/functions";
@@ -111,6 +118,8 @@ export const createPost = async ({
   score,
   isThreadAuthor,
 }: CreatePostOptions) => {
+  if (skipPreviewWrite("createPost")) return;
+
   const mainTree =
     parentReplyId && parentPostId
       ? `subreplies/${parentPostId}/${parentReplyId}`
@@ -157,6 +166,7 @@ export const updatePost = async (
   if (!isWithinEditWindow(post.timestamp)) {
     throw new EditWindowClosedError();
   }
+  if (skipPreviewWrite("updatePost")) return;
   return update(ref(db), buildEditUpdates(post, changes));
 };
 
@@ -168,6 +178,7 @@ export const deletePost = async (
   post: Pick<Post, "id" | "parentPostId" | "parentReplyId">,
   userId: string,
 ) => {
+  if (skipPreviewWrite("deletePost")) return;
   try {
     await update(ref(db), buildDeleteUpdates(post, userId));
   } catch (error) {
@@ -393,6 +404,7 @@ export const subscribeToFeed = (
  * subscribes to auth state changes.
  */
 export const subscribeToAuth = (callback: (user: User | null) => void) => {
+  if (IS_PREVIEW_AUTH) return subscribeToPreviewAuth(callback);
   return onAuthStateChanged(auth, callback);
 };
 
@@ -400,6 +412,7 @@ export const subscribeToAuth = (callback: (user: User | null) => void) => {
  * handles google sign-in with ucla-only email restriction logic.
  */
 export const signInWithGoogle = async () => {
+  if (IS_PREVIEW_AUTH) return setPreviewSignedIn(true);
   try {
     await signInWithPopup(auth, googleProvider);
   } catch (error: any) {
@@ -412,7 +425,10 @@ export const signInWithGoogle = async () => {
 /**
  * signs the current user out.
  */
-export const signOutUser = () => signOut(auth);
+export const signOutUser = async () => {
+  if (IS_PREVIEW_AUTH) return setPreviewSignedIn(false);
+  return signOut(auth);
+};
 
 /**
  * fetches data required for deep-linking based on post, parent, and root ids.
@@ -611,6 +627,11 @@ export const subscribeToNotifications = (
   userId: string,
   callback: (notifications: any[]) => void,
 ) => {
+  // the fake preview user can't read users/, so skip the denied listener
+  if (IS_PREVIEW_AUTH) {
+    callback([]);
+    return () => {};
+  }
   const notifRef = ref(db, `users/${userId}/notifications`);
   // Sort by updatedAt so newest notifications are at the top
   const q = query(notifRef, orderByChild("updatedAt"));
@@ -679,6 +700,8 @@ export const deleteNotifications = async (
  * @param deleteContent If true, the backend will fully wipe the user's data. If false, it will anonymize it.
  */
 export const deleteUserAccount = async (deleteContent: boolean = true) => {
+  if (skipPreviewWrite("deleteUserAccount")) return signOutUser();
+
   const user = auth.currentUser;
   if (!user) throw new Error("No user is currently signed in.");
 
