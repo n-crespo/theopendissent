@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { getInterpolatedColor, DEFAULT_STOPS } from "../../color-utils";
 import { useOwnedPosts } from "../../context/OwnedPostsContext";
 import { Badge } from "../ui/Badge";
+import { StanceMeter } from "../ui/StanceMeter";
 import { useAnchoredFlash } from "../ui/AnchoredBubble";
 
 interface FeedItemProps {
@@ -344,12 +345,7 @@ export const FeedItem = memo(
                 className="flex items-center gap-x-1.5 h-10 px-2 text-sm font-medium text-stone-500 select-none cursor-default"
               >
                 Stance
-                <span
-                  style={{ backgroundColor: stanceColor }}
-                  className="min-w-9 px-2.5 py-1 rounded-control text-center text-sm font-bold text-white shadow-sm"
-                >
-                  {displayScore}
-                </span>
+                <StanceMeter score={score} color={stanceColor} />
               </span>
             )}
 
