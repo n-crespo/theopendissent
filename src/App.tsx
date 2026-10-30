@@ -149,7 +149,7 @@ function Layout() {
           <SideRail onCompose={() => handleOpenCompose(true)} />
 
           {/* FEED (CENTER): equal side tracks keep it on the page center */}
-          <main className="min-w-0 pt-[4.25rem] pb-[calc(var(--tabbar-h)+1.5rem)] rail:pt-4 rail:pb-12 relative">
+          <main className="min-w-0 pt-[4.25rem] pb-[calc(var(--tabbar-h)+5.5rem)] rail:pt-4 rail:pb-12 relative">
             <Outlet
               context={{
                 setActiveParent,

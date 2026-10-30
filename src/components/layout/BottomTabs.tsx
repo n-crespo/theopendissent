@@ -1,62 +1,52 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { useModal } from "../../context/ModalContext";
 import { RoundActionButton } from "../ui/RoundActionButton";
 import { UnreadBadge } from "../ui/UnreadBadge";
-import { SIGN_IN_ICON, useNavItems } from "./useNavItems";
-
-const tabClass =
-  "relative flex flex-1 flex-col items-center justify-center gap-0.5 text-2xs font-semibold";
+import { useNavItems } from "./useNavItems";
 
 /**
- * Phone navigation. Post gets its own slot in the bar rather than floating
- * over the feed, where it would sit on top of the card action buttons.
+ * Phone navigation, plus the floating post button. onCompose takes signed out
+ * users to the sign in modal.
  */
 export const BottomTabs = ({ onCompose }: { onCompose: () => void }) => {
-  const { user } = useAuth();
-  const { openModal } = useModal();
   const items = useNavItems();
 
   return (
-    <nav
-      aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-50 flex h-(--tabbar-h) border-t border-stone-200 bg-logo-offwhite pb-[env(safe-area-inset-bottom)] rail:hidden"
-    >
-      {items.map((item) => (
-        <Link
-          key={item.to}
-          to={item.to}
-          aria-current={item.isActive ? "page" : undefined}
-          className={`${tabClass} ${item.isActive ? "text-logo-blue" : "text-stone-500"}`}
-        >
-          <span className="relative">
-            <i
-              className={`bi ${item.icon}${item.isActive ? "-fill" : ""} text-xl leading-none`}
-            ></i>
-            <UnreadBadge count={item.unread ?? 0} className="-top-1 -right-3" />
-          </span>
-          {item.label}
-        </Link>
-      ))}
+    <>
+      <div className="fixed right-4 bottom-[calc(var(--tabbar-h)+1rem)] z-50 rail:hidden">
+        <RoundActionButton
+          icon="bi-plus-lg"
+          label="New post"
+          onClick={onCompose}
+          className="h-14 w-14 shadow-lg"
+        />
+      </div>
 
-      {user ? (
-        <div className="flex w-18 shrink-0 items-center justify-center">
-          <RoundActionButton
-            icon="bi-plus-lg"
-            label="New post"
-            onClick={onCompose}
-            className="h-12 w-12 shadow-md"
-          />
-        </div>
-      ) : (
-        <button
-          onClick={() => openModal("signin")}
-          className={`${tabClass} text-logo-blue`}
-        >
-          <i className={`bi ${SIGN_IN_ICON} text-xl leading-none`}></i>
-          Sign in
-        </button>
-      )}
-    </nav>
+      <nav
+        aria-label="Main"
+        className="fixed inset-x-0 bottom-0 z-50 flex h-(--tabbar-h) border-t border-stone-200 bg-logo-offwhite pb-[env(safe-area-inset-bottom)] rail:hidden"
+      >
+        {items.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            aria-current={item.isActive ? "page" : undefined}
+            className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 text-2xs font-semibold ${
+              item.isActive ? "text-logo-blue" : "text-stone-500"
+            }`}
+          >
+            <span className="relative">
+              <i
+                className={`bi ${item.icon}${item.isActive ? "-fill" : ""} text-xl leading-none`}
+              ></i>
+              <UnreadBadge
+                count={item.unread ?? 0}
+                className="-top-1 -right-3"
+              />
+            </span>
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+    </>
   );
 };
