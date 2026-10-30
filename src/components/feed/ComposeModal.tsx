@@ -200,11 +200,20 @@ export const ComposeModal = ({
                   </span>
                 </div>
                 <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isAnonymous}
+                  aria-label="Post anonymously"
                   disabled={isIdentityLocked}
                   onPointerDown={(e) => {
                     // Prevent focus/click firing afterwards to avoid double-toggling
                     e.preventDefault();
                     if (!isIdentityLocked) setIsAnonymous(!isAnonymousState);
+                  }}
+                  onClick={(e) => {
+                    // keyboard-originated clicks only; pointer is handled above
+                    if (e.detail !== 0 || isIdentityLocked) return;
+                    setIsAnonymous(!isAnonymousState);
                   }}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     isAnonymous ? "bg-logo-blue" : "bg-slate-300"
