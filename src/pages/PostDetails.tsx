@@ -173,7 +173,12 @@ export const PostDetails = () => {
           {showPostSkeleton ? (
             <FeedItemSkeleton />
           ) : livePost ? (
-            <FeedItem item={livePost} disableClick={true} isReply={false} />
+            <FeedItem
+              item={livePost}
+              disableClick={true}
+              isReply={false}
+              onDiscuss={() => setIsComposeOpen(true)}
+            />
           ) : null}
         </section>
 

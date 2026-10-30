@@ -17,6 +17,8 @@ interface FeedItemProps {
   disableClick?: boolean;
   /** called when the Replies button is tapped on a reply card (opens sub-reply compose) */
   onReply?: () => void;
+  /** detail page only: called when the discuss button is tapped (opens reply compose) */
+  onDiscuss?: () => void;
 }
 
 const CONTENT_CHAR_LIMIT = 250;
@@ -29,6 +31,7 @@ export const FeedItem = memo(
     highlighted = false,
     disableClick = false,
     onReply,
+    onDiscuss,
   }: FeedItemProps) => {
     if (!item) return null;
 
@@ -262,13 +265,15 @@ export const FeedItem = memo(
             ) : (
               <span />
             )
-          ) : disableClick ? (
-            // detail page: the discussion is right below, no action needed
+          ) : disableClick && !onDiscuss ? (
             <span />
           ) : (
             <button
               onClick={(e) =>
-                handleAction(e, () => navigate(`/post/${item.id}`))
+                handleAction(e, () =>
+                  // detail page: already in the thread, so compose a reply
+                  disableClick ? onDiscuss?.() : navigate(`/post/${item.id}`),
+                )
               }
               className={
                 hasReply
@@ -329,5 +334,6 @@ export const FeedItem = memo(
     p.item.timestamp === n.item.timestamp &&
     p.item.interactionScore === n.item.interactionScore &&
     p.highlighted === n.highlighted &&
-    p.onReply === n.onReply,
+    p.onReply === n.onReply &&
+    p.onDiscuss === n.onDiscuss,
 );
