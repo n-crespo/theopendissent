@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { getInterpolatedColor, DEFAULT_STOPS } from "../../color-utils";
 import { useOwnedPosts } from "../../context/OwnedPostsContext";
 import { Badge } from "../ui/Badge";
+import { StanceMeter } from "../ui/StanceMeter";
 import { useAnchoredFlash } from "../ui/AnchoredBubble";
 
 interface FeedItemProps {
@@ -70,6 +71,9 @@ export const FeedItem = memo(
     const score = item.interactionScore ?? 0;
     const displayScore = score > 0 ? `+${score}` : `${score}`;
     const stanceColor = getInterpolatedColor(score, DEFAULT_STOPS);
+    // sub-replies carry no stance; an undefined score must not read as neutral
+    const hasStance =
+      isReply && !isSubReply && item.interactionScore !== undefined;
 
     const formattedTime = timeAgo(
       new Date(typeof item.timestamp === "number" ? item.timestamp : 0),
@@ -164,6 +168,16 @@ export const FeedItem = memo(
                 </span>
                 <div className="flex items-center flex-wrap gap-x-1 text-2xs text-stone-400 font-medium tracking-tight">
                   <span>{formattedTime}</span>
+                  {hasStance && (
+                    <span className="flex items-center text-stone-500">
+                      <span className="mx-1 text-stone-400">·</span>
+                      <span
+                        style={{ backgroundColor: stanceColor }}
+                        className="h-1.5 w-1.5 mr-1 rounded-full"
+                      ></span>
+                      {getStanceLabel(score)}
+                    </span>
+                  )}
                   {formattedEditTime && (
                     <span className="flex items-center italic text-stone-300">
                       <span className="mx-1">·</span> edited {formattedEditTime}
@@ -323,19 +337,14 @@ export const FeedItem = memo(
 
           <div className="flex items-center gap-x-1">
             {/* stance — top-level replies only */}
-            {isReply && !isSubReply && item.interactionScore !== undefined && (
+            {hasStance && (
               <span
                 title={`Stance: ${displayScore} (${getStanceLabel(score)})`}
                 aria-label={`Stance: ${displayScore} (${getStanceLabel(score)})`}
                 className="flex items-center gap-x-1.5 h-10 px-2 text-sm font-medium text-stone-500 select-none cursor-default"
               >
-                Stance
-                <span
-                  style={{ backgroundColor: stanceColor }}
-                  className="min-w-9 px-2.5 py-1 rounded-control text-center text-sm font-bold text-white shadow-sm"
-                >
-                  {displayScore}
-                </span>
+                Stance:
+                <StanceMeter score={score} color={stanceColor} />
               </span>
             )}
 

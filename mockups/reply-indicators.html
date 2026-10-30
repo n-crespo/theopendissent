@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reply stance indicators</title>
+<!-- Mockup only: nothing here is imported by the app. Colours and sizes mirror src/color-utils.ts, src/styles/index.css and FeedItem. Icons are Bootstrap Icons (MIT). -->
+<style>
+:root{font-size:15px;--color-stone-100:oklch(97% 0.001 106.424);--color-stone-200:oklch(92.3% 0.003 48.717);--color-stone-400:oklch(70.9% 0.01 56.259);--color-stone-500:oklch(55.3% 0.013 58.071);--color-stone-800:oklch(26.8% 0.007 34.298);--color-stone-900:oklch(21.6% 0.006 56.043);--color-logo-blue:#043f63;--color-logo-offwhite:#faf7f2;--font-sans-app:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"}
+.mock,.mock *{box-sizing:border-box}
+.mock{display:flex;flex-direction:column;gap:12px;font-family:var(--font-sans-app);letter-spacing:-.011em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.panel{background:var(--color-logo-offwhite);color:var(--color-stone-900);border-radius:var(--radius,12px);padding:16px}
+.opt-label{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin-bottom:12px;font-size:.875rem;font-weight:600}
+.opt-label b{color:#fff;background:var(--color-logo-blue);border-radius:9999px;padding:1px 8px;font-size:.75rem;font-weight:600}
+.opt-label span{color:var(--color-stone-500);font-weight:500;font-size:.75rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;align-items:start}
+.i{display:inline-block;width:1em;height:1em;vertical-align:-.125em;fill:currentColor}
+.card{display:flex;flex-direction:column;background:#fff;border:1px solid var(--color-stone-200);border-radius:16px;overflow:hidden;box-shadow:0 1px 3px 0 rgb(0 0 0/.1),0 1px 2px -1px rgb(0 0 0/.1)}
+.body{padding:clamp(1rem,3vw,1.25rem);display:flex;flex-direction:column;gap:1rem}
+.head{display:flex;justify-content:space-between;align-items:flex-start}
+.who{display:flex;align-items:center;gap:.75rem}
+.avatar{position:relative;height:2.5rem;width:2.5rem;flex:none;border-radius:12px;background:var(--color-stone-100);border:1px solid var(--color-stone-200);color:var(--color-stone-500);display:flex;align-items:center;justify-content:center;font-size:1.125rem}
+.name{font-size:.875rem;font-weight:600;line-height:1.25;color:var(--color-stone-900)}
+.time{display:flex;align-items:center;gap:.25rem;font-size:.6875rem;line-height:1rem;font-weight:500;letter-spacing:-.025em;color:var(--color-stone-400)}
+.tools{display:flex;align-items:center}
+.flag{padding:.5rem;color:var(--color-stone-400);font-size:1rem;line-height:1}
+.post-text{margin:0;color:var(--color-stone-800);font-size:1rem;line-height:1.625;overflow-wrap:break-word}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.25rem .5rem;border-top:1px solid var(--color-stone-100)}
+.btn{display:flex;align-items:center;gap:.5rem;height:2.5rem;padding:0 .75rem;font-size:.875rem;font-weight:500;color:var(--color-stone-500)}
+.btn .i{font-size:1rem}.btn .i.lg{font-size:1.125rem}
+.right{display:flex;align-items:center;gap:.25rem}
+.stance{display:flex;align-items:center;gap:.375rem;padding:0 .25rem;font-size:.875rem;font-weight:500;color:var(--color-stone-500)}
+.pill{min-width:2.25rem;padding:.25rem .625rem;border-radius:12px;text-align:center;font-weight:700;color:#fff;background:var(--s)}
+
+/* indicators */
+.left{border-left-width:3px;border-left-color:var(--s)}
+.top{border-top-width:3px;border-top-color:var(--s)}
+.dot{height:.375rem;width:.375rem;border-radius:9999px;background:var(--s)}
+.meta-label{display:flex;align-items:center;gap:.25rem;color:var(--color-stone-500)}
+.fill .avatar{background:var(--s);border-color:transparent;color:#fff}
+.score{position:absolute;right:-.3rem;bottom:-.3rem;min-width:1.05rem;padding:0 .2rem;border-radius:9999px;background:var(--s);color:#fff;font-size:.6875rem;line-height:1rem;font-weight:700;text-align:center;box-shadow:0 0 0 2px #fff}
+.meter{display:flex;align-items:center;gap:2px;margin-right:.25rem}
+.meter i{display:block;height:.75rem;width:.25rem;border-radius:9999px;background:var(--color-stone-200)}
+.meter i.mid{height:1rem}
+.meter i.on{background:var(--s)}
+.tint{background:color-mix(in srgb,var(--s) 7%,#fff)}
+.tint .foot{border-top-color:color-mix(in srgb,var(--s) 15%,#fff)}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="person" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></symbol>
+<symbol id="send" viewBox="0 0 16 16"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/></symbol>
+<symbol id="reply" viewBox="0 0 16 16"><path d="M6.598 5.013a.144.144 0 0 1 .202.134V6.3a.5.5 0 0 0 .5.5c.667 0 2.013.005 3.3.822.984.624 1.99 1.76 2.595 3.876-1.02-.983-2.185-1.516-3.205-1.799a8.7 8.7 0 0 0-1.921-.306 7 7 0 0 0-.798.008h-.013l-.005.001h-.001L7.3 9.9l-.05-.498a.5.5 0 0 0-.45.498v1.153c0 .108-.11.176-.202.134L2.614 8.254l-.042-.028a.147.147 0 0 1 0-.252l.042-.028zM7.8 10.386q.103 0 .223.006c.434.02 1.034.086 1.7.271 1.326.368 2.896 1.202 3.94 3.08a.5.5 0 0 0 .933-.305c-.464-3.71-1.886-5.662-3.46-6.66-1.245-.79-2.527-.942-3.336-.971v-.66a1.144 1.144 0 0 0-1.767-.96l-3.994 2.94a1.147 1.147 0 0 0 0 1.946l3.994 2.94a1.144 1.144 0 0 0 1.767-.96z"/></symbol>
+<symbol id="flag" viewBox="0 0 16 16"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12 12 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A20 20 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a20 20 0 0 0 1.349-.476l.019-.007.004-.002h.001M14 1.221c-.22.078-.48.167-.766.255-.81.252-1.872.523-2.734.523-.886 0-1.592-.286-2.203-.534l-.008-.003C7.662 1.21 7.139 1 6.5 1c-.669 0-1.606.229-2.415.478A21 21 0 0 0 3 1.845v6.433c.22-.078.48-.167.766-.255C4.576 7.77 5.638 7.5 6.5 7.5c.847 0 1.548.28 2.158.525l.028.01C9.32 8.29 9.86 8.5 10.5 8.5c.668 0 1.606-.229 2.415-.478A21 21 0 0 0 14 7.655V1.222z"/></symbol>
+</defs></svg>
+<main class="mock" id="m"></main>
+<script>
+const REPLIES=[
+  {name:"Jordan K.",time:"45m ago",score:-2,label:"Disagree",color:"rgb(163, 100, 70)",text:"Low turnout isn’t the same as no consent. The polls were open for a week."},
+  {name:"Anonymous User",time:"20m ago",score:2,label:"Agree",color:"rgb(145, 144, 68)",text:"Agreed. A fee this big should need a minimum turnout before it passes."},
+];
+const I=(n,c="")=>`<svg class="i ${c}"><use href="#${n}"/></svg>`;
+const fmt=(s)=>s>0?`+${s}`:`${s}`;
+const meter=(s)=>`<span class="meter" aria-hidden="true">${[-3,-2,-1,0,1,2,3].map((v)=>`<i class="${v===0?"mid ":""}${(s<0?v>=s&&v<0:v<=s&&v>0)?"on":""}"></i>`).join("")}</span>`;
+const card=(r,o)=>`<div class="card ${o.cls||""}" style="--s:${r.color}"><div class="body"><div class="head"><div class="who"><div class="avatar">${I("person")}${o.avatar?o.avatar(r):""}</div><div><div class="name">${r.name}</div><div class="time"><span>${r.time}</span>${o.meta?o.meta(r):""}</div></div></div><div class="tools">${o.tools?o.tools(r):""}<div class="flag">${I("flag")}</div></div></div><p class="post-text">${r.text}</p></div><div class="foot"><div class="btn">${I("reply","lg")}<span>Reply</span></div><div class="right"><span class="stance">Stance <span class="pill">${fmt(r.score)}</span></span><div class="btn">${I("send")}<span>Share</span></div></div></div></div>`;
+const OPTIONS=[
+  {id:"R1",name:"Left border",note:"tried, then removed",cls:"left"},
+  {id:"R2",name:"Top bar",note:"same stripe across the top edge",cls:"top"},
+  {id:"R3",name:"Label under the name",note:"says the stance in words",meta:(r)=>`<span>·</span><span class="meta-label"><span class="dot"></span>${r.label}</span>`},
+  {id:"R4",name:"Coloured avatar",note:"avatar tile takes the stance colour",cls:"fill"},
+  {id:"R5",name:"Score on the avatar",note:"number visible at the top of the card",avatar:(r)=>`<span class="score">${fmt(r.score)}</span>`},
+  {id:"R6",name:"Scale meter",note:"position from -3 to +3, centre tick is neutral",tools:(r)=>meter(r.score)},
+  {id:"R7",name:"Card tint",note:"faint wash of the stance colour",cls:"tint"},
+];
+document.getElementById("m").innerHTML=OPTIONS.map((o)=>`<section class="panel"><div class="opt-label"><b>${o.id}</b>${o.name}<span>${o.note}</span></div><div class="grid">${REPLIES.map((r)=>card(r,o)).join("")}</div></section>`).join("");
+</script></body></html>
