@@ -1,11 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoadingDots } from "../ui/LoadingDots";
 import { FeedItem } from "./FeedItem";
+import { InfoCard } from "./InfoCard";
 import { FeedItemSkeleton } from "../ui/FeedItemSkeleton";
 import { Post } from "../../types";
 import { useNavigationType } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { SortOption } from "../../context/FeedSortContext";
+import {
+  getVisibleInfoCards,
+  interleaveInfoCards,
+} from "../../lib/infoCards";
 
 interface FeedListProps {
   posts: Post[];
@@ -25,6 +31,7 @@ export const FeedList = ({
   sortType,
 }: FeedListProps) => {
   const navType = useNavigationType();
+  const { user } = useAuth();
 
   /**
    * True only on the very first render when we arrived via back-swipe (POP).
@@ -49,6 +56,11 @@ export const FeedList = ({
   }, [loading]);
 
   const showSkeletons = loading && showLoadingUI && posts.length === 0;
+
+  const entries = useMemo(
+    () => interleaveInfoCards(posts, getVisibleInfoCards(!!user)),
+    [posts, user],
+  );
 
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto gap-3 min-h-100">
@@ -92,10 +104,14 @@ export const FeedList = ({
           )}
 
           {!showSkeletons &&
-            posts.map((post) => (
+            entries.map((entry) => (
               <motion.div
-                key={post.id}
-                id={`post-${post.id}`}
+                key={
+                  entry.kind === "post"
+                    ? entry.post.id
+                    : `info-${entry.slot}`
+                }
+                id={entry.kind === "post" ? `post-${entry.post.id}` : undefined}
                 /**
                  * initial is only evaluated when this element first mounts in the DOM.
                  * Re-renders never re-trigger it, so this is safe to always set.
@@ -109,7 +125,14 @@ export const FeedList = ({
                 transition={{ duration: 0.28, ease: "easeOut" }}
                 className="w-full"
               >
-                <FeedItem item={post} isReply={!!post.parentPostId} />
+                {entry.kind === "post" ? (
+                  <FeedItem
+                    item={entry.post}
+                    isReply={!!entry.post.parentPostId}
+                  />
+                ) : (
+                  <InfoCard card={entry.card} />
+                )}
               </motion.div>
             ))}
         </motion.div>

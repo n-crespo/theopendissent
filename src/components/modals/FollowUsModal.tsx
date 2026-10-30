@@ -1,4 +1,5 @@
 import { useModal } from "../../context/ModalContext";
+import { LINKS } from "../../lib/links";
 
 export const FollowUsModal = () => {
   const { closeModal } = useModal();
@@ -22,7 +23,7 @@ export const FollowUsModal = () => {
       <div className="flex w-full max-w-xs flex-col gap-3">
         {/* Instagram */}
         <a
-          href="https://www.instagram.com/theopendissent/"
+          href={LINKS.instagram}
           target="_blank"
           rel="noreferrer"
           className="group flex items-center gap-4 rounded-control border border-stone-200 bg-white p-3 shadow-sm transition-all hover:border-[#ED317E]/50 hover:shadow-md active:scale-95"
@@ -46,7 +47,7 @@ export const FollowUsModal = () => {
 
         {/* Linkedin */}
         <a
-          href="https://www.linkedin.com/company/the-open-dissent"
+          href={LINKS.linkedin}
           target="_blank"
           rel="noreferrer"
           className="group flex items-center gap-4 rounded-control border border-stone-200 bg-white p-3 shadow-sm transition-all hover:border-[#0A66C2]/50 hover:shadow-md active:scale-95"
