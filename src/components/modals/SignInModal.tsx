@@ -35,17 +35,17 @@ export const SignInModal = () => {
 
   return (
     <div className="flex flex-col">
-      <h2 className="text-xl font-semibold mb-6 text-slate-900 text-center">Sign In</h2>
+      <h2 className="text-xl font-semibold mb-6 text-stone-900 text-center">Sign In</h2>
 
       <div className="mb-8 space-y-4 px-2">
-        <p className="text-center text-slate-700 leading-relaxed">
+        <p className="text-center text-stone-700 leading-relaxed">
           GREAT NEWS: you already have an account!
           <p className="italic">(just sign in with your UCLA email)</p>
         </p>
 
         {/* Inline Error Message */}
         {error && (
-          <p className="text-center text-sm text-(--disagree) leading-relaxed animate-in fade-in slide-in-from-top-1">
+          <p className="text-center text-sm text-danger leading-relaxed animate-in fade-in slide-in-from-top-1">
             {error}
           </p>
         )}
@@ -53,7 +53,7 @@ export const SignInModal = () => {
 
       <div className="w-full flex flex-col gap-2">
         <button
-          className="inline-flex w-full items-center justify-center gap-3 rounded-xl bg-linear-to-r from-logo-red via-logo-green to-logo-blue animate-shimmer bg-size-[200%_auto] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:brightness-110 cursor-pointer border-none shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+          className="inline-flex w-full items-center justify-center gap-3 rounded-control bg-linear-to-r from-logo-red via-logo-green to-logo-blue animate-shimmer bg-size-[200%_auto] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:brightness-110 cursor-pointer border-none shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
           onClick={handleSignIn}
           disabled={isSigningIn} // Disable while loading
         >
@@ -71,7 +71,7 @@ export const SignInModal = () => {
         </button>
 
         <button
-          className="w-full rounded-xl px-4 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100"
+          className="w-full rounded-control px-4 py-2 text-sm font-semibold text-stone-500 transition-colors hover:bg-stone-100"
           onClick={closeModal}
           disabled={isSigningIn}
         >

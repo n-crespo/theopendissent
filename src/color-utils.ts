@@ -46,32 +46,6 @@ export const getInterpolatedColor = (
   return `rgb(${r}, ${g}, ${b})`;
 };
 
-/** generates a css linear-gradient string from color stops */
-export const getGradientCSS = (stops: ColorStop[]): string => {
-  const sortedStops = [...stops].sort((a, b) => a.value - b.value);
-  const min = sortedStops[0].value;
-  const max = sortedStops[sortedStops.length - 1].value;
-  const range = max - min;
-
-  const firstColor = sortedStops[0].color;
-  const lastColor = sortedStops[sortedStops.length - 1].color;
-
-  const cssStops = sortedStops.map((stop) => {
-    const percentage = ((stop.value - min) / range) * 100;
-    const { r, g, b } = stop.color;
-    return `rgb(${r}, ${g}, ${b}) ${percentage}%`;
-  });
-
-  // add hard stops at 2px and calc(100% - 2px) to prevent edge bleeding
-  return `linear-gradient(to right,
-    rgb(${firstColor.r}, ${firstColor.g}, ${firstColor.b}) 0%,
-    rgb(${firstColor.r}, ${firstColor.g}, ${firstColor.b}) 2px,
-    ${cssStops.join(", ")},
-    rgb(${lastColor.r}, ${lastColor.g}, ${lastColor.b}) calc(100% - 2px),
-    rgb(${lastColor.r}, ${lastColor.g}, ${lastColor.b}) 100%
-  )`;
-};
-
 const desaturate = (color: RGB, factor: number): RGB => ({
   r: Math.round(color.r + (128 - color.r) * factor),
   g: Math.round(color.g + (128 - color.g) * factor),

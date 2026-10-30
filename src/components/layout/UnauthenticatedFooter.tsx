@@ -31,15 +31,15 @@ export const UnauthenticatedFooter = () => {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "anticipate" }}
-      className="fixed bottom-0 left-0 right-0 z-50 bg-logo-offwhite border-t border-slate-300 shadow-2xl rounded-t-4xl transform-gpu"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-logo-offwhite border-t border-stone-300 shadow-2xl rounded-t-card transform-gpu"
     >
       <div className="mx-auto max-w-7xl px-4 py-7 pb-6 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex flex-col">
-          <p className="text-slate-900 text-md font-semibold sm:text-base leading-tight">
+          <p className="text-stone-900 text-base font-semibold leading-tight">
             Sign in with your UCLA email to post or reply!
           </p>
           {error && (
-            <p className="text-(--disagree) text-xs mt-1 animate-in fade-in">
+            <p className="text-danger text-xs mt-1 animate-in fade-in">
               {error}
             </p>
           )}

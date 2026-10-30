@@ -42,6 +42,16 @@ export const pinPostToTop = (post: Post): void => {
   }
 };
 
+/**
+ * Removes a pinned post, e.g. after its owner deletes it. Pinned posts are
+ * static snapshots, so without this a deleted post would linger in the feed.
+ */
+export const unpinPost = (postId: string): void => {
+  if (!pinnedPosts.some((p) => p.id === postId)) return;
+  pinnedPosts = pinnedPosts.filter((p) => p.id !== postId);
+  pinListeners.forEach((l) => l());
+};
+
 export const clearPinnedPosts = (): void => {
   pinnedPosts = [];
 };
