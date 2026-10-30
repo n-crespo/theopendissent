@@ -14,7 +14,7 @@ export const HowItWorks = () => {
   };
 
   return (
-    <div className="flex flex-col gap-y-3 text-sm text-stone-700 leading-relaxed">
+    <div className="flex flex-col gap-y-3 text-sm text-stone-700">
       <p>
         The Open Dissent was made <em>by</em> students, <em>for</em> students,
         with the goal of promoting open political discourse at UCLA.
