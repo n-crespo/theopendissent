@@ -20,6 +20,7 @@ export const NotificationItem = memo(
   }: NotificationItemProps) => {
     const formattedTime = timeAgo(new Date(notification.updatedAt));
     const isRead = notification.isRead;
+    const isPinned = !!notification.pinned;
 
     const renderMessage = () => {
       if (notification.type === "reply") {
@@ -39,6 +40,19 @@ export const NotificationItem = memo(
           <strong className={isRead ? "text-stone-700" : "text-stone-900"}>
             Invitation to the show
           </strong>
+        );
+      }
+      if (notification.type === "contact") {
+        return (
+          <span
+            className={`${isRead ? "text-stone-600" : "text-stone-800"} leading-snug`}
+          >
+            <strong>An admin</strong> contacted you about your{" "}
+            {notification.targetType ?? "post"}.
+            {notification.message && (
+              <span className="block mt-1">{notification.message}</span>
+            )}
+          </span>
         );
       }
       return <span className="text-stone-600">New notification</span>;
@@ -65,37 +79,51 @@ export const NotificationItem = memo(
           }`}
       >
         {/* Left Icon / Checkbox Section */}
-        <button
-          type="button"
-          aria-label={
-            selected ? "Deselect notification" : "Select notification"
-          }
-          aria-pressed={isSelecting ? selected : undefined}
-          className="flex items-center justify-center shrink-0 w-6 h-6"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle(notification.id);
-          }}
-        >
-          {isSelecting ? (
-            <span
-              className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
-                selected ? "bg-logo-blue border-logo-blue" : "border-stone-400"
-              }`}
-            >
-              {selected && (
-                <i className="bi bi-check-lg text-white text-xs"></i>
-              )}
-            </span>
-          ) : (
-            <i
-              className={`bi bi-bell text-lg ${isRead ? "text-stone-300" : "text-stone-400"}`}
-            ></i>
-          )}
-        </button>
+        {isPinned ? (
+          // pinned notifications can't be deleted, so they have no checkbox
+          <span
+            role="img"
+            aria-label="Pinned"
+            title="Pinned"
+            className="flex items-center justify-center shrink-0 w-6 h-6"
+          >
+            <i className="bi bi-pin-angle-fill text-lg text-logo-blue"></i>
+          </span>
+        ) : (
+          <button
+            type="button"
+            aria-label={
+              selected ? "Deselect notification" : "Select notification"
+            }
+            aria-pressed={isSelecting ? selected : undefined}
+            className="flex items-center justify-center shrink-0 w-6 h-6"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle(notification.id);
+            }}
+          >
+            {isSelecting ? (
+              <span
+                className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
+                  selected
+                    ? "bg-logo-blue border-logo-blue"
+                    : "border-stone-400"
+                }`}
+              >
+                {selected && (
+                  <i className="bi bi-check-lg text-white text-xs"></i>
+                )}
+              </span>
+            ) : (
+              <i
+                className={`bi bi-bell text-lg ${isRead ? "text-stone-300" : "text-stone-400"}`}
+              ></i>
+            )}
+          </button>
+        )}
 
         {/* Text Content Section */}
-        <div className="flex flex-col flex-1 gap-0.5">
+        <div className="flex flex-col flex-1 min-w-0 gap-0.5">
           <p className="text-stone-800 leading-[1.6] whitespace-pre-wrap wrap-break-word text-sm">
             {renderMessage()}
           </p>
