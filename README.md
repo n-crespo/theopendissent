@@ -48,17 +48,7 @@ production is handled via GitHub Actions.
 
 ### Admins
 
-Admins help moderate the site, but being an admin doesn't reveal who anyone is.
-Sign-in goes through Google, so the site never holds a password to see, and the
-admin tools don't show a user's email or account.
-
-Admins will message people through their content rather than their identity (in
-progress, see #43). An admin picks a post or reply and writes a message, and the
-server delivers it to whoever wrote it. The admin never learns who that was, even
-when the post is anonymous.
-
-Admin status is granted by a maintainer, and nobody can give it to themselves
-from the site. See [scripts/README.md](scripts/README.md#set-admincjs) for how.
+Admins may contact you through notifications, but they don't see your identity.
 
 ## Database Layout
 
