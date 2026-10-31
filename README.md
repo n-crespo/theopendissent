@@ -48,19 +48,17 @@ production is handled via GitHub Actions.
 
 ### Admins
 
-Admin access is an `admin` custom claim on the account, set with a script. The
-account must have signed in once, and picks up the change at its next sign-in.
+Admins help moderate the site, but being an admin doesn't reveal who anyone is.
+Sign-in goes through Google, so the site never holds a password to see, and the
+admin tools don't show a user's email or account.
 
-```sh
-(cd scripts && npm install) # first time only
+Admins will message people through their content rather than their identity (in
+progress, see #43). An admin picks a post or reply and writes a message, and the
+server delivers it to whoever wrote it. The admin never learns who that was, even
+when the post is anonymous.
 
-node scripts/set-admin.cjs <email>          # grant, on the local emulator
-node scripts/set-admin.cjs <email> --revoke # revoke, on the local emulator
-node scripts/set-admin.cjs <email> --prod   # grant, on production
-```
-
-Production needs `scripts/service-account.json`. Local sign-in also needs
-non-UCLA test emails listed in `WHITELISTED_EMAILS` in `functions/.env.local`.
+Admin status is granted by a maintainer, and nobody can give it to themselves
+from the site. See [scripts/README.md](scripts/README.md#set-admincjs) for how.
 
 ## Database Layout
 
