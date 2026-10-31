@@ -46,6 +46,10 @@ and logs, and `localhost:5173` to see the frontend.
 Hosting and the deployment of cloud functions/database security rules to
 production is handled via GitHub Actions.
 
+### Admins
+
+Admins may contact you through notifications, but they don't see your identity.
+
 ## Database Layout
 
 We use a normalized Realtime Database structure to ensure high performance for threaded conversations, secure permissions and efficient data cleanup.

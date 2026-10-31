@@ -40,7 +40,7 @@ export const SignInModal = () => {
       <div className="mb-8 space-y-4 px-2">
         <p className="text-center text-stone-700 leading-relaxed">
           GREAT NEWS: you already have an account!
-          <p className="italic">(just sign in with your UCLA email)</p>
+          <span className="block italic">(just sign in with your UCLA email)</span>
         </p>
 
         {/* Inline Error Message */}
