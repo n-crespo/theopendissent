@@ -9,6 +9,7 @@ type ModalType =
   | "listen"
   | "followUs"
   | "info"
+  | "contact"
   | null;
 
 interface ModalInstance {

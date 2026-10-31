@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { FollowUsModal } from "./FollowUsModal";
 import { DeleteAccountModal } from "./DeleteAccountModal";
 import { InfoModal } from "./InfoModal";
+import { ContactModal } from "./ContactModal";
 
 /**
  * Manages the visibility and content of the application's central modal system.
@@ -92,6 +93,14 @@ export const GlobalModal = () => {
                 {modal.type === "listen" && <ListenModal />}
                 {modal.type === "followUs" && <FollowUsModal />}
                 {modal.type === "info" && <InfoModal />}
+                {modal.type === "contact" && (
+                  <ContactModal
+                    contentId={modal.payload?.contentId}
+                    isReply={modal.payload?.isReply}
+                    preview={modal.payload?.preview}
+                    onClose={closeModal}
+                  />
+                )}
               </div>
             </motion.div>
           </motion.div>

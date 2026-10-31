@@ -710,6 +710,15 @@ export const deleteNotifications = async (
 };
 
 /**
+ * Sends a pinned notification to the author of a post or reply. Admin only: the
+ * Cloud Function checks the claim, and never reveals who the author is.
+ */
+export const contactAuthor = async (contentId: string, message: string) => {
+  if (skipPreviewWrite("contactAuthor")) return;
+  await httpsCallable(getFunctions(app), "contactAuthor")({ contentId, message });
+};
+
+/**
  * Deletes the current user's account by calling the v2 Cloud Function.
  * The user is proactively re-authenticated first to ensure maximum security against hijacked sessions.
  * @param deleteContent If true, the backend will fully wipe the user's data. If false, it will anonymize it.
