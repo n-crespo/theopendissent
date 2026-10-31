@@ -46,6 +46,22 @@ and logs, and `localhost:5173` to see the frontend.
 Hosting and the deployment of cloud functions/database security rules to
 production is handled via GitHub Actions.
 
+### Admins
+
+Admin access is an `admin` custom claim on the account, set with a script. The
+account must have signed in once, and picks up the change at its next sign-in.
+
+```sh
+(cd scripts && npm install) # first time only
+
+node scripts/set-admin.cjs <email>          # grant, on the local emulator
+node scripts/set-admin.cjs <email> --revoke # revoke, on the local emulator
+node scripts/set-admin.cjs <email> --prod   # grant, on production
+```
+
+Production needs `scripts/service-account.json`. Local sign-in also needs
+non-UCLA test emails listed in `WHITELISTED_EMAILS` in `functions/.env.local`.
+
 ## Database Layout
 
 We use a normalized Realtime Database structure to ensure high performance for threaded conversations, secure permissions and efficient data cleanup.
