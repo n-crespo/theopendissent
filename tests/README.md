@@ -9,6 +9,7 @@ pnpm test:all # assumes backend is running locally (pnpm emulate/dev/functions:w
 pnpm test:rules # tests database rules
 pnpm test:deletion # tests database deletions
 pnpm test:integration # integration testing
+pnpm test:contact # tests admin contact notifications
 ```
 
 ## Database Security Rules Tests
@@ -47,6 +48,13 @@ pnpm test:integration # integration testing
       - public user to replies/reply or posts/post or subreplies/subreply
     - ALLOWS
       - user A write to users/uidA/notifications/test
+  - pinned notifications
+    - DENIES
+      - recipient deleting one
+      - recipient unpinning one
+      - user A pinning their own notification
+    - ALLOWS
+      - recipient marking one as read
   - post creation
     - DENIES
       - without profile receipt
