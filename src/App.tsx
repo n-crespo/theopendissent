@@ -24,6 +24,7 @@ import { Terms } from "./pages/Terms";
 import { PostDetails } from "./pages/PostDetails";
 import { Notifications } from "./pages/Notifications";
 import { Settings } from "./pages/Settings";
+import { Admin } from "./pages/Admin";
 import { OwnedPostsProvider } from "./context/OwnedPostsContext";
 import { FeedSortProvider } from "./context/FeedSortContext";
 import { useFeedSort } from "./context/FeedSortContext";
@@ -208,6 +209,7 @@ export default function App() {
             <Route path="terms" element={<Terms />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="admin" element={<Admin />} />
             <Route path="post/:postId" element={<PostDetails />} />
           </Route>
         </Routes>

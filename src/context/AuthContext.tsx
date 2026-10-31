@@ -10,11 +10,14 @@ import {
   subscribeToAuth,
   signInWithGoogle,
   signOutUser,
+  getIsAdmin,
 } from "../lib/firebase";
 import { notificationStore } from "../lib/notificationStore";
 
 interface AuthContextType {
   user: User | null;
+  /** whether to show admin ui; the server enforces the real permission */
+  isAdmin: boolean;
   loading: boolean;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -27,11 +30,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = subscribeToAuth((currentUser) => {
+    let latestChange = 0;
+
+    const unsubscribe = subscribeToAuth(async (currentUser) => {
+      const change = ++latestChange;
+      // stay in loading until the claim is known so /admin can't redirect early
+      const admin = currentUser ? await getIsAdmin(currentUser) : false;
+      if (change !== latestChange) return;
+
       setUser(currentUser);
+      setIsAdmin(admin);
       setLoading(false);
 
       if (currentUser) {
@@ -63,7 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, isAdmin, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

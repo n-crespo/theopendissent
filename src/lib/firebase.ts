@@ -409,6 +409,21 @@ export const subscribeToAuth = (callback: (user: User | null) => void) => {
 };
 
 /**
+ * reads the admin claim from the user's id token. only for showing admin ui:
+ * anything privileged must be enforced on the server.
+ */
+export const getIsAdmin = async (user: User) => {
+  if (IS_PREVIEW_AUTH) return false;
+  try {
+    const { claims } = await user.getIdTokenResult();
+    return claims.admin === true;
+  } catch (error) {
+    console.error("error reading admin claim:", error);
+    return false;
+  }
+};
+
+/**
  * handles google sign-in with ucla-only email restriction logic.
  */
 export const signInWithGoogle = async () => {
