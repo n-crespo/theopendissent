@@ -19,7 +19,7 @@ const EDIT_WINDOW_CLOSED_MESSAGE = `Posts can only be edited within ${
  * Manages the lifecycle and actions for a single post or reply.
  */
 export const usePostActions = (post: Post) => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { openModal } = useModal();
   const uid = user?.uid;
 
@@ -118,8 +118,17 @@ export const usePostActions = (post: Post) => {
     return true;
   };
 
+  const triggerContact = () => {
+    openModal("contact", {
+      contentId: post.id,
+      isReply: !!post.parentPostId,
+      preview: post.postContent,
+    });
+  };
+
   return {
     uid,
+    isAdmin,
     localMetrics,
     canEdit,
     isEditing,
@@ -133,5 +142,6 @@ export const usePostActions = (post: Post) => {
     handleCancel,
     saveEdit,
     triggerDelete,
+    triggerContact,
   };
 };
