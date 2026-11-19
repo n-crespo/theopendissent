@@ -11,6 +11,7 @@ export const Notifications = () => {
   const { notifications, markAsRead, removeBatch } = useNotifications();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSelecting, setIsSelecting] = useState(false); // new state for selection mode
+  const deletable = notifications.filter((n) => !n.pinned);
 
   const toggleSelect = (id: string) => {
     const next = new Set(selectedIds);
@@ -20,10 +21,10 @@ export const Notifications = () => {
   };
 
   const toggleAll = () => {
-    if (selectedIds.size === notifications.length) {
+    if (selectedIds.size === deletable.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(notifications.map((n) => n.id)));
+      setSelectedIds(new Set(deletable.map((n) => n.id)));
     }
   };
 
@@ -39,16 +40,19 @@ export const Notifications = () => {
   };
 
   const handleNotifClick = (notification: Notification) => {
-    const { id, type, latestReplyId, isRead, parentPostId } = notification;
+    const { id, type, latestReplyId, isRead, parentPostId, pinned, targetPath } =
+      notification;
 
     if (isSelecting) {
-      toggleSelect(id);
+      if (!pinned) toggleSelect(id);
       return;
     }
 
     if (!isRead) markAsRead(id);
 
-    if (type === "reply") {
+    if (type === "contact" && targetPath) {
+      navigate(targetPath);
+    } else if (type === "reply") {
       if (parentPostId) {
         // its a subreply notification
         // id = parentReplyId, latestReplyId = subReplyId
@@ -72,7 +76,7 @@ export const Notifications = () => {
         </h1>
       </div>
 
-      {notifications.length > 0 && (
+      {deletable.length > 0 && (
         <div className="flex items-center justify-between px-1 mb-1">
           {/* bulk selection toggle on the left */}
           <div className="flex">
@@ -81,7 +85,7 @@ export const Notifications = () => {
                 onClick={toggleAll}
                 className="text-2xs font-bold text-logo-blue uppercase tracking-wider transition-colors"
               >
-                {selectedIds.size === notifications.length
+                {selectedIds.size === deletable.length
                   ? "Deselect All"
                   : "Select All"}
               </button>

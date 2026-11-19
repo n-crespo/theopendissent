@@ -255,6 +255,47 @@ describe("Realtime Database rules", () => {
         });
       });
 
+      describe("Pinned notifications", () => {
+        const pinnedPath = `users/${uidCurrent}/notifications/notif_pinned`;
+        const pinned = {
+          type: "contact",
+          pinned: true,
+          isRead: false,
+          updatedAt: 1,
+        };
+
+        beforeEach(async () => {
+          await testEnv.withSecurityRulesDisabled(async (context) => {
+            await dbSet(dbFromContext(context), pinnedPath, pinned);
+          });
+        });
+
+        it("allows the recipient to mark it as read", async () => {
+          await assertSucceeds(
+            dbUpdate(userDb(uidCurrent), pinnedPath, { isRead: true }),
+          );
+        });
+
+        it("denies the recipient deleting it", async () => {
+          await assertFails(dbSet(userDb(uidCurrent), pinnedPath, null));
+        });
+
+        it("denies the recipient unpinning it", async () => {
+          await assertFails(
+            dbUpdate(userDb(uidCurrent), pinnedPath, { pinned: null }),
+          );
+          await assertFails(
+            dbUpdate(userDb(uidCurrent), pinnedPath, { pinned: false }),
+          );
+        });
+
+        it("denies users pinning their own notifications", async () => {
+          await assertFails(
+            dbSet(userDb(uidCurrent), `${pinnedPath}_forged`, pinned),
+          );
+        });
+      });
+
       describe("Allowed Writes", () => {
         it("allows current user to update isRead status of their notification", async () => {
           const notifId = "notif_test_123";

@@ -9,10 +9,13 @@
           ],
           ".read": "auth != null && auth.uid === $uid",
           "$notification_id": {
-            ".write": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid && (!data.child('pinned').exists() || newData.child('pinned').val() === data.child('pinned').val())",
             ".validate": "newData.hasChildren(['type', 'isRead', 'updatedAt'])",
             "type": {
               ".validate": "newData.isString()"
+            },
+            "pinned": {
+              ".validate": "newData.val() === data.val()"
             },
             "count": {
               ".validate": "newData.isNumber()"

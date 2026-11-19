@@ -45,6 +45,7 @@ export const FeedItem = memo(
 
     const {
       uid,
+      isAdmin,
       canEdit,
       isEditing,
       setIsEditing,
@@ -55,6 +56,7 @@ export const FeedItem = memo(
       saveEdit,
       handleCancel,
       triggerDelete,
+      triggerContact,
     } = usePostActions(item);
 
     const ownedPosts = useOwnedPosts();
@@ -188,6 +190,16 @@ export const FeedItem = memo(
             </div>
 
             <div className="flex items-center gap-x-2">
+              {isAdmin && !isOwner && (
+                <button
+                  onClick={(e) => handleAction(e, triggerContact)}
+                  className="p-2 rounded-control text-stone-400 hover:text-logo-blue hover:bg-stone-50 transition-colors"
+                  aria-label="Contact author"
+                  title="Contact author"
+                >
+                  <i className="bi bi-envelope text-base"></i>
+                </button>
+              )}
               {isOwner && canEdit ? (
                 <button
                   ref={editButtonRef}

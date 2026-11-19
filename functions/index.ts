@@ -466,6 +466,73 @@ export const onSubReplyCreatedNotification = onValueCreated(
   },
 );
 
+const CONTACT_MESSAGE_MAX_LENGTH = 500;
+
+/**
+ * Writes a pinned notification to the author of any post, reply, or sub-reply.
+ * Each contact gets its own key so repeat messages never overwrite each other
+ * and reply notifications (keyed by content id) can't collide with them.
+ * Returns nothing about the author: admins must not learn who wrote the content.
+ */
+export const sendContactNotification = async (
+  contentId: string,
+  message: string,
+  db: Database,
+) => {
+  const metaSnap = await db.ref(`authorLookup/${contentId}`).once("value");
+  const meta = metaSnap.val();
+  if (!meta?.uid) {
+    throw new HttpsError("not-found", "This content no longer exists.");
+  }
+
+  const targetPath =
+    meta.type === "subreply"
+      ? `/post/${meta.postId}?reply=${meta.replyId}&subreply=${contentId}`
+      : meta.type === "reply"
+        ? `/post/${meta.postId}?reply=${contentId}`
+        : `/post/${contentId}`;
+
+  const now = Date.now();
+  await db.ref(`users/${meta.uid}/notifications`).push({
+    type: "contact",
+    pinned: true,
+    message,
+    targetType: meta.type === "post" ? "post" : "reply",
+    targetPath,
+    count: 1,
+    isRead: false,
+    createdAt: now,
+    updatedAt: now,
+  });
+};
+
+/**
+ * Callable function that lets an admin notify the author of a piece of content,
+ * with an optional message. The admin claim is checked here, not just in the UI.
+ */
+export const contactAuthor = onCall(async (request) => {
+  if (request.auth?.token.admin !== true) {
+    throw new HttpsError("permission-denied", "Only admins can contact authors.");
+  }
+
+  const { contentId, message = "" } = request.data ?? {};
+  if (typeof contentId !== "string" || !contentId || typeof message !== "string") {
+    throw new HttpsError("invalid-argument", "A content id is required.");
+  }
+
+  const trimmed = message.trim();
+  if (trimmed.length > CONTACT_MESSAGE_MAX_LENGTH) {
+    throw new HttpsError(
+      "invalid-argument",
+      `Messages can be at most ${CONTACT_MESSAGE_MAX_LENGTH} characters.`,
+    );
+  }
+
+  await sendContactNotification(contentId, trimmed, getDatabase());
+  console.log(`admin ${request.auth.uid} contacted the author of ${contentId}`);
+  return { success: true };
+});
+
 export const wipeUserData = async (uid: string, db: Database, deleteContent: boolean = true) => {
   const userSnap = await db.ref(`users/${uid}`).once("value");
   const userData = userSnap.val();

@@ -6,13 +6,21 @@ import {
 
 export interface Notification {
   id: string;
-  type: "reply" | "invitation";
+  type: "reply" | "invitation" | "contact";
   count: number;
   isRead: boolean;
   createdAt: number;
   updatedAt: number;
   parentPostId?: string;
   latestReplyId?: string;
+  /** stays at the top of the list; the rules stop the recipient removing it */
+  pinned?: boolean;
+  /** contact only: what the admin wrote, may be empty */
+  message?: string;
+  /** contact only: what the admin is writing about */
+  targetType?: "post" | "reply";
+  /** contact only: route to that post or reply */
+  targetPath?: string;
 }
 
 class NotificationStore {
@@ -32,9 +40,12 @@ class NotificationStore {
     });
   }
 
-  /**  Helper to sort notifications. Unread first, then recently updated. */
+  /**  Helper to sort notifications. Pinned first, then unread, then recently updated. */
   private sortNotifications(data: Notification[]): Notification[] {
     return [...data].sort((a, b) => {
+      if (!!a.pinned !== !!b.pinned) {
+        return a.pinned ? -1 : 1;
+      }
       if (a.isRead !== b.isRead) {
         return a.isRead ? 1 : -1;
       }
