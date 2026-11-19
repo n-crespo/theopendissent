@@ -6,3 +6,4 @@ firebase-data/
 firebase-export-*/
 /scripts/service-account.json
 /dist
+/mockups
