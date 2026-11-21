@@ -34,7 +34,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-helmet-async": "^3.0.0",
-    "react-router-dom": "^7.18.4"
+    "react-router-dom": "^7.18.5"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.2",
